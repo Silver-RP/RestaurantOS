@@ -1,0 +1,14 @@
+import { Router } from "express"; 
+import AuthController from "../controller/AuthController";
+import GoogleAuthMiddleWare from "../middleware/GoogleAuthMiddleWare";
+// import { validateRequest } from "../middleware/";
+import FacebookAuthMiddleware from "../middleware/facebookAuthMiddleware"; 
+const router = Router(); 
+router.post("/register", AuthController.register); 
+router.post("/login", AuthController.login);
+router.post("/refresh_token", AuthController.refreshAccessToken); 
+router.get("/google/callback", AuthController.googleCallback); 
+router.post("/google-login",GoogleAuthMiddleWare.verifyGoogleToken, AuthController.googleLogin);
+router.post("/facebook-login",FacebookAuthMiddleware.verifyFacebookToken, AuthController.loginFacebook); 
+router.get("/facebook/callback", AuthController.facebookCallback);
+export default router; 
