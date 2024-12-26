@@ -4,11 +4,16 @@ import GoogleAuthMiddleWare from "../middleware/GoogleAuthMiddleWare";
 // import { validateRequest } from "../middleware/";
 import FacebookAuthMiddleware from "../middleware/facebookAuthMiddleware"; 
 const router = Router(); 
-router.post("/register", AuthController.register); 
-router.post("/login", AuthController.login);
-router.post("/refresh_token", AuthController.refreshAccessToken); 
-router.get("/google/callback", AuthController.googleCallback); 
-router.post("/google-login",GoogleAuthMiddleWare.verifyGoogleToken, AuthController.googleLogin);
-router.post("/facebook-login",FacebookAuthMiddleware.verifyFacebookToken, AuthController.loginFacebook); 
-router.get("/facebook/callback", AuthController.facebookCallback);
+router.post("/register", AuthController.register); // ok 
+router.post("/login", AuthController.login); // ok 
+router.post("/refresh_token", AuthController.refreshAccessToken); // ok 
+router.get("/google/callback", AuthController.googleCallback); // ok 
+router.post("/google-login",GoogleAuthMiddleWare.verifyGoogleToken, AuthController.googleLogin); // ok 
+router.post("/facebook-login",FacebookAuthMiddleware.verifyFacebookToken, AuthController.loginFacebook); // => not ok 
+router.get("/facebook/callback", AuthController.facebookCallback); // => not ok 
+router.post("/logout", AuthController.Logout); // => ok 
+router.post("/send-otp", AuthController.sendOtpController); // ok  
+router.post("/verify-otp", AuthController.verifyOtpController); // ok 
+router.post("/forgot-password", AuthController.sendOtpController); // ok
+router.post("/reset-password", AuthController.resetPassword); // ok
 export default router; 

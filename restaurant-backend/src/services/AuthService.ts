@@ -6,6 +6,8 @@ import jwt from 'jsonwebtoken';
 import { GoogleAuthExceptionMessages } from 'google-auth-library/build/src/auth/googleauth';
 import axios from 'axios';
 import { log } from 'console';
+import crypto from "crypto";
+import sendOtpToPhoneNumber from "../utils/smsService"; 
 dotenv.config();
 interface Register {
   userName: string;
@@ -119,7 +121,11 @@ class AuthService {
       });
       await newUser.save();
       return newUser;
-    } catch (error) {}
+    } catch (error: any) {
+      console.error('Error during user registration:', error);
+      throw new Error('Error during user registration: ' + error.message);
+      
+    }
   }
   // Method login user
   async login(loginUser: Login) {
@@ -130,7 +136,7 @@ class AuthService {
         throw new Error('Email not registered');
       }
       // compare password
-      const isMatch = await bcrypt.compare(password, user.password);
+      const isMatch = await bcrypt.compare(password, user.password || '');
       if (!isMatch) {
         throw new Error('Invalid credentials');
       }
@@ -186,10 +192,14 @@ class AuthService {
       const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN || '', {
         expiresIn: '2h', // Thời gian hết hạn 2 giờ
       });
-  
+      const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN || '', {
+        expiresIn: '365d', // Thời gian hết hạn 1 năm
+      });
+      
       return {
         user,
         accessToken,
+        refreshToken, 
       };
     } catch (error: any) {
       // Xử lý lỗi khi đăng nhập Google
@@ -264,6 +274,68 @@ class AuthService {
      }
 
   }
+  async logout (refreshToken: string){
+    try {
+      const decode: any = jwt.verify(refreshToken, process.env.REFRESH_TOKEN || ''); 
+      const user = await User.findById(decode.id);
+      if(!user){
+        throw new Error("User not found"); 
+      }
+      return {message: "Logout successful"};
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+    
+  }
+  async sendOtp(phone: string){
+    try {
+      let user = await User.findOne({phone});
+      if(!user){
+        user = new User({phone}); 
+        await user.save();
+      }
+      const otp = crypto.randomInt(100000, 999999).toString();
+      user.otp = otp; 
+      user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 5 phut 
+      await user.save(); 
+      await sendOtpToPhoneNumber.sendOtpToPhoneNumber(phone, otp);
+      return {
+        message: "OTP sent successfully", 
+  
+      };
+    } catch (error: any) {
+      throw new Error(error.message);
+      
+    }
+  }
+  async verifyOtp(phone: string, otp: string){
+    const user = await User.findOne({phone}); 
+    if(!user){
+      throw new Error ("User not found");
+    }
+    if(user.otp !== otp){
+      throw new Error("Invalid OTP");
+    }
+    if (!user.otpExpiry) {
+      throw new Error("OTP expiry date is missing");
+  }
+    if(new Date() > user.otpExpiry){
+      throw new Error("OTP expired");
+    }
+    return {message: "OTP verified successfully"};
+  }
+  async resetPassword(phone: string, newPassword: string, confirmPassword: string){
+    const user = await User.findOne({phone}); 
+    if(!user){
+      throw new Error("User not found");
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 10); 
+    user.password = hashedPassword;
+    user.otp = null;
+    user.otpExpiry = null;
+    await user.save();
+    return {message: "Password reset successfully"};
+}
 }
 export default new AuthService();
 // const authService = new AuthService();

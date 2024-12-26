@@ -2,6 +2,7 @@ import express from 'express';
 import healthCheckRoutes from './routes/healthcheck';
 import AuthRoutes from './routes/AuthRoutes';
 import UserRoutes from "./routes/UserRoutes"; 
+import ProfileRoutes from "./routes/ProfileRoutes";
 import dotenv from 'dotenv';
 import connectDB from './config/db';
 import cookieParser from "cookie-parser"; 
@@ -17,6 +18,7 @@ app.get('/', (req, res) => {
 });
 app.use('/api/auth', AuthRoutes);
 app.use('/api/user', UserRoutes);
+app.use('/api/profile',ProfileRoutes); 
 app.use('/api', healthCheckRoutes);
 
 

@@ -1,18 +1,21 @@
-import mongoose, { Schema, Document } from "mongoose"; 
+import mongoose, { Schema, Document , Model } from "mongoose"; 
 export interface IUser extends Document {
-    userName: string; 
-    email: string; 
-    password: string; 
-    birthday?: Date; 
-    avatar?: string; 
-    phone: String; 
-    Active_code?: number; 
-    isAdmin: boolean; 
-    isCashier: boolean; 
-    googId: string; 
-    facebookId: string; 
+    userName: string;
+    email: string;
+    password: string | null;
+    birthday?: Date | null;
+    avatar?: string | null;
+    phone: string | null;
+    Active_code?: number | null;
+    isAdmin: boolean;
+    isCashier: boolean;
+    googleId?: string | null;
+    facebookId?: string | null;
+    otp?: string | null;
+    otpExpiry?: Date | null;
 }
-const userSchema: Schema = new Schema({
+
+const userSchema = new mongoose.Schema({
     userName: {
         type: String, 
         required: true, 
@@ -26,7 +29,7 @@ const userSchema: Schema = new Schema({
         trim: true, 
     }, 
     password: {
-        type: String, 
+        type: String,
         required: false, 
     },
     birthday: {
@@ -39,12 +42,21 @@ const userSchema: Schema = new Schema({
     },
     phone: {
         type: String, 
-        required: false, 
+        required: true, 
+        unique: true, 
     },
     Active_code: {
         type: Number, 
         required: false, 
     },
+    otp: {
+        type: String, 
+        required: false, 
+    }, 
+    otpExpiry: {
+        type: Date, 
+        required: false, 
+    }, 
     isAdmin: {
         type: Boolean, 
         required: true, 
@@ -61,11 +73,12 @@ const userSchema: Schema = new Schema({
     }, 
     facebookId:{
         type: String, 
-        required: true, 
+        required: false, 
     }
 },{
     timestamps: true
 
 })
-const User = mongoose.model<IUser>("User", userSchema); 
+console.log(typeof userSchema); 
+const User = mongoose.model("User", userSchema);
 export default User;

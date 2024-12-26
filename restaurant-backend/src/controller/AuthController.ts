@@ -14,13 +14,13 @@ class AuthController {
       res.status(201).json({ message: 'User created successfully', user });
     } catch (error: any) {
       // Phản hồi lỗi chi tiết về email hoặc username đã tồn tại
-      if (error.message.includes('Email already exists')) {
-        return res.status(400).json({ message: 'Email is already registered. Please use a different email.' });
-      }
-      if (error.message.includes('Username already exists')) {
-        return res.status(400).json({ message: 'Username is already taken. Please choose another one.' });
-      }
-      // Phản hồi lỗi chung
+      // if (error.message.includes('Email already exists')) {
+      //   return res.status(400).json({ message: 'Email is already registered. Please use a different email.' });
+      // }
+      // if (error.message.includes('Username already exists')) {
+      //   return res.status(400).json({ message: 'Username is already taken. Please choose another one.' });
+      // }
+      console.error('Error during user registration:', error); 
       res.status(400).json({ message: error.message });
     }
   }
@@ -46,7 +46,6 @@ class AuthController {
           message: "Invalid email format",
         });
       }
-
       // Gọi AuthService để xử lý đăng nhập và lấy token
       const { token, refresh_token, user } = await AuthService.login(req.body);
 
@@ -91,14 +90,20 @@ class AuthController {
       const { email, name, avatar, sub } = googleUser;
   
       // Gọi AuthService để xử lý Google login
-      const { user, accessToken } = await AuthService.googleLogin({
+      const { user, accessToken, refreshToken } = await AuthService.googleLogin({
         id: sub,
         email,
         googleId: sub,
         userName: name,
         avatar
       });
-  
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "none",
+        maxAge: 24 * 60 * 60 * 1000, // 1 ngày
+      }
+      )
       // Trả về kết quả cho frontend
       return res.status(200).json({
         message: "Google login successful",
@@ -160,6 +165,70 @@ class AuthController {
       res.status(400).json({message: error.message});
     }
   } 
+
+  async Logout (req: Request, res: Response): Promise <any> {
+    try {
+      const {refreshToken} = req.cookies;
+      if( !refreshToken ) {
+        return res.status(400).json({message: "No refresh token provided"});
+      }
+      // console.log(refreshToken);
+      
+      await AuthService.logout(refreshToken);
+      res.clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "none",
+      });
+      res.status(200).json({message: "Logout successful"});
+
+    } catch (error: any) {
+      res.status(400).json({message: error.message});
+    }
+  }
+ 
+  async sendOtpController(req: Request, res: Response): Promise<any> {
+    const { phone } = req.body; 
+    if(!phone){
+      return res.status(400).json({message: "Phone number is required"});
+    }
+    try {
+      const response = await AuthService.sendOtp(phone);
+      res.status(200).json({
+        message: response.message,
+    });
+    } catch (error: any) {
+      res.status(400).json({message: error.message});
+    }
+}
+  async verifyOtpController(req: Request, res: Response): Promise<any> {
+    const { phone, otp } = req.body;
+    if(!phone || !otp){
+      return res.status(400).json({message: "Phone number and OTP are required"});
+    }
+    try {
+      const response = await AuthService.verifyOtp(phone, otp);
+      res.status(200).json({message: response});
+    } catch (error: any) {
+      res.status(400).json({message: error.message});
+    }
+  }
+ async resetPassword(req: Request, res: Response): Promise<any> {
+   const { phone, newPassword, confirmPassword} = req.body; 
+   if(!phone || !newPassword || !confirmPassword){
+     return res.status(400).json({message: "Phone number, new password and confirm password are required"});
+   }
+    if(newPassword !== confirmPassword){
+      return res.status(400).json({message: "Passwords do not match"});
+    }
+    try {
+      const response = await AuthService.resetPassword(phone, newPassword, confirmPassword);
+      res.status(200).json({message: response});
+    } catch (error: any) {
+      res.status(400).json({message: error.message});
+    }
+  }
+
 }
 
 export default new AuthController();

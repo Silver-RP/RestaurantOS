@@ -7,7 +7,7 @@ import jwt from "jsonwebtoken";
  * @param expiresIn Thời gian sống của token
  * @returns JWT token
  */
-export const accessToken = (payload: object, secretKey: string, expires: string = "20s") => {
+export const accessToken = (payload: object, secretKey: string, expires: string = "2h") => {
     return jwt.sign(payload, secretKey, {expiresIn: expires});
 }
 export const refreshToken = (payload: object, secretKey: string, expires: string = "7d") => {
