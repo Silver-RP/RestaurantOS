@@ -10,16 +10,31 @@ class AuthController {
   async register(req: Request, res: Response):Promise<any>{
     try {
       // Gọi AuthService để xử lý đăng ký
+      const {userName, email, password, phone} = req.body; 
+      if(!userName || !email || !password || !phone){
+        return res.status(400).json({message: "Please enter all required fields"});
+      }
+      // ccheck email format
+      const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
+      const isCheckEmail = reg.test(email);
+      if(!isCheckEmail){
+        return res.status(400).json({message: "Invalid email format"});
+      }
+      // Check phone format
+      const regPhone = /^\+?[0-9]{10,11}$/;
+      const isCheckPhone = regPhone.test(phone);
+      if(!isCheckPhone){
+        return res.status(400).json({message: "Invalid phone format"});
+      }
+      // Check password format
+      const regPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+      const isCheckPassword = regPassword.test(password);
+      if(!isCheckPassword){
+        return res.status(400).json({message: "Password must be at least 8 characters, including 1 uppercase letter, 1 lowercase letter and 1 number"});
+      }
       const user = await AuthService.register(req.body);
       res.status(201).json({ message: 'User created successfully', user });
-    } catch (error: any) {
-      // Phản hồi lỗi chi tiết về email hoặc username đã tồn tại
-      // if (error.message.includes('Email already exists')) {
-      //   return res.status(400).json({ message: 'Email is already registered. Please use a different email.' });
-      // }
-      // if (error.message.includes('Username already exists')) {
-      //   return res.status(400).json({ message: 'Username is already taken. Please choose another one.' });
-      // }
+    } catch (error: any) { 
       console.error('Error during user registration:', error); 
       res.status(400).json({ message: error.message });
     }
