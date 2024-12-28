@@ -32,7 +32,7 @@ interface GoogleUser {
 
 class AuthService {
   // test bằng gg => OK, và ko test được postman bởi vì postman ko có các chức của trình duyệt OAuth 2.0
-  // 
+  // Method handle google callback
   async handleGoogleCallBack(code: string): Promise<any> {
     try {
       const clientId = process.env.GG_CLIENT_ID || '';
@@ -152,6 +152,7 @@ class AuthService {
         throw new Error(error.message);
     }
   }
+  // Method refresh token
   async refreshAccessToken(refreshTokenFromClient: string){
     try {
       if(!refreshTokenFromClient){
@@ -169,6 +170,7 @@ class AuthService {
         throw new Error(error.message);
     }
   }
+  // Method login with google
   async googleLogin(googleUser: GoogleUser) {
     try {
       const { email, googleId, userName, avatar } = googleUser;
@@ -206,6 +208,8 @@ class AuthService {
       throw new Error('Error during Google login: ' + error.message);
     }
   }
+
+  // Method login with facebook
   async loginFaceBook(profile: any){
     let user = await User.findOne({facebookId: profile.id}); 
 
@@ -224,9 +228,10 @@ class AuthService {
     const token = jwt.sign({id: user._id, name: user.userName, email: user.email}, process.env.ACCESS_TOKEN || " ", {expiresIn: '2h'});
     return {token, user};
   }
+  // Method handle facebook callback
   async handleFacebookCallBack(code: string): Promise<any> {
      try {
-      const response = await axios.post(`https://graph.facebook.com/v12.0/oauth/access_token`,null, {
+      const response = await axios.post(`https://graph.facebook.com/v21.0/oauth/access_token`, {
         params: {
           code: code, 
           client_id: process.env.FB_CLIENT_ID, 
@@ -237,7 +242,7 @@ class AuthService {
       console.log(response.data);
       
       const accessToken = response.data.access_token;
-      const userResponse = await axios.get(`https://graph.facebook.com/v12.0/me`, {
+      const userResponse = await axios.get(`https://graph.facebook.com/v21.0/me`, {
         params: {
           fields: "id,name,email,picture",
           access_token: accessToken,
@@ -274,6 +279,45 @@ class AuthService {
      }
 
   }
+  // Method facebook login
+  async facebookLogin(accessToken: string){
+    try {
+      const response = await axios.get(`https://graph.facebook.com/v12.0/me`, {
+        params: {
+          fields: "id,name,email,picture",
+          access_token: accessToken,
+        }
+      })
+      const facebookUser = response.data;
+      console.log(facebookUser); 
+      let user = await User.findOne({email: facebookUser.email});
+      if(!user){
+        user = new User({
+          email: facebookUser.email, 
+          userName: facebookUser.name, 
+          avatar: facebookUser.picture.data.url,
+          facebookId: facebookUser.id,
+          isAdmin: false,
+          isCashier: false,
+        })
+        await user.save(); 
+      }
+      const token = jwt.sign({id: user._id, name: user.userName, email: user.email}, process.env.ACCESS_TOKEN || " ", {expiresIn: '2h'});
+      return {
+        message: 'Login successful',
+        token: token,
+        user: {
+            id: user.id,
+            email: user.email,
+            name: user.userName,
+        }
+    };
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
+
+  // Method logout 
   async logout (refreshToken: string){
     try {
       const decode: any = jwt.verify(refreshToken, process.env.REFRESH_TOKEN || ''); 
@@ -287,6 +331,8 @@ class AuthService {
     }
     
   }
+
+  // Method send OTP
   async sendOtp(phone: string){
     try {
       let user = await User.findOne({phone});
@@ -308,6 +354,7 @@ class AuthService {
       
     }
   }
+  // Method verify OTP
   async verifyOtp(phone: string, otp: string){
     const user = await User.findOne({phone}); 
     if(!user){
@@ -324,6 +371,7 @@ class AuthService {
     }
     return {message: "OTP verified successfully"};
   }
+  // Method reset password
   async resetPassword(phone: string, newPassword: string, confirmPassword: string){
     const user = await User.findOne({phone}); 
     if(!user){

@@ -6,12 +6,15 @@ import ProfileRoutes from "./routes/ProfileRoutes";
 import dotenv from 'dotenv';
 import connectDB from './config/db';
 import cookieParser from "cookie-parser"; 
+import passport from "passport"; 
 dotenv.config();
 connectDB();
 
 const app = express();
-app.use(express.json());
 const port = 3003;
+app.use(passport.initialize());
+app.use(express.json());
+
 app.use(cookieParser());
 app.get('/', (req, res) => {
   res.send('API is running...');
