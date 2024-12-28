@@ -27,5 +27,22 @@ class AuthMiddleWare {
             throw new Error(error);
         }
     }
+
+     async checkRole(requiredRole: string) {
+        return (req: Request, res: Response, next: NextFunction) => {
+            if (!req.user) {
+                return res.sendStatus(401); 
+            }
+
+            const userRole = req.user;
+            if (userRole !== requiredRole) {
+                return res.sendStatus(403); 
+            }
+
+            next();
+        };
+    }
+
+    
 }
 export default new AuthMiddleWare(); 
