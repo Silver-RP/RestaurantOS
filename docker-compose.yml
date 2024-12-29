@@ -1,8 +1,8 @@
-version: '3.8'
+version: "3.8"
 
 services:
   frontend:
-    build: 
+    build:
       context: ./restaurant-frontend
       dockerfile: Dockerfile
     ports:
@@ -11,10 +11,10 @@ services:
       - backend
     networks:
       - restaurant-network
-    restart: unless-stopped  
+    restart: unless-stopped
 
   backend:
-    build: 
+    build:
       context: ./restaurant-backend
       dockerfile: Dockerfile
     ports:
@@ -23,7 +23,7 @@ services:
       - ./restaurant-backend/.env
     networks:
       - restaurant-network
-    restart: unless-stopped  
+    restart: unless-stopped
 
 networks:
   restaurant-network:
