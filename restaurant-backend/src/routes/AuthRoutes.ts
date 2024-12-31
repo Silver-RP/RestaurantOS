@@ -16,4 +16,6 @@ router.post("/send-otp", AuthController.sendOtpController); // ok
 router.post("/verify-otp", AuthController.verifyOtpController); // ok 
 router.post("/forgot-password", AuthController.sendOtpController); // ok
 router.post("/reset-password", AuthController.resetPassword); // ok
+router.post("/send-otpEmail", AuthController.sendOtpEmail); // ok
+router.post("/verify-otpEmail", AuthController.sendOtpEmail); 
 export default router; 

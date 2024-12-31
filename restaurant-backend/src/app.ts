@@ -3,6 +3,8 @@ import healthCheckRoutes from './routes/healthcheck';
 import AuthRoutes from './routes/AuthRoutes';
 import UserRoutes from "./routes/UserRoutes"; 
 import RoleRoutes from "./routes/RoleRouter";
+import ReservationContactRoutes from "./routes/ReservationContactRoutes";
+import ReservationDetailContactRoutes from "./routes/ReservationDetailContactRoutes";
 import ProfileRoutes from "./routes/ProfileRoutes";
 import dotenv from 'dotenv';
 import connectDB from './config/db';
@@ -22,9 +24,11 @@ app.get('/', (req, res) => {
 });
 app.use('/api/auth', AuthRoutes);
 app.use('/api/user', UserRoutes);
-app.use('/api/profile',ProfileRoutes); 
+app.use('/api/profile',ProfileRoutes);
+app.use("/api/role", RoleRoutes); 
+app.use("/api/reservationcontact", ReservationContactRoutes);
+app.use("/api/reservationdetailcontact", ReservationDetailContactRoutes);
 app.use('/api', healthCheckRoutes);
-app.use('/api/role', RoleRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(port, () => {

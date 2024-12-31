@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
-import User from "../models/userModel";
 import { accessToken, refreshToken } from '../services/generateToken';
 import AuthService from "../services/AuthService";
 import GoogleAuthMiddleWare from "../middleware/GoogleAuthMiddleWare";
@@ -248,7 +247,47 @@ class AuthController {
       res.status(400).json({message: error.message});
     }
   }
+  // Method to send OTP via email
+  // Route gửi OTP
+async sendOtpEmail(req: Request, res: Response): Promise<any> {
+  try {
+    const { email } = req.body; 
 
+    // Kiểm tra định dạng email
+    const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
+    const isCheckEmail = reg.test(email);
+    if (!isCheckEmail) {
+      return res.status(400).json({ message: "Invalid email format" });
+    }
+
+    // Gửi OTP qua email
+    await AuthService.sendOtpEmail(email);
+
+    return res.status(200).json({ message: "OTP sent successfully" });
+
+  } catch (error: any) {
+    return res.status(400).json({ message: error.message });
+  }
+}
+
+// Route xác nhận OTP
+async verifyOtpEmail(req: Request, res: Response): Promise<any> {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({ message: "Email and OTP are required" });
+    }
+
+    // Xác nhận OTP
+    const response = await AuthService.verifyOtpEmail(email, otp);
+    
+    return res.status(200).json({ message: response });
+
+  } catch (error: any) {
+    return res.status(400).json({ message: error.message });
+  }
+}
 }
 
 export default new AuthController();

@@ -7,6 +7,8 @@ import { GoogleAuthExceptionMessages } from 'google-auth-library/build/src/auth/
 import axios from 'axios';
 import { log } from 'console';
 import crypto from "crypto";
+import nodemailer from "nodemailer";
+
 import sendOtpToPhoneNumber from "../utils/smsService"; 
 dotenv.config();
 interface Register {
@@ -15,8 +17,7 @@ interface Register {
   password: string;
   confirmPassword: string;
   phone: string;
-  isAdmin?: boolean;
-  isCashier?: boolean;
+  roles?: string;
 }
 interface Login {
   email: string;
@@ -94,9 +95,8 @@ class AuthService {
         email,
         password,
         confirmPassword,
-        phone,
-        isAdmin,
-        isCashier,
+        phone, 
+        roles
       } = userData;
       const existingUser = await User.findOne({
         $or: [{ email }, { userName }],
@@ -110,14 +110,16 @@ class AuthService {
         throw new Error('User or email already exists');
       }
       const hashedPassword = await bcrypt.hash(password, 10);
-
+      let userRole = "user"; 
+      if(roles && roles === "superadmin"){
+        userRole = "superadmin";
+      }
       const newUser = new User({
         userName,
         email,
         password: hashedPassword,
         phone,
-        isAdmin: isAdmin || false,
-        isCashier: isCashier || false,
+        roles: userRole,
       });
       await newUser.save();
       return newUser;
@@ -142,11 +144,11 @@ class AuthService {
       }
 
       const token = accessToken(
-        { id: user._id },
+        { id: user._id, role: user.roles},
         process.env.ACCESS_TOKEN || '',
         '20s',
       );
-      const refresh_token = refreshToken({id: user._id}, process.env.REFRESH_TOKEN || '', "365d"); 
+      const refresh_token = refreshToken({id: user._id, role: user.roles}, process.env.REFRESH_TOKEN || '', "365d"); 
       return { token, user, refresh_token };
     } catch (error: any) {
         throw new Error(error.message);
@@ -383,6 +385,47 @@ class AuthService {
     user.otpExpiry = null;
     await user.save();
     return {message: "Password reset successfully"};
+  }
+  async sendOtpEmail(email: string): Promise<void>{
+    const otp = crypto.randomInt(100000, 999999).toString();
+    const expireAt = new Date(Date.now() + 5 * 60 * 1000); 
+
+    // Lưu OTP vào db 
+    await User.create({email, otp, otpExpiry: expireAt});
+    // Gửi OTP qua email
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth:
+      {
+        user: process.env.EMAIL,
+        pass: process.env.PASSWORD,
+      }
+    });
+    const mailOptions = {
+      from: process.env.EMAIL,
+      to: email,
+      subject: "OTP for password reset",
+      text: `Your OTP is ${otp}. It will expire in 5 minutes`,
+    };
+    await transporter.sendMail(mailOptions);
+
+  }
+  async verifyOtpEmail(email: string, otp: string): Promise<void>{
+    const otpRecord  = await User.findOne({email, otp, isVerifiend: false});
+    if(!otpRecord){
+      throw new Error("Invalid OTP");
+    }
+    if (!otpRecord.exprireAt) {
+      console.error("exprireAt is missing or invalid");
+      throw new Error("OTP expiry time is not set");
+  }
+  
+    if(otpRecord.exprireAt < new Date()){
+      throw new Error("OTP expired");
+    }
+    otpRecord.isVerified = true;
+    await otpRecord.save();
+
 }
 }
 export default new AuthService();

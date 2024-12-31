@@ -1,11 +1,16 @@
 import  RoleModel from "../models/RoleModel";
 import { Request, Response, NextFunction } from 'express';
-
+import UserModel from "../models/userModel";
 
 class RoleService {
   async GetAllRole(req: Request, res: Response): Promise<any> {
     try {
-      const roles = await RoleModel.find();
+      const roles = await RoleModel.find()
+      .populate("permissions")
+      .populate({
+        path: "users", 
+        model: UserModel, 
+      })
       if (roles.length === 0) {
         return res.status(404).json({ message: 'No roles found!' });
       }
@@ -37,7 +42,12 @@ class RoleService {
   async GetRoleById(req: Request, res: Response): Promise<any> {
     try {
       const { id } = req.params;
-      const role = await RoleModel.findById(id);
+      const role = await RoleModel.findById(id)
+      .populate("permissions")
+      .populate({
+        path: "users", 
+        model: UserModel, 
+      })
       if (!role) {
         return res.status(404).json({ message: 'Role not found!' });
       }
