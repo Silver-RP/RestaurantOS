@@ -14,6 +14,11 @@ const Register = () => {
           Đăng ký tài khoản
         </h1>
         <FormComponent />
+        {/* <InputComponent />
+        <InputComponent />
+        <InputComponent />
+        <InputComponent />
+        <ButtonComponent /> */}
         <div className=" flex items-center my-4">
           <div className="flex-grow border-t border-gray-400"></div>
           <span className="px-4 text-sm text-gray-300">
