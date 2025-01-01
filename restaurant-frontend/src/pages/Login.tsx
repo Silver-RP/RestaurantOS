@@ -14,7 +14,7 @@ const Register = () => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
-      [name]: value,
+      [name]: value, // Cập nhật chính xác trường dựa trên name
     }));
   };
 
@@ -24,33 +24,30 @@ const Register = () => {
   };
 
   return (
-    <div className="flex justify-center items-center bg-[url('/assets/images/register/background.jpg')] bg-cover bg-center w-full h-screen">
-      <div className="p-6 text-center bg-black bg-opacity-80 rounded-lg shadow-lg w-full sm:w-8/12 md:w-6/12 lg:w-4/12 xl:w-4/12 h-auto max-w-lg">
+    <div className="flex justify-center items-center bg-[url('/assets/images/register/background.jpg')] bg-cover bg-center w-screen h-screen">
+      <div className="p-6 text-center bg-black bg-opacity-80 rounded-lg shadow-lg w-4/12 h-4/5">
         <h1 className="text-white font-bold text-3xl mb-6">Đăng ký tài khoản</h1>
         <form onSubmit={handleSubmit}>
           <InputComponent
-            type="text"
+            type='text'
             value={formData.username}
             placeholder="Tên tài khoản"
             name="username"
             onChange={handleChange}
           />
           <InputComponent
-            type="email"
             value={formData.email}
             placeholder="Email"
             name="email"
             onChange={handleChange}
           />
           <InputComponent
-            type="password"
             value={formData.password}
             placeholder="Mật khẩu"
             name="password"
             onChange={handleChange}
           />
           <InputComponent
-            type="password"
             value={formData.confirmPassword}
             placeholder="Xác nhận mật khẩu"
             name="confirmPassword"
