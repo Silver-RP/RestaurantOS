@@ -3,15 +3,16 @@ import InputComponent from '../components/Login/InputComponents';
 import ButtonComponent from '../components/Login/ButtonComponents';
 import { FaFacebook, FaArrowLeft } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
+import CheckboxComponent from '../components/global/CheckboxComponents';
 import { Link } from 'react-router-dom';
 
-const Register = () => {
+const Login = () => {
   const [formData, setFormData] = useState({
-    username: '',
     email: '',
     password: '',
-    confirmPassword: '',
   });
+
+  const [rememberMe, setRememberMe] = useState(false); // state để theo dõi checkbox
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -21,6 +22,10 @@ const Register = () => {
     }));
   };
 
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setRememberMe(e.target.checked); // Cập nhật trạng thái checkbox
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Form Data:', formData);
@@ -28,16 +33,9 @@ const Register = () => {
 
   return (
     <div className="flex justify-center items-center bg-[url('/assets/images/register/background.jpg')] bg-cover bg-center w-full h-screen">
-      <div className="px-10 py-8 text-center bg-black bg-opacity-70 rounded-lg shadow-lg w-full sm:w-8/12 md:w-6/12 lg:w-4/12 xl:w-4/12 h-auto max-w-lg">
-        <h1 className="text-white font-bold text-3xl mb-6">Đăng ký tài khoản</h1>
+      <div className="px-10 py-8 text-center bg-black bg-opacity-70 rounded-lg shadow-lg w-full sm:w-9/12 md:w-8/12 lg:w-6/12 xl:w-4/12 h-auto max-w-lg">
+        <h1 className="text-white font-bold text-3xl mb-6">Đăng nhập</h1>
         <form onSubmit={handleSubmit}>
-          <InputComponent
-            type="text"
-            value={formData.username}
-            placeholder="Tên tài khoản"
-            name="username"
-            onChange={handleChange}
-          />
           <InputComponent
             type="email"
             value={formData.email}
@@ -52,14 +50,15 @@ const Register = () => {
             name="password"
             onChange={handleChange}
           />
-          <InputComponent
-            type="password"
-            value={formData.confirmPassword}
-            placeholder="Xác nhận mật khẩu"
-            name="confirmPassword"
-            onChange={handleChange}
-          />
-          <ButtonComponent htmlType="submit" text="Đăng ký" />
+          <div className="flex justify-between items-center mt-6 mb-3">
+            <CheckboxComponent 
+              label="Ghi nhớ đăng nhập" 
+              checked={rememberMe} 
+              onChange={handleCheckboxChange} 
+            />
+            <Link to="#" className="text-sm text-white hover:text-secondaryColor hover:underline">Quên mật khẩu?</Link>
+          </div>
+          <ButtonComponent htmlType="submit" text="Đăng nhập" />
         </form>
         <div className="flex items-center my-8">
           <div className="flex-grow border-t border-gray-400"></div>
@@ -72,9 +71,9 @@ const Register = () => {
         </div>
         <div className="mt-6 text-sm text-white">
           <p>
-            Bạn đã có tài khoản?{' '}
-            <Link to="/login" className="text-white underline hover:text-secondaryColor">
-              Đăng nhập tại đây
+            Bạn chưa có tài khoản?{' '}
+            <Link to="/register" className="text-white underline hover:text-secondaryColor">
+              Đăng ký tại đây
             </Link>
           </p>
           <p className="flex items-center justify-start mt-6">
@@ -89,4 +88,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default Login;
