@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 class ReservationDetailContactController {
     async createReservationDetailContact (req: Request, res: Response) {
         try {
-            const { reservation,reservationDate, guestCount, timeReservation, status, user } = req.body;
+            const { reservation,reservationDate, guestCount, timeReservation, status, user, notes } = req.body;
             const reservationDetailContact = await ReservationDetailContactService.createReservationDetailContact(req.body);
             res.status(200).json(reservationDetailContact);
         } catch (error: any) {

@@ -5,7 +5,8 @@ export interface IReservationDetailContact extends Document {
     timeReservation: String; 
     guestCount: number;  
     user: mongoose.Schema.Types.ObjectId; 
-    status: string
+    status: string, 
+    notes: string, 
 }
 const reservationDetailContactSchema = new mongoose.Schema({
     reservation: {
@@ -30,6 +31,10 @@ const reservationDetailContactSchema = new mongoose.Schema({
         type: String, 
         enum: ["pending", "approved", "rejected"],
         required: true,
+    }, 
+    notes: {
+        type: String, 
+        required: false, 
     }, 
     user: {
         type: mongoose.Schema.Types.ObjectId, 

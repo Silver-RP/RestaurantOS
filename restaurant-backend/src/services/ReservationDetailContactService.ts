@@ -7,8 +7,9 @@ class ReservationDetailContactService {
         return reservationDetailContact;
     }
     async getAllReservationDetailContact (): Promise<any> {
-        const reservationDetailContact = await ReservationDetailContact.find({}).populate("reservation", "tableType").populate("user", "")
+        const reservationDetailContact = await ReservationDetailContact.find({}).populate("reservation", "tableType").populate("user", "userName phone"); 
         return reservationDetailContact;
     }
+
 }
 export default new ReservationDetailContactService();
