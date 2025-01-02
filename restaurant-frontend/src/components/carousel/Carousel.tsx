@@ -139,7 +139,6 @@ const Carousel = () => {
         </div>
       ))}
 
-      {/* Nút chuyển trang */}
       <button
         onClick={handlePrevSlide}
         className="absolute top-1/2 z-20 left-2 md:left-4 transform -translate-y-1/2 bg-secondaryColor text-headerBackground rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center hover:bg-opacity-80 hover:scale-110 transition-all duration-500 opacity-0 group-hover:opacity-100"
@@ -153,7 +152,6 @@ const Carousel = () => {
         &#8594;
       </button>
 
-      {/* Dots */}
       <div className="absolute bottom-6 md:bottom-8 z-20 left-1/2 transform -translate-x-1/2 flex space-x-1 md:space-x-2">
         {slides.map((_, index) => (
           <button

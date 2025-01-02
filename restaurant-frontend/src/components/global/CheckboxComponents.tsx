@@ -4,7 +4,6 @@ interface CheckboxComponentProps {
   label: string;
   checked: boolean;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  // Thêm rest props vào dưới dạng một đối tượng
   [key: string]: any;
 }
 
