@@ -13,7 +13,7 @@ const ButtonComponent: React.FC<Props> = ({ htmlType = 'button', text = 'Đăng 
       <Button
         htmlType={htmlType} // Sử dụng htmlType thay cho type
         onClick={onClick}
-        className="mt-6 px-4 py-5 w-11/12 text-lg font-medium bg-secondaryColor text-bodyBackground border border-secondaryColor rounded hover:bg-bodyBackground hover:text-secondaryColor hover:border-secondaryColor"
+        className="mt-6 px-4 py-6 w-full text-lg font-medium bg-secondaryColor text-bodyBackground border border-secondaryColor hover:bg-bodyBackground hover:text-secondaryColor hover:border-secondaryColor"
       >
         {text}
       </Button>

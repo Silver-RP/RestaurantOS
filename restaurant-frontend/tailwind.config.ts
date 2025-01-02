@@ -5,6 +5,7 @@ export default {
   theme: {
     extend: {
       colors: {
+        facebook: '#1877F2',
         headerBackground: '#021D2A',
         bodyBackground: '#012B40',
         secondaryColor: '#FFDEA0',
