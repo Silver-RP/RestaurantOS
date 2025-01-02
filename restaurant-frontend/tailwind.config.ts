@@ -8,6 +8,7 @@ export default {
         headerBackground: '#021D2A',
         bodyBackground: '#012B40',
         secondaryColor: '#FFDEA0',
+        contactBackground: '#021D2A',
       },
       width: {
         mainContainer: '1320px',
