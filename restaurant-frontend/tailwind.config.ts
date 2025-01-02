@@ -16,7 +16,8 @@ export default {
       },
       fontFamily: {
         sans: ['Manrope', ...defaultTheme.fontFamily.sans],
-        restora: ['Restora', ...defaultTheme.fontFamily.serif],
+        restora: ['Restora'],
+        cormorant: ["'Cormorant Garamond'", "serif"]
       },
       animation: {
         'fade-down': 'fadeDown 1s ease-out',

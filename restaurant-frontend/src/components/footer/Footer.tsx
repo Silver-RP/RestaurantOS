@@ -1,5 +1,4 @@
 import React from "react";
-import logo from "../../assets/logo.png";
 import { FaFacebookF, FaTwitter, FaYoutube, FaPinterest, FaInstagram } from "react-icons/fa";
 
 const Footer = () => {
@@ -8,7 +7,7 @@ const Footer = () => {
       <div className="max-w-5xl mx-auto flex flex-col lg:flex-row gap-x-14">
         {/* Logo and Contact */}
         <div className="w-56 space-y-4 lg:space-y-5 mt-4 mx-auto">
-          <img src={logo} alt="Logo" className="w-52 h-24 object-cover mb-4" />
+          <img  src="/assets/images/logo.png" alt="Logo" className="w-52 h-24 object-cover mb-4" />
           <p className="text-xs w-56 text-center lg:text-left">Nhà Hàng BeefBeef, 161 đường Quốc Hương, Thảo Điền, Quận 2</p>
           <p className="text-xs font-bold w-56 text-center lg:text-left">+84 - 05512345, +84 - 06666999</p>
           <p className="text-xs text-center lg:text-left">beefbeef@gmail.com</p>

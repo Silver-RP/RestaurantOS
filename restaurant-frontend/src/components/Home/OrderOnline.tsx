@@ -44,19 +44,21 @@ const products: Product[] = [
 
 const OrderOnlineSection: React.FC = () => {
   return (
-    <section className="bg-bodyBackground text-white py-16 px-6 md:px-20">
-    <img src="/assets/images/home/IconOnline.svg" alt="Icon" className="mx-auto mb-8" />
-    <div className="text-center mb-12">
-        <h2 className="text-4xl font-extralight font-restora mb-4">Đặt Món Trực Tuyến</h2>
-        <p className="text-secondaryColor text-sm uppercase tracking-widest">
-        Đề xuất của đầu bếp
-        </p>
-    </div>
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-        {products.map((product) => (
-        <ProductCard key={product.id} {...product} />
-        ))}
-    </div>
+    <section className="bg-bodyBackground w-full text-white py-16 px-6 md:px-20">
+      <div className="w-mainContainer mx-auto">
+        <img src="/assets/images/home/IconOnline.svg" alt="Icon" className="mx-auto mb-8" />
+        <div className="text-center mb-12">
+            <h2 className="text-4xl font-extralight font-restora mb-4">Đặt Món Trực Tuyến</h2>
+            <p className="text-secondaryColor text-sm uppercase tracking-widest">
+            Đề xuất của đầu bếp
+            </p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            {products.map((product) => (
+            <ProductCard key={product.id} {...product} />
+            ))}
+        </div>
+      </div>
     </section>
   );
 };
