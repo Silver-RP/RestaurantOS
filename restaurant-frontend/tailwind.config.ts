@@ -1,4 +1,5 @@
 /** @type {import('tailwindcss').Config} */
+import defaultTheme from 'tailwindcss/defaultTheme';
 export default {
   content: ['./src/**/*.{html,js,ts,jsx,tsx}'],
   theme: {
@@ -9,7 +10,20 @@ export default {
         secondaryColor: '#FFDEA0',
       },
       width: {
-        mainContainer: '1320px',
+        mainContainer: '80%',
+      },
+      fontFamily: {
+        sans: ['Manrope', ...defaultTheme.fontFamily.sans],
+        restora: ['Restora', ...defaultTheme.fontFamily.serif],
+      },
+      animation: {
+        'fade-down': 'fadeDown 1s ease-out',
+      },
+      keyframes: {
+        fadeDown: {
+          '0%': { opacity: 0, transform: 'translateY(-20px)' },
+          '100%': { opacity: 1, transform: 'translateY(0)' },
+        },
       },
     },
   },
