@@ -1,4 +1,3 @@
-import './App.css'
 import React from 'react';
 import Sidebar from './components/sidebar/Sidebar'
 import Carousel from './components/carousel/Carousel';
@@ -18,7 +17,7 @@ function App() {
       </div>
     </div>
     </>
-  )
+  );
 }
 
 export default App

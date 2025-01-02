@@ -1,18 +1,3 @@
-<<<<<<< HEAD
-### Command
-
-docker-compose up --build
-docker-compose up --build -d
-docker-compose down
-
-Backend:
-npm install
-npm run dev
-
-Frontned:
-npm install
-npm run dev
-=======
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
@@ -63,4 +48,3 @@ export default tseslint.config({
   },
 })
 ```
->>>>>>> master
