@@ -14,21 +14,21 @@ const products: Product[] = [
   {
     id: 1,
     name: "Olivas Rellenas",
-    price: "$12.90",
+    price: "120.000",
     image: "/assets/images/product1.jpg",
     isNew: true,
   },
   {
     id: 2,
     name: "Fish Salad Asian",
-    price: "$11.90",
+    price: "110.000",
     image: "/assets/images/product2.jpg",
     isNew: true,
   },
   {
     id: 3,
     name: "Greek Salad",
-    price: "$35.00",
+    price: "305.000",
     image: "/assets/images/product3.jpg",
     isNew: true,
     isPack: true,
@@ -36,7 +36,7 @@ const products: Product[] = [
   {
     id: 4,
     name: "Mixed Vegetable",
-    price: "$11.90",
+    price: "211.000",
     image: "/assets/images/product4.jpg",
     isNew: true,
   },
@@ -47,7 +47,7 @@ const OrderOnlineSection: React.FC = () => {
     <section className="bg-bodyBackground text-white py-16 px-6 md:px-20">
     <img src="/assets/images/home/IconOnline.svg" alt="Icon" className="mx-auto mb-8" />
     <div className="text-center mb-12">
-        <h2 className="text-4xl font-bold mb-4">Đặt Món Trực Tuyến</h2>
+        <h2 className="text-4xl font-extralight font-restora mb-4">Đặt Món Trực Tuyến</h2>
         <p className="text-secondaryColor text-sm uppercase tracking-widest">
         Đề xuất của đầu bếp
         </p>
