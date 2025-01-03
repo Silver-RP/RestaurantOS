@@ -10,13 +10,15 @@ export default {
         headerBackground: '#021D2A',
         bodyBackground: '#012B40',
         secondaryColor: '#FFDEA0',
+        contactBackground: '#021D2A',
       },
       width: {
         mainContainer: '80%',
       },
       fontFamily: {
-        sans: ['Manrope'],
+        sans: ['Manrope', ...defaultTheme.fontFamily.sans],
         restora: ['Restora'],
+        cormorant: ["'Cormorant Garamond'", "serif"]
       },
       animation: {
         'fade-down': 'fadeDown 1s ease-out',

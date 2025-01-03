@@ -1,23 +1,34 @@
-import React from 'react';
-import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
-import Header from './components/header/Header';
-import Footer from './components/footer/Footer';
-import Register from './pages/Register';
-import Login from './pages/Login';
-import OrderOnlineSection from './components/Home/OrderOnline';
+import React from "react";
+import { BrowserRouter as Router, useLocation } from "react-router-dom";
+import AppRoutes from "./routers";
+import Sidebar from "./components/sidebar/Sidebar";
+import Footer from "./components/footer/Footer";
 
-function App() {
+const AppLayout = () => {
+  const location = useLocation();
+  const hideSidebarFooter = ["/login", "/register"].includes(location.pathname);
 
   return (
-    <Router>
-    <Routes>
-      <Route path="/register" element={<Register />} />
-      <Route path="/footer" element={<Footer />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/orderonline" element={<OrderOnlineSection />} />
-    </Routes>
-  </Router>
+    <div className="flex overflow-hidden">
+      {!hideSidebarFooter && (
+        <div className="w-72 h-screen fixed left-0 top-0">
+          <Sidebar />
+        </div>
+      )}
+      <div className={`flex-1 ${!hideSidebarFooter ? "ml-72" : ""}`}>
+        <AppRoutes />
+        {!hideSidebarFooter && <Footer />}
+      </div>
+    </div>
   );
-}
+};
 
-export default App
+const App = () => {
+  return (
+    <Router>
+      <AppLayout />
+    </Router>
+  );
+};
+
+export default App;

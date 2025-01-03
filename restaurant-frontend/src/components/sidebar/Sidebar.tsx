@@ -9,13 +9,14 @@ import {
 } from 'react-icons/fa';
 import { FiUser, FiShoppingCart, FiSearch, FiHeart } from 'react-icons/fi';
 import { MdHome, MdMenuBook, MdContactPhone, MdInfo } from 'react-icons/md';
+import { Link } from 'react-router-dom';
 
 const Sidebar = () => {
   return (
     <div className="w-72 bg-headerBackground text-white h-screen flex flex-col justify-between">
       <div className="p-6">
         <img
-          src="/src/assets/logo.png"
+          src="./public/assets/images/logo.png"
           alt="Logo"
           className="w-64 h-auto mx-auto"
         />
@@ -24,13 +25,13 @@ const Sidebar = () => {
       </div>
 
       <nav className="flex flex-col font-sans text-sm px-6">
-        <a
-          href="#"
+        <Link
+          to="#"
           className="group flex justify-start w-3/5 mx-auto items-center space-x-3 px-2 py-5 text-white hover:text-secondaryColor transition-all duration-300"
         >
           <MdHome className="text-xl" />
           <span className="transform group-hover:translate-x-2 transition-transform duration-300">TRANG CHỦ</span>
-        </a>
+        </Link>
         <a
           href="#"
           className="group flex justify-start w-3/5 mx-auto items-center space-x-3 px-2 py-5 text-white hover:text-secondaryColor transition-all duration-300"
@@ -64,7 +65,9 @@ const Sidebar = () => {
       <div className="flex flex-col items-center space-y-6 px-6">
         <div className="flex space-x-8 text-2xl">
           <div className="relative">
-            <FiUser className="text-white hover:text-secondaryColor" />
+            <Link to = "/login">   
+             <FiUser className="text-white hover:text-secondaryColor" />
+            </Link>
           </div>
           <div className="relative">
             <FiHeart className="text-white hover:text-secondaryColor" />

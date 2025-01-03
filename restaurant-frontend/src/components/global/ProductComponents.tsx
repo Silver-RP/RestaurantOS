@@ -1,31 +1,27 @@
 import React from 'react';
-import { FiShoppingCart, FiEye, FiHeart } from 'react-icons/fi'; // Import các icon từ react-icons
+import { FiShoppingCart, FiEye, FiHeart } from 'react-icons/fi';
 
 type Props = {
-  [key: string]: any; // Định nghĩa các props khác không cố định
+  [key: string]: any;
 };
 
 const ProductCard = ({ ...rest }: Props) => {
   return (
     <div className="bg-headerBackground overflow-hidden shadow-md w-full group">
-      {/* Image Container */}
       <div className="relative w-full h-fit group perspective">
-        {/* Hình ảnh sản phẩm */}
         <div className="relative w-full h-full transform transition-transform duration-500 group-hover:rotate-y-180">
           <img
-            src={rest.imageUrl || "/assets/images/products/SP1.jpg"} // Hoặc {rest.imageUrl} nếu dùng dynamic props
+            src={rest.imageUrl || "/assets/images/products/SP1.jpg"}
             alt={rest.name}
             className="w-full h-full object-fit transition-all duration-500 transform group-hover:rotate-y-180"
           />
-          {/* Hình ảnh thứ hai hiển thị khi hover */}
           <img
-            src={rest.hoverImage || "/assets/images/products/SP1.1.jpg"} // Hình ảnh khi hover
+            src={rest.hoverImage || "/assets/images/products/SP1.1.jpg"} 
             alt={rest.name}
             className="w-full h-full object-contain absolute top-0 left-0 transition-opacity duration-500 opacity-0 group-hover:opacity-100"
           />
         </div>
         
-        {/* Badges */}
         <div className="absolute top-2 left-0 flex flex-col gap-1">
           {rest.discount && (
             <span className="bg-secondaryColor text-[#002B40] text-xs font-semibold px-4 py-1 mt-1 w-fit">
@@ -33,7 +29,7 @@ const ProductCard = ({ ...rest }: Props) => {
             </span>
           )}
           {rest.isNew && (
-            <span className="bg-secondaryColor text-[#002B40] text-xs font-semibold px-4 py-1 mt-1 w-fit">
+            <span className="bg-secondaryColor text-[#002B40] text-xs font-semibold px-5 py-2 mt-1 w-fit">
               NEW
             </span>
           )}
@@ -55,8 +51,8 @@ const ProductCard = ({ ...rest }: Props) => {
 
       {/* Content */}
       <div className="p-4 text-white text-center">
-        <p className="text-sm text-gray-300">{rest.cate || 'Danh mục sản phẩm'}</p>
-        <h3 className="text-lg font-bold mt-1">{rest.name || 'Tên sản phẩm'}</h3>
+        <p className="text-sm font-sans text-gray-300">{rest.cate || 'Danh mục sản phẩm'}</p>
+        <h3 className="text-lg font-restora font-bold mt-1">{rest.name || 'Tên sản phẩm'}</h3>
         {/* Rating */}
         <div className="flex items-center justify-center text-secondaryColor text-sm mt-2">
           <span>★★★★☆</span>
@@ -64,11 +60,11 @@ const ProductCard = ({ ...rest }: Props) => {
         {/* Price */}
         <div className="mt-3">
           {rest.originalPrice && (
-            <p className="text-gray-400 line-through text-sm">
+            <p className="text-gray-400  font-restora line-through text-sm">
               {rest.originalPrice.toLocaleString()} VND
             </p>
           )}
-          <p className="text-xl font-bold text-secondaryColor">
+          <p className="text-xl font-restora text-secondaryColor">
             {rest.price?.toLocaleString() || '0'} VND
           </p>
         </div>
