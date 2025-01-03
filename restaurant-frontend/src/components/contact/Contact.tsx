@@ -1,6 +1,6 @@
 import React from "react";
-import bar from "../../assets/Contact.png";
-import icon from "../../assets/Iconbar.png";
+import bar from "../../../public/assets/images/Contact.png";
+import icon from "../../../public/assets/images/Icon2.svg";
 
 const ContactCard = () => {
   const secondaryColor = "#FFDEA0"; // Màu thay thế cho màu vàng

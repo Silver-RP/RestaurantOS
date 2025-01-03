@@ -1,6 +1,6 @@
 import React from "react";
-import background from "../../assets/Baccont.png"; // Import ảnh nền
-import icon from "../../assets/Icon.png"; // Import ảnh icon
+import background from "../../../public/assets/images/Baccont.png"; // Import ảnh nền
+import icon from "../../../public/assets/images/Icon.svg"; // Import ảnh icon
 import { GoDotFill } from "react-icons/go";
 
 function App() {
