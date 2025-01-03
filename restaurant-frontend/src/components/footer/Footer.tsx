@@ -8,7 +8,11 @@ const Footer = () => {
         <div className="flex flex-col lg:flex-row gap-8 lg:gap-16">
           {/* Logo and Contact Section */}
           <div className="w-full lg:w-1/4 flex flex-col items-center lg:items-start">
+<<<<<<< HEAD
             <img alt="Logo" className="w-52 h-24 object-cover mb-4 mx-auto lg:mx-0" />
+=======
+            <img src="/assets/images/logo.png" alt="Logo" className="w-52 h-24 object-cover mb-4 mx-auto lg:mx-0" />
+>>>>>>> 1be6b7a27db104eec936ef767a11b08f8a0e1d13
             <div className="text-center lg:text-left space-y-4">
               <p className="text-xs">Nhà Hàng BeefBeef, 161 đường Quốc Hương, Thảo Điền, Quận 2</p>
               <p className="text-xs font-bold text-white">+84 - 05512345, +84 - 06666999</p>

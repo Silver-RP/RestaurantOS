@@ -4,7 +4,6 @@ interface CheckboxComponentProps {
   label: string;
   checked: boolean;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  [key: string]: any;
 }
 
 const CheckboxComponent: React.FC<CheckboxComponentProps> = ({ label, checked, onChange, ...rest }) => {
