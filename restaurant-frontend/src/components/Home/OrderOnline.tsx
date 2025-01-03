@@ -1,62 +1,112 @@
-import React from "react";
+import React, { useState } from "react";
+import { BsArrowLeftCircle, BsArrowRightCircle } from "react-icons/bs";
 import ProductCard from "../global/ProductComponents";
 
 interface Product {
   id: number;
   name: string;
-  price: string;
-  image: string;
+  price: number;
+  originalPrice?: number;
+  imageUrl: string;
+  hoverImage?: string;
   isNew: boolean;
-  isPack?: boolean;
+  discount?: string;
+  cate?: string;
 }
 
 const products: Product[] = [
-  {
-    id: 1,
-    name: "Olivas Rellenas",
-    price: "120.000",
-    image: "/assets/images/product1.jpg",
-    isNew: true,
-  },
-  {
-    id: 2,
-    name: "Fish Salad Asian",
-    price: "110.000",
-    image: "/assets/images/product2.jpg",
-    isNew: true,
-  },
-  {
-    id: 3,
-    name: "Greek Salad",
-    price: "305.000",
-    image: "/assets/images/product3.jpg",
-    isNew: true,
-    isPack: true,
-  },
-  {
-    id: 4,
-    name: "Mixed Vegetable",
-    price: "211.000",
-    image: "/assets/images/product4.jpg",
-    isNew: true,
-  },
+  { id: 1, name: "Olivas Rellenas", price: 120000, imageUrl: "./assets/images/products/SP1.jpg", hoverImage: "/assets/images/products/SP1.1.jpg", isNew: true, discount: "10% OFF", cate: "Appetizer" },
+  { id: 2, name: "Fish Salad Asian", price: 110000, imageUrl: "/assets/images/products/SP1.jpg", hoverImage: "/assets/images/products/SP1.1.jpg", isNew: true, cate: "Salad" },
+  { id: 3, name: "Greek Salad", price: 305000, originalPrice: 350000, imageUrl: "/assets/images/products/SP1.jpg", hoverImage: "/assets/images/products/SP1.1.jpg", isNew: true, cate: "Salad" },
+  { id: 4, name: "Mixed Vegetable", price: 211000, imageUrl: "/assets/images/products/SP1.jpg", hoverImage: "/assets/images/products/SP1.1.jpg", isNew: true, cate: "Vegetable" },
+  { id: 5, name: "Tomato Soup", price: 80000, imageUrl: "/assets/images/products/SP1.jpg", hoverImage: "/assets/images/products/SP1.1.jpg", isNew: true, cate: "Soup" },
+  { id: 6, name: "Caesar Salad", price: 130000, imageUrl: "/assets/images/products/SP1.jpg", hoverImage: "/assets/images/products/SP1.1.jpg", isNew: true, cate: "Salad" },
+  { id: 7, name: "Vegetable Soup", price: 95000, imageUrl: "/assets/images/products/SP1.jpg", hoverImage: "/assets/images/products/SP1.1.jpg", isNew: true, cate: "Soup" },
+  { id: 8, name: "Chicken Soup", price: 150000, imageUrl: "/assets/images/products/SP1.jpg", hoverImage: "/assets/images/products/SP1.1.jpg", isNew: false, cate: "Soup" },
+  { id: 9, name: "Grilled Fish", price: 250000, imageUrl: "/assets/images/products/SP1.jpg", hoverImage: "/assets/images/products/SP1.1.jpg", isNew: false, cate: "Main Course" },
+  { id: 10, name: "Vegetable Stir Fry", price: 180000, imageUrl: "/assets/images/products/SP1.jpg", hoverImage: "/assets/images/products/SP1.1.jpg", isNew: false, cate: "Vegetable" },
+  { id: 11, name: "Seafood Salad", price: 220000, imageUrl: "/assets/images/products/SP1.jpg", hoverImage: "/assets/images/products/SP1.1.jpg", isNew: false, cate: "Salad" },
 ];
 
 const OrderOnlineSection: React.FC = () => {
+  const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const productsPerPage = 4; // Số sản phẩm trên mỗi trang
+
+  // Function to get the products for the current page
+  const getProductsForCurrentPage = () => {
+    const startIndex = currentIndex * productsPerPage;
+    return products.slice(startIndex, startIndex + productsPerPage);
+  };
+
+  // Handle previous and next page navigation
+  const handleNavigation = (direction: "prev" | "next") => {
+    const newIndex =
+      direction === "prev" ? currentIndex - 1 : currentIndex + 1;
+    const maxIndex = Math.ceil(products.length / productsPerPage) - 1;
+    if (newIndex >= 0 && newIndex <= maxIndex) {
+      setCurrentIndex(newIndex);
+    }
+  };
+
   return (
     <section className="bg-bodyBackground w-full text-white py-16">
       <div className="w-mainContainer mx-auto">
-        <img src="/assets/images/home/IconOnline.svg" alt="Icon" className="mx-auto mb-8" />
+        <img
+          src="/assets/images/home/IconOnline.svg"
+          alt="Icon"
+          className="mx-auto mb-8"
+        />
         <div className="text-center mb-12">
-            <h2 className="text-4xl font-extralight font-restora mb-4">Đặt Món Trực Tuyến</h2>
-            <p className="text-secondaryColor text-sm uppercase tracking-widest">
+          <h2 className="text-4xl font-extralight font-restora mb-4">
+            Đặt Món Trực Tuyến
+          </h2>
+          <p className="text-secondaryColor text-sm uppercase tracking-widest">
             Đề xuất của đầu bếp
-            </p>
+          </p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-            {products.map((product) => (
-            <ProductCard key={product.id} {...product} />
+
+        <div className="relative overflow-hidden">
+          <div
+            className="flex h-fit transition-transform duration-500 ease-in-out"
+            style={{
+              transform: `translateX(-${(currentIndex * 100) / productsPerPage}%)`,
+            }}
+          >
+            {getProductsForCurrentPage().map((product) => (
+              <div
+                key={product.id}
+                className="flex-none w-full sm:w-1/2 md:w-1/4 px-4 mb-4"
+              >
+                <ProductCard
+                  name={product.name}
+                  imageUrl={product.imageUrl}
+                  hoverImage={product.hoverImage}
+                  price={product.price}
+                  originalPrice={product.originalPrice}
+                  discount={product.discount}
+                  isNew={product.isNew}
+                  cate={product.cate}
+                />
+              </div>
             ))}
+          </div>
+
+          {/* Nút điều hướng */}
+          <button
+            onClick={() => handleNavigation("prev")}
+            className="absolute left-0 top-1/2 transform -translate-y-1/2 text-secondaryColor p-2 rounded-full"
+            disabled={currentIndex === 0}
+          >
+            <BsArrowLeftCircle size={30} />
+          </button>
+
+          <button
+            onClick={() => handleNavigation("next")}
+            className="absolute right-0 top-1/2 transform -translate-y-1/2 text-secondaryColor p-2 rounded-full"
+            disabled={currentIndex + productsPerPage >= products.length}
+          >
+            <BsArrowRightCircle size={30} />
+          </button>
         </div>
       </div>
     </section>

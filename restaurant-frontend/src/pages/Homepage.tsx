@@ -8,6 +8,7 @@ const Homepage = () => {
         <>
             <Carousel></Carousel>
             <AboutSection></AboutSection>
+            <FeatureSection></FeatureSection>
             <OrderOnlineSection></OrderOnlineSection>
             <BestOffers></BestOffers>
         </>
