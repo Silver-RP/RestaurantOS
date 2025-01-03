@@ -31,7 +31,7 @@ function App() {
           <h2 className="text-xs sm:text-sm md:text-base font-semibold tracking-wider mb-6 text-secondaryColor">
             <GoDotFill className="inline text-lg sm:text-xl mr-2" /> {/* Dot bên trái */}
             BÀN ĂN CỦA BẠN
-            <GoDotFill className="inline text-lg sm:text-xl ml-2" /> {/* Dot bên phải */}
+            <GoDotFill className="inline text-lg sm:text-xl ml-2" />
           </h2>
 
           {/* Nội dung mô tả */}

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import { FiShoppingCart, FiEye, FiHeart } from 'react-icons/fi';
 

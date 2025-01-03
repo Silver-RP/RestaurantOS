@@ -5,15 +5,19 @@ export default {
   content: ['./src/**/*.{html,js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      gridTemplateColumns: {
+        '15': 'repeat(15, minmax(0, 1fr))',
+      },
       colors: {
         facebook: '#1877F2',
         headerBackground: '#021D2A',
         bodyBackground: '#012B40',
         secondaryColor: '#FFDEA0',
         contactBackground: '#021D2A',
+        hr: '#03486B',
       },
       width: {
-        mainContainer: '80%',
+        mainContainer: '98%',
       },
       fontFamily: {
         sans: ['Manrope', ...defaultTheme.fontFamily.sans],

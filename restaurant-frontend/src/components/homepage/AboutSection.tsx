@@ -2,7 +2,7 @@ import React from "react";
 
 const AboutSection = () => {
   return (
-    <section className="bg-bodyBackground w-full text-white py-16 px-6 lg:px-20">
+    <section className="bg-bodyBackground w-full text-white py-16">
       <div className="w-mainContainer mx-auto">
       <img src="/assets/images/home/IconOnline.svg" alt="Icon" className="mx-auto mb-8" />
         <div className="text-center mb-12">
