@@ -3,8 +3,9 @@ import { useMediaQuery } from "react-responsive"; // Import the hook
 import blog from "../../../public/assets/images/Post.jpg";
 import icon from "../../../public/assets/images/News.svg";
 import { GoDotFill } from "react-icons/go";
+import ArticleCard from "./PostComponent";
 
-const NewsSection = () => {
+const Postcomponent = () => {
   const isMobileOrTablet = useMediaQuery({ maxWidth: 1024 }); // Handle mobile and tablet screens
 
   const articles = [
@@ -93,7 +94,7 @@ const NewsSection = () => {
   </div>
 ) : (
   <div className="grid md:grid-cols-3 gap-6">
-    {articles.map((article, index) => (
+    {/* {articles.map((article, index) => (
       <div
         key={index}
         className="rounded-lg overflow-hidden flex flex-col bg-[#012B40] w-[330px] h-[477px] border-none shadow-none"
@@ -114,7 +115,7 @@ const NewsSection = () => {
           <p className="text-sm mb-4 flex-grow text-left text-[10px]">{article.description}</p>
           <div className="mt-auto">
             <button
-              className="text-white flex items-center justify-center px-4 py-2 hover:bg-[#FFDEA0] hover:border-[#FFDEA0] hover:text-black"
+              className="text-white flex items-center justify-center px-4 py-2 hover:bg-[#FFDEA0] hover:border-[#FFDEA0] hover:text-black"  
               style={{
                 backgroundColor: '#012B40',
                 border: '1px solid #FFDEA0',
@@ -128,7 +129,10 @@ const NewsSection = () => {
           </div>
         </div>
       </div>
-    ))}
+    ))} */}
+    {articles.map((article, index) => (
+          <ArticleCard key={index} article={article} />
+        ))}
   </div>
 )}
 
@@ -136,4 +140,4 @@ const NewsSection = () => {
   );
 };
 
-export default NewsSection;
+export default Postcomponent;
