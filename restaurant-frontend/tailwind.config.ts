@@ -15,8 +15,8 @@ export default {
         mainContainer: '80%',
       },
       fontFamily: {
-        sans: ['Manrope', ...defaultTheme.fontFamily.sans],
-        restora: ['Restora', ...defaultTheme.fontFamily.serif],
+        sans: ['Manrope'],
+        restora: ['Restora'],
       },
       animation: {
         'fade-down': 'fadeDown 1s ease-out',

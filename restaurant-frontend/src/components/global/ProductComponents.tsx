@@ -28,12 +28,12 @@ const ProductCard = ({ ...rest }: Props) => {
         {/* Badges */}
         <div className="absolute top-2 left-0 flex flex-col gap-1">
           {rest.discount && (
-            <span className="bg-secondaryColor text-[#002B40] text-xs font-bold px-4 py-1 mt-1 w-fit">
+            <span className="bg-secondaryColor text-[#002B40] text-xs font-semibold px-4 py-1 mt-1 w-fit">
               {rest.discount}
             </span>
           )}
           {rest.isNew && (
-            <span className="bg-secondaryColor text-[#002B40] text-xs font-bold px-4 py-1 mt-1 w-fit">
+            <span className="bg-secondaryColor text-[#002B40] text-xs font-semibold px-4 py-1 mt-1 w-fit">
               NEW
             </span>
           )}
