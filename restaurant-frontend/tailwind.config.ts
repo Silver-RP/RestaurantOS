@@ -13,7 +13,7 @@ export default {
         contactBackground: '#021D2A',
       },
       width: {
-        mainContainer: '80%',
+        mainContainer: '90%',
       },
       fontFamily: {
         sans: ['Manrope', ...defaultTheme.fontFamily.sans],
