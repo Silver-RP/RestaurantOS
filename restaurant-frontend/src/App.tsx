@@ -45,18 +45,23 @@ const AppLayout = () => {
       <div className={`flex-1 ${!hideSidebarFooter ? "xl:ml-72" : ""}`}>
         <AppRoutes />
         {!hideSidebarFooter && <Footer />}
+
+        <Table />
+        <Contact />
+        <Post />
       </div>
     </div>
-    
+
+
   );
 };
 
 const App = () => {
   return (
     <Router>
-      <AppLayout /> 
+      <AppLayout />
     </Router>
-    
+
   );
 };
 
