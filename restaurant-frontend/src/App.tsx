@@ -3,9 +3,6 @@ import { BrowserRouter as Router, useLocation } from "react-router-dom";
 import AppRoutes from "./routers";
 import Sidebar from "./components/sidebar/Sidebar";
 import Footer from "./components/footer/Footer";
-import Table from "./components/table/Table";
-import Contact from "./components/contact/Contact";
-import Post from "./components/post/Post";
 
 
 const AppLayout = () => {

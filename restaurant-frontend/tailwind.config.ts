@@ -17,7 +17,8 @@ export default {
         hr: '#03486B',
       },
       width: {
-        mainContainer: '98%',
+        mainContainer: '80%',
+        container95: '95%',
       },
       fontFamily: {
         sans: ['Manrope', ...defaultTheme.fontFamily.sans],
