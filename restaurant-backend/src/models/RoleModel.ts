@@ -10,7 +10,7 @@ interface IRoles extends Document{
 const RoleSchema = new mongoose.Schema({
   name: { type: String, require: true },
   decription: { type: String},
-  permission: [{ type: String, ref: Permissions }],
+  permission: [{ type: mongoose.Schema.Types.ObjectId, ref: Permissions }],
 });
 
 const Roles = mongoose.model<IRoles>("roles", RoleSchema);

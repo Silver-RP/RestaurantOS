@@ -1,9 +1,14 @@
 import {Router} from "express";
 import RoleController from "../controller/RoleController";
+import AuthMiddleWare from "../middleware/AuthMiddleWare";
 
 const router = Router();
 
-router.post('/addrole', RoleController.AddRole);
+router.post('/addrole', 
+    AuthMiddleWare.verifyToken,   
+    AuthMiddleWare.verifyRole(["superadmin"]),  
+    RoleController.AddRole 
+);
 
 router.get('/getrolebyid/:id', RoleController.GetRoleById);
 

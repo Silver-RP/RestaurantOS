@@ -7,6 +7,8 @@ import { GoogleAuthExceptionMessages } from 'google-auth-library/build/src/auth/
 import axios from 'axios';
 import { log } from 'console';
 import crypto from "crypto";
+import nodemailer from "nodemailer";
+
 import sendOtpToPhoneNumber from "../utils/smsService"; 
 dotenv.config();
 interface Register {
@@ -15,8 +17,7 @@ interface Register {
   password: string;
   confirmPassword: string;
   phone: string;
-  isAdmin?: boolean;
-  isCashier?: boolean;
+  roles?: string;
 }
 interface Login {
   email: string;
@@ -32,7 +33,7 @@ interface GoogleUser {
 
 class AuthService {
   // test bằng gg => OK, và ko test được postman bởi vì postman ko có các chức của trình duyệt OAuth 2.0
-  // 
+  // Method handle google callback
   async handleGoogleCallBack(code: string): Promise<any> {
     try {
       const clientId = process.env.GG_CLIENT_ID || '';
@@ -94,9 +95,8 @@ class AuthService {
         email,
         password,
         confirmPassword,
-        phone,
-        isAdmin,
-        isCashier,
+        phone, 
+        roles
       } = userData;
       const existingUser = await User.findOne({
         $or: [{ email }, { userName }],
@@ -110,14 +110,16 @@ class AuthService {
         throw new Error('User or email already exists');
       }
       const hashedPassword = await bcrypt.hash(password, 10);
-
+      let userRole = "user"; 
+      if(roles && roles === "superadmin"){
+        userRole = "superadmin";
+      }
       const newUser = new User({
         userName,
         email,
         password: hashedPassword,
         phone,
-        isAdmin: isAdmin || false,
-        isCashier: isCashier || false,
+        roles: userRole,
       });
       await newUser.save();
       return newUser;
@@ -142,16 +144,17 @@ class AuthService {
       }
 
       const token = accessToken(
-        { id: user._id },
+        { id: user._id, role: user.roles},
         process.env.ACCESS_TOKEN || '',
         '20s',
       );
-      const refresh_token = refreshToken({id: user._id}, process.env.REFRESH_TOKEN || '', "365d"); 
+      const refresh_token = refreshToken({id: user._id, role: user.roles}, process.env.REFRESH_TOKEN || '', "365d"); 
       return { token, user, refresh_token };
     } catch (error: any) {
         throw new Error(error.message);
     }
   }
+  // Method refresh token
   async refreshAccessToken(refreshTokenFromClient: string){
     try {
       if(!refreshTokenFromClient){
@@ -169,6 +172,7 @@ class AuthService {
         throw new Error(error.message);
     }
   }
+  // Method login with google
   async googleLogin(googleUser: GoogleUser) {
     try {
       const { email, googleId, userName, avatar } = googleUser;
@@ -206,6 +210,8 @@ class AuthService {
       throw new Error('Error during Google login: ' + error.message);
     }
   }
+
+  // Method login with facebook
   async loginFaceBook(profile: any){
     let user = await User.findOne({facebookId: profile.id}); 
 
@@ -224,9 +230,10 @@ class AuthService {
     const token = jwt.sign({id: user._id, name: user.userName, email: user.email}, process.env.ACCESS_TOKEN || " ", {expiresIn: '2h'});
     return {token, user};
   }
+  // Method handle facebook callback
   async handleFacebookCallBack(code: string): Promise<any> {
      try {
-      const response = await axios.post(`https://graph.facebook.com/v12.0/oauth/access_token`,null, {
+      const response = await axios.post(`https://graph.facebook.com/v21.0/oauth/access_token`, {
         params: {
           code: code, 
           client_id: process.env.FB_CLIENT_ID, 
@@ -237,7 +244,7 @@ class AuthService {
       console.log(response.data);
       
       const accessToken = response.data.access_token;
-      const userResponse = await axios.get(`https://graph.facebook.com/v12.0/me`, {
+      const userResponse = await axios.get(`https://graph.facebook.com/v21.0/me`, {
         params: {
           fields: "id,name,email,picture",
           access_token: accessToken,
@@ -274,6 +281,45 @@ class AuthService {
      }
 
   }
+  // Method facebook login
+  async facebookLogin(accessToken: string){
+    try {
+      const response = await axios.get(`https://graph.facebook.com/v12.0/me`, {
+        params: {
+          fields: "id,name,email,picture",
+          access_token: accessToken,
+        }
+      })
+      const facebookUser = response.data;
+      console.log(facebookUser); 
+      let user = await User.findOne({email: facebookUser.email});
+      if(!user){
+        user = new User({
+          email: facebookUser.email, 
+          userName: facebookUser.name, 
+          avatar: facebookUser.picture.data.url,
+          facebookId: facebookUser.id,
+          isAdmin: false,
+          isCashier: false,
+        })
+        await user.save(); 
+      }
+      const token = jwt.sign({id: user._id, name: user.userName, email: user.email}, process.env.ACCESS_TOKEN || " ", {expiresIn: '2h'});
+      return {
+        message: 'Login successful',
+        token: token,
+        user: {
+            id: user.id,
+            email: user.email,
+            name: user.userName,
+        }
+    };
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
+
+  // Method logout 
   async logout (refreshToken: string){
     try {
       const decode: any = jwt.verify(refreshToken, process.env.REFRESH_TOKEN || ''); 
@@ -287,6 +333,8 @@ class AuthService {
     }
     
   }
+
+  // Method send OTP
   async sendOtp(phone: string){
     try {
       let user = await User.findOne({phone});
@@ -308,6 +356,7 @@ class AuthService {
       
     }
   }
+  // Method verify OTP
   async verifyOtp(phone: string, otp: string){
     const user = await User.findOne({phone}); 
     if(!user){
@@ -324,6 +373,7 @@ class AuthService {
     }
     return {message: "OTP verified successfully"};
   }
+  // Method reset password
   async resetPassword(phone: string, newPassword: string, confirmPassword: string){
     const user = await User.findOne({phone}); 
     if(!user){
@@ -335,6 +385,47 @@ class AuthService {
     user.otpExpiry = null;
     await user.save();
     return {message: "Password reset successfully"};
+  }
+  async sendOtpEmail(email: string): Promise<void>{
+    const otp = crypto.randomInt(100000, 999999).toString();
+    const expireAt = new Date(Date.now() + 5 * 60 * 1000); 
+
+    // Lưu OTP vào db 
+    await User.create({email, otp, otpExpiry: expireAt});
+    // Gửi OTP qua email
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth:
+      {
+        user: process.env.EMAIL,
+        pass: process.env.PASSWORD,
+      }
+    });
+    const mailOptions = {
+      from: process.env.EMAIL,
+      to: email,
+      subject: "OTP for password reset",
+      text: `Your OTP is ${otp}. It will expire in 5 minutes`,
+    };
+    await transporter.sendMail(mailOptions);
+
+  }
+  async verifyOtpEmail(email: string, otp: string): Promise<void>{
+    const otpRecord  = await User.findOne({email, otp, isVerifiend: false});
+    if(!otpRecord){
+      throw new Error("Invalid OTP");
+    }
+    if (!otpRecord.exprireAt) {
+      console.error("exprireAt is missing or invalid");
+      throw new Error("OTP expiry time is not set");
+  }
+  
+    if(otpRecord.exprireAt < new Date()){
+      throw new Error("OTP expired");
+    }
+    otpRecord.isVerified = true;
+    await otpRecord.save();
+
 }
 }
 export default new AuthService();

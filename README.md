@@ -62,13 +62,6 @@ https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=eyJhbGciOiJSUzI1NiIsImtp
   state={STATE_PARAM}
 => dùng để xác thực và cấp quyền cho ứng dụng để có thể truy cập vào 
 Chỉ cần copy link đây gửi lên gg 
-https://www.facebook.com/v13.0/dialog/oauth?
-client_id=1123946355863940&
-redirect_uri=http://localhost:3003/api/auth/facebook/callback&
-response_type=code&
-scope=public_profile&
-state=random_generated_string
-
 
 https://www.facebook.com/v12.0/dialog/oauth?
 client_id=1123946355863940&
@@ -77,6 +70,12 @@ response_type=code&
 scope=public_profile,email&
 state=random_generated_string
 
+https://www.facebook.com/v21.0/dialog/oauth?
+client_id=1123946355863940&
+redirect_uri=http://localhost:3003/api/auth/facebook/callback&
+response_type=code&
+scope=public_profile,email&
+state=random_generated_string
 
 https://developers.facebook.com/apps/1123946355863940/settings/basic/
    -->

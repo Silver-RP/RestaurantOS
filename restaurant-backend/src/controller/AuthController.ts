@@ -1,12 +1,11 @@
 import { Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
-import User from "../models/userModel";
 import { accessToken, refreshToken } from '../services/generateToken';
 import AuthService from "../services/AuthService";
 import GoogleAuthMiddleWare from "../middleware/GoogleAuthMiddleWare";
 class AuthController {
 
-  // Register a new user
+  // Method to register a new user
   async register(req: Request, res: Response):Promise<any>{
     try {
       // Gọi AuthService để xử lý đăng ký
@@ -40,7 +39,7 @@ class AuthController {
     }
   }
 
-  // Login a user
+  // Method to login a user
   async login(req: Request, res: Response):Promise<any>{
     try {
       const { email, password } = req.body;
@@ -83,7 +82,7 @@ class AuthController {
       res.status(400).json({ message: error.message });
     }
   }
-  // Làm mới Access Token 
+  // Method to refresh access token
   async refreshAccessToken (req: Request, res: Response): Promise<any> {
     try {
       const {refreshToken} = req.cookies; 
@@ -130,7 +129,7 @@ class AuthController {
       return res.status(400).json({ message: "Error during Google login", error: error.message });
     }
   }
-  
+  // Method to handle Google callback
   async googleCallback(req: Request, res: Response, next: NextFunction): Promise<any> {
     try {
       const { code } = req.query; 
@@ -148,24 +147,27 @@ class AuthController {
     }
     
   }
-  async loginFacebook(req: Request, res: Response): Promise<any> {
-    // try {
-    //   const { access_token } = req.body; 
-    //   const profile = req.body.profile;
-    //   const { user, token } = await AuthService.loginFaceBook();
-    //   res.status(200).json({
-    //     message: "Facebook login successful",
-    //     user,
-    //     accessToken: token,
-    //   });
-    // } catch (error: any) {
-    //   res.status(400).json({message: error
-      
-    // }
+  // Method to handle Facebook login
+  async facebookLogin(req: Request, res: Response): Promise<any> {
+    try {
+      const { accessToken } = req.body; 
+      if(!accessToken){
+        return res.status(400).json({message: "No access token provided"}); 
+      }
+      const result = await AuthService.facebookLogin(accessToken); 
+      res.status(200).json({
+        message: "Facebook login successful",
+        token: result.token, 
+        user: result.user
+      })
+    } catch (error: any) {
+      res.status(400).json({message: error.message});
+    }
   }
+  // Method to handle Facebook callback
   async facebookCallback(req: Request, res: Response): Promise<any> {
     try {
-      const { code} = req.query; 
+      const { code } = req.query; 
       if(!code){
         return res.status(400).json({message: "No code provided"}); 
 
@@ -180,7 +182,7 @@ class AuthController {
       res.status(400).json({message: error.message});
     }
   } 
-
+  // Method to logout a user
   async Logout (req: Request, res: Response): Promise <any> {
     try {
       const {refreshToken} = req.cookies;
@@ -201,7 +203,7 @@ class AuthController {
       res.status(400).json({message: error.message});
     }
   }
- 
+ // Method to send OTP
   async sendOtpController(req: Request, res: Response): Promise<any> {
     const { phone } = req.body; 
     if(!phone){
@@ -216,6 +218,7 @@ class AuthController {
       res.status(400).json({message: error.message});
     }
 }
+  // Method to verify OTP
   async verifyOtpController(req: Request, res: Response): Promise<any> {
     const { phone, otp } = req.body;
     if(!phone || !otp){
@@ -228,6 +231,7 @@ class AuthController {
       res.status(400).json({message: error.message});
     }
   }
+  // Method to reset password
  async resetPassword(req: Request, res: Response): Promise<any> {
    const { phone, newPassword, confirmPassword} = req.body; 
    if(!phone || !newPassword || !confirmPassword){
@@ -243,7 +247,47 @@ class AuthController {
       res.status(400).json({message: error.message});
     }
   }
+  // Method to send OTP via email
+  // Route gửi OTP
+async sendOtpEmail(req: Request, res: Response): Promise<any> {
+  try {
+    const { email } = req.body; 
 
+    // Kiểm tra định dạng email
+    const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
+    const isCheckEmail = reg.test(email);
+    if (!isCheckEmail) {
+      return res.status(400).json({ message: "Invalid email format" });
+    }
+
+    // Gửi OTP qua email
+    await AuthService.sendOtpEmail(email);
+
+    return res.status(200).json({ message: "OTP sent successfully" });
+
+  } catch (error: any) {
+    return res.status(400).json({ message: error.message });
+  }
+}
+
+// Route xác nhận OTP
+async verifyOtpEmail(req: Request, res: Response): Promise<any> {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({ message: "Email and OTP are required" });
+    }
+
+    // Xác nhận OTP
+    const response = await AuthService.verifyOtpEmail(email, otp);
+    
+    return res.status(200).json({ message: response });
+
+  } catch (error: any) {
+    return res.status(400).json({ message: error.message });
+  }
+}
 }
 
 export default new AuthController();

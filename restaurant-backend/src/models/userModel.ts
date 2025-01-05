@@ -7,18 +7,20 @@ export interface IUser extends Document {
     avatar?: string | null;
     phone: string | null;
     Active_code?: number | null;
-    isAdmin: boolean;
-    isCashier: boolean;
     googleId?: string | null;
     facebookId?: string | null;
     otp?: string | null;
     otpExpiry?: Date | null;
+    roles: string; 
+    isEmailVerifided: boolean; 
+    exprireAt: Date; 
+    isVerified: boolean;
 }
 
 const userSchema = new mongoose.Schema({
     userName: {
         type: String, 
-        required: true, 
+        required: false, 
         unique: true,
         trim: true, 
     }, 
@@ -30,7 +32,7 @@ const userSchema = new mongoose.Schema({
     }, 
     password: {
         type: String,
-        required: true, 
+        required: false, 
     },
     birthday: {
         type: Date, 
@@ -42,7 +44,7 @@ const userSchema = new mongoose.Schema({
     },
     phone: {
         type: String, 
-        required: true, 
+        required: false, 
         unique: true, 
     },
     Active_code: {
@@ -56,16 +58,6 @@ const userSchema = new mongoose.Schema({
     otpExpiry: {
         type: Date, 
         required: false, 
-    }, 
-    isAdmin: {
-        type: Boolean, 
-        required: true, 
-        default: false, 
-    },
-    isCashier: {
-        type: Boolean, 
-        required: true, 
-        default: false, 
     },
     googleId: {
         type: String, 
@@ -74,11 +66,28 @@ const userSchema = new mongoose.Schema({
     facebookId:{
         type: String, 
         required: false, 
+    }, 
+    roles: {
+        type: String,
+        required: false, 
+        ref: "Role", 
+    }, 
+    isEmailVerifided: {
+        type: Boolean, 
+        required: false, 
+        default: false, 
+    }, 
+    exprireAt: {
+        type: Date,
+        required: false, 
+    }, 
+    isVerified: {
+        type: Boolean, 
+        required: false,
     }
 },{
     timestamps: true
 
 })
-console.log(typeof userSchema); 
 const User = mongoose.model("User", userSchema);
 export default User;
