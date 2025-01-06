@@ -3,6 +3,8 @@ import { BrowserRouter as Router, useLocation } from "react-router-dom";
 import AppRoutes from "./routers";
 import Sidebar from "./components/sidebar/Sidebar";
 import Footer from "./components/footer/Footer";
+import { Table } from "antd";
+import Contact from "./components/contact/Contact";
 
 
 const AppLayout = () => {
@@ -48,7 +50,7 @@ const AppLayout = () => {
 
         <Table />
         <Contact />
-        <Post />
+        {/* <Post /> */}
       </div>
     </div>
 
