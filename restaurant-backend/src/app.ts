@@ -8,10 +8,12 @@ import ReservationContactRoutes from "./routes/ReservationContactRoutes";
 import ReservationDetailContactRoutes from "./routes/ReservationDetailContactRoutes";
 import ProfileRoutes from "./routes/ProfileRoutes";
 import SearchRoutes from "./routes/SearchRoutes";
+import StaffRoutes from "./routes/StaffRoutes";
 import dotenv from 'dotenv';
 import connectDB from './config/db';
 import cookieParser from "cookie-parser"; 
 import passport from "passport"; 
+import StaffController from './controller/StaffController';
 // import './insertData'; 
 dotenv.config();
 connectDB();
@@ -33,6 +35,7 @@ app.use("/api/category", CateRoutes);
 app.use("/api/reservationcontact", ReservationContactRoutes);
 app.use("/api/reservationdetailcontact", ReservationDetailContactRoutes);
 app.use("/api/search", SearchRoutes);
+app.use("/api/staff", StaffRoutes);
 
 app.use('/api', HealthCheckRoutes);
 
