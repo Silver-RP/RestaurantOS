@@ -5,6 +5,10 @@ export default {
   content: ['./src/**/*.{html,js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      screens: {
+        xs: '500px',
+        ...defaultTheme.screens,
+      },
       gridTemplateColumns: {
         '15': 'repeat(15, minmax(0, 1fr))',
       },
@@ -13,7 +17,6 @@ export default {
         headerBackground: '#021D2A',
         bodyBackground: '#012B40',
         secondaryColor: '#FFDEA0',
-        contactBackground: '#021D2A',
         hr: '#03486B',
       },
       width: {

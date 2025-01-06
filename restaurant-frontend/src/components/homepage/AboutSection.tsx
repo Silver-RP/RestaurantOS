@@ -1,4 +1,5 @@
 import React from "react";
+import { FaDiamond } from "react-icons/fa6";
 
 const AboutSection = () => {
   return (
@@ -6,13 +7,15 @@ const AboutSection = () => {
       <div className="w-mainContainer mx-auto">
       <img src="/assets/images/home/IconOnline.svg" alt="Icon" className="mx-auto mb-8" />
         <div className="text-center mb-12">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-restora font-extralight mb-4">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-restora font-thin mb-4">
             Về Chúng Tôi
           </h2>
-          <p className="text-secondaryColor font-sans font-extralight text-xs sm:text-sm uppercase tracking-widest">
-            Restaurant & Bar
-       
-          </p>
+          <h2 className="text-xs sm:text-sm md:text-base flex justify-center items-center  font-sans font-extralight uppercase tracking-widest mb-6 text-secondaryColor">
+                     <FaDiamond className="inline mr-2" style={{ fontSize: "7px" }} /> 
+                     Restaurant & Bar
+                     <FaDiamond className="inline ml-2" style={{ fontSize: "7px" }} />
+                   </h2>
+         
           <p className="mt-4 text-gray-300 max-w-xl md:max-w-2xl mx-auto text-sm sm:text-base">
             Nhà hàng của chúng tôi mang đến trải nghiệm ẩm thực phong cách châu
             Âu đầy tinh tế và thú vị, lấy cảm hứng từ Bếp trưởng Chris Hill.
