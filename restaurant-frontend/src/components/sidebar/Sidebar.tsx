@@ -33,7 +33,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
 
         <div className="p-6">
           <img
-            src="./public/assets/images/logo.png"
+            src="assets/images/logo.png"
             alt="Logo"
             className="w-64 h-auto mx-auto"
           />
