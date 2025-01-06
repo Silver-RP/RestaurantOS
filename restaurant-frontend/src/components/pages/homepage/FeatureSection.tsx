@@ -10,7 +10,7 @@ interface FeatureItemProps {
 const FeatureItem: React.FC<FeatureItemProps> = ({
   title,
   subtitle,
-  buttonText = "DISCOVER MENU",
+  buttonText = "KHÁM PHÁ",
   backgroundImage,
 }) => {
   return (
@@ -43,18 +43,18 @@ const FeatureItem: React.FC<FeatureItemProps> = ({
 const FeatureSection: React.FC = () => {
   const features = [
     {
-      title: "Have a Drink",
-      subtitle: "Wine List",
+      title: "Thưởng thức đồ uống",
+      subtitle: "Bộ sưu tập rượu vang",
       backgroundImage: "/assets/images/home/discover1.jpg",
     },
     {
-      title: "Our Chef’s Secrets",
-      subtitle: "Recipes",
+      title: "Tinh hoa ẩm thực từ đầu bếp",
+      subtitle: "Công thức đặc biệt",
       backgroundImage: "/assets/images/home/discover2.jpg",
     },
     {
-      title: "New Tasting Menus",
-      subtitle: "Recommendations",
+      title: "Thực đơn trải nghiệm mới",
+      subtitle: "Món ăn đề xuất",
       backgroundImage: "/assets/images/home/discover3.jpg",
     },
   ];

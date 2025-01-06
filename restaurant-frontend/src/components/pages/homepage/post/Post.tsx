@@ -1,12 +1,10 @@
 import React from "react";
-import { useMediaQuery } from "react-responsive"; // Import the hook
-import blog from "../../../public/assets/images/Post.jpg";
-import icon from "../../../public/assets/images/News.svg";
+import { useMediaQuery } from "react-responsive"; 
 import { GoDotFill } from "react-icons/go";
-import ArticleCard from "./PostComponent";
+import ArticleCard from "./PostComponent"; 
 
 const Postcomponent = () => {
-  const isMobileOrTablet = useMediaQuery({ maxWidth: 1024 }); // Handle mobile and tablet screens
+  const isMobileOrTablet = useMediaQuery({ maxWidth: 1024 });
 
   const articles = [
     {
@@ -15,7 +13,7 @@ const Postcomponent = () => {
       category: "Thực phẩm lành mạnh, tin tức",
       description:
         "Hãy giữ vị trí và thể hiện phong cách của bạn. Với các công thức nấu ăn, không gì có thể thỏa mãn hơn. Chúng tôi khuyến khích sức khỏe và hương vị đặc biệt.",
-      image: blog,
+      image: "/assets/images/Post.jpg",
     },
     {
       date: "18 MAY 2022",
@@ -23,7 +21,7 @@ const Postcomponent = () => {
       category: "Thực phẩm lành mạnh, tin tức",
       description:
         "Mở rộng vị giác, khám phá phong cách hiện đại từ nhà hàng của chúng tôi. Mỗi hương vị đều chứa đựng sự sáng tạo độc đáo từ đầu bếp của chúng tôi.",
-      image: blog,
+      image: "/assets/images/Post.jpg",
     },
     {
       date: "18 FEB 2022",
@@ -31,7 +29,7 @@ const Postcomponent = () => {
       category: "Thực phẩm lành mạnh, tin tức",
       description:
         "Tạo ra những khoảnh khắc tuyệt vời trong ẩm thực. Những món ăn từ nguyên liệu tự nhiên không chỉ tốt cho sức khỏe mà còn đầy thú vị.",
-      image: blog,
+      image: "/assets/images/Post.jpg",
     },
   ];
 
@@ -39,7 +37,7 @@ const Postcomponent = () => {
     <div className="bg-[#012B40] text-white p-10 h-auto flex flex-col justify-center items-center">
       <div className="text-center mb-10">
         <img
-          src={icon}
+          src="/assets/images/News.svg"
           alt="News Icon"
           className="mx-auto mb-4 w-12 h-12"
         />
@@ -94,42 +92,6 @@ const Postcomponent = () => {
   </div>
 ) : (
   <div className="grid md:grid-cols-3 gap-6">
-    {/* {articles.map((article, index) => (
-      <div
-        key={index}
-        className="rounded-lg overflow-hidden flex flex-col bg-[#012B40] w-[330px] h-[477px] border-none shadow-none"
-      >
-        <div className="relative w-[330px] h-[200px]">
-          <img
-            src={article.image}
-            alt={article.title}
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute left-0 bg-[#FFDEA0] text-black text-xs font-bold flex items-center justify-center top-2 w-[100px] h-[25px]">
-            {article.date}
-          </div>
-        </div>
-        <div className="p-4 flex-grow flex flex-col mt-4 h-[277px]">
-          <h3 className="text-lg font-bold mb-2 text-left text-16">{article.title}</h3>
-          <p className="text-sm text-[#FFDEA0] mb-4 text-left text-[10px]">{article.category}</p>
-          <p className="text-sm mb-4 flex-grow text-left text-[10px]">{article.description}</p>
-          <div className="mt-auto">
-            <button
-              className="text-white flex items-center justify-center px-4 py-2 hover:bg-[#FFDEA0] hover:border-[#FFDEA0] hover:text-black"  
-              style={{
-                backgroundColor: '#012B40',
-                border: '1px solid #FFDEA0',
-                width: '108px',
-                height: '34px',
-                borderRadius: '0px',
-              }}
-            >
-              Đọc thêm
-            </button>
-          </div>
-        </div>
-      </div>
-    ))} */}
     {articles.map((article, index) => (
           <ArticleCard key={index} article={article} />
         ))}

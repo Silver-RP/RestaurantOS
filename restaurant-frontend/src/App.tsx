@@ -1,10 +1,8 @@
 import React from "react";
 import { BrowserRouter as Router, useLocation } from "react-router-dom";
 import AppRoutes from "./routers";
-import Sidebar from "./components/sidebar/Sidebar";
-import Footer from "./components/footer/Footer";
-import { Table } from "antd";
-import Contact from "./components/contact/Contact";
+import Footer from "./components/layout/footer/Footer";
+import Sidebar from "./components/layout/sidebar/Sidebar";
 
 
 const AppLayout = () => {
@@ -47,10 +45,6 @@ const AppLayout = () => {
       <div className={`flex-1 ${!hideSidebarFooter ? "xl:ml-72" : ""}`}>
         <AppRoutes />
         {!hideSidebarFooter && <Footer />}
-
-        <Table />
-        <Contact />
-        {/* <Post /> */}
       </div>
     </div>
 
