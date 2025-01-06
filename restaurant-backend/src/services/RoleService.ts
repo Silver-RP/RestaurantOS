@@ -1,6 +1,6 @@
 import  RoleModel from "../models/RoleModel";
 import { Request, Response, NextFunction } from 'express';
-import UserModel from "../models/userModel";
+import UserModel from "../models/UserModel";
 
 class RoleService {
   async GetAllRole(req: Request, res: Response): Promise<any> {

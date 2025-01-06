@@ -1,5 +1,5 @@
 import express from 'express';
-import healthCheckRoutes from './routes/healthcheck';
+import HealthCheckRoutes from './routes/HealthCheck';
 import AuthRoutes from './routes/AuthRoutes';
 import UserRoutes from "./routes/UserRoutes"; 
 import RoleRoutes from "./routes/RoleRouter";
@@ -7,10 +7,12 @@ import CateRoutes from "./routes/CategoryRoutes";
 import ReservationContactRoutes from "./routes/ReservationContactRoutes";
 import ReservationDetailContactRoutes from "./routes/ReservationDetailContactRoutes";
 import ProfileRoutes from "./routes/ProfileRoutes";
+import SearchRoutes from "./routes/SearchRoutes";
 import dotenv from 'dotenv';
 import connectDB from './config/db';
 import cookieParser from "cookie-parser"; 
 import passport from "passport"; 
+// import './insertData'; 
 dotenv.config();
 connectDB();
 
@@ -30,10 +32,14 @@ app.use("/api/role", RoleRoutes);
 app.use("/api/category", CateRoutes);
 app.use("/api/reservationcontact", ReservationContactRoutes);
 app.use("/api/reservationdetailcontact", ReservationDetailContactRoutes);
-app.use('/api', healthCheckRoutes);
+app.use("/api/search", SearchRoutes);
+
+app.use('/api', HealthCheckRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
+  console.log('Mongo URI:', process.env.MONGO_URI); 
 });
+
 

@@ -1,4 +1,6 @@
 import mongoose, { Schema, Document , Model } from "mongoose"; 
+import mongoosePaginate from 'mongoose-paginate-v2';
+
 export interface IUser extends Document {
     userName: string;
     email: string;
@@ -12,8 +14,11 @@ export interface IUser extends Document {
     otp?: string | null;
     otpExpiry?: Date | null;
     roles: string; 
+    gender?: string | null;
+    status?: string | null;
+    default_address_id?: string | null;
     isEmailVerifided: boolean; 
-    exprireAt: Date; 
+    expireAt: Date; 
     isVerified: boolean;
 }
 
@@ -21,7 +26,6 @@ const userSchema = new mongoose.Schema({
     userName: {
         type: String, 
         required: false, 
-        unique: true,
         trim: true, 
     }, 
     email: {
@@ -67,11 +71,23 @@ const userSchema = new mongoose.Schema({
         type: String, 
         required: false, 
     }, 
-    roles: {
-        type: String,
+    roles: [{ 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'Roles' 
+      }], 
+    gender: {
+        type: String, 
         required: false, 
-        ref: "Role", 
-    }, 
+    },
+    status: {
+        type: String, 
+        required: false, 
+    },
+    default_address_id: {
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'Address', 
+        required: false
+    },
     isEmailVerifided: {
         type: Boolean, 
         required: false, 
@@ -89,5 +105,10 @@ const userSchema = new mongoose.Schema({
     timestamps: true
 
 })
-const User = mongoose.model("User", userSchema);
+
+userSchema.plugin(mongoosePaginate);
+
+export type UserModel = mongoose.PaginateModel<IUser>;
+
+const User = mongoose.model<IUser, UserModel>("User", userSchema);
 export default User;

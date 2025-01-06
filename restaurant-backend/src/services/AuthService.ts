@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import { accessToken, refreshToken } from '../services/generateToken';
-import User from '../models/userModel';
+import User from '../models/UserModel';
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
 import { GoogleAuthExceptionMessages } from 'google-auth-library/build/src/auth/googleauth';
@@ -415,12 +415,12 @@ class AuthService {
     if(!otpRecord){
       throw new Error("Invalid OTP");
     }
-    if (!otpRecord.exprireAt) {
+    if (!otpRecord.expireAt) {
       console.error("exprireAt is missing or invalid");
       throw new Error("OTP expiry time is not set");
   }
   
-    if(otpRecord.exprireAt < new Date()){
+    if(otpRecord.expireAt < new Date()){
       throw new Error("OTP expired");
     }
     otpRecord.isVerified = true;

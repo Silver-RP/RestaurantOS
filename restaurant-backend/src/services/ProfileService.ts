@@ -1,4 +1,4 @@
-import User from "../models/userModel";
+import User from "../models/UserModel";
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 class ProfileService {

@@ -8,10 +8,10 @@ interface IRoles extends Document{
 }
 
 const RoleSchema = new mongoose.Schema({
-  name: { type: String, require: true },
+  name: { type: String, require: true, unique: true },
   decription: { type: String},
   permission: [{ type: mongoose.Schema.Types.ObjectId, ref: Permissions }],
 });
 
-const Roles = mongoose.model<IRoles>("roles", RoleSchema);
+const Roles = mongoose.model<IRoles>("Roles", RoleSchema);
 export default Roles;  

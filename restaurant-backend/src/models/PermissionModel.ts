@@ -1,17 +1,15 @@
-import mongoose from 'mongoose';
+import mongoose, { Document } from 'mongoose';
 
 interface IPermission extends Document {
-  name: string;
+  permission_name: string;
   description: string | null;
 }
 
 const PermissionSchema = new mongoose.Schema({
-  name: { type: String, require: true, unique: true },
-  decription: { type: String },
+  permission_name: { type: String, required: true, unique: true },
+  description: { type: String }, 
 });
 
-const Permissions = mongoose.model<IPermission>(
-  'permissions',
-  PermissionSchema,
-);
+const Permissions = mongoose.model<IPermission>('permissions', PermissionSchema);
+
 export default Permissions;
