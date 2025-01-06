@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { Request, Response } from "express";
+=======
+import {Request, Response} from "express";
+>>>>>>> af5e173debbd842acaca1025f52e8604d4c90af2
 import RoleService from "../services/RoleService";
 
 class RoleController {
