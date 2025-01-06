@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { BsArrowLeftCircle, BsArrowRightCircle } from "react-icons/bs";
-import ProductCard from "../global/ProductComponents";
+import ProductCard from "../../common/ProductComponents";
+import { FaDiamond } from "react-icons/fa6";
 
 interface Product {
   id: number;
@@ -74,12 +75,14 @@ const OrderOnlineSection: React.FC = () => {
           className="mx-auto mb-8"
         />
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-extralight font-restora mb-4">
-            Đặt Món Trực Tuyến
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-restora font-thin mb-4">
+              Đặt Món Trực Tuyến
           </h2>
-          <p className="text-secondaryColor text-sm uppercase tracking-widest">
-            Đề xuất của đầu bếp
-          </p>
+          <h2 className="text-xs sm:text-sm md:text-base flex justify-center items-center  font-sans font-extralight uppercase tracking-widest mb-6 text-secondaryColor">
+            <FaDiamond className="inline mr-2" style={{ fontSize: "7px" }} /> 
+            Đề xuất của chúng tôi
+            <FaDiamond className="inline ml-2" style={{ fontSize: "7px" }} />
+          </h2>
         </div>
 
         <div className="relative">

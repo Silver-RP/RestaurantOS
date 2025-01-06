@@ -1,11 +1,12 @@
 import React from 'react';
-import Carousel from '../components/carousel/Carousel';
-import AboutSection from '../components/homepage/AboutSection';
-import ContactCard from '../components/contact/Contact';
-import ReservationSection from '../components/homepage/ReservationSection';
-import FeatureSection from '../components/homepage/FeatureSection';
-import OrderOnlineSection from '../components/homepage/OrderOnline';
-import BestOffersSection from '../components/homepage/BestOffers/BestOffersSection';
+import Carousel from '../components/pages/homepage/carousel/Carousel';
+import AboutSection from '../components/pages/homepage/AboutSection';
+import ContactCard from '../components/pages/homepage/contact/Contact';
+import ReservationSection from '../components/pages/homepage/ReservationSection';
+import FeatureSection from '../components/pages/homepage/FeatureSection';
+import OrderOnlineSection from '../components/pages/homepage/OrderOnline';
+import BestOffersSection from '../components/pages/homepage/BestOffers/BestOffersSection';
+import Postcomponent from '../components/pages/homepage/post/Post';
 const Homepage = () => {
     return (
         <>
@@ -16,6 +17,7 @@ const Homepage = () => {
             <FeatureSection></FeatureSection>
             <OrderOnlineSection></OrderOnlineSection>
             <ReservationSection></ReservationSection>
+            <Postcomponent></Postcomponent>
         </>
     );
 }

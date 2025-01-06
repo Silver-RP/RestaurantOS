@@ -23,7 +23,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
           {article.date}
         </div>
       </div>
-      <div className="p-4 flex-grow flex flex-col mt-4 h-[277px]">
+      <div className="py-4 flex-grow flex flex-col mt-4 h-[277px]">
         <h3 className="text-lg font-bold mb-2 text-left text-16">{article.title}</h3>
         <p className="text-sm text-[#FFDEA0] mb-4 text-left text-[10px]">{article.category}</p>
         <p className="text-sm mb-4 flex-grow text-left text-[10px]">{article.description}</p>

@@ -43,7 +43,6 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ tabs, activeTab, onTabCha
         ))}
       </div>
 
-      {/* Horizontal Line */}
       <hr className="border-t border-hr mt-4" />
     </div>
   );

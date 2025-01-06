@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import InputComponent from '../components/Login/InputComponents';
-import ButtonComponent from '../components/Login/ButtonComponents';
+import InputComponent from '../components/pages/Login/InputComponents';
+import ButtonComponent from '../components/pages/Login/ButtonComponents';
 import { FaFacebook, FaArrowLeft } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import { Link } from 'react-router-dom';
