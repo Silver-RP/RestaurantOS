@@ -3,7 +3,7 @@ import ReservationDetailContactController from "../controller/ReservationDetailC
 const router = Router(); 
 router.post("/create", ReservationDetailContactController.createReservationDetailContact);
 router.get("/getall", ReservationDetailContactController.getAllReservationDetailContact);
-router.get("/getbyid/:id", );
-router.put("/update/:id", );
-router.delete("/delete/:id", );
+router.get("/getbyid/:id", ReservationDetailContactController.getReservationDetailContactById);
+router.put("/update/:id", ReservationDetailContactController.updateReservationDetailContact);
+router.delete("/delete/:id", ReservationDetailContactController.deleteReservationDetailContact);
 export default router;

@@ -70,8 +70,7 @@ class AuthService {
           userName: user.name,
           avatar: user.picture,
           googleId: user.id,
-          isAdmin: false,
-          isCashier: false,
+  
         });
         await existingUser.save();
       }
@@ -110,7 +109,7 @@ class AuthService {
         throw new Error('User or email already exists');
       }
       const hashedPassword = await bcrypt.hash(password, 10);
-      let userRole = "user"; 
+    let userRole = ""; 
       if(roles && roles === "superadmin"){
         userRole = "superadmin";
       }
@@ -144,7 +143,7 @@ class AuthService {
       }
 
       const token = accessToken(
-        { id: user._id, role: user.roles},
+        { id: user._id, roles: user.roles },
         process.env.ACCESS_TOKEN || '',
         '20s',
       );
@@ -186,8 +185,6 @@ class AuthService {
           userName: userName || "", 
           avatar: avatar || "",
           googleId, 
-          isAdmin: false, 
-          isCashier: false,
         });
         await user.save();
       }

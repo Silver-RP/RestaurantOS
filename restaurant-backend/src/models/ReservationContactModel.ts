@@ -4,6 +4,7 @@ export interface IReservationContact extends Document {
     activeHours: string; 
     tableCount: number;
     location: string; 
+    users: mongoose.Schema.Types.ObjectId;
  }
 const reservationcontactSchema = new mongoose.Schema({
     tableType: {
@@ -22,6 +23,11 @@ const reservationcontactSchema = new mongoose.Schema({
         type: String, 
         required: true, 
     }, 
+    users: {
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: "User", 
+        required: true, 
+    }
     
 }, {
     timestamps: true
