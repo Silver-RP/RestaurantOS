@@ -4,14 +4,15 @@ export interface IReservationDetailContact extends Document {
     reservationDate: Date; 
     timeReservation: String; 
     guestCount: number;  
-    user: mongoose.Schema.Types.ObjectId; 
+    users: mongoose.Schema.Types.ObjectId; 
     status: string, 
     notes: string, 
+    foods: mongoose.Schema.Types.ObjectId[]; 
 }
 const reservationDetailContactSchema = new mongoose.Schema({
     reservation: {
         type: mongoose.Schema.Types.ObjectId, 
-        ref: "Reservation", 
+        ref: "ReservationContact", 
         required: true, 
     }, 
     reservationDate: {
@@ -36,10 +37,15 @@ const reservationDetailContactSchema = new mongoose.Schema({
         type: String, 
         required: false, 
     }, 
-    user: {
+    users: {
         type: mongoose.Schema.Types.ObjectId, 
         ref: "User",
         required: true, 
+    }, 
+    foods: {
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: "Food",
+        required: true,
     }
 })
 const ReservationDetailContact = mongoose.model<IReservationDetailContact>("ReservationDetailContact", reservationDetailContactSchema);

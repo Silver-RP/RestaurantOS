@@ -9,6 +9,7 @@ import ReservationDetailContactRoutes from "./routes/ReservationDetailContactRou
 import ProfileRoutes from "./routes/ProfileRoutes";
 import SearchRoutes from "./routes/SearchRoutes";
 import StaffRoutes from "./routes/StaffRoutes";
+import FoodRoutes from "./routes/FoodRoutes";
 import dotenv from 'dotenv';
 import connectDB from './config/db';
 import cookieParser from "cookie-parser"; 
@@ -22,7 +23,7 @@ const app = express();
 const port = 3003;
 app.use(passport.initialize());
 app.use(express.json());
-
+app.use(express.urlencoded({extended: true})); 
 app.use(cookieParser());
 app.get('/', (req, res) => {
   res.send('API is running...');
@@ -36,8 +37,9 @@ app.use("/api/reservationcontact", ReservationContactRoutes);
 app.use("/api/reservationdetailcontact", ReservationDetailContactRoutes);
 app.use("/api/search", SearchRoutes);
 app.use("/api/staff", StaffRoutes);
-
 app.use('/api', HealthCheckRoutes);
+app.use("/api/food", FoodRoutes);
+app.use('/api', healthCheckRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(port, () => {

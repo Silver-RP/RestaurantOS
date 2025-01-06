@@ -13,7 +13,7 @@ class AuthController {
       if(!userName || !email || !password || !phone){
         return res.status(400).json({message: "Please enter all required fields"});
       }
-      // ccheck email format
+      // check email format
       const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
       const isCheckEmail = reg.test(email);
       if(!isCheckEmail){
@@ -26,7 +26,7 @@ class AuthController {
         return res.status(400).json({message: "Invalid phone format"});
       }
       // Check password format
-      const regPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+      const regPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/;
       const isCheckPassword = regPassword.test(password);
       if(!isCheckPassword){
         return res.status(400).json({message: "Password must be at least 8 characters, including 1 uppercase letter, 1 lowercase letter and 1 number"});
