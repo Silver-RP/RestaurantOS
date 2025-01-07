@@ -8,5 +8,6 @@ router.get('/getallcategory', CategoryController.GetAllCategory);
 router.get('/getcategorybyid/:id', CategoryController.GetCategoryById);
 router.put('/updatecategory/:id', CategoryController.UpdateCategory);
 router.delete('/deletecategory/:id', CategoryController.DeleteCategory);
+router.get('/searchcategory', CategoryController.SearchCategory);
 
 export default router;  

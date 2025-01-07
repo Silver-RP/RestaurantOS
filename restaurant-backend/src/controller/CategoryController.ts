@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import CategoryService from '../services/CategoryService';
+import SearchService from '../services/SearchService';
+import Category from '../models/CategoryModel';
 
 class CategoryController {
     async GetAllCategory(req: Request, res: Response): Promise<void> {
@@ -20,6 +22,15 @@ class CategoryController {
 
     async DeleteCategory(req: Request, res: Response): Promise<void> {
         await CategoryService.DeleteCategory(req, res);
+    }
+
+    async SearchCategory(req: Request, res: Response): Promise<any> {  
+        try {
+            const result = await SearchService.search(Category, req.query, ['name'])
+            return res.status(200).json(result);
+        } catch (error) {
+            return res.status(500).json({ message: 'An error occurred', error });
+        }
     }
 }
 
