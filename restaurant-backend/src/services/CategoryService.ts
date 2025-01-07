@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Category from "../models/CategoryModel";
 import { Request, Response } from "express";
+import { Model } from "mongoose";
 
 class CategoryService {
   // async GetAllCategory(req: Request, res: Response): Promise<any> {
@@ -18,7 +19,7 @@ class CategoryService {
 
   async GetAllCategory(req: Request, res: Response): Promise<any> {
     try {
-      const { page = 1, limit = 10, search = '' } = req.query;
+      const { page = 1, limit = 10 } = req.query;
 
       const pageNumber = parseInt(page as string, 10);
       const limitNumber = parseInt(limit as string, 10);
@@ -116,6 +117,17 @@ class CategoryService {
       return res.status(500).json(error);
     }
   }
+
+  async sortData(
+  model: Model<any>,
+  fieldName: string,
+  order: 'asc' | 'desc' = 'asc',
+): Promise<any> {
+  const sortOrder = order === 'asc' ? 1 : -1; 
+  const data = await model.find().sort({ [fieldName]: sortOrder });
+
+  return data;
+}
 }
 
 export default new CategoryService();

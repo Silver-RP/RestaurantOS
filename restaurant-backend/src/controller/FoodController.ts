@@ -1,6 +1,9 @@
 import FoodService from '../services/FoodService';
 import { Request, Response } from 'express';
 import UploadImage from '../services/UploadImage';
+import { Food } from '../models/FoodModel';
+import SearchService from '../services/SearchService';
+
 class FoodController {
     async createFood (req: Request, res: Response): Promise<any>{
         try {
@@ -109,15 +112,15 @@ class FoodController {
             throw new Error('Error getting food by search');
         }
     }
-    async getFoodByPrice (req: Request, res: Response): Promise<any> {
-        try {
-            const { min, max } = req.query;
-            const food = await FoodService.getFoodByPrice(Number(min), Number(max));
-            res.status(200).json(food);
-        } catch (error) {
-            throw new Error('Error getting food by price');
-        }
-    }
+    // async getFoodByPrice (req: Request, res: Response): Promise<any> {
+    //     try {
+    //         const { min, max } = req.query;
+    //         const food = await FoodService.getFoodByPrice(Number(min), Number(max));
+    //         res.status(200).json(food);
+    //     } catch (error) {
+    //         throw new Error('Error getting food by price');
+    //     }
+    // }
     async getFoodByRating (req: Request, res: Response): Promise<any> {
         try {
             const { rating } = req.query;
@@ -134,6 +137,15 @@ class FoodController {
             res.status(200).json(food);
         } catch (error) {
             throw new Error('Error getting food by favorites');
+        }
+    }
+
+    async SearchFood(req: Request, res: Response): Promise<any> {  
+        try {
+            const result = await SearchService.search(Food, req.query, ['name'])
+            return res.status(200).json(result);
+        } catch (error) {
+            return res.status(500).json({ message: 'An error occurred', error });
         }
     }
 

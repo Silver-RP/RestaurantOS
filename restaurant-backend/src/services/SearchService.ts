@@ -37,22 +37,3 @@ class SearchService {
 
 export default new SearchService();
 
-// import SearchService from '../services/SearchService';
-// import Food from '../models/FoodModel';
-// import { Request, Response } from 'express';
-
-// class FoodController {
-//   async searchFood(req: Request, res: Response): Promise<any> {
-//     try {
-//       const result = await SearchService.search(Food, req.query, [
-//         'name',
-//         'description',
-//       ]);
-//       return res.status(200).json(result);
-//     } catch (error) {
-//       return res.status(500).json({ message: 'An error occurred', error });
-//     }
-//   }
-// }
-
-// export default new FoodController();
