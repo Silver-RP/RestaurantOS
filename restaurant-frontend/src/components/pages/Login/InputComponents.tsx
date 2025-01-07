@@ -8,7 +8,8 @@ type Props = {
   placeholder?: string;
   name: string;
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  [key: string]: any; // Cho phép các props bổ sung
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any; 
 };
 
 const InputComponent: React.FC<Props> = ({ type, value, placeholder, name, onChange, ...rest }) => {
