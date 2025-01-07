@@ -77,9 +77,9 @@ class FoodService {
             throw new Error('Error getting food by search');
         }
     }
-    async getFoodByPrice(price: number) {
+    async getFoodByPrice(priceMin: number, priceMax: number) {
         try {
-            const food = await Food.find({ price: price });
+            const food = await Food.find({ price: { $gte: priceMin, $lte: priceMax } });
             return food;
         } catch (error) {
             throw new Error('Error getting food by price');
