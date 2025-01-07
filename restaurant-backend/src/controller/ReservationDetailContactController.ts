@@ -18,5 +18,33 @@ class ReservationDetailContactController {
             res.status(400).json({message: error.message});
         }
     }
+    async getReservationDetailContactById (req: Request, res: Response) {
+        try {
+            const { id } = req.params;
+            const reservationDetailContact = await ReservationDetailContactService.getReservationDetailContactById(id);
+            res.status(200).json(reservationDetailContact);
+        } catch (error: any) {
+            res.status(400).json({message: error.message});
+        }
+    }
+    async updateReservationDetailContact (req: Request, res: Response) {
+        try {
+            const { id } = req.params;
+            const reservationDetailContact = await ReservationDetailContactService.updateReservationDetailContact(id, req.body);
+            res.status(200).json(reservationDetailContact);
+        } catch (error: any) {
+            res.status(400).json({message: error.message});
+        }
+    }
+    async deleteReservationDetailContact (req: Request, res: Response) {
+        try {
+            const { id } = req.params;
+            const reservationDetailContact = await ReservationDetailContactService.deleteReservationDetailContact(id);
+            res.status(200).json(reservationDetailContact);
+        } catch (error: any) {
+            res.status(400).json({message: error.message});
+        }
+    }
+
 }
 export default new ReservationDetailContactController();
