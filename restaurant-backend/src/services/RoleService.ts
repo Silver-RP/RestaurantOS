@@ -1,7 +1,7 @@
-import  RoleModel from "../models/RoleModel";
-import { Request, Response, NextFunction } from 'express';
-import UserModel from "../models/UserModel";
 
+import RoleModel from "../models/RoleModel";
+import User from "../models/UserModel";
+import Permission from "../models/PermissionModel";
 class RoleService {
   async GetAllRole(): Promise<any> {
     try {

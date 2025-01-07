@@ -165,6 +165,13 @@ class UserService{
                     query.exprireAt.$lte = options.endDate;
                 }
             }
+
+            const userRole = await Roles.findOne({ name: "user" });
+            if (!userRole) {
+                throw new Error("Role 'user' not found");
+            }
+
+            query.roles = userRole._id;
     
             let sort: any = {};
             if (options.nameSort) {

@@ -2,8 +2,8 @@ import { accessToken, refreshToken } from "../services/generateToken";
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { User } from "../@types/express";
-import { IUser } from "../models/userModel"; // Import model User, thay đổi đường dẫn cho phù hợp
-import Roles from "../models/RoleModel";  // Import model Roles
+import { IUser } from "../models/UserModel"; 
+import Roles from "../models/RoleModel"; 
 class AuthMiddleWare {
     async verifyToken(req: Request, res: Response, next: NextFunction): Promise<any> {
         try {

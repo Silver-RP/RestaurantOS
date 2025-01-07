@@ -39,7 +39,7 @@ app.use("/api/search", SearchRoutes);
 app.use("/api/staff", StaffRoutes);
 app.use('/api', HealthCheckRoutes);
 app.use("/api/food", FoodRoutes);
-app.use('/api', healthCheckRoutes);
+app.use('/api', HealthCheckRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(port, () => {
