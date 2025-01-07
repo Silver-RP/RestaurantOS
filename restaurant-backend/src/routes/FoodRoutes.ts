@@ -21,9 +21,9 @@ router.delete("/delete-food", FoodController.deleteFood);
 router.get("/getFoodWithPagination", FoodController.getFoodWithPagination);
 router.get("/getFoodByCategory", FoodController.getFoodByCategory);
 router.get("/getFoodBySearch", FoodController.getFoodBySearch);
-router.get("/getFoodByPrice", FoodController.getFoodByPrice);
+// router.get("/getFoodByPrice", FoodController.getFoodByPrice);
 router.get("/getFoodByRating", FoodController.getFoodByRating);
 router.get("/getFoodByFavorites", FoodController.getFoodByFavorites);
-
-
+router.get("/searchfood", FoodController.SearchFood);
+ 
 export default router;

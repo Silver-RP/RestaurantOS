@@ -1,8 +1,41 @@
-import  mongoose, { FilterQuery } from "mongoose";
+import  mongoose, { FilterQuery, Model  } from "mongoose";
 import Roles from "../models/RoleModel";
 import  User, { IUser } from "../models/UserModel";
 
 class SearchService{
+    async search(
+      model: Model<any>,
+      query: any,
+      searchFields: string[],
+    ): Promise<any> {
+      const { search = '', minPrice, maxPrice } = query;
+
+      const searchQuery: any = {};
+
+      if (search) {
+        searchQuery.$or = searchFields.map((field) => ({
+          [field]: { $regex: search, $options: 'i' },
+        }));
+      }
+
+      if (minPrice || maxPrice) {
+        searchQuery.price = {};
+        if (minPrice) searchQuery.price.$gte = parseFloat(minPrice);
+        if (maxPrice) searchQuery.price.$lte = parseFloat(maxPrice);
+      }
+
+      const data = await model.find(searchQuery);
+
+      if (data.length === 0) {
+        return { message: 'No data found!' };
+      }
+
+      return {
+        total: data.length,
+        data,
+      };
+    }
+
     async searchUsers(keyword: string, page: number, pageSize: number) {
         try {
             const query = {
@@ -41,7 +74,8 @@ class SearchService{
             throw new Error(`Error searching users: ${error.message}`);
         }
     }
+
 }
 
-
 export default new SearchService();
+
