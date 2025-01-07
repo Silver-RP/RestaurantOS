@@ -12,8 +12,8 @@ interface ArticleCardProps {
 
 const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
   return (
-    <div className="rounded-lg overflow-hidden flex flex-col bg-[#012B40] w-[330px] h-[477px] border-none shadow-none">
-      <div className="relative w-[330px] h-[200px]">
+    <div className="rounded-lg overflow-hidden flex flex-col bg-[#012B40] w-full border-none shadow-none">
+      <div className="relative w-full h-[328px]">
         <img
           src={article.image}
           alt={article.title}

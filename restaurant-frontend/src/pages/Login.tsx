@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import InputComponent from '../components/pages/Login/InputComponents';
-import ButtonComponent from '../components/pages/Login/ButtonComponents';
-import { FaFacebook, FaArrowLeft } from "react-icons/fa";
+import InputComponent from '../components/pages/login/InputComponents';
+import ButtonComponent from '../components/pages/login/ButtonComponents';
+import { FaFacebook } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import CheckboxComponent from '../components/common/CheckboxComponents';
 import { Link } from 'react-router-dom';
+import { SlActionUndo } from 'react-icons/sl';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -12,7 +13,7 @@ const Login = () => {
     password: '',
   });
 
-  const [rememberMe, setRememberMe] = useState(false); // state để theo dõi checkbox
+  const [rememberMe, setRememberMe] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -23,7 +24,7 @@ const Login = () => {
   };
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setRememberMe(e.target.checked); // Cập nhật trạng thái checkbox
+    setRememberMe(e.target.checked);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -78,12 +79,12 @@ const Login = () => {
           </p>
           <p className="flex items-center justify-start mt-6">
             <Link to="/" className="flex items-center text-white hover:text-secondaryColor">
-              <FaArrowLeft className="mr-1 text-lg" />
+              <SlActionUndo className="mr-1 text-lg" />
               Quay lại trang chủ
             </Link>
           </p>
         </div>
-      </div>
+      </div> 
     </div>
   );
 };

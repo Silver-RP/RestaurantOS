@@ -18,6 +18,7 @@ export default {
         bodyBackground: '#012B40',
         secondaryColor: '#FFDEA0',
         hr: '#03486B',
+        grayText: '#BBBBBB',
       },
       width: {
         mainContainer: '80%',
