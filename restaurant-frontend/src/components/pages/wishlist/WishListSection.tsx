@@ -75,7 +75,7 @@ const WishListSection: React.FC = () => {
 
   return (
     <section className="bg-bodyBackground w-full text-white py-16">
-      <div className="w-mainContainer mx-auto">
+      <div className="w-container95 mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-restora font-thin text-white">
             Danh sách yêu thích

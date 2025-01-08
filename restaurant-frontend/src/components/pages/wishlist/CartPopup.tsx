@@ -47,13 +47,13 @@ const CartPopup: React.FC<CartPopupProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50">
-      <div className="bg-bodyBackground px-4 py-10 md:px-6 md:py-16 w-fit md:w-fit lg:w-fit h-fit flex flex-col lg:flex-row relative space-y-6 lg:space-y-0 lg:space-x-6">
+      <div className="bg-bodyBackground px-8 py-8 w-fit h-fit flex flex-col lg:flex-row relative space-y-6 lg:space-y-0 lg:space-x-6">
         <button onClick={onClose} className="absolute top-2 right-2 text-xl">
           <FaTimes />
         </button>
 
         <div className="flex flex-col lg:flex-row space-y-3 lg:space-y-0 lg:space-x-3">
-          <div className="flex-shrink-0 relative">
+          <div className="flex-shrink-1 w-full relative">
             {isNew && (
               <span className="absolute top-2 left-0 bg-secondaryColor text-[#002B40] text-xs font-semibold px-4 py-1 mt-1 w-fit">
                 New
@@ -67,17 +67,17 @@ const CartPopup: React.FC<CartPopupProps> = ({
             <img
               src={currentImage}
               alt={title}
-              className="w-fit h-auto sm:h-64 lg:h-96 object-cover mb-4"
+              className="w-full h-auto sm:h-auto lg:h-auto object-cover mb-4"
             />
           </div>
 
-          <div className="flex lg:flex-col lg:space-y-2 space-x-2 lg:space-x-0 overflow-x-scroll lg:overflow-x-hidden">
+          <div className="flex h-full justify-start items-start lg:flex-col lg:space-y-2 space-x-2 lg:space-x-0 overflow-x-scroll lg:overflow-x-hidden">
             {thumbnails.map((thumb, index) => (
               <img
                 key={index}
                 src={thumb}
                 alt={`Thumbnail ${index + 1}`}
-                className="w-24 h-20 object-cover cursor-pointer border-2 border-transparent hover:border-secondaryColor"
+                className="w-22 h-20 object-cover cursor-pointer border-2 border-transparent hover:border-secondaryColor"
                 onClick={() => setCurrentImage(thumb)}
               />
             ))}
