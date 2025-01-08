@@ -1,66 +1,141 @@
-import React, { useState } from "react";
-import ButtonComponents from "../../common/ButtonComponents";
-import { FaTimes } from "react-icons/fa";
+import React, { useState } from 'react';
+import ButtonComponents from '../../common/ButtonComponents';
+import { FaRegHeart, FaTimes } from 'react-icons/fa';
 
 interface CartPopupProps {
   imageSrc: string;
   title: string;
-  price: number;  
+  price: number;
+  category: string;
+  thumbnails: string[];
+  isNew?: boolean;
+  discount?: number;
+  description: string; 
   onClose: () => void;
   onAddToCart: (quantity: number) => void;
 }
 
-const CartPopup: React.FC<CartPopupProps> = ({ imageSrc, title, price, onClose, onAddToCart }) => {
+const CartPopup: React.FC<CartPopupProps> = ({
+  imageSrc,
+  title,
+  price,
+  category,
+  thumbnails,
+  isNew = false,
+  discount = 0,
+  description, 
+  onClose,
+  onAddToCart,
+}) => {
   const [quantity, setQuantity] = useState<number>(1);
+  const [currentImage, setCurrentImage] = useState<string>(imageSrc);
 
   const handleQuantityChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newQuantity = parseInt(event.target.value, 10);
     if (!isNaN(newQuantity) && newQuantity > 0) {
-      setQuantity(newQuantity);  
+      setQuantity(newQuantity);
     }
   };
 
   const handleAddToCart = () => {
     onAddToCart(quantity);
-    onClose(); 
+    onClose();
   };
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-headerBackground py-10 px-8 rounded-lg w-1/3 h-fit relative">
-        <button onClick={onClose} className="absolute top-2 right-2 text-xl"><FaTimes /></button>
-        <img src={imageSrc} alt={title} className="w-full h-72 object-cover mb-4" />
-        <h3 className="text-center text-xl font-restora mb-2">{title}</h3>
+  const discountedPrice =
+    discount > 0 ? price - (price * discount) / 100 : price;
 
-        <p className="text-center text-lg text-secondaryColor mb-4">{`Giá: ${price.toLocaleString()} VND`}</p>
-        
-        <div className="mb-4">
-          <label htmlFor="quantity" className="block text-white">Số lượng</label>
-          <input
-            type="number"
-            id="quantity"
-            value={quantity}
-            min="1"
-            className="mt-3 w-1/6 p-2 border text-black border-gray-300"
-            onChange={handleQuantityChange}
-          />
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50">
+      <div className="bg-bodyBackground px-4 py-10 md:px-6 md:py-16 w-fit md:w-fit lg:w-fit h-fit flex flex-col lg:flex-row relative space-y-6 lg:space-y-0 lg:space-x-6">
+        <button onClick={onClose} className="absolute top-2 right-2 text-xl">
+          <FaTimes />
+        </button>
+
+        <div className="flex flex-col lg:flex-row space-y-3 lg:space-y-0 lg:space-x-3">
+          <div className="flex-shrink-0 relative">
+            {isNew && (
+              <span className="absolute top-2 left-0 bg-secondaryColor text-[#002B40] text-xs font-semibold px-4 py-1 mt-1 w-fit">
+                New
+              </span>
+            )}
+            {discount > 0 && (
+              <span className="absolute top-10 left-0 bg-secondaryColor text-[#002B40] text-xs font-semibold px-4 py-1 mt-1 w-fit">
+                -{discount}%
+              </span>
+            )}
+            <img
+              src={currentImage}
+              alt={title}
+              className="w-fit h-auto sm:h-64 lg:h-96 object-cover mb-4"
+            />
+          </div>
+
+          <div className="flex lg:flex-col lg:space-y-2 space-x-2 lg:space-x-0 overflow-x-scroll lg:overflow-x-hidden">
+            {thumbnails.map((thumb, index) => (
+              <img
+                key={index}
+                src={thumb}
+                alt={`Thumbnail ${index + 1}`}
+                className="w-24 h-20 object-cover cursor-pointer border-2 border-transparent hover:border-secondaryColor"
+                onClick={() => setCurrentImage(thumb)}
+              />
+            ))}
+          </div>
         </div>
 
-        <div className="flex justify-center space-x-4">
-          <ButtonComponents
-            variant="filled"
-            size="small"
-            onClick={handleAddToCart}
-            className="py-2 px-4"
-          >
-            Thêm vào giỏ hàng
-          </ButtonComponents>
-          <button
-            onClick={onClose}
-            className="bg-gray-300 border text-black py-2 px-4 hover:border-gray-300 hover:bg-transparent hover:text-white"
-          >
-            Hủy
-          </button>
+        <div className="flex-1 text-left text-white">
+          <h3 className="text-xl md:text-2xl lg:text-3xl font-restora mb-2">
+            {title}
+          </h3>
+          {discount > 0 ? (
+            <p className="text-lg md:text-xl text-secondaryColor mb-2">
+              {`Giá: `}
+              <span className="line-through mr-2">
+                {price.toLocaleString()} VND
+              </span>
+              <span>{discountedPrice.toLocaleString()} VND</span>
+            </p>
+          ) : (
+            <p className="text-lg md:text-xl text-secondaryColor mb-2">
+              {`Giá: ${price.toLocaleString()} VND`}
+            </p>
+          )}
+          <p className="text-md mb-2">{`Danh mục: ${category}`}</p>
+          <p className="text-sm mb-4">{description}</p> 
+
+          <div className="mb-4">
+            <label htmlFor="quantity" className="block text-white">
+              Số lượng
+            </label>
+            <input
+              type="number"
+              id="quantity"
+              value={quantity}
+              min="1"
+              className="mt-3 w-16 md:w-20 p-1 border text-black border-gray-300"
+              onChange={handleQuantityChange}
+            />
+          </div>
+
+          <div className="flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-4">
+            <ButtonComponents
+              variant="filled"
+              size="small"
+              onClick={handleAddToCart}
+              className="py-2 px-4"
+            >
+              Thêm vào giỏ hàng
+            </ButtonComponents>
+            <ButtonComponents
+              variant="outline"
+              size="small"
+              onClick={() => console.log('Thêm vào danh sách yêu thích')}
+              className="py-2 px-4 flex items-center justify-center hover:border-transparent hover:bg-transparent"
+            >
+              <FaRegHeart className="text-xl text-secondaryColor" />
+            </ButtonComponents>
+          </div>
         </div>
       </div>
     </div>
