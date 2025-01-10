@@ -49,31 +49,22 @@ class AuthMiddleWare {
       throw new Error(error);
     }
     }
-    async verifyRole(roles: string[]): Promise<any> {
+  async verifyRole(roles: string[]){
       return async (req: Request, res: Response, next: NextFunction) => {
           try {
               if (!req.user) {
                   return res.status(401).json({ message: "User not authenticated" });
               }
-  
               const user = req.user as IUser;
               console.log('User in req:', user);
-  
               if (!user.roles || user.roles.length === 0) {
                   return res.status(401).json({ message: "User role not found" });
               }
-  
-              // Chuyển các role string thành ObjectId của Mongoose
               const roleObjectIds = roles.map(role => new mongoose.Types.ObjectId(role));
-  
-              // Chuyển user roles thành chuỗi để so sánh
-              const userRoleIds = user.roles.map(role => role.toString());  // Convert ObjectId to string
-  
-              // So sánh các ObjectId trong user với roleObjectIds
+              const userRoleIds = user.roles.map(role => role.toString()); 
               const isRoleValid = userRoleIds.some(role => roleObjectIds.some(roleId => roleId.toString() === role));
-  
               if (isRoleValid) {
-                  return next(); // Nếu có quyền, tiếp tục
+                  return next(); 
               } else {
                   return res.status(403).json({ message: "Permission denied: Insufficient role" });
               }

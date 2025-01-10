@@ -42,7 +42,7 @@ class AuthController {
       let roleObjectIds = [];
       if (roles && roles.length > 0) {
         try {
-          // Loại bỏ các giá trị không hợp lệ trong roles (chẳng hạn như chuỗi rỗng hoặc các giá trị không phải ObjectId)
+          
           roleObjectIds = roles
           roleObjectIds = roles
           .filter((role: string) => mongoose.Types.ObjectId.isValid(role)) // Kiểm tra tính hợp lệ

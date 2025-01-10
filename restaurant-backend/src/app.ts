@@ -15,6 +15,7 @@ import connectDB from './config/db';
 import cookieParser from "cookie-parser"; 
 import passport from "passport"; 
 import StaffController from './controller/StaffController';
+import  setupSwagger from './utils/swagger';
 // import './insertData'; 
 dotenv.config();
 connectDB();
@@ -40,6 +41,9 @@ app.use("/api/staff", StaffRoutes);
 app.use('/api', HealthCheckRoutes);
 app.use("/api/food", FoodRoutes);
 app.use('/api', HealthCheckRoutes);
+
+setupSwagger(app);
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(port, () => {
