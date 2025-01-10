@@ -79,3 +79,74 @@ state=random_generated_string
 
 https://developers.facebook.com/apps/1123946355863940/settings/basic/
    -->
+<!-- 
+Cách cài swagger yaml 
+Bước 1: Cài đặt thư viện cần thiết 
+npm install swagger-ui-express
+npm install --save-dev @types/swagger-ui-express
+Bước 2: Tạo cấu hình YAML 
+Tạo một file swagger.yml trong thư mục chính của dự án hoặc một thư mục như src/config
+openapi: 3.0.0
+info:
+  title: API Documentation
+  description: API documentation for your project
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Local server
+paths:
+  /users:
+    get:
+      summary: Get all users
+      responses:
+        '200':
+          description: A list of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+Bước 3: Tạo file để load Swagger Yaml 
+Tạo một file mới swagger.ts (nằm trong src/utils hoặc src/config):
+import path from 'path';
+import swaggerUi from 'swagger-ui-express';
+import yaml from 'yamljs';
+import { Express } from 'express';
+
+// Đọc file swagger.yml
+const swaggerDocument = yaml.load(path.join(__dirname, '../config/swagger.yml'));
+
+// Hàm khởi tạo Swagger
+export const setupSwagger = (app: Express): void => {
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+  console.log('Swagger docs available at /api-docs');
+};
+Bước 4: Tích hợp Swagger vào express 
+Trong file app.ts hoặc file chính của server (thường nằm ở src/app.ts):
+import express from 'express';
+import { setupSwagger } from './utils/swagger'; // Đường dẫn tới file swagger.ts
+
+const app = express();
+
+// Các middleware khác
+app.use(express.json());
+
+// Khởi tạo Swagger
+setupSwagger(app);
+
+// Lắng nghe server
+const PORT = 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
+Cấu trúc thư mục hợp lý:
+
+Đặt file swagger.yml vào thư mục src/config.
+Đặt file swagger.ts vào thư mục src/utils.
+ -->

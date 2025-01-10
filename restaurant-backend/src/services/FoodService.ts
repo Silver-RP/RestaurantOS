@@ -1,8 +1,13 @@
 import { Food } from '../models/FoodModel';
+import mongoose from 'mongoose';
 class FoodService {
   async createFood(food: any) {
     const newfood = new Food(food);
-    return newfood.save();
+    try {
+      return await newfood.save(); 
+    } catch (error) {
+      throw new Error('Error creating food');
+    }
   }
   async getTopFavoriteFood() {
     try {
@@ -25,10 +30,10 @@ class FoodService {
         throw new Error('Error getting all food'); 
     }
   }
-  async getFoodById(id: string, req: any) {
+  async getFoodById(id: string,req: any) {
     try {
-        const { id } = req.query;
-        const food = await Food.findById(id);
+        const { id } = req.params;
+        const food = await Food.findById(id).populate('categories');
         return food;
 
     } catch (error) {
@@ -42,7 +47,7 @@ class FoodService {
     } catch (error) {
         throw new Error('Error updating food');
     }
-}
+}   
     async deleteFood(id: string) {
         try {
             const deletedFood = await Food.findByIdAndDelete(id);
@@ -62,9 +67,10 @@ class FoodService {
             throw new Error('Error getting food with pagination');
         }
     }
-    async getFoodByCategory(category: string) {
+    async getFoodByCategory(id: string) {
         try {
-            const food = await Food.find({ category: category });
+            const categoryId = new mongoose.Types.ObjectId(id); 
+            const food = await Food.find({categories: categoryId});
             return food;
         } catch (error) {
             throw new Error('Error getting food by category');

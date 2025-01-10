@@ -13,13 +13,15 @@ export interface IUser extends Document {
     facebookId?: string | null;
     otp?: string | null;
     otpExpiry?: Date | null;
-    roles: string; 
+    roles?: mongoose.Schema.Types.ObjectId[]; 
     gender?: string | null;
     status?: string | null;
-    default_address_id?: string | null;
+    default_address_id?: mongoose.Schema.Types.ObjectId[]; 
     isEmailVerifided: boolean; 
+    otpSentCount: number;
     expireAt: Date; 
     isVerified: boolean;
+    lastOtpSentAt: Date; 
 }
 
 const userSchema = new mongoose.Schema({
@@ -51,10 +53,6 @@ const userSchema = new mongoose.Schema({
         required: false, 
         unique: true, 
     },
-    Active_code: {
-        type: Number, 
-        required: false, 
-    },
     otp: {
         type: String, 
         required: false, 
@@ -67,21 +65,19 @@ const userSchema = new mongoose.Schema({
         type: String, 
         required: false, 
     }, 
-    facebookId:{
-        type: String, 
-        required: false, 
-    }, 
-    roles: [{ 
+    roles: { 
         type: mongoose.Schema.Types.ObjectId, 
-        ref: 'Roles' 
-      }], 
+        ref: 'Roles', 
+        required: false,
+    }, 
     gender: {
         type: String, 
         required: false, 
     },
     status: {
         type: String, 
-        required: false, 
+        required: true, 
+        enum: ["active", "inactive", "block"],
     },
     default_address_id: {
         type: mongoose.Schema.Types.ObjectId, 
@@ -100,6 +96,14 @@ const userSchema = new mongoose.Schema({
     isVerified: {
         type: Boolean, 
         required: false,
+    }, 
+    otpSentCount: {
+        type: Number, 
+        default: 0. 
+    }, 
+    lastOtpSentAt: {
+        type: Date, 
+        default: Date.now, 
     }
 },{
     timestamps: true

@@ -1,15 +1,16 @@
 import { Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
-import { accessToken, refreshToken } from '../services/generateToken';
+import { accessToken, refreshToken } from '../services/GenerateToken';
 import AuthService from "../services/AuthService";
 import GoogleAuthMiddleWare from "../middleware/GoogleAuthMiddleWare";
+import mongoose from "mongoose";
 class AuthController {
 
   // Method to register a new user
   async register(req: Request, res: Response):Promise<any>{
     try {
       // Gọi AuthService để xử lý đăng ký
-      const {userName, email, password, phone} = req.body; 
+      const {userName, email, password, phone, roles} = req.body; 
       if(!userName || !email || !password || !phone){
         return res.status(400).json({message: "Please enter all required fields"});
       }
@@ -30,6 +31,19 @@ class AuthController {
       const isCheckPassword = regPassword.test(password);
       if(!isCheckPassword){
         return res.status(400).json({message: "Password must be at least 8 characters, including 1 uppercase letter, 1 lowercase letter and 1 number"});
+      }
+      // Kiểm tra và chuyển đổi roles thành ObjectId nếu có
+      let roleObjectIds = [];
+      if (roles && roles.length > 0) {
+        try {
+          // Loại bỏ các giá trị không hợp lệ trong roles (chẳng hạn như chuỗi rỗng hoặc các giá trị không phải ObjectId)
+          roleObjectIds = roles
+          roleObjectIds = roles
+          .filter((role: string) => mongoose.Types.ObjectId.isValid(role)) // Kiểm tra tính hợp lệ
+          .map((role: string) => new mongoose.Types.ObjectId(role));  // Dùng `new` để khởi tạo ObjectId
+        } catch (err) {
+          return res.status(400).json({ message: "Invalid role ID format" });
+        }
       }
       const user = await AuthService.register(req.body);
       res.status(201).json({ message: 'User created successfully', user });

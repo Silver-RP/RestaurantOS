@@ -3,7 +3,8 @@ import { Request, Response } from 'express';
 import UploadImage from '../services/UploadImage';
 import { Food } from '../models/FoodModel';
 import SearchService from '../services/SearchService';
-
+import mongoose from 'mongoose';
+import  Category  from '../models/CategoryModel';
 class FoodController {
     async createFood (req: Request, res: Response): Promise<any>{
         try {
@@ -11,12 +12,17 @@ class FoodController {
             if(!name || !price || !description || !categories || !countInStock || !rating || !favorites){
                 return res.status(400).json({message: 'All fields are required'});
             }
+            const categoryId = categories.trim();
+            if (!mongoose.Types.ObjectId.isValid(categoryId)) {
+                return res.status(400).json({ message: 'Invalid category ID' });
+            }
+            const categoryObjectId = new mongoose.Types.ObjectId(categoryId);
             if(!req.file){
                 return res.status(400).json({message: 'Image is required'});
             }
-            const imageFile = req.file;  // Multer lưu trữ file
+            const imageFile = req.file;  
       
-            console.log('Image file received:', imageFile);  // Kiểm tra file nhận được
+            console.log('Image file received:', imageFile);  
             if(imageFile.mimetype !== 'image/jpeg' && imageFile.mimetype !== 'image/png'){
                 return res.status(400).json({message: 'Invalid file type'});
             }
@@ -25,14 +31,14 @@ class FoodController {
                 name: req.body.name,
                 price: req.body.price,
                 description: req.body.description,
-                category: req.body.category,
+                categories: categoryObjectId,
                 imageUrl: imageUrl,
                 countInStock: req.body.countInStock,
                 rating: req.body.rating,
                 favorites: req.body.favorites,
             }
             const newFood = await FoodService.createFood(food);
-            return res.status(201).json(newFood);
+            return res.status(201).json({message: 'Food created successfully', data: newFood});
         } catch (error) {
             console.error('Error creating food:', error);
             return res.status(500).json({message: 'Internal server error'});
@@ -57,7 +63,7 @@ class FoodController {
     }
     async getFoodById (req: Request, res: Response): Promise<any> {
         try {
-            const foodId = String(req.query.id);  
+            const foodId = String(req.params.id);  
             const food = await FoodService.getFoodById(foodId, req);
             res.status(200).json(food);
         } catch (error) {
@@ -67,9 +73,8 @@ class FoodController {
     
     async updateFood (req: Request, res: Response): Promise<any> {
         try {
-            const foodId = String(req.query.id);  
-
-            const updatedFood = await FoodService.updateFood(foodId, req.body);
+            const { id } = req.params;
+            const updatedFood = await FoodService.updateFood(id, req.body);
             res.status(200).json(updatedFood);
         } catch (error) {
             throw new Error('Error updating food');
@@ -78,8 +83,8 @@ class FoodController {
     async deleteFood (req: Request, res: Response): Promise<any> {
         try {
             
-            const foodId = String(req.query.id);  
-            const deletedFood = await FoodService.deleteFood(foodId);
+            const { id } = req.params; 
+            const deletedFood = await FoodService.deleteFood(id);
             res.status(200).json(deletedFood);
         } catch (error) {
             throw new Error('Error deleting food');
@@ -96,8 +101,8 @@ class FoodController {
     }
     async getFoodByCategory (req: Request, res: Response): Promise<any> {
         try {
-            const { category } = req.query;
-            const food = await FoodService.getFoodByCategory(String(category));
+            const { id } = req.query;
+            const food = await FoodService.getFoodByCategory(String(id));
             res.status(200).json(food);
         } catch (error) {
             throw new Error('Error getting food by category');
@@ -112,15 +117,15 @@ class FoodController {
             throw new Error('Error getting food by search');
         }
     }
-    // async getFoodByPrice (req: Request, res: Response): Promise<any> {
-    //     try {
-    //         const { min, max } = req.query;
-    //         const food = await FoodService.getFoodByPrice(Number(min), Number(max));
-    //         res.status(200).json(food);
-    //     } catch (error) {
-    //         throw new Error('Error getting food by price');
-    //     }
-    // }
+    async getFoodByPrice (req: Request, res: Response): Promise<any> {
+        try {
+            const { min, max } = req.query;
+            const food = await FoodService.getFoodByPrice(Number(min), Number(max));
+            res.status(200).json(food);
+        } catch (error) {
+            throw new Error('Error getting food by price');
+        }
+    }
     async getFoodByRating (req: Request, res: Response): Promise<any> {
         try {
             const { rating } = req.query;

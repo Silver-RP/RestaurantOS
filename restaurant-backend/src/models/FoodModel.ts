@@ -7,8 +7,9 @@ export interface IProduct extends mongoose.Document {
     imageUrl: string;
     countInStock: number;
     rating: number;
-    categories: string; 
+    categories: mongoose.Schema.Types.ObjectId[]; 
     favorites: number; 
+
 }
 const foodSchema = new mongoose.Schema({
     name: {
@@ -22,10 +23,6 @@ const foodSchema = new mongoose.Schema({
     description: {
         type: String,
         required: true,
-    },
-    categories: {
-        type: String,
-        required: false,
     },
     imageUrl: {
         type: String,
@@ -42,7 +39,17 @@ const foodSchema = new mongoose.Schema({
     favorites: {
         type: Number, 
         required: true, 
-    }
+    }, 
+    categories: [{
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'categories',
+        ObjectId: true, 
+        required: true
+    }]
 
+},{
+    timestamps: true, 
 });
+foodSchema.index({name: "text"});
+
 export const Food = mongoose.model<IProduct>("Food", foodSchema);

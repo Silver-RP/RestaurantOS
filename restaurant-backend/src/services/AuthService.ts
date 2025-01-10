@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt';
-import { accessToken, refreshToken } from '../services/generateToken';
+import { accessToken, refreshToken } from './GenerateToken';
 import User from '../models/UserModel';
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
@@ -11,13 +11,14 @@ import nodemailer from "nodemailer";
 
 import sendOtpToPhoneNumber from "../utils/smsService"; 
 dotenv.config();
+import mongoose from 'mongoose';
 interface Register {
   userName: string;
   email: string;
   password: string;
-  confirmPassword: string;
+  confirmPassword?: string;
   phone: string;
-  roles?: string;
+  roles: mongoose.Types.ObjectId[];
 }
 interface Login {
   email: string;
@@ -95,7 +96,7 @@ class AuthService {
         password,
         confirmPassword,
         phone, 
-        roles
+        roles: roleObjectIds,
       } = userData;
       const existingUser = await User.findOne({
         $or: [{ email }, { userName }],
@@ -109,16 +110,13 @@ class AuthService {
         throw new Error('User or email already exists');
       }
       const hashedPassword = await bcrypt.hash(password, 10);
-    let userRole = ""; 
-      if(roles && roles === "superadmin"){
-        userRole = "superadmin";
-      }
+    
       const newUser = new User({
         userName,
         email,
         password: hashedPassword,
         phone,
-        roles: userRole,
+        roles: roleObjectIds,
       });
       await newUser.save();
       return newUser;
@@ -383,23 +381,39 @@ class AuthService {
     await user.save();
     return {message: "Password reset successfully"};
   }
+  // Method send OTP email
   async sendOtpEmail(email: string): Promise<void>{
+    const user = await User.findOne({ email}); 
+    if(!user){
+      throw new Error("User not found");
+    }
     const otp = crypto.randomInt(100000, 999999).toString();
-    const expireAt = new Date(Date.now() + 5 * 60 * 1000); 
+    const expireAt = new Date(Date.now() + 5 * 60 * 1000); // 5 phut
+    const now = new Date(); 
+    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000); 
+    if(user.otpSentCount >= 5 && user.lastOtpSentAt > oneHourAgo){
 
+      throw new Error("You have exceeded the limit for sending OTPs. Please try again later");
+    }
+    user.otp = otp; 
+    user.otpExpiry = expireAt;
+    user.otpSentCount += 1;
+    user.lastOtpSentAt = now;
+  
     // Lưu OTP vào db 
     await User.create({email, otp, otpExpiry: expireAt});
     // Gửi OTP qua email
     const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth:
-      {
-        user: process.env.EMAIL,
-        pass: process.env.PASSWORD,
+      host: process.env.MAIL_HOST, 
+      port: Number(process.env.MAIL_PORT),
+      secure: process.env.MAIL_ENCRYPTION === "ssl",
+      auth: {
+        user: process.env.MAIL_USERNAME, 
+        pass: process.env.MAIL_PASSWORD, 
       }
     });
     const mailOptions = {
-      from: process.env.EMAIL,
+      from: process.env.MAIL_FROM_ADDRESS, 
       to: email,
       subject: "OTP for password reset",
       text: `Your OTP is ${otp}. It will expire in 5 minutes`,
@@ -426,5 +440,4 @@ class AuthService {
 }
 }
 export default new AuthService();
-// const authService = new AuthService();
-// console.log(authService.handleGoogleCallBack("4/0AanRRrv2aLcgjZieovmCnrDT69GKjFeoLpBUHr6qK-U462a_uWrNYVRb4yslet1Gx7Xcsw"));
+

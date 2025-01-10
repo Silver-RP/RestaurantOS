@@ -3,11 +3,7 @@ import Roles from "../models/RoleModel";
 import  User, { IUser } from "../models/UserModel";
 
 class SearchService{
-    async search(
-      model: Model<any>,
-      query: any,
-      searchFields: string[],
-    ): Promise<any> {
+    async search(model: Model<any>,query: any, searchFields: string[] ): Promise<any> {
       const { search = '', minPrice, maxPrice } = query;
 
       const searchQuery: any = {};
