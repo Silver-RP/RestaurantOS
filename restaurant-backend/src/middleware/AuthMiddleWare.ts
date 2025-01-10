@@ -48,13 +48,8 @@ class AuthMiddleWare {
     } catch (error: any) {
       throw new Error(error);
     }
-    
-  
-  
-    
-    
     }
-    async verifyRole(roles: string[]): any {
+    async verifyRole(roles: string[]): Promise<any> {
       return async (req: Request, res: Response, next: NextFunction) => {
           try {
               if (!req.user) {
