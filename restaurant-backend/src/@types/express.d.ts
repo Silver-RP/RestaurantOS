@@ -1,7 +1,8 @@
 import { Request } from 'express';
 
 interface User {
-    roles: string[];  // roles nên là mảng string
+    // role là mảng object kiêu mongoose.Types.ObjectId
+    roles: mongoose.Types.ObjectId[];
   }
   
   declare global {

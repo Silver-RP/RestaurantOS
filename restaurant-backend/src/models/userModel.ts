@@ -65,18 +65,18 @@ const userSchema = new mongoose.Schema({
         type: String, 
         required: false, 
     }, 
-    roles: { 
+    roles: [{ 
         type: mongoose.Schema.Types.ObjectId, 
         ref: 'Roles', 
         required: false,
-    }, 
+    }], 
     gender: {
         type: String, 
         required: false, 
     },
     status: {
         type: String, 
-        required: true, 
+        required: false, 
         enum: ["active", "inactive", "block"],
     },
     default_address_id: {
