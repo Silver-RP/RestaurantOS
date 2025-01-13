@@ -150,3 +150,10 @@ Cấu trúc thư mục hợp lý:
 Đặt file swagger.yml vào thư mục src/config.
 Đặt file swagger.ts vào thư mục src/utils.
  -->
+ <!-- 
+ {
+    "email": "mynnps37989@fpt.edu.vn",
+  "password": "PhiTuyet123@"
+  
+  } test api => superadmin 
+  -->
