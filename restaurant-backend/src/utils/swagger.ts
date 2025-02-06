@@ -6,3 +6,4 @@ const swaggerDocument = yaml.load(path.join(__dirname, "../config/swagger.yml"))
 export default (app: express.Application) => {
   app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 };
+
