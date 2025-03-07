@@ -5,6 +5,7 @@ import Footer from "./components/layout/footer/Footer";
 import Sidebar from "./components/layout/sidebar/Sidebar";
 
 
+
 const AppLayout = () => {
   const location = useLocation();
   const hideSidebarFooter = ["/login", "/register"].includes(location.pathname);
