@@ -8,8 +8,6 @@ type Props = {
   placeholder?: string;
   name: string;
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any; 
 };
 
 const InputComponent: React.FC<Props> = ({ type, value, placeholder, name, onChange, ...rest }) => {
@@ -27,6 +25,7 @@ const InputComponent: React.FC<Props> = ({ type, value, placeholder, name, onCha
         name={name}
         onChange={onChange}
         placeholder={placeholder}
+        autoComplete="on"
         className="bg-transparent mt-6 w-full px-4 py-3 text-white hover:bg-transparent focus:bg-transparent border border-white rounded-md placeholder-gray-400 focus:ring-white"
         {...rest} 
       />
