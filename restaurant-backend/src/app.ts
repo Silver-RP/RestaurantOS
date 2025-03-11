@@ -22,7 +22,7 @@ dotenv.config();
 connectDB();
 
 const app = express();
-const port = 3003;
+const port = process.env.PORT || 3003;
 app.use(passport.initialize());
 app.use(express.json());
 app.use(express.urlencoded({extended: true})); 
