@@ -22,7 +22,7 @@ dotenv.config();
 connectDB();
 
 const app = express();
-const port = process.env.PORT || 3003;
+const port = process.env.PORT || 4000;
 app.use(passport.initialize());
 app.use(express.json());
 app.use(express.urlencoded({extended: true})); 
@@ -47,7 +47,7 @@ app.use('/api', HealthCheckRoutes);
 setupSwagger(app);
 
 
-const PORT = process.env.PORT || 5000;
+// const PORT = process.env.PORT || 5000;
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
   console.log('Mongo URI:', process.env.MONGO_URI); 
