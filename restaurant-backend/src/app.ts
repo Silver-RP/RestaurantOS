@@ -22,7 +22,7 @@ dotenv.config();
 connectDB();
 
 const app = express();
-const port = process.env.PORT || 4000;
+const port = process.env.PORT;
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
   console.log('Mongo URI:', process.env.MONGO_URI);
