@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "NODE_OPTIONS='--max-old-space-size=256' ts-node src/app.ts",
-    "dev": "nodemon --exec ts-node src/app.ts",
+    "clean": "rimraf src/**/*.js src/**/*.js.map",
+    "start": "node dist/app.js",
+    "dev": "node dist/app.js",
     "build": "tsc",
     "lint": "eslint . --ext .ts",
     "prettier": "prettier --write .",
