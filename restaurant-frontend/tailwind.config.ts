@@ -1,0 +1,45 @@
+/** @type {import('tailwindcss').Config} */
+import defaultTheme from 'tailwindcss/defaultTheme';
+export default {
+  important : true,
+  content: ['./src/**/*.{html,js,ts,jsx,tsx}'],
+  theme: {
+    extend: {
+      screens: {
+        xs: '500px',
+        ...defaultTheme.screens,
+      },
+      gridTemplateColumns: {
+        '15': 'repeat(15, minmax(0, 1fr))',
+      },
+      colors: {
+        facebook: '#1877F2',
+        headerBackground: '#021D2A',
+        bodyBackground: '#012B40',
+        secondaryColor: '#FFDEA0',
+        hr: '#03486B',
+        grayText: '#BBBBBB',
+      },
+      width: {
+        mainContainer: '80%',
+        container95: '95%',
+      },
+      fontFamily: {
+        sans: ['Manrope', ...defaultTheme.fontFamily.sans],
+        restora: ['Restora'],
+        cormorant: ["'Cormorant Garamond'", "serif"]
+      },
+      animation: {
+        'fade-down': 'fadeDown 1s ease-out',
+      },
+      keyframes: {
+        fadeDown: {
+          '0%': { opacity: 0, transform: 'translateY(-20px)' },
+          '100%': { opacity: 1, transform: 'translateY(0)' },
+        },
+      },
+    },
+  },
+  plugins: [],
+}
+
