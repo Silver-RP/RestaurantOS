@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from "../utils/appError";
 
-const errorHandler = (err: AppError, req: Request, res: Response, next: NextFunction) => {
+const ErrorHandler = (err: AppError, req: Request, res: Response, next: NextFunction) => {
   const statusCode = err.statusCode || 500;
   const message = err.message || 'Something went wrong!';
 
@@ -11,4 +11,4 @@ const errorHandler = (err: AppError, req: Request, res: Response, next: NextFunc
   });
 };
 
-export default errorHandler;
+export default ErrorHandler;
