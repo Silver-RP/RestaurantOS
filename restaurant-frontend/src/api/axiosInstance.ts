@@ -69,7 +69,6 @@ api.interceptors.response.use(
       }
     }
 
-    // Hiển thị lỗi khác (nếu muốn)
     if (error.response?.status === 403) {
       alert('Bạn không có quyền truy cập!')
     }
