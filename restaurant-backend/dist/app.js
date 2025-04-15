@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const Healthcheck_1 = __importDefault(require("./routes/Healthcheck"));
+const HealthCheck_1 = __importDefault(require("./routes/HealthCheck"));
 const AuthRoutes_1 = __importDefault(require("./routes/AuthRoutes"));
 const UserRoutes_1 = __importDefault(require("./routes/UserRoutes"));
 const RoleRouter_1 = __importDefault(require("./routes/RoleRouter"));
@@ -30,6 +30,7 @@ app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
     console.log('Mongo URI:', process.env.MONGO_URI);
 });
+(0, swagger_1.default)(app);
 app.use(passport_1.default.initialize());
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
@@ -47,7 +48,6 @@ app.use("/api/reservationcontact", ReservationContactRoutes_1.default);
 app.use("/api/reservationdetailcontact", ReservationDetailContactRoutes_1.default);
 app.use("/api/search", SearchRoutes_1.default);
 app.use("/api/staff", StaffRoutes_1.default);
-app.use('/api', Healthcheck_1.default);
+app.use('/api', HealthCheck_1.default);
 app.use("/api/food", FoodRoutes_1.default);
-app.use('/api', Healthcheck_1.default);
-(0, swagger_1.default)(app);
+app.use('/api', HealthCheck_1.default);

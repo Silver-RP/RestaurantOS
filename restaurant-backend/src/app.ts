@@ -1,5 +1,5 @@
 import express from 'express';
-import HealthCheckRoutes from './routes/Healthcheck';
+import HealthCheckRoutes from './routes/HealthCheck';
 import AuthRoutes from './routes/AuthRoutes';
 import UserRoutes from "./routes/UserRoutes"; 
 import RoleRoutes from "./routes/RoleRouter";
@@ -28,6 +28,7 @@ app.listen(port, () => {
   console.log('Mongo URI:', process.env.MONGO_URI);
 });
 
+setupSwagger(app);
 
 app.use(passport.initialize());
 app.use(express.json());
@@ -50,6 +51,5 @@ app.use('/api', HealthCheckRoutes);
 app.use("/api/food", FoodRoutes);
 app.use('/api', HealthCheckRoutes);
 
-setupSwagger(app);
 
 
