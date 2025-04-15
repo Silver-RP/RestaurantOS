@@ -12,19 +12,10 @@
     "format": "prettier --write ."
   },
   "dependencies": {
-    "antd": "^5.22.7",
-    "axios": "^1.8.4",
-    "cloudinary": "^2.5.1",
-    "cloudinary-react": "^1.8.1",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
-    "react-icons": "^5.4.0",
-    "react-responsive": "^10.0.0",
-    "react-router-dom": "^7.1.1",
-    "react-slick": "^0.30.3",
-    "react-swiper": "^0.1.5",
-    "slick-carousel": "^1.8.1",
-    "swiper": "^11.2.0"
+    "@react-oauth/google": "^0.12.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-facebook-login": "^4.1.1"
   },
   "devDependencies": {
     "@eslint/js": "9.17.0",
@@ -55,5 +46,6 @@
       "eslint --fix",
       "prettier --write"
     ]
+
   }
 }
