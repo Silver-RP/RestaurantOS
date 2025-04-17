@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
+// import HealthCheckRoutes from './routes/Healthcheck';
 const HealthCheck_1 = __importDefault(require("./routes/HealthCheck"));
 const AuthRoutes_1 = __importDefault(require("./routes/AuthRoutes"));
 const UserRoutes_1 = __importDefault(require("./routes/UserRoutes"));
