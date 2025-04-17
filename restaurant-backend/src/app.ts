@@ -1,5 +1,6 @@
 import express from 'express';
-import HealthCheckRoutes from './routes/HealthCheck';
+import HealthCheckRoutes from './routes/Healthcheck';
+
 import AuthRoutes from './routes/AuthRoutes';
 import UserRoutes from "./routes/UserRoutes"; 
 import RoleRoutes from "./routes/RoleRouter";
