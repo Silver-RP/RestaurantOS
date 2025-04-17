@@ -1,15 +1,28 @@
-import jwt from "jsonwebtoken"; 
+import * as jwt from 'jsonwebtoken';
 
-/**
- * Hàm để tạo JWT token
- * @param payload Dữ liệu cần lưu trữ trong token 
- * @param secretKey Key để tạo token
- * @param expiresIn Thời gian sống của token
- * @returns JWT token
- */
-export const accessToken = (payload: object, secretKey: string, expires: string = "2h") => {
-    return jwt.sign(payload, secretKey, {expiresIn: expires});
-}
-export const refreshToken = (payload: object, secretKey: string, expires: string = "7d") => {
-    return jwt.sign(payload, secretKey, {expiresIn: expires});
-}
+export const accessToken = (
+    payload: object,
+    secretKey: string,
+    expires: number = 2 * 60 * 60 // 2 hours in seconds
+): string => {
+    try {
+        return jwt.sign(payload, secretKey, { expiresIn: expires });
+    } catch (error) {
+        console.error('Error creating access token:', error);
+        throw new Error('Token creation failed');
+    }
+};
+
+
+export const refreshToken = (
+    payload: object,
+    secretKey: string,
+    expires: string = "7d"
+): string => {
+    try {
+        return jwt.sign(payload, secretKey, { expiresIn: Number(expires) });
+    } catch (error) {
+        console.error('Error creating refresh token:', error);
+        throw new Error('Token creation failed');
+    }
+};

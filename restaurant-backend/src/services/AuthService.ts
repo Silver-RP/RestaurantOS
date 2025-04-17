@@ -147,7 +147,7 @@ class AuthService {
       const token = accessToken(
         { id: user._id, roles: user.roles },
         process.env.ACCESS_TOKEN || '',
-        '20s',
+        20,
       );
       const refresh_token = refreshToken(
         { id: user._id, role: user.roles },
@@ -177,7 +177,7 @@ class AuthService {
       const newAccessToken = accessToken(
         { id: user._id },
         process.env.ACCESS_TOKEN || '',
-        '2h',
+        2, 
       );
       return { newAccessToken };
     } catch (error: any) {
@@ -207,14 +207,14 @@ class AuthService {
         { id: user._id },
         process.env.ACCESS_TOKEN || '',
         {
-          expiresIn: '2h', // Thời gian hết hạn 2 giờ
+           expiresIn: 7200 , // Thời gian hết hạn 2 giờ
         },
       );
       const refreshToken = jwt.sign(
         { id: user._id },
         process.env.REFRESH_TOKEN || '',
         {
-          expiresIn: '365d', // Thời gian hết hạn 1 năm
+          expiresIn: 365 * 24 * 60 * 60  // Thời gian hết hạn 1 năm
         },
       );
 
@@ -248,7 +248,7 @@ class AuthService {
     const token = jwt.sign(
       { id: user._id, name: user.userName, email: user.email },
       process.env.ACCESS_TOKEN || ' ',
-      { expiresIn: '2h' },
+      {  expiresIn: 7200  },
     );
     return { token, user };
   }
@@ -295,7 +295,7 @@ class AuthService {
       const token = jwt.sign(
         { id: user._id, name: user.userName, email: user.email },
         process.env.ACCESS_TOKEN || ' ',
-        { expiresIn: '2h' },
+        {  expiresIn: 7200  },
       );
       return {
         message: 'Login successful',
@@ -337,7 +337,7 @@ class AuthService {
       const token = jwt.sign(
         { id: user._id, name: user.userName, email: user.email },
         process.env.ACCESS_TOKEN || ' ',
-        { expiresIn: '2h' },
+        {  expiresIn: 7200  },
       );
       return {
         message: 'Login successful',
