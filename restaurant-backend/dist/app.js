@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 // import HealthCheckRoutes from './routes/Healthcheck';
-const HealthCheck_1 = __importDefault(require("./routes/HealthCheck"));
+const HealthChecks_1 = __importDefault(require("./routes/HealthChecks"));
 const AuthRoutes_1 = __importDefault(require("./routes/AuthRoutes"));
 const UserRoutes_1 = __importDefault(require("./routes/UserRoutes"));
 const RoleRouter_1 = __importDefault(require("./routes/RoleRouter"));
@@ -49,6 +49,6 @@ app.use("/api/reservationcontact", ReservationContactRoutes_1.default);
 app.use("/api/reservationdetailcontact", ReservationDetailContactRoutes_1.default);
 app.use("/api/search", SearchRoutes_1.default);
 app.use("/api/staff", StaffRoutes_1.default);
-app.use('/api', HealthCheck_1.default);
+app.use('/api', HealthChecks_1.default);
 app.use("/api/food", FoodRoutes_1.default);
-app.use('/api', HealthCheck_1.default);
+app.use('/api', HealthChecks_1.default);
