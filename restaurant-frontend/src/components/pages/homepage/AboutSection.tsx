@@ -11,10 +11,10 @@ const AboutSection = () => {
             Về Chúng Tôi
           </h2>
           <h2 className="text-xs sm:text-sm md:text-base flex justify-center items-center  font-sans font-extralight uppercase tracking-widest mb-6 text-secondaryColor">
-                     <FaDiamond className="inline mr-2" style={{ fontSize: "7px" }} /> 
-                     Restaurant & Bar
-                     <FaDiamond className="inline ml-2" style={{ fontSize: "7px" }} />
-                   </h2>
+            <FaDiamond className="inline mr-2" style={{ fontSize: "7px" }} /> 
+            Restaurant & Bar
+            <FaDiamond className="inline ml-2" style={{ fontSize: "7px" }} />
+          </h2>
          
           <p className="mt-4 text-gray-300 max-w-xl md:max-w-2xl mx-auto text-sm sm:text-base">
             Nhà hàng của chúng tôi mang đến trải nghiệm ẩm thực phong cách châu
