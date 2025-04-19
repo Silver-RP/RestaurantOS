@@ -4,6 +4,9 @@ import Register from "../pages/Register";
 import Login from "../pages/Login";
 import Homepage from "../pages/Homepage";
 import WishList from "../pages/WishList";
+import ResetPassword from "../pages/ResetPassword";
+import ForgotPassword from "../pages/ForgotPassword";
+import EnterOTP from "../pages/EnterOTP";
 // import AboutUs from "../pages/AboutUs";
 
 const AppRoutes = () => {
@@ -13,6 +16,9 @@ const AppRoutes = () => {
     { path: "/register", element: <Register /> },
     { path: "/login", element: <Login /> },
     { path: "/wishlist", element: <WishList/> },
+    { path: "/reset-password", element: <ResetPassword/> }, 
+    { path: "/forgot-password", element: <ForgotPassword/> },
+    { path: "/verify-otp", element: <EnterOTP/> },
   ]);
   return routes;
 };
