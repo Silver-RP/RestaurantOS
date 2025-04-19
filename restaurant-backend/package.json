@@ -39,6 +39,7 @@
     "ts-node-dev": "^2.0.0",
     "twilio": "^5.4.0",
     "typescript": "^5.8.3",
+    "xlsx": "^0.18.5",
     "yamljs": "^0.3.0"
   },
   "devDependencies": {

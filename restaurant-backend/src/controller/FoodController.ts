@@ -1,7 +1,7 @@
 import FoodService from '../services/FoodService';
 import { Request, Response } from 'express';
 import UploadImage from '../services/UploadImage';
-import { Food } from '../models/FoodModel';
+import { Food } from '../models/DishModel';
 import SearchService from '../services/SearchService';
 import mongoose from 'mongoose';
 import  Category  from '../models/CategoryModel';

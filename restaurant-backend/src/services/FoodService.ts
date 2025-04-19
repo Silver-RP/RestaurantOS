@@ -1,4 +1,4 @@
-import { Food } from '../models/FoodModel';
+import { Food } from '../models/DishModel';
 import mongoose from 'mongoose';
 class FoodService {
   async createFood(food: any) {
