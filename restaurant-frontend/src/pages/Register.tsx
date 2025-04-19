@@ -15,7 +15,7 @@ import { useAppDispatch, useAppSelector } from '../redux/hook';
 const Register = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { loading, error, success } = useAppSelector((state) => state.auth);
+  const { error, success } = useAppSelector((state) => state.auth);
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -111,7 +111,6 @@ const Register = () => {
           </p>
           <p className="flex items-center justify-start mt-6">
             <Link to="/" className="flex items-center text-white hover:text-secondaryColor">
-              <SlActionUndo className="mr-1 text-lg" />
               <SlActionUndo className="mr-1 text-lg" />
               Quay lại trang chủ
             </Link>

@@ -10,7 +10,7 @@ import { store } from './redux/store';
 import 'react-toastify/dist/ReactToastify.css';
 const AppLayout = () => {
   const location = useLocation();
-  const hideSidebarFooter = ["/login", "/register"].includes(location.pathname);
+  const hideSidebarFooter = ["/login", "/register" , "/reset-password", "/verify-otp", "/forgot-password"].includes(location.pathname);
 
   // State quản lý Sidebar chính
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
@@ -20,9 +20,9 @@ const AppLayout = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = React.useState(false);
 
   // Quản lý trạng thái Sidebar (Desktop/Mobile)
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
+  // const toggleSidebar = () => {
+  //   setIsSidebarOpen(!isSidebarOpen);
+  // };
 
   // Quản lý chuyển đổi giữa Primary và Extended Sidebar
   const toggleSidebarExtend = () => {

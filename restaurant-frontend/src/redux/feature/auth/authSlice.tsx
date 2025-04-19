@@ -38,7 +38,6 @@ const initialState: AuthState = {
     },
     extraReducers: (builder) => {
       builder
-        // Login
         .addCase(LoginUser.pending, (state) => {
           state.loading = true;
           state.error = null;
@@ -58,7 +57,6 @@ const initialState: AuthState = {
           state.isAuthenticated = false;
         })
   
-        // Register
         .addCase(RegisterUser.pending, (state) => {
           state.loading = true;
           state.error = null;
