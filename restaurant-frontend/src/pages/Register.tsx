@@ -5,9 +5,17 @@ import { FaFacebook } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import { Link } from 'react-router-dom';
 import { SlActionUndo } from 'react-icons/sl';
-import { SlActionUndo } from 'react-icons/sl';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { RegisterUser } from '../redux/feature/auth/authActions';
 
+import { clearStatus } from '../redux/feature/auth/authSlice';
+import { useAppDispatch, useAppSelector } from '../redux/hook';
 const Register = () => {
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const { loading, error, success } = useAppSelector((state) => state.auth);
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -22,10 +30,32 @@ const Register = () => {
       [name]: value,
     }));
   };
-
+  useEffect(() => {
+    if (success) {
+      toast.success('Đăng ký thành công! 🎉');
+      navigate('/login');
+      dispatch(clearStatus());
+    }
+    if (error) {
+      toast.error(error);
+      dispatch(clearStatus());
+    }
+  }, [success, error, navigate, dispatch]);
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form Data:', formData);
+    dispatch(RegisterUser({
+      username: formData.username,
+      email: formData.email,
+      password: formData.password,
+      confirmPassword: formData.confirmPassword,
+    }));
+    console.log(formData);
+    setFormData({ 
+      username: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+    });
   };
 
   return (

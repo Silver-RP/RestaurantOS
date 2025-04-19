@@ -12,23 +12,31 @@
     "format": "prettier --write ."
   },
   "dependencies": {
+    "@reduxjs/toolkit": "^2.7.0",
     "antd": "^5.22.7",
+    "axios": "^1.8.4",
     "cloudinary": "^2.5.1",
     "cloudinary-react": "^1.8.1",
+    "dotenv": "^16.5.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-icons": "^5.4.0",
+    "react-redux": "^9.2.0",
     "react-responsive": "^10.0.0",
     "react-router-dom": "^7.1.1",
     "react-slick": "^0.30.3",
     "react-swiper": "^0.1.5",
+    "react-toastify": "^11.0.5",
+    "redux-persist": "^6.0.0",
     "slick-carousel": "^1.8.1",
     "swiper": "^11.2.0"
   },
   "devDependencies": {
     "@eslint/js": "9.17.0",
+    "@types/node": "^22.14.1",
     "@types/react": "^18.3.17",
     "@types/react-dom": "18.3.5",
+    "@types/react-redux": "^7.1.34",
     "@vitejs/plugin-react": "4.3.4",
     "autoprefixer": "^10.4.20",
     "eslint": "9.17.0",
@@ -54,6 +62,5 @@
       "eslint --fix",
       "prettier --write"
     ]
-
   }
 }
