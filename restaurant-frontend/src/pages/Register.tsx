@@ -5,7 +5,6 @@ import { FaFacebook } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import { Link } from 'react-router-dom';
 import { SlActionUndo } from 'react-icons/sl';
-import { SlActionUndo } from 'react-icons/sl';
 
 const Register = () => {
   const [formData, setFormData] = useState({
