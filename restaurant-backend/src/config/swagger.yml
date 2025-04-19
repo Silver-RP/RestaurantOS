@@ -1,11 +1,12 @@
 openapi: 3.0.0
 info:
   title: Restaurant API
-  description: API for managing restaurant
   version: 1.0.0
+  description: API for managing restaurant
+
 servers:
   - url: http://localhost:4000
-    description: Local server for testing
+    description: Local server
 paths:
   /api/auth/login:
     post:
@@ -449,7 +450,7 @@ paths:
       summary: Get all users
       description: Fetch a list of all users from the system
       security:
-        - bearerAuth: []  # Đây là nơi bạn khai báo yêu cầu xác thực với JWT (thêm phần bảo mật nếu cần)
+        - bearer: []  # Đây là nơi bạn khai báo yêu cầu xác thực với JWT (thêm phần bảo mật nếu cần)
       responses:
         '200':
           description: Successfully retrieved the list of users

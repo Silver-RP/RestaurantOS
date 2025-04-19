@@ -30,7 +30,10 @@ app.listen(port, () => {
 });
 
 setupSwagger(app);
-
+app.use("/api-docs", swaggerUi.serve, (req, res, next) => {
+  const swaggerDocument = yaml.load(path.join(__dirname, "../config/swagger.yml"));
+  return swaggerUi.setup(swaggerDocument)(req, res, next);
+});
 app.use(passport.initialize());
 app.use(express.json());
 app.use(express.urlencoded({extended: true})); 
