@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import InputComponent from '../components/pages/Login/InputComponents';
-import ButtonComponent from '../components/pages/Login/ButtonComponents';
+import InputComponent from '../components/pages/login/InputComponents';
+import ButtonComponent from '../components/pages/login/ButtonComponents';
 import { FaFacebook } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import { Link } from 'react-router-dom';
+import { SlActionUndo } from 'react-icons/sl';
 import { SlActionUndo } from 'react-icons/sl';
 
 const Register = () => {
@@ -80,6 +81,7 @@ const Register = () => {
           </p>
           <p className="flex items-center justify-start mt-6">
             <Link to="/" className="flex items-center text-white hover:text-secondaryColor">
+              <SlActionUndo className="mr-1 text-lg" />
               <SlActionUndo className="mr-1 text-lg" />
               Quay lại trang chủ
             </Link>
