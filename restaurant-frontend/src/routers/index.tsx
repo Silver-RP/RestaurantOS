@@ -9,6 +9,7 @@ import AboutUs from "../pages/AboutUs";
 const AppRoutes = () => {
   const routes = useRoutes([
     { path: "/", element: <Homepage /> },
+    { path: "/aboutus", element: <AboutUs /> },
     { path: "/register", element: <Register /> },
     { path: "/login", element: <Login /> },
     { path: "/wishlist", element: <WishList/> },
