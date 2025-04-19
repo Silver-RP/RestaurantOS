@@ -4,7 +4,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const Healthcheck_1 = __importDefault(require("./routes/Healthcheck"));
+const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
+const yamljs_1 = __importDefault(require("yamljs"));
+const path_1 = __importDefault(require("path"));
+const HealthChecks_1 = __importDefault(require("./routes/HealthChecks"));
 const AuthRoutes_1 = __importDefault(require("./routes/AuthRoutes"));
 const UserRoutes_1 = __importDefault(require("./routes/UserRoutes"));
 const RoleRouter_1 = __importDefault(require("./routes/RoleRouter"));
@@ -20,7 +23,6 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const db_1 = __importDefault(require("./config/db"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const passport_1 = __importDefault(require("passport"));
-const swagger_1 = __importDefault(require("./utils/swagger"));
 // import './insertData'; 
 dotenv_1.default.config();
 (0, db_1.default)();
@@ -30,7 +32,11 @@ app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
     console.log('Mongo URI:', process.env.MONGO_URI);
 });
-(0, swagger_1.default)(app);
+const swaggerDocument = yamljs_1.default.load(path_1.default.resolve(__dirname, './config/swagger.yml') // ✅ đúng hơn với dự án của bạn
+);
+app.use("/api-docs", swagger_ui_express_1.default.serve, (req, res, next) => {
+    return swagger_ui_express_1.default.setup(swaggerDocument)(req, res, next);
+});
 app.use(passport_1.default.initialize());
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
@@ -49,4 +55,4 @@ app.use("/api/reservationdetailcontact", ReservationDetailContactRoutes_1.defaul
 app.use("/api/search", SearchRoutes_1.default);
 app.use("/api/staff", StaffRoutes_1.default);
 app.use("/api/food", FoodRoutes_1.default);
-app.use('/api', Healthcheck_1.default);
+app.use('/api', HealthChecks_1.default);

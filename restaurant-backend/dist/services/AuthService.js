@@ -14,7 +14,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const GenerateToken_1 = require("./GenerateToken");
-const UserModel_1 = __importDefault(require("../models/UserModel"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const axios_1 = __importDefault(require("axios"));
@@ -22,6 +21,7 @@ const crypto_1 = __importDefault(require("crypto"));
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const smsService_1 = __importDefault(require("../utils/smsService"));
 dotenv_1.default.config();
+const UserModel_1 = __importDefault(require("../models/UserModel"));
 class AuthService {
     // test bằng gg => OK, và ko test được postman bởi vì postman ko có các chức của trình duyệt OAuth 2.0
     // Method handle google callback
@@ -53,7 +53,7 @@ class AuthService {
                 if (!existingUser) {
                     existingUser = new UserModel_1.default({
                         email: user.email,
-                        userName: user.name,
+                        username: user.name,
                         avatar: user.picture,
                         googleId: user.id,
                     });
@@ -75,9 +75,9 @@ class AuthService {
     register(userData) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const { userName, email, password, confirmPassword, phone, roles: roleObjectIds, } = userData;
+                const { username, email, password, confirmPassword, phone, roles: roleObjectIds, } = userData;
                 const existingUser = yield UserModel_1.default.findOne({
-                    $or: [{ email }, { userName }],
+                    $or: [{ email }, { username }],
                 });
                 if (password !== confirmPassword) {
                     throw new Error('Password do not match');
@@ -89,7 +89,7 @@ class AuthService {
                 }
                 const hashedPassword = yield bcrypt_1.default.hash(password, 10);
                 const newUser = new UserModel_1.default({
-                    userName,
+                    username,
                     email,
                     password: hashedPassword,
                     phone,
@@ -118,7 +118,7 @@ class AuthService {
                 if (!isMatch) {
                     throw new Error('Invalid credentials');
                 }
-                const token = (0, GenerateToken_1.accessToken)({ id: user._id, roles: user.roles }, process.env.ACCESS_TOKEN || '', '20s');
+                const token = (0, GenerateToken_1.accessToken)({ id: user._id, roles: user.roles }, process.env.ACCESS_TOKEN || '', 20);
                 const refresh_token = (0, GenerateToken_1.refreshToken)({ id: user._id, role: user.roles }, process.env.REFRESH_TOKEN || '', '365d');
                 return { token, user, refresh_token };
             }
@@ -140,7 +140,7 @@ class AuthService {
                     throw new Error('User not found');
                 }
                 // Tạo access token mới
-                const newAccessToken = (0, GenerateToken_1.accessToken)({ id: user._id }, process.env.ACCESS_TOKEN || '', '2h');
+                const newAccessToken = (0, GenerateToken_1.accessToken)({ id: user._id }, process.env.ACCESS_TOKEN || '', 2);
                 return { newAccessToken };
             }
             catch (error) {
@@ -152,14 +152,14 @@ class AuthService {
     googleLogin(googleUser) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const { email, googleId, userName, avatar } = googleUser;
+                const { email, googleId, username, avatar } = googleUser;
                 // Kiểm tra xem người dùng đã tồn tại chưa
                 let user = yield UserModel_1.default.findOne({ email });
                 if (!user) {
                     // Nếu không tồn tại, tạo mới
                     user = new UserModel_1.default({
                         email,
-                        userName: userName || '',
+                        username: username || '',
                         avatar: avatar || '',
                         googleId,
                     });
@@ -167,10 +167,10 @@ class AuthService {
                 }
                 // Tạo access token sau khi đăng nhập thành công
                 const accessToken = jsonwebtoken_1.default.sign({ id: user._id }, process.env.ACCESS_TOKEN || '', {
-                    expiresIn: '2h', // Thời gian hết hạn 2 giờ
+                    expiresIn: 7200, // Thời gian hết hạn 2 giờ
                 });
                 const refreshToken = jsonwebtoken_1.default.sign({ id: user._id }, process.env.REFRESH_TOKEN || '', {
-                    expiresIn: '365d', // Thời gian hết hạn 1 năm
+                    expiresIn: 365 * 24 * 60 * 60 // Thời gian hết hạn 1 năm
                 });
                 return {
                     user,
@@ -200,7 +200,7 @@ class AuthService {
                 yield user.save();
             }
             // Tạo token
-            const token = jsonwebtoken_1.default.sign({ id: user._id, name: user.userName, email: user.email }, process.env.ACCESS_TOKEN || ' ', { expiresIn: '2h' });
+            const token = jsonwebtoken_1.default.sign({ id: user._id, name: user.username, email: user.email }, process.env.ACCESS_TOKEN || ' ', { expiresIn: 7200 });
             return { token, user };
         });
     }
@@ -238,14 +238,14 @@ class AuthService {
                     });
                     yield user.save();
                 }
-                const token = jsonwebtoken_1.default.sign({ id: user._id, name: user.userName, email: user.email }, process.env.ACCESS_TOKEN || ' ', { expiresIn: '2h' });
+                const token = jsonwebtoken_1.default.sign({ id: user._id, name: user.username, email: user.email }, process.env.ACCESS_TOKEN || ' ', { expiresIn: 7200 });
                 return {
                     message: 'Login successful',
                     token: token,
                     user: {
                         id: user.id,
                         email: user.email,
-                        name: user.userName,
+                        name: user.username,
                     },
                 };
             }
@@ -279,14 +279,14 @@ class AuthService {
                     });
                     yield user.save();
                 }
-                const token = jsonwebtoken_1.default.sign({ id: user._id, name: user.userName, email: user.email }, process.env.ACCESS_TOKEN || ' ', { expiresIn: '2h' });
+                const token = jsonwebtoken_1.default.sign({ id: user._id, name: user.username, email: user.email }, process.env.ACCESS_TOKEN || ' ', { expiresIn: 7200 });
                 return {
                     message: 'Login successful',
                     token: token,
                     user: {
                         id: user.id,
                         email: user.email,
-                        name: user.userName,
+                        name: user.username,
                     },
                 };
             }

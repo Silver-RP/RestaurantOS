@@ -20,8 +20,8 @@ class AuthController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 // Gọi AuthService để xử lý đăng ký
-                const { userName, email, password, phone, roles } = req.body;
-                if (!userName || !email || !password || !phone) {
+                const { username, email, password, phone, roles } = req.body;
+                if (!username || !email || !password || !phone) {
                     return res.status(400).json({ message: "Please enter all required fields" });
                 }
                 // check email format
@@ -137,7 +137,7 @@ class AuthController {
                     id: sub,
                     email,
                     googleId: sub,
-                    userName: name,
+                    username: name,
                     avatar,
                 });
                 res.cookie('refreshToken', refreshToken, {

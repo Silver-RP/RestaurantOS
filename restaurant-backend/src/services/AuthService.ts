@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import { accessToken, refreshToken } from './GenerateToken';
-import User from '../models/UserModel';
+
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
 import { GoogleAuthExceptionMessages } from 'google-auth-library/build/src/auth/googleauth';
@@ -12,8 +12,9 @@ import nodemailer from 'nodemailer';
 import sendOtpToPhoneNumber from '../utils/smsService';
 dotenv.config();
 import mongoose from 'mongoose';
+import User from '../models/UserModel';
 interface Register {
-  userName: string;
+  username: string;
   email: string;
   password: string;
   confirmPassword?: string;
@@ -28,7 +29,7 @@ interface GoogleUser {
   id: string;
   email: string;
   googleId: string;
-  userName: string;
+  username: string;
   avatar: string;
 }
 
@@ -74,7 +75,7 @@ class AuthService {
       if (!existingUser) {
         existingUser = new User({
           email: user.email,
-          userName: user.name,
+          username: user.name,
           avatar: user.picture,
           googleId: user.id,
         });
@@ -96,7 +97,7 @@ class AuthService {
   async register(userData: Register) {
     try {
       const {
-        userName,
+        username,
         email,
         password,
         confirmPassword,
@@ -104,7 +105,7 @@ class AuthService {
         roles: roleObjectIds,
       } = userData;
       const existingUser = await User.findOne({
-        $or: [{ email }, { userName }],
+        $or: [{ email }, { username }],
       });
       if (password !== confirmPassword) {
         throw new Error('Password do not match');
@@ -117,7 +118,7 @@ class AuthService {
       const hashedPassword = await bcrypt.hash(password, 10);
     
       const newUser = new User({
-        userName,
+        username,
         email,
         password: hashedPassword,
         phone,
@@ -187,7 +188,7 @@ class AuthService {
   // Method login with google
   async googleLogin(googleUser: GoogleUser) {
     try {
-      const { email, googleId, userName, avatar } = googleUser;
+      const { email, googleId, username, avatar } = googleUser;
 
       // Kiểm tra xem người dùng đã tồn tại chưa
       let user = await User.findOne({ email });
@@ -195,7 +196,7 @@ class AuthService {
         // Nếu không tồn tại, tạo mới
         user = new User({
           email,
-          userName: userName || '',
+          username: username || '',
           avatar: avatar || '',
           googleId,
         });
@@ -246,7 +247,7 @@ class AuthService {
     }
     // Tạo token
     const token = jwt.sign(
-      { id: user._id, name: user.userName, email: user.email },
+      { id: user._id, name: user.username, email: user.email },
       process.env.ACCESS_TOKEN || ' ',
       {  expiresIn: 7200  },
     );
@@ -293,7 +294,7 @@ class AuthService {
         await user.save();
       }
       const token = jwt.sign(
-        { id: user._id, name: user.userName, email: user.email },
+        { id: user._id, name: user.username, email: user.email },
         process.env.ACCESS_TOKEN || ' ',
         {  expiresIn: 7200  },
       );
@@ -303,7 +304,7 @@ class AuthService {
         user: {
           id: user.id,
           email: user.email,
-          name: user.userName,
+          name: user.username,
         },
       };
     } catch (error: any) {
@@ -335,7 +336,7 @@ class AuthService {
         await user.save();
       }
       const token = jwt.sign(
-        { id: user._id, name: user.userName, email: user.email },
+        { id: user._id, name: user.username, email: user.email },
         process.env.ACCESS_TOKEN || ' ',
         {  expiresIn: 7200  },
       );
@@ -345,7 +346,7 @@ class AuthService {
         user: {
           id: user.id,
           email: user.email,
-          name: user.userName,
+          name: user.username,
         },
       };
     } catch (error: any) {
