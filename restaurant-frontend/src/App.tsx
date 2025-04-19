@@ -4,7 +4,10 @@ import AppRoutes from "./routers";
 import Footer from "./components/layout/footer/Footer";
 import ExtendSidebar from "./components/layout/sidebar/ExtendSidebar";
 import PrimarySidebar from "./components/layout/sidebar/PrimarySidebar";
-
+import { ToastContainer } from 'react-toastify';
+import { Provider } from 'react-redux';
+import { store } from './redux/store';
+import 'react-toastify/dist/ReactToastify.css';
 const AppLayout = () => {
   const location = useLocation();
   const hideSidebarFooter = ["/login", "/register"].includes(location.pathname);
@@ -124,9 +127,12 @@ const AppLayout = () => {
 
 const App = () => {
   return (
-    <Router>
-      <AppLayout />
-    </Router>
+    <Provider store={store}>
+      <Router>
+        <ToastContainer />
+        <AppLayout />
+      </Router>
+    </Provider>
   );
 };
 
