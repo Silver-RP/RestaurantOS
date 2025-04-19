@@ -7,7 +7,7 @@ export interface IProduct extends mongoose.Document {
     discount_price?: number;
     description: string;
     shortDescription?: string;
-    ingredientsDescription?: string;
+    ingredientsl?: string;
     status: 'hidden' | 'available' | 'soldout';
     views: number;
     ordered_count: number;
@@ -26,7 +26,7 @@ const dishSchema = new mongoose.Schema({
     discount_price: { type: Number, min: 0 },
     description: { type: String, required: true },
     shortDescription: { type: String },
-    ingredientsDescription: { type: String },
+    ingredientsl: { type: String },
     status: { 
         type: String, 
         enum: ['hidden', 'available', 'soldout'],
@@ -34,10 +34,11 @@ const dishSchema = new mongoose.Schema({
     },
     views: { type: Number, default: 0 },
     ordered_count: { type: Number, default: 0 },
-    average_rating: { type: Number, default: 0 },
     rating_count: { type: Number, default: 0 },
+    rating: { type: Number, default: 0 }, 
+    average_rating: { type: Number, default: 0 },
     favorites_count: { type: Number, default: 0 },
-    rating: { type: Number, default: 0 },
+    
     categories: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'categories',
