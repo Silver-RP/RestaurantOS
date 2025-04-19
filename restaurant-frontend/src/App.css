@@ -7,15 +7,40 @@
   padding: 0;
   box-sizing: border-box;
 }
+
 body {
   @apply font-sans;
   background-color: #012b40;
 }
+
 .hide-scrollbar {
   -ms-overflow-style: none;
-  scrollbar-width: none;
+  scrollbar-width: none; 
 }
 
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+.scrollbar-custom {
+  scrollbar-width: thin;
+  scrollbar-color: #FFDEA0 transparent;
+}
+
+.scrollbar-custom::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background-color: #FFDEA0;
+  border-radius: 8px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+  background-color: #F5B955
+  ;
 }
