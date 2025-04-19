@@ -14,12 +14,12 @@ import SearchRoutes from "./routes/SearchRoutes";
 import StaffRoutes from "./routes/StaffRoutes";
 import FoodRoutes from "./routes/FoodRoutes";
 import PermissionRoutes from "./routes/PermissionRoutes";
-import dotenv from 'dotenv';
 import connectDB from './config/db';
 import cookieParser from "cookie-parser"; 
 import passport from "passport"; 
 import  setupSwagger from './utils/swagger';
 // import './insertData'; 
+import dotenv from "dotenv";
 dotenv.config();
 connectDB();
 
