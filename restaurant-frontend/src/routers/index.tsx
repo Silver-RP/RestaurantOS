@@ -7,6 +7,7 @@ import WishList from "../pages/WishList";
 import ResetPassword from "../pages/ResetPassword";
 import ForgotPassword from "../pages/ForgotPassword";
 import EnterOTP from "../pages/EnterOTP";
+import ProfilePage from "../pages/Profile";
 // import AboutUs from "../pages/AboutUs";
 
 const AppRoutes = () => {
@@ -19,6 +20,7 @@ const AppRoutes = () => {
     { path: "/reset-password", element: <ResetPassword/> }, 
     { path: "/forgot-password", element: <ForgotPassword/> },
     { path: "/verify-otp", element: <EnterOTP/> },
+    { path: "/profile", element: <ProfilePage/> },
   ]);
   return routes;
 };
