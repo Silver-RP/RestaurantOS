@@ -20,8 +20,8 @@ class AuthController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 // Gọi AuthService để xử lý đăng ký
-                const { userName, email, password, phone, roles } = req.body;
-                if (!userName || !email || !password || !phone) {
+                const { username, email, password, phone, roles } = req.body;
+                if (!username || !email || !password || !phone) {
                     return res.status(400).json({ message: "Please enter all required fields" });
                 }
                 // check email format
@@ -137,7 +137,7 @@ class AuthController {
                     id: sub,
                     email,
                     googleId: sub,
-                    userName: name,
+                    username: name,
                     avatar,
                 });
                 res.cookie('refreshToken', refreshToken, {
@@ -177,46 +177,6 @@ class AuthController {
             }
             catch (error) {
                 next(error);
-            }
-        });
-    }
-    // Method to handle Facebook login
-    facebookLogin(req, res) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const { accessToken } = req.body;
-                if (!accessToken) {
-                    return res.status(400).json({ message: 'No access token provided' });
-                }
-                const result = yield AuthService_1.default.facebookLogin(accessToken);
-                res.status(200).json({
-                    message: 'Facebook login successful',
-                    token: result.token,
-                    user: result.user,
-                });
-            }
-            catch (error) {
-                res.status(400).json({ message: error.message });
-            }
-        });
-    }
-    // Method to handle Facebook callback
-    facebookCallback(req, res) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const { code } = req.query;
-                if (!code) {
-                    return res.status(400).json({ message: 'No code provided' });
-                }
-                const result = yield AuthService_1.default.handleFacebookCallBack(code);
-                res.status(200).json({
-                    message: 'Facebook login successful',
-                    token: result.token,
-                    user: result.user,
-                });
-            }
-            catch (error) {
-                res.status(400).json({ message: error.message });
             }
         });
     }

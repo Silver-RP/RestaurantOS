@@ -1,5 +1,8 @@
 import express from 'express';
-import HealthCheckRoutes from './routes/HealthCheck';
+import swaggerUi from 'swagger-ui-express';
+import yaml from 'yamljs';
+import path from 'path';
+import HealthCheckRoutes from './routes/HealthChecks';
 import AuthRoutes from './routes/AuthRoutes';
 import UserRoutes from "./routes/UserRoutes"; 
 import RoleRoutes from "./routes/RoleRouter";
@@ -11,12 +14,12 @@ import SearchRoutes from "./routes/SearchRoutes";
 import StaffRoutes from "./routes/StaffRoutes";
 import FoodRoutes from "./routes/FoodRoutes";
 import PermissionRoutes from "./routes/PermissionRoutes";
-import dotenv from 'dotenv';
 import connectDB from './config/db';
 import cookieParser from "cookie-parser"; 
 import passport from "passport"; 
 import  setupSwagger from './utils/swagger';
 // import './insertData'; 
+import dotenv from "dotenv";
 dotenv.config();
 connectDB();
 
@@ -26,9 +29,13 @@ app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
   console.log('Mongo URI:', process.env.MONGO_URI);
 });
+const swaggerDocument = yaml.load(
+  path.resolve(__dirname, './config/swagger.yml') // ✅ đúng hơn với dự án của bạn
+);
 
-setupSwagger(app);
-
+app.use("/api-docs", swaggerUi.serve, (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  return swaggerUi.setup(swaggerDocument)(req, res, next);
+});
 app.use(passport.initialize());
 app.use(express.json());
 app.use(express.urlencoded({extended: true})); 
