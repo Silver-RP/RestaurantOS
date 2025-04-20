@@ -27,7 +27,7 @@ npm run dev
  <!-- 
 https://accounts.google.com/o/oauth2/v2/auth?response_type=code
 &client_id=562504444218-up7shkr6un8gcoiuu4h201vnj5ahdvfc.apps.googleusercontent.com
-&redirect_uri=http://localhost:3003/api/auth/google/callback
+&redirect_uri=http://localhost:4000/api/auth/google/callback
 &scope=email%20profile
 &access_type=offline
 
