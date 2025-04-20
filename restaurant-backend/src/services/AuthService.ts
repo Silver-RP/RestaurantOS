@@ -350,6 +350,75 @@ class AuthService {
     otpRecord.isVerified = true;
     await otpRecord.save();
   }
+  async sendOtpFlexible(identifier: string): Promise<{ message: string }> {
+    try {
+      let user;
+      const otp = crypto.randomInt(100000, 999999).toString();
+      const expireAt = new Date(Date.now() + 5 * 60 * 1000); // 5 phút
+  
+      const phoneRegex = /^(\+84|0)(3|5|7|8|9)\d{8}$/;
+      const emailRegex = /^[a-zA-Z0-9](\.?[a-zA-Z0-9_-])*[a-zA-Z0-9]@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
+  
+      if (phoneRegex.test(identifier)) {
+        // ✅ Kiểm tra tồn tại user theo số điện thoại
+        user = await User.findOne({ phone: identifier });
+        if (!user) {
+          throw new Error('Số điện thoại không tồn tại trong hệ thống');
+        }
+  
+        user.otp = otp;
+        user.otpExpiry = expireAt;
+        await user.save();
+        await sendOtpToPhoneNumber.sendOtpToPhoneNumber(identifier, otp);
+        return { message: 'OTP đã được gửi qua số điện thoại' };
+      } else if (emailRegex.test(identifier)) {
+        // ✅ Kiểm tra tồn tại user theo email
+        user = await User.findOne({ email: identifier });
+        if (!user) {
+          throw new Error('Email không tồn tại trong hệ thống');
+        }
+  
+        const now = new Date();
+        const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+  
+        if (user.otpSentCount >= 5 && user.lastOtpSentAt > oneHourAgo) {
+          throw new Error('Bạn đã vượt quá số lần gửi OTP. Vui lòng thử lại sau');
+        }
+  
+        user.otp = otp;
+        user.otpExpiry = expireAt;
+        user.otpSentCount += 1;
+        user.lastOtpSentAt = now;
+        await user.save();
+  
+        const transporter = nodemailer.createTransport({
+          host: process.env.MAIL_HOST,
+          port: Number(process.env.MAIL_PORT),
+          secure: process.env.MAIL_ENCRYPTION === 'ssl',
+          auth: {
+            user: process.env.MAIL_USERNAME,
+            pass: process.env.MAIL_PASSWORD,
+          },
+        });
+  
+        const mailOptions = {
+          from: process.env.MAIL_FROM_ADDRESS,
+          to: identifier,
+          subject: 'OTP for verification',
+          text: `Your OTP is ${otp}. It will expire in 5 minutes`,
+        };
+  
+        await transporter.sendMail(mailOptions);
+        return { message: 'OTP đã được gửi qua email' };
+      } else {
+        throw new Error('Số điện thoại hoặc email không hợp lệ');
+      }
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
+  
+  
 }
 export default new AuthService();
 
