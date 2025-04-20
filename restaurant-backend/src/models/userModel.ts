@@ -104,6 +104,10 @@ const userSchema = new mongoose.Schema({
     lastOtpSentAt: {
         type: Date, 
         default: Date.now, 
+    }, 
+    confirmPassword : {
+        type: String, 
+        required: false, 
     }
 },{
     timestamps: true
