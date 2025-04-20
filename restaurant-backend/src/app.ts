@@ -18,12 +18,19 @@ import connectDB from './config/db';
 import cookieParser from "cookie-parser"; 
 import passport from "passport"; 
 import  setupSwagger from './utils/swagger';
-// import './insertData'; 
 import dotenv from "dotenv";
+import cors from 'cors';
+const app = express();
+
 dotenv.config();
 connectDB();
 
-const app = express();
+app.use(express.urlencoded({ extended: true }));
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true 
+}));
+app.use(express.json());
 const port = process.env.PORT || 4000;
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);

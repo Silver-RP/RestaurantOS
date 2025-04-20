@@ -90,7 +90,6 @@ class AuthService {
       throw error;
     }
   }
-
   // Method register user
   async register(userData: Register) {
     try {
@@ -99,7 +98,6 @@ class AuthService {
         email,
         password,
         confirmPassword,
-        phone, 
         roles: roleObjectIds,
       } = userData;
       const existingUser = await User.findOne({
@@ -119,14 +117,12 @@ class AuthService {
         username,
         email,
         password: hashedPassword,
-        phone,
         roles: roleObjectIds,
       });
       await newUser.save();
       return newUser;
     } catch (error: any) {
-      console.error('Error during user registration:', error);
-      throw new Error('Error during user registration: ' + error.message);
+      throw new Error(error.message);
     }
   }
   // Method login user

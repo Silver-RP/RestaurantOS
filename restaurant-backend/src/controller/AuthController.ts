@@ -9,24 +9,19 @@ class AuthController {
   // Method to register a new user
   async register(req: Request, res: Response): Promise<any> {
     try {
-      // Gọi AuthService để xử lý đăng ký
-      const {username, email, password, phone, roles} = req.body; 
-      if(!username || !email || !password || !phone){
+  
+      const {username, email, password,confirmPassword ,  roles} = req.body; 
+      if(!username || !email || !password || !confirmPassword){
         return res.status(400).json({message: "Please enter all required fields"});
       }
-      // check email format
+      if (password !== confirmPassword) {
+        return res.status(400).json({ message: 'Error during user registration: Password do not match' });
+      }    
       const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
       const isCheckEmail = reg.test(email);
       if (!isCheckEmail) {
         return res.status(400).json({ message: 'Invalid email format' });
       }
-      // Check phone format
-      const regPhone = /^\+?[0-9]{10,11}$/;
-      const isCheckPhone = regPhone.test(phone);
-      if (!isCheckPhone) {
-        return res.status(400).json({ message: 'Invalid phone format' });
-      }
-      // Check password format
       const regPassword =
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/;
       const isCheckPassword = regPassword.test(password);
