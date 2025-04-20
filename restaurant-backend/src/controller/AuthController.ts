@@ -172,40 +172,6 @@ class AuthController {
       next(error);
     }
   }
-  // Method to handle Facebook login
-  async facebookLogin(req: Request, res: Response): Promise<any> {
-    try {
-      const { accessToken } = req.body;
-      if (!accessToken) {
-        return res.status(400).json({ message: 'No access token provided' });
-      }
-      const result = await AuthService.facebookLogin(accessToken);
-      res.status(200).json({
-        message: 'Facebook login successful',
-        token: result.token,
-        user: result.user,
-      });
-    } catch (error: any) {
-      res.status(400).json({ message: error.message });
-    }
-  }
-  // Method to handle Facebook callback
-  async facebookCallback(req: Request, res: Response): Promise<any> {
-    try {
-      const { code } = req.query;
-      if (!code) {
-        return res.status(400).json({ message: 'No code provided' });
-      }
-      const result = await AuthService.handleFacebookCallBack(code as string);
-      res.status(200).json({
-        message: 'Facebook login successful',
-        token: result.token,
-        user: result.user,
-      });
-    } catch (error: any) {
-      res.status(400).json({ message: error.message });
-    }
-  }
   // Method to logout a user
   async Logout(req: Request, res: Response): Promise<any> {
     try {

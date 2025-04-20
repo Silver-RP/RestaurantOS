@@ -1,6 +1,5 @@
 import bcrypt from 'bcrypt';
 import { accessToken, refreshToken } from './GenerateToken';
-
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
 import { GoogleAuthExceptionMessages } from 'google-auth-library/build/src/auth/googleauth';
@@ -8,7 +7,6 @@ import axios from 'axios';
 import { log } from 'console';
 import crypto from 'crypto';
 import nodemailer from 'nodemailer';
-
 import sendOtpToPhoneNumber from '../utils/smsService';
 dotenv.config();
 import mongoose from 'mongoose';
@@ -153,7 +151,7 @@ class AuthService {
       const refresh_token = refreshToken(
         { id: user._id, role: user.roles },
         process.env.REFRESH_TOKEN || '',
-        '365d',
+        365 * 24 * 60 * 60, 
       );
       return { token, user, refresh_token };
     } catch (error: any) {
@@ -227,130 +225,6 @@ class AuthService {
     } catch (error: any) {
       // Xử lý lỗi khi đăng nhập Google
       throw new Error('Error during Google login: ' + error.message);
-    }
-  }
-
-  // Method login with facebook
-  async loginFaceBook(profile: any) {
-    let user = await User.findOne({ facebookId: profile.id });
-
-    if (!user) {
-      user = new User({
-        email: profile.email,
-        userName: profile.name,
-        avatar: profile.picture.data.url,
-        facebookId: profile.id,
-        isAdmin: false,
-        isCashier: false,
-      });
-      await user.save();
-    }
-    // Tạo token
-    const token = jwt.sign(
-      { id: user._id, name: user.username, email: user.email },
-      process.env.ACCESS_TOKEN || ' ',
-      {  expiresIn: 7200  },
-    );
-    return { token, user };
-  }
-  // Method handle facebook callback
-  async handleFacebookCallBack(code: string): Promise<any> {
-    try {
-      const response = await axios.post(
-        `https://graph.facebook.com/v21.0/oauth/access_token`,
-        {
-          params: {
-            code: code,
-            client_id: process.env.FB_CLIENT_ID,
-            client_secret: process.env.FB_CLIENT_SECRET,
-            redirect_uri: process.env.FB_REDIRECT_URI,
-          },
-        },
-      );
-      console.log(response.data);
-
-      const accessToken = response.data.access_token;
-      const userResponse = await axios.get(
-        `https://graph.facebook.com/v21.0/me`,
-        {
-          params: {
-            fields: 'id,name,email,picture',
-            access_token: accessToken,
-          },
-        },
-      );
-      const facebookUser = userResponse.data;
-      console.log(facebookUser);
-      let user = await User.findOne({ email: facebookUser.email });
-      if (!user) {
-        user = new User({
-          email: facebookUser.email,
-          userName: facebookUser.name,
-          avatar: facebookUser.picture.data.url,
-          facebookId: facebookUser.id,
-          isAdmin: false,
-          isCashier: false,
-        });
-        await user.save();
-      }
-      const token = jwt.sign(
-        { id: user._id, name: user.username, email: user.email },
-        process.env.ACCESS_TOKEN || ' ',
-        {  expiresIn: 7200  },
-      );
-      return {
-        message: 'Login successful',
-        token: token,
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.username,
-        },
-      };
-    } catch (error: any) {
-      console.error('Error during Facebook OAuth callback:', error);
-      throw new Error('Error during Facebook OAuth callback: ' + error.message);
-    }
-  }
-  // Method facebook login
-  async facebookLogin(accessToken: string) {
-    try {
-      const response = await axios.get(`https://graph.facebook.com/v12.0/me`, {
-        params: {
-          fields: 'id,name,email,picture',
-          access_token: accessToken,
-        },
-      });
-      const facebookUser = response.data;
-      console.log(facebookUser);
-      let user = await User.findOne({ email: facebookUser.email });
-      if (!user) {
-        user = new User({
-          email: facebookUser.email,
-          userName: facebookUser.name,
-          avatar: facebookUser.picture.data.url,
-          facebookId: facebookUser.id,
-          isAdmin: false,
-          isCashier: false,
-        });
-        await user.save();
-      }
-      const token = jwt.sign(
-        { id: user._id, name: user.username, email: user.email },
-        process.env.ACCESS_TOKEN || ' ',
-        {  expiresIn: 7200  },
-      );
-      return {
-        message: 'Login successful',
-        token: token,
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.username,
-        },
-      };
-    } catch (error: any) {
-      throw new Error(error.message);
     }
   }
 

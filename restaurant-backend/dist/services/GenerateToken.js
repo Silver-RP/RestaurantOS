@@ -45,9 +45,9 @@ const accessToken = (payload, secretKey, expires = 2 * 60 * 60) => {
     }
 };
 exports.accessToken = accessToken;
-const refreshToken = (payload, secretKey, expires = "7d") => {
+const refreshToken = (payload, secretKey, expires) => {
     try {
-        return jwt.sign(payload, secretKey, { expiresIn: Number(expires) });
+        return jwt.sign(payload, secretKey, { expiresIn: expires });
     }
     catch (error) {
         console.error('Error creating refresh token:', error);

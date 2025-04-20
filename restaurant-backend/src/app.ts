@@ -4,6 +4,7 @@ import swaggerJsdoc from 'swagger-jsdoc';
 import { generateSwaggerSpec, getSwaggerRoutes } from './utils/swaggerOptions';
 import HealthCheckRoutes from './routes/HealthChecks';
 import AuthRoutes from './routes/AuthRoutes';
+<<<<<<< HEAD
 import UserRoutes from './routes/UserRoutes';
 import RoleRoutes from './routes/RoleRouter';
 import CateRoutes from './routes/CategoryRoutes';
@@ -22,6 +23,24 @@ import passport from 'passport';
 // Import file authSwagger để đăng ký metadata
 import './swaggers/AuthSwagger';
 
+=======
+import UserRoutes from "./routes/UserRoutes"; 
+import RoleRoutes from "./routes/RoleRouter";
+import CateRoutes from "./routes/CategoryRoutes";
+import ReservationContactRoutes from "./routes/ReservationContactRoutes";
+import ReservationDetailContactRoutes from "./routes/ReservationDetailContactRoutes";
+import ProfileRoutes from "./routes/ProfileRoutes";
+import SearchRoutes from "./routes/SearchRoutes";
+import StaffRoutes from "./routes/StaffRoutes";
+import FoodRoutes from "./routes/FoodRoutes";
+import PermissionRoutes from "./routes/PermissionRoutes";
+import connectDB from './config/db';
+import cookieParser from "cookie-parser"; 
+import passport from "passport"; 
+import  setupSwagger from './utils/swagger';
+// import './insertData'; 
+import dotenv from "dotenv";
+>>>>>>> 9c4a43f0818496da05aedd45d40c75f55c49b530
 dotenv.config();
 connectDB();
 

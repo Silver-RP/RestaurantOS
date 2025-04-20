@@ -119,7 +119,7 @@ class AuthService {
                     throw new Error('Invalid credentials');
                 }
                 const token = (0, GenerateToken_1.accessToken)({ id: user._id, roles: user.roles }, process.env.ACCESS_TOKEN || '', 20);
-                const refresh_token = (0, GenerateToken_1.refreshToken)({ id: user._id, role: user.roles }, process.env.REFRESH_TOKEN || '', '365d');
+                const refresh_token = (0, GenerateToken_1.refreshToken)({ id: user._id, role: user.roles }, process.env.REFRESH_TOKEN || '', 365 * 24 * 60 * 60);
                 return { token, user, refresh_token };
             }
             catch (error) {
@@ -181,117 +181,6 @@ class AuthService {
             catch (error) {
                 // Xử lý lỗi khi đăng nhập Google
                 throw new Error('Error during Google login: ' + error.message);
-            }
-        });
-    }
-    // Method login with facebook
-    loginFaceBook(profile) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let user = yield UserModel_1.default.findOne({ facebookId: profile.id });
-            if (!user) {
-                user = new UserModel_1.default({
-                    email: profile.email,
-                    userName: profile.name,
-                    avatar: profile.picture.data.url,
-                    facebookId: profile.id,
-                    isAdmin: false,
-                    isCashier: false,
-                });
-                yield user.save();
-            }
-            // Tạo token
-            const token = jsonwebtoken_1.default.sign({ id: user._id, name: user.username, email: user.email }, process.env.ACCESS_TOKEN || ' ', { expiresIn: 7200 });
-            return { token, user };
-        });
-    }
-    // Method handle facebook callback
-    handleFacebookCallBack(code) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const response = yield axios_1.default.post(`https://graph.facebook.com/v21.0/oauth/access_token`, {
-                    params: {
-                        code: code,
-                        client_id: process.env.FB_CLIENT_ID,
-                        client_secret: process.env.FB_CLIENT_SECRET,
-                        redirect_uri: process.env.FB_REDIRECT_URI,
-                    },
-                });
-                console.log(response.data);
-                const accessToken = response.data.access_token;
-                const userResponse = yield axios_1.default.get(`https://graph.facebook.com/v21.0/me`, {
-                    params: {
-                        fields: 'id,name,email,picture',
-                        access_token: accessToken,
-                    },
-                });
-                const facebookUser = userResponse.data;
-                console.log(facebookUser);
-                let user = yield UserModel_1.default.findOne({ email: facebookUser.email });
-                if (!user) {
-                    user = new UserModel_1.default({
-                        email: facebookUser.email,
-                        userName: facebookUser.name,
-                        avatar: facebookUser.picture.data.url,
-                        facebookId: facebookUser.id,
-                        isAdmin: false,
-                        isCashier: false,
-                    });
-                    yield user.save();
-                }
-                const token = jsonwebtoken_1.default.sign({ id: user._id, name: user.username, email: user.email }, process.env.ACCESS_TOKEN || ' ', { expiresIn: 7200 });
-                return {
-                    message: 'Login successful',
-                    token: token,
-                    user: {
-                        id: user.id,
-                        email: user.email,
-                        name: user.username,
-                    },
-                };
-            }
-            catch (error) {
-                console.error('Error during Facebook OAuth callback:', error);
-                throw new Error('Error during Facebook OAuth callback: ' + error.message);
-            }
-        });
-    }
-    // Method facebook login
-    facebookLogin(accessToken) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const response = yield axios_1.default.get(`https://graph.facebook.com/v12.0/me`, {
-                    params: {
-                        fields: 'id,name,email,picture',
-                        access_token: accessToken,
-                    },
-                });
-                const facebookUser = response.data;
-                console.log(facebookUser);
-                let user = yield UserModel_1.default.findOne({ email: facebookUser.email });
-                if (!user) {
-                    user = new UserModel_1.default({
-                        email: facebookUser.email,
-                        userName: facebookUser.name,
-                        avatar: facebookUser.picture.data.url,
-                        facebookId: facebookUser.id,
-                        isAdmin: false,
-                        isCashier: false,
-                    });
-                    yield user.save();
-                }
-                const token = jsonwebtoken_1.default.sign({ id: user._id, name: user.username, email: user.email }, process.env.ACCESS_TOKEN || ' ', { expiresIn: 7200 });
-                return {
-                    message: 'Login successful',
-                    token: token,
-                    user: {
-                        id: user.id,
-                        email: user.email,
-                        name: user.username,
-                    },
-                };
-            }
-            catch (error) {
-                throw new Error(error.message);
             }
         });
     }
