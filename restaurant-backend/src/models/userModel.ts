@@ -2,7 +2,7 @@ import mongoose, { Schema, Document , Model } from "mongoose";
 import mongoosePaginate from 'mongoose-paginate-v2';
 
 export interface IUser extends Document {
-    userName: string;
+    username: string;
     email: string;
     password: string | null;
     birthday?: Date | null;
@@ -25,7 +25,7 @@ export interface IUser extends Document {
 }
 
 const userSchema = new mongoose.Schema({
-    userName: {
+    username: {
         type: String, 
         required: false, 
         trim: true, 

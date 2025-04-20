@@ -1,11 +1,20 @@
 openapi: 3.0.0
 info:
   title: Restaurant API
-  description: API for managing restaurant
   version: 1.0.0
+  description: API for managing restaurant
+
 servers:
-  - url: http://localhost:3003
-    description: Local server for testing
+  - url: http://localhost:4000
+    description: Local server
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - bearer: []
 paths:
   /api/auth/login:
     post:
@@ -20,7 +29,7 @@ paths:
             schema:
               type: object
               properties:
-                username:
+                email:
                   type: string
                   example: 'user123'
                 password:
@@ -67,7 +76,334 @@ paths:
                   message:
                     type: string
                     example: 'Internal server error'
-
+  /api/auth/register:
+    post:
+      tags:
+        - Auth
+      summary: Register a new user
+      description: Endpoint for user registration with validation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - email
+                - password
+                - confirmPassword
+                - phone
+              properties:
+                username:
+                  type: string
+                  example: 'john_doe'
+                email:
+                  type: string
+                  format: email
+                  example: 'john@example.com'
+                password:
+                  type: string
+                  format: password
+                  example: 'Password123'
+                confirmPassword:
+                  type: string
+                  format: password
+                  example: 'Password123'
+                phone:
+                  type: string
+                  example: '0912345678'
+                roles:
+                  type: array
+                  items:
+                    type: string
+                  example: ['6630e3677ff61b69377ee0ec']
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'User created successfully'
+                  user:
+                    type: object
+                    properties:
+                      _id:
+                        type: string
+                        example: '6630e50c81dcf4195438f58b'
+                      username:
+                        type: string
+                        example: 'john_doe'
+                      email:
+                        type: string
+                        example: 'john@example.com'
+                      phone:
+                        type: string
+                        example: '0912345678'
+                      roles:
+                        type: array
+                        items:
+                          type: string
+        '400':
+          description: Bad request (e.g., invalid input or email/username already exists)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Invalid email format'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Error during user registration'
+  /api/auth/google-login:
+    post:
+      tags:
+        - Auth
+      summary: Login with Google
+      description: Verify Google token and log in or register the user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  description: Google ID token retrieved from frontend (Google sign-in)
+                  example: "eyJhbGciOiJSUzI1NiIsImtpZCI6IjU4Y..."
+      responses:
+        '200':
+          description: Google login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Google login successful"
+                  user:
+                    type: object
+                    properties:
+                      _id:
+                        type: string
+                        example: "661cc0f5e9a2bb0d4f69b123"
+                      username:
+                        type: string
+                        example: "John Doe"
+                      email:
+                        type: string
+                        example: "john.doe@gmail.com"
+                      avatar:
+                        type: string
+                        example: "https://lh3.googleusercontent.com/a/..."
+                  accessToken:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        '400':
+          description: Invalid Google token or error during login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Error during Google login"
+                  error:
+                    type: string
+                    example: "Access Denied - Invalid Google token"
+        '401':
+          description: Unauthorized - Missing or invalid token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Access Denied - No token provided"
+  /api/auth/forgot-password:
+    post:
+      tags:
+        - Auth
+      summary: Send OTP for password reset
+      description: Send a one-time password (OTP) to the user's phone number for resetting password.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - phone
+              properties:
+                phone:
+                  type: string
+                  description: Phone number to receive OTP (must be in correct format)
+                  example: "+84901234567"
+      responses:
+        '200':
+          description: OTP sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "OTP sent successfully"
+        '400':
+          description: Bad request (e.g., phone number missing or invalid)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Phone number is required"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Failed to send OTP"
+    
+      tags:
+        - Auth
+      summary: Reset password
+      description: Reset user password via phone number after verifying OTP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - phone
+                - newPassword
+                - confirmPassword
+              properties:
+                phone:
+                  type: string
+                  example: '0912345678'
+                newPassword:
+                  type: string
+                  format: password
+                  example: 'NewPassword123'
+                confirmPassword:
+                  type: string
+                  format: password
+                  example: 'NewPassword123'
+      responses:
+        '200':
+          description: Password reset successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Password reset successfully'
+        '400':
+          description: Bad request (e.g., missing fields, passwords do not match, invalid phone)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Passwords do not match'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Internal server error'
+  /api/auth/reset-password:
+    post:
+      tags:
+        - Auth
+      summary: Reset password
+      description: Reset user password via phone number after verifying OTP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - phone
+                - newPassword
+                - confirmPassword
+              properties:
+                phone:
+                  type: string
+                  example: '0912345678'
+                newPassword:
+                  type: string
+                  format: password
+                  example: 'NewPassword123'
+                confirmPassword:
+                  type: string
+                  format: password
+                  example: 'NewPassword123'
+      responses:
+        '200':
+          description: Password reset successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Password reset successfully'
+        '400':
+          description: Bad request (e.g., missing fields, passwords do not match, invalid phone)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Passwords do not match'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Internal server error'
   # Staff Controller
   /api/staff/getAllStaff:
     get:
@@ -448,8 +784,6 @@ paths:
         - User
       summary: Get all users
       description: Fetch a list of all users from the system
-      security:
-        - bearerAuth: []  # Đây là nơi bạn khai báo yêu cầu xác thực với JWT (thêm phần bảo mật nếu cần)
       responses:
         '200':
           description: Successfully retrieved the list of users
