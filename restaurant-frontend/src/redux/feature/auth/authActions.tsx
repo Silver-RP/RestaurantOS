@@ -9,17 +9,19 @@ export const RegisterUser = createAsyncThunk(
     'auth/register',
     async (payload: RegisterPayload, { rejectWithValue }) => {
         try {
+            console.log("BASE_URL_REGISTER", BASE_URL_REGISTER);
             const response = await axios.post(`${BASE_URL_REGISTER}/register`, payload, {
                 headers: {
                     'Content-Type': 'application/json',
                 },
             });
+            console.log("response", response.data);
+            
             return response.data;
         } catch (error: unknown) {
-            if (axios.isAxiosError(error) && error.response) {
-                return rejectWithValue(error.response.data.message);
-            }
-            return rejectWithValue('An unexpected error occurred');
+            if (axios.isAxiosError(error)) {
+                return rejectWithValue(error.response?.data.message || 'Đăng ký thất bại, vui lòng thử lại');
+              }
         }
     }
 )
