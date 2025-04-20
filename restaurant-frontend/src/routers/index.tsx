@@ -8,6 +8,7 @@ import ResetPassword from "../pages/ResetPassword";
 import ForgotPassword from "../pages/ForgotPassword";
 import EnterOTP from "../pages/EnterOTP";
 import ProfilePage from "../pages/Profile";
+import ProductDetail from "../pages/ProductDetail";
 // import AboutUs from "../pages/AboutUs";
 
 const AppRoutes = () => {
@@ -21,6 +22,7 @@ const AppRoutes = () => {
     { path: "/forgot-password", element: <ForgotPassword/> },
     { path: "/verify-otp", element: <EnterOTP/> },
     { path: "/profile", element: <ProfilePage/> },
+    { path: "/productdetail", element: <ProductDetail/> },
   ]);
   return routes;
 };
