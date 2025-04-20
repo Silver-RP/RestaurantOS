@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 
 import { FaFacebook } from 'react-icons/fa';
 import { FcGoogle } from 'react-icons/fc';
@@ -14,6 +14,10 @@ import { useAppDispatch, useAppSelector } from '../redux/hook';
 import ButtonComponent from '../components/pages/Login/ButtonComponents';
 import InputComponent from '../components/pages/Login/InputComponents';
 const Register = () => {
+  const usernameRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+  const confirmPasswordRef = useRef<HTMLInputElement>(null);
   const [hasErrorToast, setHasErrorToast] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,6 +36,10 @@ const Register = () => {
     password: '',
     confirmPassword: '',
   });
+  useEffect(() => {
+    usernameRef.current?.focus();
+  }, []);
+  
   const isFormValid = (): boolean => {
     const { username, email, password, confirmPassword } = formData;
     const emailRegex = /^[a-zA-Z0-9](\.?[a-zA-Z0-9_-])*[a-zA-Z0-9]@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
@@ -147,7 +155,12 @@ const Register = () => {
       }, 800);
     });
   };
-  
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, nextRef?: React.RefObject<HTMLInputElement>) => {
+    if (e.key === 'Enter' && nextRef?.current) {
+      e.preventDefault();
+      nextRef.current.focus();
+    }
+  };
 
   return (
     <div className="flex justify-center items-center bg-[url('/assets/images/register/background.jpg')] bg-cover bg-center w-full h-screen">
@@ -162,6 +175,9 @@ const Register = () => {
             placeholder="Tên tài khoản"
             name="username"
             onChange={handleChange}
+            ref={usernameRef}
+            onKeyDown={(e) => handleKeyDown(e, usernameRef)}
+
           />
           {errors.username && <p className="text-red-400 text-sm text-left mt-1">{errors.username}</p>}
           <InputComponent
@@ -170,6 +186,8 @@ const Register = () => {
             placeholder="Email"
             name="email"
             onChange={handleChange}
+            ref={emailRef}
+            onKeyDown={(e) => handleKeyDown(e, emailRef)}
           />
           {errors.email && <p className="text-red-400 text-sm text-left mt-1">{errors.email}</p>}
           <InputComponent
@@ -178,6 +196,8 @@ const Register = () => {
             placeholder="Mật khẩu"
             name="password"
             onChange={handleChange}
+            ref={passwordRef}
+            onKeyDown={(e) => handleKeyDown(e, passwordRef)}
           />
           {errors.password && <p className="text-red-400 text-sm text-left mt-1">{errors.password}</p>}
           <InputComponent
@@ -186,6 +206,8 @@ const Register = () => {
             placeholder="Xác nhận mật khẩu"
             name="confirmPassword"
             onChange={handleChange}
+            ref={confirmPasswordRef}
+            onKeyDown={(e) => handleKeyDown(e, confirmPasswordRef)}
           />
           {errors.confirmPassword && <p className="text-red-400 text-sm text-left mt-1">{errors.confirmPassword}</p>}
           <ButtonComponent disabled={isSubmitting || !isFormValid()} htmlType="submit" text="Đăng ký" />
