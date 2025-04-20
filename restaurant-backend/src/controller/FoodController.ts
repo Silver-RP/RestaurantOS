@@ -1,7 +1,7 @@
 import FoodService from '../services/FoodService';
 import { Request, Response } from 'express';
 import UploadImage from '../services/UploadImage';
-import { Food } from '../models/DishModel';
+import { Dish } from '../models/DishModel';
 import SearchService from '../services/SearchService';
 import mongoose from 'mongoose';
 import  Category  from '../models/CategoryModel';
@@ -147,7 +147,7 @@ class FoodController {
 
     async SearchFood(req: Request, res: Response): Promise<any> {  
         try {
-            const result = await SearchService.search(Food, req.query, ['name'])
+            const result = await SearchService.search(Dish, req.query, ['name'])
             return res.status(200).json(result);
         } catch (error) {
             return res.status(500).json({ message: 'An error occurred', error });
