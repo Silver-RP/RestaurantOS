@@ -136,7 +136,7 @@ class AuthService {
       // compare password
       const isMatch = await bcrypt.compare(password, user.password || '');
       if (!isMatch) {
-        throw new Error('Invalid credentials');
+        throw new Error('Password is incorrect');
       }
 
       const token = accessToken(

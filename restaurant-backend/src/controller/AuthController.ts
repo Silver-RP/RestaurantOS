@@ -59,11 +59,8 @@ class AuthController {
     try {
       const { email, password } = req.body;
 
-      // Kiểm tra định dạng email với regular expression
-      const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
+      const reg = /^[a-zA-Z0-9](\.?[a-zA-Z0-9_-])*[a-zA-Z0-9]@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
       const isCheckEmail = reg.test(email);
-
-      // Kiểm tra thông tin email và password
       if (!email || !password) {
         return res.status(400).json({
           status: 'Error',
