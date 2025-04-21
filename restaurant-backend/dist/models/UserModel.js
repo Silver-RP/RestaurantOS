@@ -46,11 +46,13 @@ const userSchema = new mongoose_1.default.Schema({
         type: String,
         required: false,
     },
-    roles: [{
+    roles: [
+        {
             type: mongoose_1.default.Schema.Types.ObjectId,
             ref: 'Roles',
             required: false,
-        }],
+        },
+    ],
     gender: {
         type: String,
         required: false,
@@ -58,19 +60,14 @@ const userSchema = new mongoose_1.default.Schema({
     status: {
         type: String,
         required: false,
-        enum: ["active", "inactive", "block"],
+        enum: ['active', 'inactive', 'block'],
     },
     default_address_id: {
         type: mongoose_1.default.Schema.Types.ObjectId,
         ref: 'Address',
-        required: false
-    },
-    isEmailVerifided: {
-        type: Boolean,
         required: false,
-        default: false,
     },
-    exprireAt: {
+    expireAt: {
         type: Date,
         required: false,
     },
@@ -80,7 +77,7 @@ const userSchema = new mongoose_1.default.Schema({
     },
     otpSentCount: {
         type: Number,
-        default: 0.
+        default: 0,
     },
     lastOtpSentAt: {
         type: Date,
@@ -91,8 +88,8 @@ const userSchema = new mongoose_1.default.Schema({
         required: false,
     }
 }, {
-    timestamps: true
+    timestamps: true,
 });
 userSchema.plugin(mongoose_paginate_v2_1.default);
-const User = mongoose_1.default.model("User", userSchema);
+const User = mongoose_1.default.model('User', userSchema);
 exports.default = User;

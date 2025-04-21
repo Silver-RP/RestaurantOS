@@ -52,7 +52,7 @@ class FoodService {
             }
         });
     }
-    getFoodById(id, req) {
+    getFoodById(id) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { id } = req.params;
@@ -92,7 +92,6 @@ class FoodService {
                 const food = yield DishModel_1.Dish.find()
                     .skip((page - 1) * limit)
                     .limit(limit);
-                return food;
             }
             catch (error) {
                 throw new Error('Error getting food with pagination');

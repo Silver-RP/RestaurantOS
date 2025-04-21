@@ -82,8 +82,6 @@ class AuthService {
                 if (password !== confirmPassword) {
                     throw new Error('Password do not match');
                 }
-                // $or là gì
-                // Nếu không tìm thấy user thì trả về null
                 if (existingUser) {
                     throw new Error('User or email already exists');
                 }
@@ -93,6 +91,9 @@ class AuthService {
                     email,
                     password: hashedPassword,
                     roles: roleObjectIds,
+                    isVerified: false, // hoặc true nếu đã xác thực
+                    emailVerificationToken: crypto_1.default.randomBytes(32).toString('hex'),
+                    emailVerificationExpires: new Date(Date.now() + 3600000), // 1 giờ
                 });
                 yield newUser.save();
                 return newUser;
@@ -273,9 +274,7 @@ class AuthService {
             user.otpExpiry = expireAt;
             user.otpSentCount += 1;
             user.lastOtpSentAt = now;
-            // Lưu OTP vào db 
-            yield UserModel_1.default.create({ email, otp, otpExpiry: expireAt });
-            // Gửi OTP qua email
+            yield user.save();
             const transporter = nodemailer_1.default.createTransport({
                 host: process.env.MAIL_HOST,
                 port: Number(process.env.MAIL_PORT),
@@ -296,15 +295,17 @@ class AuthService {
     }
     verifyOtpEmail(email, otp) {
         return __awaiter(this, void 0, void 0, function* () {
-            const otpRecord = yield UserModel_1.default.findOne({ email, otp, isVerifiend: false });
-            if (!otpRecord) {
+            const user = yield UserModel_1.default.findOne({ email, otp }); // ❌ bỏ điều kiện isVerified: false
+            if (!user) {
                 throw new Error('Invalid OTP');
             }
-            if (!otpRecord.expireAt) {
-                console.error('exprireAt is missing or invalid');
+            if (user.isVerified) {
+                return 'Email has already been verified'; // ✅ thêm chỗ này sau khi tìm user
+            }
+            if (!user.otpExpiry) {
                 throw new Error('OTP expiry time is not set');
             }
-            if (otpRecord.expireAt < new Date()) {
+            if (user.otpExpiry < new Date()) {
                 throw new Error('OTP expired');
             }
             otpRecord.isVerified = true;
