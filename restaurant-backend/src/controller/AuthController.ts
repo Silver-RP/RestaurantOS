@@ -252,17 +252,20 @@ class AuthController {
       res.status(400).json({ message: error.message });
     }
   }
-  // Method to reset password
-  async resetPassword(req: Request, res: Response): Promise<any> {
-    const { phone, newPassword, confirmPassword } = req.body;
-    if (!phone || !newPassword || !confirmPassword) {
+  // Method to change password
+  async changePassword(req: Request, res: Response): Promise<any> {
+    const { newPassword, confirmPassword } = req.body;
+  
+    if (!newPassword || !confirmPassword) {
       return res.status(400).json({
-        message: 'Phone number, new password and confirm password are required',
+        message: "New password and confirm password are required",
       });
     }
+  
     if (newPassword !== confirmPassword) {
-      return res.status(400).json({ message: 'Passwords do not match' });
+      return res.status(400).json({ message: "Passwords do not match" });
     }
+  
     try {
       const response = await AuthService.resetPassword(
         phone,

@@ -13,7 +13,7 @@ export const RegisterUser = createAsyncThunk(
           headers: { 'Content-Type': 'application/json' },
         });
         return response.data;
-      } catch (error: any) {
+      } catch (error: unknown) {
         if (axios.isAxiosError(error)) {
           const msg = error.response?.data?.message || 'Đăng ký thất bại';
           return rejectWithValue(msg);
