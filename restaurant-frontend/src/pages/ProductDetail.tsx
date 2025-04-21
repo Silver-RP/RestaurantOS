@@ -45,6 +45,7 @@ const ProductDetail: React.FC = () => {
       originalPrice: 399000,
       discount: '25%',
       isNew: true,
+      description: 'Mô tả ngắn gọn cho sản phẩm A',
     },
     {
       name: 'Sản phẩm B',
@@ -54,6 +55,7 @@ const ProductDetail: React.FC = () => {
       price: 159000,
       originalPrice: 199000,
       discount: '20%',
+      description: 'Mô tả ngắn gọn cho sản phẩm BB',
     },
     {
       name: 'Sản phẩm C',
@@ -64,6 +66,7 @@ const ProductDetail: React.FC = () => {
       originalPrice: 599000,
       discount: '17%',
       isNew: true,
+      description: 'Mô tả ngắn gọn cho sản phẩm CC',
     },
     {
       name: 'Sản phẩm D',
@@ -72,6 +75,7 @@ const ProductDetail: React.FC = () => {
       cate: 'Danh mục D',
       price: 189000,
       originalPrice: 229000,
+      description: 'Mô tả ngắn gọn cho sản phẩm D',
     },
   ];
 

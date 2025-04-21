@@ -1,12 +1,5 @@
 import React from 'react';
 import {
-  FaFacebookF,
-  FaTwitter,
-  FaYoutube,
-  FaPinterest,
-  FaInstagram,
-} from 'react-icons/fa';
-import {
   FiUser,
   FiShoppingCart,
   FiSearch,
@@ -29,7 +22,6 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
         isOpen ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0'
       } xl:translate-x-0 z-50`}
     >
-      {/* Close button */}
       <button
         onClick={toggleSidebar}
         className="absolute top-4 right-4 text-white hover:text-secondaryColor z-10"
@@ -38,9 +30,7 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
         <FiArrowLeft className="text-2xl" />
       </button>
 
-      {/* Sidebar layout */}
       <div className="w-72 h-screen flex flex-col relative">
-        {/* Logo Section */}
         <div className="p-6 flex-shrink-0">
           <img
             src="assets/images/logo.png"
@@ -55,11 +45,9 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
           </p>
         </div>
 
-        {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto px-4 sm:px-6 scrollbar-custom">
           <NavExtend />
 
-          {/* Icons */}
           <div className="flex flex-col items-center space-y-4 sm:space-y-6 md:space-y-8 mt-6">
             <div className="flex space-x-6 sm:space-x-8 text-lg sm:text-xl">
               <Link to="/login" aria-label="Login">
@@ -101,53 +89,6 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
                 Đặt Bàn
               </ButtonComponents>
             </Link>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="p-6 flex-shrink-0">
-          <div className="text-center text-xs sm:text-sm text-white">
-            <p>Booking Info</p>
-            <p>71 Madison Ave, New York, USA</p>
-            <p>+39-055-123456</p>
-            <p>demo@demo.com</p>
-          </div>
-          <div className="flex justify-center space-x-4 mt-4">
-            <a
-              href="#"
-              className="group text-white hover:text-secondaryColor transition-all duration-300"
-              aria-label="Facebook"
-            >
-              <FaFacebookF className="transform group-hover:-translate-y-2 transition-transform duration-300" />
-            </a>
-            <a
-              href="#"
-              className="group text-white hover:text-secondaryColor transition-all duration-300"
-              aria-label="Twitter"
-            >
-              <FaTwitter className="transform group-hover:-translate-y-2 transition-transform duration-300" />
-            </a>
-            <a
-              href="#"
-              className="group text-white hover:text-secondaryColor transition-all duration-300"
-              aria-label="YouTube"
-            >
-              <FaYoutube className="transform group-hover:-translate-y-2 transition-transform duration-300" />
-            </a>
-            <a
-              href="#"
-              className="group text-white hover:text-secondaryColor transition-all duration-300"
-              aria-label="Pinterest"
-            >
-              <FaPinterest className="transform group-hover:-translate-y-2 transition-transform duration-300" />
-            </a>
-            <a
-              href="#"
-              className="group text-white hover:text-secondaryColor transition-all duration-300"
-              aria-label="Instagram"
-            >
-              <FaInstagram className="transform group-hover:-translate-y-2 transition-transform duration-300" />
-            </a>
           </div>
         </div>
       </div>

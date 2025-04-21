@@ -1,6 +1,7 @@
+
+import ProductCardGrid from '../../common/ProductCardGrid';
 import React, { useEffect, useState } from 'react';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
-import ProductCard from '../../common/ProductComponents';
 
 interface Product {
   imageUrl?: string;
@@ -14,7 +15,7 @@ interface Product {
 }
 
 interface RelatedProductListProps {
-  products: Product[];
+  products: ProductCardProps[];
 }
 
 const RelatedProductList: React.FC<RelatedProductListProps> = ({ products }) => {
@@ -70,7 +71,7 @@ const RelatedProductList: React.FC<RelatedProductListProps> = ({ products }) => 
         <div className="w-full">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 transition-all duration-300">
             {visibleProducts.map((product, index) => (
-              <ProductCard key={index} {...product} />
+              <ProductCardGrid description={''} key={index} {...product} />
             ))}
           </div>
         </div>
@@ -79,7 +80,7 @@ const RelatedProductList: React.FC<RelatedProductListProps> = ({ products }) => 
         {slideIndex < maxSlideIndex && (
           <button
             onClick={handleNext}
-            className="absolute right-0 z-10 bg-white text-[#002B40] rounded-full p-2 shadow hover:bg-secondaryColor hover:text-white transition"
+            className="absolute right-0 z-10 bg-white text-headerBackground rounded-full p-2 shadow hover:bg-secondaryColor hover:text-white transition"
           >
             <FiChevronRight size={24} />
           </button>
