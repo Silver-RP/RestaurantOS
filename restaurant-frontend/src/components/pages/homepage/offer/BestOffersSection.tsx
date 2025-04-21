@@ -3,7 +3,7 @@ import TabNavigation from "./TabNavigation";
 import MenuGrid from "./MenuGrid";
 
 const BestOffersSection: React.FC = () => {
-  const tabs = ["Morning", "Weekday Lunch", "Dinner", "Wines"];
+  const tabs = ["Đồ ăn", "Đồ uống"];
   const [activeTab, setActiveTab] = useState(0);
 
   const menuData = [
@@ -192,7 +192,7 @@ const BestOffersSection: React.FC = () => {
       <div className="w-11/12 md:w-container95 lg:w-mainContainer xl:w-container95 2xl:w-mainContainer  mx-auto">
         <img src="/assets/images/home/IconOnline.svg" alt="Icon" className="mx-auto mb-8" />
         <h2 className="text-3xl sm:text-4xl md:text-5xl font-restora justify-center text-white flex font-thin mb-4">
-          Best Offers
+          Lựa chọn tốt nhất cho bạn
         </h2>
         <TabNavigation tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
         {currentMenu.length > 0 ? (
