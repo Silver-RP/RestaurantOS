@@ -3,7 +3,7 @@ import { useLocation, Link } from "react-router-dom";
 import { MdOutlineNavigateNext } from "react-icons/md";
 import { breadcrumbConfig } from "../../configs/breadcrumbConfig";
 
-const BreadCrumbComponents = () => {
+const BreadcrumbComponent = () => {
   const location = useLocation();
   const pathnames = location.pathname.split("/").filter((x) => x);
 
@@ -21,16 +21,22 @@ const BreadCrumbComponents = () => {
       className="py-4 bg-[url('/assets/images/wishlist/breadcrumb.jpg')] bg-cover bg-center h-[170px] flex justify-center items-center"
     >
       <div>
-        <ol className="flex space-x-2 text-1xl text-gray-300">
+        <ol className="flex items-center space-x-1 text-sm md:text-base text-white font-medium">
           {breadcrumbList.map((item, index) => (
-            <li key={item.path} className="flex items-center space-x-2">
-              {index > 0 && <MdOutlineNavigateNext />}
-              <Link
-                to={item.path}
-                className={`${index === breadcrumbList.length - 1 ? "font-semibold text-white hover:text-secondaryColor" : "hover:text-secondaryColor"}`}
-              >
-                {item.label}
-              </Link>
+            <li key={item.path} className="flex items-center">
+              {index > 0 && (
+                <MdOutlineNavigateNext className="text-secondaryColor mx-1" />
+              )}
+              {index === breadcrumbList.length - 1 ? (
+                <span className="text-white font-semibold">{item.label}</span>
+              ) : (
+                <Link
+                  to={item.path}
+                  className="hover:text-secondaryColor transition"
+                >
+                  {item.label}
+                </Link>
+              )}
             </li>
           ))}
         </ol>
@@ -39,4 +45,4 @@ const BreadCrumbComponents = () => {
   );
 };
 
-export default BreadCrumbComponents;
+export default BreadcrumbComponent;

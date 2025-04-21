@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import InputComponent from '../components/pages/login/InputComponents';
-import ButtonComponent from '../components/pages/login/ButtonComponents';
+import InputComponent from '../components/pages/Login/InputComponents';
+import ButtonComponent from '../components/pages/Login/ButtonComponents';
 import { FaFacebook } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import CheckboxComponent from '../components/common/CheckboxComponents';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { SlActionUndo } from 'react-icons/sl';
 
 const Login = () => {
@@ -12,7 +12,7 @@ const Login = () => {
     email: '',
     password: '',
   });
-
+  const navigate = useNavigate();
   const [rememberMe, setRememberMe] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,19 +57,28 @@ const Login = () => {
               checked={rememberMe} 
               onChange={handleCheckboxChange} 
             />
-            <Link to="#" className="text-sm text-white hover:text-secondaryColor hover:underline">Quên mật khẩu?</Link>
+            <button
+              type="button"
+              onClick={() => navigate('/forgot-password')}
+              className="text-sm text-white hover:text-secondaryColor hover:underline"
+            >
+              Quên mật khẩu?
+            </button>
           </div>
           <ButtonComponent htmlType="submit" text="Đăng nhập" />
         </form>
+
         <div className="flex items-center my-8">
           <div className="flex-grow border-t border-gray-400"></div>
           <span className="px-4 text-sm text-gray-300">Hoặc đăng nhập bằng</span>
           <div className="flex-grow border-t border-gray-400"></div>
         </div>
+
         <div className="flex justify-center gap-8 mt-4">
           <FaFacebook className="text-facebook text-3xl cursor-pointer" />
           <FcGoogle className="text-3xl cursor-pointer" />
         </div>
+
         <div className="mt-6 text-sm text-white">
           <p>
             Bạn chưa có tài khoản?{' '}
@@ -84,7 +93,7 @@ const Login = () => {
             </Link>
           </p>
         </div>
-      </div> 
+      </div>
     </div>
   );
 };

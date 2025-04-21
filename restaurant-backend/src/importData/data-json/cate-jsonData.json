@@ -1,0 +1,59 @@
+[
+    {
+      "Cate_name": "Món chính",
+      "Cate_slug": "mon-chinh",
+      "Cate_type": "dish",
+      "Cate_img": null,
+      "parentCate": null
+    },
+    {
+      "Cate_name": "Món khác",
+      "Cate_slug": "mon-khac",
+      "Cate_type": "dish",
+      "Cate_img": null,
+      "parentCate": null
+    },
+    {
+      "Cate_name": "Món khai vị",
+      "Cate_slug": "mon-khai-vi",
+      "Cate_type": "dish",
+      "Cate_img": null,
+      "parentCate": null
+    },
+    {
+      "Cate_name": "Món phụ và ăn kèm",
+      "Cate_slug": "mon-phu-va-an-kem",
+      "Cate_type": "dish",
+      "Cate_img": null,
+      "parentCate": null
+    },
+    {
+      "Cate_name": "Món tráng miệng",
+      "Cate_slug": "mon-trang-mieng",
+      "Cate_type": "dish",
+      "Cate_img": null,
+      "parentCate": null
+    },
+    {
+      "Cate_name": "Đồ uống có cồn",
+      "Cate_slug": "do-uong-co-con",
+      "Cate_type": "dish",
+      "Cate_img": null,
+      "parentCate": null
+    },
+    {
+      "Cate_name": "Đồ uống không có cồn",
+      "Cate_slug": "do-uong-khong-co-con",
+      "Cate_type": "dish",
+      "Cate_img": null,
+      "parentCate": null
+    },
+    {
+      "Cate_name": "Nước lọc",
+      "Cate_slug": "nuoc-loc",
+      "Cate_type": "dish",
+      "Cate_img": null,
+      "parentCate": null
+    }
+  ]
+  
