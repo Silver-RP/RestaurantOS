@@ -1,8 +1,8 @@
-import { Food } from '../models/DishModel';
+import { Dish } from '../models/DishModel';
 import mongoose from 'mongoose';
 class FoodService {
   async createFood(food: any) {
-    const newfood = new Food(food);
+    const newfood = new Dish(food);
     try {
       return await newfood.save(); 
     } catch (error) {
@@ -11,7 +11,7 @@ class FoodService {
   }
   async getTopFavoriteFood() {
     try {
-      const food = await Food.find().sort({ favorites: -1 }).limit(5);
+      const food = await Dish.find().sort({ favorites: -1 }).limit(5);
       // -1 là giảm dần, 1 là tăng dần
       if (!food || food.length === 0) {
         return { message: 'No food found' };
@@ -24,7 +24,7 @@ class FoodService {
   async getAllFood() {
   
     try {
-        const food = await Food.find(); 
+        const food = await Dish.find(); 
         return food;
     } catch (error) {
         throw new Error('Error getting all food'); 
@@ -33,7 +33,7 @@ class FoodService {
   async getFoodById(id: string,req: any) {
     try {
         const { id } = req.params;
-        const food = await Food.findById(id).populate('categories');
+        const food = await Dish.findById(id).populate('categories');
         return food;
 
     } catch (error) {
@@ -42,7 +42,7 @@ class FoodService {
   }
   async updateFood(id: string, food: any) {
     try {
-        const updatedFood = await Food.findByIdAndUpdate(id, food, { new: true });
+        const updatedFood = await Dish.findByIdAndUpdate(id, food, { new: true });
         return updatedFood;
     } catch (error) {
         throw new Error('Error updating food');
@@ -50,7 +50,7 @@ class FoodService {
 }   
     async deleteFood(id: string) {
         try {
-            const deletedFood = await Food.findByIdAndDelete(id);
+            const deletedFood = await Dish.findByIdAndDelete(id);
             return deletedFood;
         } catch (error) {
             throw new Error('Error deleting food');
@@ -59,7 +59,7 @@ class FoodService {
    
     async getFoodWithPagination(page: number, limit: number) {
         try {
-            const food = await Food.find()
+            const food = await Dish.find()
                 .skip((page - 1) * limit)
                 .limit(limit);
             return food;
@@ -70,7 +70,7 @@ class FoodService {
     async getFoodByCategory(id: string) {
         try {
             const categoryId = new mongoose.Types.ObjectId(id); 
-            const food = await Food.find({categories: categoryId});
+            const food = await Dish.find({categories: categoryId});
             return food;
         } catch (error) {
             throw new Error('Error getting food by category');
@@ -78,7 +78,7 @@ class FoodService {
     }
     async getFoodBySearch(search: string) {
         try {
-            const food = await Food.find({ $text: { $search: search } });
+            const food = await Dish.find({ $text: { $search: search } });
             return food;
         } catch (error) {
             throw new Error('Error getting food by search');
@@ -86,7 +86,7 @@ class FoodService {
     }
     async getFoodByPrice(pricemin: number, pricemax: number) {
         try {
-            const food = await Food.find({ pricemin: pricemin, pricemax: pricemax });
+            const food = await Dish.find({ pricemin: pricemin, pricemax: pricemax });
             return food;
         } catch (error) {
             throw new Error('Error getting food by price');
@@ -94,7 +94,7 @@ class FoodService {
     }
     async getFoodByRating(rating: number) {
         try {
-            const food = await Food.find({ rating: rating });
+            const food = await Dish.find({ rating: rating });
             return food;
         } catch (error) {
             throw new Error('Error getting food by rating');
@@ -102,7 +102,7 @@ class FoodService {
     }
     async getFoodByFavorites(favorites: number) {
         try {
-            const food = await Food.find({ favorites: favorites });
+            const food = await Dish.find({ favorites: favorites });
             return food;
         } catch (error) {
             throw new Error('Error getting food by favorites');
