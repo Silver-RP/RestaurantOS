@@ -12,6 +12,7 @@ import MenuPage from "../pages/Menu";
 import ProductDetail from "../pages/ProductDetail";
 import ContactUsPage from "../pages/ContactUsPage";
 // import AboutUs from "../pages/AboutUs";
+import FAQsCompoent from "../pages/FaqPage";
 
 const AppRoutes = () => {
   const routes = useRoutes([
@@ -27,6 +28,7 @@ const AppRoutes = () => {
     { path: "/menu", element: <MenuPage/> },
     { path: "/productdetail", element: <ProductDetail/> },
     { path: "/contact", element: <ContactUsPage/> },
+    { path: "/faqs", element: <FAQsCompoent /> },
   ]);
   return routes;
 };
