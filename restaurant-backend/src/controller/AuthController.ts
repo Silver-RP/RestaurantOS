@@ -1,54 +1,50 @@
-
-import { Request, Response, NextFunction } from "express";
-import bcrypt from "bcrypt";
+import { Request, Response, NextFunction } from 'express';
+import bcrypt from 'bcrypt';
 import { accessToken, refreshToken } from '../services/GenerateToken';
-import AuthService from "../services/AuthService";
-import GoogleAuthMiddleWare from "../middleware/GoogleAuthMiddleWare";
-import mongoose from "mongoose";
+import AuthService from '../services/AuthService';
+import GoogleAuthMiddleWare from '../middleware/GoogleAuthMiddleWare';
+import mongoose from 'mongoose';
 class AuthController {
   // Method to register a new user
   async register(req: Request, res: Response): Promise<any> {
     try {
-      // Gọi AuthService để xử lý đăng ký
-      const {username, email, password, phone, roles} = req.body; 
-      if(!username || !email || !password || !phone){
-        return res.status(400).json({message: "Please enter all required fields"});
+      const { username, email, password, confirmPassword, roles } = req.body;
+      if (!username || !email || !password || !confirmPassword) {
+        return res
+          .status(400)
+          .json({ message: 'Please enter all required fields' });
       }
-      // check email format
+      if (password !== confirmPassword) {
+        return res
+          .status(400)
+          .json({
+            message: 'Error during user registration: Password do not match',
+          });
+      }
       const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
       const isCheckEmail = reg.test(email);
       if (!isCheckEmail) {
         return res.status(400).json({ message: 'Invalid email format' });
       }
-      // Check phone format
-      const regPhone = /^\+?[0-9]{10,11}$/;
-      const isCheckPhone = regPhone.test(phone);
-      if (!isCheckPhone) {
-        return res.status(400).json({ message: 'Invalid phone format' });
-      }
-      // Check password format
       const regPassword =
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/;
       const isCheckPassword = regPassword.test(password);
       if (!isCheckPassword) {
-        return res
-          .status(400)
-          .json({
-            message:
-              'Password must be at least 8 characters, including 1 uppercase letter, 1 lowercase letter and 1 number',
-          });
+        return res.status(400).json({
+          message:
+            'Password must be at least 8 characters, including 1 uppercase letter, 1 lowercase letter and 1 number',
+        });
       }
       // Kiểm tra và chuyển đổi roles thành ObjectId nếu có
       let roleObjectIds = [];
       if (roles && roles.length > 0) {
         try {
-          
+          roleObjectIds = roles;
           roleObjectIds = roles
-          roleObjectIds = roles
-          .filter((role: string) => mongoose.Types.ObjectId.isValid(role)) // Kiểm tra tính hợp lệ
-          .map((role: string) => new mongoose.Types.ObjectId(role));  // Dùng `new` để khởi tạo ObjectId
+            .filter((role: string) => mongoose.Types.ObjectId.isValid(role)) // Kiểm tra tính hợp lệ
+            .map((role: string) => new mongoose.Types.ObjectId(role)); // Dùng `new` để khởi tạo ObjectId
         } catch (err) {
-          return res.status(400).json({ message: "Invalid role ID format" });
+          return res.status(400).json({ message: 'Invalid role ID format' });
         }
       }
       const user = await AuthService.register(req.body);
@@ -192,21 +188,50 @@ class AuthController {
       res.status(400).json({ message: error.message });
     }
   }
-  // Method to send OTP
-  async sendOtpController(req: Request, res: Response): Promise<any> {
-    const { phone } = req.body;
-    if (!phone) {
-      return res.status(400).json({ message: 'Phone number is required' });
+  //forgotPasswordHandler
+
+  async forgotPasswordHandler(req: Request, res: Response): Promise<any> {
+    const { phone, email } = req.body;
+  
+    if (!phone && !email) {
+      return res.status(400).json({ message: 'Vui lòng nhập số điện thoại hoặc email' });
     }
+  
+    let identifier = '';
+  
+    if (phone && email) {
+      return res.status(400).json({ message: 'Vui lòng chỉ nhập số điện thoại HOẶC email, không nhập cả hai' });
+    }
+  
+    // Nếu nhập số điện thoại thì validate
+    if (phone) {
+      const phoneRegex = /^(?:\+84|0)(3|5|7|8|9)\d{8}$/;
+      if (!phoneRegex.test(phone)) {
+        return res.status(400).json({ message: 'Định dạng số điện thoại không hợp lệ' });
+      }
+      identifier = phone;
+    }
+  
+    // Nếu nhập email thì validate
+    if (email) {
+      const emailRegex = /^[a-zA-Z0-9](\.?[a-zA-Z0-9_-])*[a-zA-Z0-9]@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ message: 'Định dạng email không hợp lệ' });
+      }
+      identifier = email;
+    }
+  
     try {
-      const response = await AuthService.sendOtp(phone);
-      res.status(200).json({
-        message: response.message,
-      });
+      const response = await AuthService.sendOtpFlexible(identifier);
+      return res.status(200).json({ message: response.message });
     } catch (error: any) {
-      res.status(400).json({ message: error.message });
+      return res.status(400).json({ message: error.message });
+      throw new Error('Gửi OTP qua SMS thất bại, vui lòng thử lại');
     }
   }
+  
+  
+
   // Method to verify OTP
   async verifyOtpController(req: Request, res: Response): Promise<any> {
     const { phone, otp } = req.body;
@@ -226,12 +251,9 @@ class AuthController {
   async resetPassword(req: Request, res: Response): Promise<any> {
     const { phone, newPassword, confirmPassword } = req.body;
     if (!phone || !newPassword || !confirmPassword) {
-      return res
-        .status(400)
-        .json({
-          message:
-            'Phone number, new password and confirm password are required',
-        });
+      return res.status(400).json({
+        message: 'Phone number, new password and confirm password are required',
+      });
     }
     if (newPassword !== confirmPassword) {
       return res.status(400).json({ message: 'Passwords do not match' });
@@ -268,7 +290,6 @@ class AuthController {
       return res.status(400).json({ message: error.message });
     }
   }
-
   // Route xác nhận OTP
   async verifyOtpEmail(req: Request, res: Response): Promise<any> {
     try {

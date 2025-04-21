@@ -75,7 +75,7 @@ class AuthService {
     register(userData) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const { username, email, password, confirmPassword, phone, roles: roleObjectIds, } = userData;
+                const { username, email, password, confirmPassword, roles: roleObjectIds, } = userData;
                 const existingUser = yield UserModel_1.default.findOne({
                     $or: [{ email }, { username }],
                 });
@@ -92,15 +92,13 @@ class AuthService {
                     username,
                     email,
                     password: hashedPassword,
-                    phone,
                     roles: roleObjectIds,
                 });
                 yield newUser.save();
                 return newUser;
             }
             catch (error) {
-                console.error('Error during user registration:', error);
-                throw new Error('Error during user registration: ' + error.message);
+                throw new Error(error.message);
             }
         });
     }
@@ -116,7 +114,7 @@ class AuthService {
                 // compare password
                 const isMatch = yield bcrypt_1.default.compare(password, user.password || '');
                 if (!isMatch) {
-                    throw new Error('Invalid credentials');
+                    throw new Error('Password is incorrect');
                 }
                 const token = (0, GenerateToken_1.accessToken)({ id: user._id, roles: user.roles }, process.env.ACCESS_TOKEN || '', 20);
                 const refresh_token = (0, GenerateToken_1.refreshToken)({ id: user._id, role: user.roles }, process.env.REFRESH_TOKEN || '', 365 * 24 * 60 * 60);
@@ -311,6 +309,69 @@ class AuthService {
             }
             otpRecord.isVerified = true;
             yield otpRecord.save();
+        });
+    }
+    sendOtpFlexible(identifier) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                let user;
+                const otp = crypto_1.default.randomInt(100000, 999999).toString();
+                const expireAt = new Date(Date.now() + 5 * 60 * 1000); // 5 phút
+                const phoneRegex = /^(\+84|0)(3|5|7|8|9)\d{8}$/;
+                const emailRegex = /^[a-zA-Z0-9](\.?[a-zA-Z0-9_-])*[a-zA-Z0-9]@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
+                if (phoneRegex.test(identifier)) {
+                    // ✅ Kiểm tra tồn tại user theo số điện thoại
+                    user = yield UserModel_1.default.findOne({ phone: identifier });
+                    if (!user) {
+                        throw new Error('Số điện thoại không tồn tại trong hệ thống');
+                    }
+                    user.otp = otp;
+                    user.otpExpiry = expireAt;
+                    yield user.save();
+                    yield smsService_1.default.sendOtpToPhoneNumber(identifier, otp);
+                    return { message: 'OTP đã được gửi qua số điện thoại' };
+                }
+                else if (emailRegex.test(identifier)) {
+                    // ✅ Kiểm tra tồn tại user theo email
+                    user = yield UserModel_1.default.findOne({ email: identifier });
+                    if (!user) {
+                        throw new Error('Email không tồn tại trong hệ thống');
+                    }
+                    const now = new Date();
+                    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+                    if (user.otpSentCount >= 5 && user.lastOtpSentAt > oneHourAgo) {
+                        throw new Error('Bạn đã vượt quá số lần gửi OTP. Vui lòng thử lại sau');
+                    }
+                    user.otp = otp;
+                    user.otpExpiry = expireAt;
+                    user.otpSentCount += 1;
+                    user.lastOtpSentAt = now;
+                    yield user.save();
+                    const transporter = nodemailer_1.default.createTransport({
+                        host: process.env.MAIL_HOST,
+                        port: Number(process.env.MAIL_PORT),
+                        secure: process.env.MAIL_ENCRYPTION === 'ssl',
+                        auth: {
+                            user: process.env.MAIL_USERNAME,
+                            pass: process.env.MAIL_PASSWORD,
+                        },
+                    });
+                    const mailOptions = {
+                        from: process.env.MAIL_FROM_ADDRESS,
+                        to: identifier,
+                        subject: 'OTP for verification',
+                        text: `Your OTP is ${otp}. It will expire in 5 minutes`,
+                    };
+                    yield transporter.sendMail(mailOptions);
+                    return { message: 'OTP đã được gửi qua email' };
+                }
+                else {
+                    throw new Error('Số điện thoại hoặc email không hợp lệ');
+                }
+            }
+            catch (error) {
+                throw new Error(error.message);
+            }
         });
     }
 }

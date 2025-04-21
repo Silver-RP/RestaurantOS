@@ -18,6 +18,9 @@ import dotenv from 'dotenv';
 import connectDB from './config/db';
 import cookieParser from 'cookie-parser';
 import passport from 'passport';
+import cors from 'cors';
+
+const app = express();
 
 // Import file authSwagger để đăng ký metadata
 import './swaggers/AuthSwagger';
@@ -25,7 +28,12 @@ import './swaggers/AuthSwagger';
 dotenv.config();
 connectDB();
 
-const app = express();
+app.use(express.urlencoded({ extended: true }));
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true 
+}));
+app.use(express.json());
 const port = process.env.PORT || 4000;
 
 // Cấu hình Swagger
@@ -89,3 +97,7 @@ app.listen(port, () => {
   console.log('Mongo URI:', process.env.MONGO_URI);
   console.log(`Swagger UI available at http://localhost:${port}/api-docs`);
 });
+// function cors(arg0: { origin: string; credentials: boolean; }): any {
+//   throw new Error('Function not implemented.');
+// }
+
