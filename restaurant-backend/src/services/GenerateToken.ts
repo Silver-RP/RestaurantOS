@@ -17,10 +17,10 @@ export const accessToken = (
 export const refreshToken = (
     payload: object,
     secretKey: string,
-    expires: string = "7d"
+    expires: number
 ): string => {
     try {
-        return jwt.sign(payload, secretKey, { expiresIn: Number(expires) });
+        return jwt.sign(payload, secretKey, { expiresIn: expires });
     } catch (error) {
         console.error('Error creating refresh token:', error);
         throw new Error('Token creation failed');

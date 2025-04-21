@@ -12,12 +12,10 @@ router.post("/login", AuthController_1.default.login); // ok
 router.post("/refresh_token", AuthController_1.default.refreshAccessToken); // ok 
 router.get("/google/callback", AuthController_1.default.googleCallback); // ok 
 router.post("/google-login", GoogleAuthMiddleWare_1.default.verifyGoogleToken, AuthController_1.default.googleLogin); // ok 
-router.post("/facebook-login", AuthController_1.default.facebookLogin); // => not ok 
-router.get("/facebook/callback", AuthController_1.default.facebookCallback); // => not ok 
 router.post("/logout", AuthController_1.default.Logout); // => ok 
-router.post("/send-otp", AuthController_1.default.sendOtpController); // ok  
+// router.post("/send-otp", AuthController.sendOtpController); // ok  
 router.post("/verify-otp", AuthController_1.default.verifyOtpController); // ok 
-router.post("/forgot-password", AuthController_1.default.sendOtpController); // ok
+router.post("/forgot-password", AuthController_1.default.forgotPasswordHandler); // ok
 router.post("/reset-password", AuthController_1.default.resetPassword); // ok
 router.post("/send-otpEmail", AuthController_1.default.sendOtpEmail); // ok
 router.post("/verify-otpEmail", AuthController_1.default.sendOtpEmail);

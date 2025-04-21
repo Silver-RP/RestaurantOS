@@ -1,0 +1,55 @@
+import mongoose from 'mongoose';
+
+export interface IProduct extends mongoose.Document {
+    name: string;
+    slug: string;
+    price: number;
+    discount_price?: number;
+    description: string;
+    shortDescription?: string;
+    ingredientsl?: string;
+    status: 'hidden' | 'available' | 'soldout';
+    views: number;
+    ordered_count: number;
+    average_rating: number;
+    rating_count: number;
+    favorites_count: number;
+    rating: number;
+    categories: mongoose.Schema.Types.ObjectId[];
+    countInStock: number;
+}
+
+const dishSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    slug: { type: String, required: true, unique: true }, 
+    price: { type: Number, required: true, min: 0 },
+    discount_price: { type: Number, min: 0 },
+    description: { type: String, required: true },
+    shortDescription: { type: String },
+    ingredientsl: { type: String },
+    status: { 
+        type: String, 
+        enum: ['hidden', 'available', 'soldout'],
+        default: 'available' 
+    },
+    views: { type: Number, default: 0 },
+    ordered_count: { type: Number, default: 0 },
+    rating_count: { type: Number, default: 0 },
+    rating: { type: Number, default: 0 }, 
+    average_rating: { type: Number, default: 0 },
+    favorites_count: { type: Number, default: 0 },
+    
+    categories: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'categories',
+        required: true
+    }],
+    countInStock: { type: Number, default: 0, min: 0 }, 
+}, {
+    timestamps: true
+});
+
+dishSchema.index({ name: 'text' });
+dishSchema.index({ slug: 1 });  
+
+export const Dish = mongoose.model<IProduct>("Dish", dishSchema);

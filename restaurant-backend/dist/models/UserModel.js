@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
 const mongoose_paginate_v2_1 = __importDefault(require("mongoose-paginate-v2"));
 const userSchema = new mongoose_1.default.Schema({
-    userName: {
+    username: {
         type: String,
         required: false,
         trim: true,
@@ -85,6 +85,10 @@ const userSchema = new mongoose_1.default.Schema({
     lastOtpSentAt: {
         type: Date,
         default: Date.now,
+    },
+    confirmPassword: {
+        type: String,
+        required: false,
     }
 }, {
     timestamps: true

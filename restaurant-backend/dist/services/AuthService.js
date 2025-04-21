@@ -14,7 +14,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const GenerateToken_1 = require("./GenerateToken");
-const UserModel_1 = __importDefault(require("../models/UserModel"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const axios_1 = __importDefault(require("axios"));
@@ -22,6 +21,7 @@ const crypto_1 = __importDefault(require("crypto"));
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const smsService_1 = __importDefault(require("../utils/smsService"));
 dotenv_1.default.config();
+const UserModel_1 = __importDefault(require("../models/UserModel"));
 class AuthService {
     // test bằng gg => OK, và ko test được postman bởi vì postman ko có các chức của trình duyệt OAuth 2.0
     // Method handle google callback
@@ -53,7 +53,7 @@ class AuthService {
                 if (!existingUser) {
                     existingUser = new UserModel_1.default({
                         email: user.email,
-                        userName: user.name,
+                        username: user.name,
                         avatar: user.picture,
                         googleId: user.id,
                     });
@@ -75,9 +75,9 @@ class AuthService {
     register(userData) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const { userName, email, password, confirmPassword, phone, roles: roleObjectIds, } = userData;
+                const { username, email, password, confirmPassword, roles: roleObjectIds, } = userData;
                 const existingUser = yield UserModel_1.default.findOne({
-                    $or: [{ email }, { userName }],
+                    $or: [{ email }, { username }],
                 });
                 if (password !== confirmPassword) {
                     throw new Error('Password do not match');
@@ -89,18 +89,16 @@ class AuthService {
                 }
                 const hashedPassword = yield bcrypt_1.default.hash(password, 10);
                 const newUser = new UserModel_1.default({
-                    userName,
+                    username,
                     email,
                     password: hashedPassword,
-                    phone,
                     roles: roleObjectIds,
                 });
                 yield newUser.save();
                 return newUser;
             }
             catch (error) {
-                console.error('Error during user registration:', error);
-                throw new Error('Error during user registration: ' + error.message);
+                throw new Error(error.message);
             }
         });
     }
@@ -116,10 +114,10 @@ class AuthService {
                 // compare password
                 const isMatch = yield bcrypt_1.default.compare(password, user.password || '');
                 if (!isMatch) {
-                    throw new Error('Invalid credentials');
+                    throw new Error('Password is incorrect');
                 }
-                const token = (0, GenerateToken_1.accessToken)({ id: user._id, roles: user.roles }, process.env.ACCESS_TOKEN || '', '20s');
-                const refresh_token = (0, GenerateToken_1.refreshToken)({ id: user._id, role: user.roles }, process.env.REFRESH_TOKEN || '', '365d');
+                const token = (0, GenerateToken_1.accessToken)({ id: user._id, roles: user.roles }, process.env.ACCESS_TOKEN || '', 20);
+                const refresh_token = (0, GenerateToken_1.refreshToken)({ id: user._id, role: user.roles }, process.env.REFRESH_TOKEN || '', 365 * 24 * 60 * 60);
                 return { token, user, refresh_token };
             }
             catch (error) {
@@ -140,7 +138,7 @@ class AuthService {
                     throw new Error('User not found');
                 }
                 // Tạo access token mới
-                const newAccessToken = (0, GenerateToken_1.accessToken)({ id: user._id }, process.env.ACCESS_TOKEN || '', '2h');
+                const newAccessToken = (0, GenerateToken_1.accessToken)({ id: user._id }, process.env.ACCESS_TOKEN || '', 2);
                 return { newAccessToken };
             }
             catch (error) {
@@ -152,14 +150,14 @@ class AuthService {
     googleLogin(googleUser) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const { email, googleId, userName, avatar } = googleUser;
+                const { email, googleId, username, avatar } = googleUser;
                 // Kiểm tra xem người dùng đã tồn tại chưa
                 let user = yield UserModel_1.default.findOne({ email });
                 if (!user) {
                     // Nếu không tồn tại, tạo mới
                     user = new UserModel_1.default({
                         email,
-                        userName: userName || '',
+                        username: username || '',
                         avatar: avatar || '',
                         googleId,
                     });
@@ -167,10 +165,10 @@ class AuthService {
                 }
                 // Tạo access token sau khi đăng nhập thành công
                 const accessToken = jsonwebtoken_1.default.sign({ id: user._id }, process.env.ACCESS_TOKEN || '', {
-                    expiresIn: '2h', // Thời gian hết hạn 2 giờ
+                    expiresIn: 7200, // Thời gian hết hạn 2 giờ
                 });
                 const refreshToken = jsonwebtoken_1.default.sign({ id: user._id }, process.env.REFRESH_TOKEN || '', {
-                    expiresIn: '365d', // Thời gian hết hạn 1 năm
+                    expiresIn: 365 * 24 * 60 * 60 // Thời gian hết hạn 1 năm
                 });
                 return {
                     user,
@@ -181,117 +179,6 @@ class AuthService {
             catch (error) {
                 // Xử lý lỗi khi đăng nhập Google
                 throw new Error('Error during Google login: ' + error.message);
-            }
-        });
-    }
-    // Method login with facebook
-    loginFaceBook(profile) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let user = yield UserModel_1.default.findOne({ facebookId: profile.id });
-            if (!user) {
-                user = new UserModel_1.default({
-                    email: profile.email,
-                    userName: profile.name,
-                    avatar: profile.picture.data.url,
-                    facebookId: profile.id,
-                    isAdmin: false,
-                    isCashier: false,
-                });
-                yield user.save();
-            }
-            // Tạo token
-            const token = jsonwebtoken_1.default.sign({ id: user._id, name: user.userName, email: user.email }, process.env.ACCESS_TOKEN || ' ', { expiresIn: '2h' });
-            return { token, user };
-        });
-    }
-    // Method handle facebook callback
-    handleFacebookCallBack(code) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const response = yield axios_1.default.post(`https://graph.facebook.com/v21.0/oauth/access_token`, {
-                    params: {
-                        code: code,
-                        client_id: process.env.FB_CLIENT_ID,
-                        client_secret: process.env.FB_CLIENT_SECRET,
-                        redirect_uri: process.env.FB_REDIRECT_URI,
-                    },
-                });
-                console.log(response.data);
-                const accessToken = response.data.access_token;
-                const userResponse = yield axios_1.default.get(`https://graph.facebook.com/v21.0/me`, {
-                    params: {
-                        fields: 'id,name,email,picture',
-                        access_token: accessToken,
-                    },
-                });
-                const facebookUser = userResponse.data;
-                console.log(facebookUser);
-                let user = yield UserModel_1.default.findOne({ email: facebookUser.email });
-                if (!user) {
-                    user = new UserModel_1.default({
-                        email: facebookUser.email,
-                        userName: facebookUser.name,
-                        avatar: facebookUser.picture.data.url,
-                        facebookId: facebookUser.id,
-                        isAdmin: false,
-                        isCashier: false,
-                    });
-                    yield user.save();
-                }
-                const token = jsonwebtoken_1.default.sign({ id: user._id, name: user.userName, email: user.email }, process.env.ACCESS_TOKEN || ' ', { expiresIn: '2h' });
-                return {
-                    message: 'Login successful',
-                    token: token,
-                    user: {
-                        id: user.id,
-                        email: user.email,
-                        name: user.userName,
-                    },
-                };
-            }
-            catch (error) {
-                console.error('Error during Facebook OAuth callback:', error);
-                throw new Error('Error during Facebook OAuth callback: ' + error.message);
-            }
-        });
-    }
-    // Method facebook login
-    facebookLogin(accessToken) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const response = yield axios_1.default.get(`https://graph.facebook.com/v12.0/me`, {
-                    params: {
-                        fields: 'id,name,email,picture',
-                        access_token: accessToken,
-                    },
-                });
-                const facebookUser = response.data;
-                console.log(facebookUser);
-                let user = yield UserModel_1.default.findOne({ email: facebookUser.email });
-                if (!user) {
-                    user = new UserModel_1.default({
-                        email: facebookUser.email,
-                        userName: facebookUser.name,
-                        avatar: facebookUser.picture.data.url,
-                        facebookId: facebookUser.id,
-                        isAdmin: false,
-                        isCashier: false,
-                    });
-                    yield user.save();
-                }
-                const token = jsonwebtoken_1.default.sign({ id: user._id, name: user.userName, email: user.email }, process.env.ACCESS_TOKEN || ' ', { expiresIn: '2h' });
-                return {
-                    message: 'Login successful',
-                    token: token,
-                    user: {
-                        id: user.id,
-                        email: user.email,
-                        name: user.userName,
-                    },
-                };
-            }
-            catch (error) {
-                throw new Error(error.message);
             }
         });
     }
@@ -422,6 +309,69 @@ class AuthService {
             }
             otpRecord.isVerified = true;
             yield otpRecord.save();
+        });
+    }
+    sendOtpFlexible(identifier) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                let user;
+                const otp = crypto_1.default.randomInt(100000, 999999).toString();
+                const expireAt = new Date(Date.now() + 5 * 60 * 1000); // 5 phút
+                const phoneRegex = /^(\+84|0)(3|5|7|8|9)\d{8}$/;
+                const emailRegex = /^[a-zA-Z0-9](\.?[a-zA-Z0-9_-])*[a-zA-Z0-9]@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
+                if (phoneRegex.test(identifier)) {
+                    // ✅ Kiểm tra tồn tại user theo số điện thoại
+                    user = yield UserModel_1.default.findOne({ phone: identifier });
+                    if (!user) {
+                        throw new Error('Số điện thoại không tồn tại trong hệ thống');
+                    }
+                    user.otp = otp;
+                    user.otpExpiry = expireAt;
+                    yield user.save();
+                    yield smsService_1.default.sendOtpToPhoneNumber(identifier, otp);
+                    return { message: 'OTP đã được gửi qua số điện thoại' };
+                }
+                else if (emailRegex.test(identifier)) {
+                    // ✅ Kiểm tra tồn tại user theo email
+                    user = yield UserModel_1.default.findOne({ email: identifier });
+                    if (!user) {
+                        throw new Error('Email không tồn tại trong hệ thống');
+                    }
+                    const now = new Date();
+                    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+                    if (user.otpSentCount >= 5 && user.lastOtpSentAt > oneHourAgo) {
+                        throw new Error('Bạn đã vượt quá số lần gửi OTP. Vui lòng thử lại sau');
+                    }
+                    user.otp = otp;
+                    user.otpExpiry = expireAt;
+                    user.otpSentCount += 1;
+                    user.lastOtpSentAt = now;
+                    yield user.save();
+                    const transporter = nodemailer_1.default.createTransport({
+                        host: process.env.MAIL_HOST,
+                        port: Number(process.env.MAIL_PORT),
+                        secure: process.env.MAIL_ENCRYPTION === 'ssl',
+                        auth: {
+                            user: process.env.MAIL_USERNAME,
+                            pass: process.env.MAIL_PASSWORD,
+                        },
+                    });
+                    const mailOptions = {
+                        from: process.env.MAIL_FROM_ADDRESS,
+                        to: identifier,
+                        subject: 'OTP for verification',
+                        text: `Your OTP is ${otp}. It will expire in 5 minutes`,
+                    };
+                    yield transporter.sendMail(mailOptions);
+                    return { message: 'OTP đã được gửi qua email' };
+                }
+                else {
+                    throw new Error('Số điện thoại hoặc email không hợp lệ');
+                }
+            }
+            catch (error) {
+                throw new Error(error.message);
+            }
         });
     }
 }

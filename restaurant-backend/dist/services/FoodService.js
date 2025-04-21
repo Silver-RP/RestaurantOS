@@ -12,12 +12,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const FoodModel_1 = require("../models/FoodModel");
+const DishModel_1 = require("../models/DishModel");
 const mongoose_1 = __importDefault(require("mongoose"));
 class FoodService {
     createFood(food) {
         return __awaiter(this, void 0, void 0, function* () {
-            const newfood = new FoodModel_1.Food(food);
+            const newfood = new DishModel_1.Dish(food);
             try {
                 return yield newfood.save();
             }
@@ -29,7 +29,7 @@ class FoodService {
     getTopFavoriteFood() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const food = yield FoodModel_1.Food.find().sort({ favorites: -1 }).limit(5);
+                const food = yield DishModel_1.Dish.find().sort({ favorites: -1 }).limit(5);
                 // -1 là giảm dần, 1 là tăng dần
                 if (!food || food.length === 0) {
                     return { message: 'No food found' };
@@ -44,7 +44,7 @@ class FoodService {
     getAllFood() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const food = yield FoodModel_1.Food.find();
+                const food = yield DishModel_1.Dish.find();
                 return food;
             }
             catch (error) {
@@ -56,7 +56,7 @@ class FoodService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { id } = req.params;
-                const food = yield FoodModel_1.Food.findById(id).populate('categories');
+                const food = yield DishModel_1.Dish.findById(id).populate('categories');
                 return food;
             }
             catch (error) {
@@ -67,7 +67,7 @@ class FoodService {
     updateFood(id, food) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const updatedFood = yield FoodModel_1.Food.findByIdAndUpdate(id, food, { new: true });
+                const updatedFood = yield DishModel_1.Dish.findByIdAndUpdate(id, food, { new: true });
                 return updatedFood;
             }
             catch (error) {
@@ -78,7 +78,7 @@ class FoodService {
     deleteFood(id) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const deletedFood = yield FoodModel_1.Food.findByIdAndDelete(id);
+                const deletedFood = yield DishModel_1.Dish.findByIdAndDelete(id);
                 return deletedFood;
             }
             catch (error) {
@@ -89,7 +89,7 @@ class FoodService {
     getFoodWithPagination(page, limit) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const food = yield FoodModel_1.Food.find()
+                const food = yield DishModel_1.Dish.find()
                     .skip((page - 1) * limit)
                     .limit(limit);
                 return food;
@@ -103,7 +103,7 @@ class FoodService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const categoryId = new mongoose_1.default.Types.ObjectId(id);
-                const food = yield FoodModel_1.Food.find({ categories: categoryId });
+                const food = yield DishModel_1.Dish.find({ categories: categoryId });
                 return food;
             }
             catch (error) {
@@ -114,7 +114,7 @@ class FoodService {
     getFoodBySearch(search) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const food = yield FoodModel_1.Food.find({ $text: { $search: search } });
+                const food = yield DishModel_1.Dish.find({ $text: { $search: search } });
                 return food;
             }
             catch (error) {
@@ -125,7 +125,10 @@ class FoodService {
     getFoodByPrice(pricemin, pricemax) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const food = yield FoodModel_1.Food.find({ pricemin: pricemin, pricemax: pricemax });
+                const food = yield DishModel_1.Dish.find({
+                    pricemin: pricemin,
+                    pricemax: pricemax,
+                });
                 return food;
             }
             catch (error) {
@@ -136,7 +139,7 @@ class FoodService {
     getFoodByRating(rating) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const food = yield FoodModel_1.Food.find({ rating: rating });
+                const food = yield DishModel_1.Dish.find({ rating: rating });
                 return food;
             }
             catch (error) {
@@ -147,7 +150,7 @@ class FoodService {
     getFoodByFavorites(favorites) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const food = yield FoodModel_1.Food.find({ favorites: favorites });
+                const food = yield DishModel_1.Dish.find({ favorites: favorites });
                 return food;
             }
             catch (error) {

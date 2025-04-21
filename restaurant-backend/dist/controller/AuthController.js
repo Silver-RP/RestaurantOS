@@ -19,30 +19,28 @@ class AuthController {
     register(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                // Gọi AuthService để xử lý đăng ký
-                const { userName, email, password, phone, roles } = req.body;
-                if (!userName || !email || !password || !phone) {
-                    return res.status(400).json({ message: "Please enter all required fields" });
+                const { username, email, password, confirmPassword, roles } = req.body;
+                if (!username || !email || !password || !confirmPassword) {
+                    return res
+                        .status(400)
+                        .json({ message: 'Please enter all required fields' });
                 }
-                // check email format
+                if (password !== confirmPassword) {
+                    return res
+                        .status(400)
+                        .json({
+                        message: 'Error during user registration: Password do not match',
+                    });
+                }
                 const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
                 const isCheckEmail = reg.test(email);
                 if (!isCheckEmail) {
                     return res.status(400).json({ message: 'Invalid email format' });
                 }
-                // Check phone format
-                const regPhone = /^\+?[0-9]{10,11}$/;
-                const isCheckPhone = regPhone.test(phone);
-                if (!isCheckPhone) {
-                    return res.status(400).json({ message: 'Invalid phone format' });
-                }
-                // Check password format
                 const regPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/;
                 const isCheckPassword = regPassword.test(password);
                 if (!isCheckPassword) {
-                    return res
-                        .status(400)
-                        .json({
+                    return res.status(400).json({
                         message: 'Password must be at least 8 characters, including 1 uppercase letter, 1 lowercase letter and 1 number',
                     });
                 }
@@ -56,7 +54,7 @@ class AuthController {
                             .map((role) => new mongoose_1.default.Types.ObjectId(role)); // Dùng `new` để khởi tạo ObjectId
                     }
                     catch (err) {
-                        return res.status(400).json({ message: "Invalid role ID format" });
+                        return res.status(400).json({ message: 'Invalid role ID format' });
                     }
                 }
                 const user = yield AuthService_1.default.register(req.body);
@@ -137,7 +135,7 @@ class AuthController {
                     id: sub,
                     email,
                     googleId: sub,
-                    userName: name,
+                    username: name,
                     avatar,
                 });
                 res.cookie('refreshToken', refreshToken, {
@@ -180,46 +178,6 @@ class AuthController {
             }
         });
     }
-    // Method to handle Facebook login
-    facebookLogin(req, res) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const { accessToken } = req.body;
-                if (!accessToken) {
-                    return res.status(400).json({ message: 'No access token provided' });
-                }
-                const result = yield AuthService_1.default.facebookLogin(accessToken);
-                res.status(200).json({
-                    message: 'Facebook login successful',
-                    token: result.token,
-                    user: result.user,
-                });
-            }
-            catch (error) {
-                res.status(400).json({ message: error.message });
-            }
-        });
-    }
-    // Method to handle Facebook callback
-    facebookCallback(req, res) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const { code } = req.query;
-                if (!code) {
-                    return res.status(400).json({ message: 'No code provided' });
-                }
-                const result = yield AuthService_1.default.handleFacebookCallBack(code);
-                res.status(200).json({
-                    message: 'Facebook login successful',
-                    token: result.token,
-                    user: result.user,
-                });
-            }
-            catch (error) {
-                res.status(400).json({ message: error.message });
-            }
-        });
-    }
     // Method to logout a user
     Logout(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -242,21 +200,40 @@ class AuthController {
             }
         });
     }
-    // Method to send OTP
-    sendOtpController(req, res) {
+    //forgotPasswordHandler
+    forgotPasswordHandler(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { phone } = req.body;
-            if (!phone) {
-                return res.status(400).json({ message: 'Phone number is required' });
+            const { phone, email } = req.body;
+            if (!phone && !email) {
+                return res.status(400).json({ message: 'Vui lòng nhập số điện thoại hoặc email' });
+            }
+            let identifier = '';
+            if (phone && email) {
+                return res.status(400).json({ message: 'Vui lòng chỉ nhập số điện thoại HOẶC email, không nhập cả hai' });
+            }
+            // Nếu nhập số điện thoại thì validate
+            if (phone) {
+                const phoneRegex = /^(?:\+84|0)(3|5|7|8|9)\d{8}$/;
+                if (!phoneRegex.test(phone)) {
+                    return res.status(400).json({ message: 'Định dạng số điện thoại không hợp lệ' });
+                }
+                identifier = phone;
+            }
+            // Nếu nhập email thì validate
+            if (email) {
+                const emailRegex = /^[a-zA-Z0-9](\.?[a-zA-Z0-9_-])*[a-zA-Z0-9]@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
+                if (!emailRegex.test(email)) {
+                    return res.status(400).json({ message: 'Định dạng email không hợp lệ' });
+                }
+                identifier = email;
             }
             try {
-                const response = yield AuthService_1.default.sendOtp(phone);
-                res.status(200).json({
-                    message: response.message,
-                });
+                const response = yield AuthService_1.default.sendOtpFlexible(identifier);
+                return res.status(200).json({ message: response.message });
             }
             catch (error) {
-                res.status(400).json({ message: error.message });
+                return res.status(400).json({ message: error.message });
+                throw new Error('Gửi OTP qua SMS thất bại, vui lòng thử lại');
             }
         });
     }
@@ -283,9 +260,7 @@ class AuthController {
         return __awaiter(this, void 0, void 0, function* () {
             const { phone, newPassword, confirmPassword } = req.body;
             if (!phone || !newPassword || !confirmPassword) {
-                return res
-                    .status(400)
-                    .json({
+                return res.status(400).json({
                     message: 'Phone number, new password and confirm password are required',
                 });
             }

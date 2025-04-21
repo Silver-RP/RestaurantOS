@@ -4,16 +4,25 @@ import Register from "../pages/Register";
 import Login from "../pages/Login";
 import Homepage from "../pages/Homepage";
 import WishList from "../pages/WishList";
-import AboutUs from "../pages/AboutUs";
+import ResetPassword from "../pages/ResetPassword";
+import ForgotPassword from "../pages/ForgotPassword";
+import EnterOTP from "../pages/EnterOTP";
+import ProfilePage from "../pages/Profile";
+import ProductDetail from "../pages/ProductDetail";
+// import AboutUs from "../pages/AboutUs";
 
 const AppRoutes = () => {
   const routes = useRoutes([
     { path: "/", element: <Homepage /> },
-    { path: "/aboutus", element: <AboutUs /> },
+    // { path: "/aboutus", element: <AboutUs /> },
     { path: "/register", element: <Register /> },
     { path: "/login", element: <Login /> },
     { path: "/wishlist", element: <WishList/> },
-    { path: "/aboutus", element: <AboutUs/> },
+    { path: "/reset-password", element: <ResetPassword/> }, 
+    { path: "/forgot-password", element: <ForgotPassword/> },
+    { path: "/verify-otp", element: <EnterOTP/> },
+    { path: "/profile", element: <ProfilePage/> },
+    { path: "/productdetail", element: <ProductDetail/> },
   ]);
   return routes;
 };
