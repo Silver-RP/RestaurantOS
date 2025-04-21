@@ -18,13 +18,12 @@ const SearchRoutes_1 = __importDefault(require("./routes/SearchRoutes"));
 const StaffRoutes_1 = __importDefault(require("./routes/StaffRoutes"));
 const FoodRoutes_1 = __importDefault(require("./routes/FoodRoutes"));
 const PermissionRoutes_1 = __importDefault(require("./routes/PermissionRoutes"));
+const dotenv_1 = __importDefault(require("dotenv"));
 const db_1 = __importDefault(require("./config/db"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const passport_1 = __importDefault(require("passport"));
 // Import file authSwagger để đăng ký metadata
 require("./swaggers/AuthSwagger");
-// import './insertData'; 
-const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 (0, db_1.default)();
 const app = (0, express_1.default)();

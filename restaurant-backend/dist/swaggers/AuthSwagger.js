@@ -41,3 +41,29 @@ const swaggerOptions_1 = require("../utils/swaggerOptions");
     },
     tags: ['Auth'],
 });
+(0, swaggerOptions_1.registerSwaggerRoute)({
+    path: '/auth/login',
+    method: 'post',
+    requestBody: {
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        email: { type: 'string', example: 'johndoe@example.com' },
+                        password: { type: 'string', example: 'Password123' },
+                    },
+                    required: ['email', 'password'],
+                },
+            },
+        },
+        required: true,
+    },
+    responses: {
+        200: { description: 'User logged in successfully' },
+        400: {
+            description: 'Bad request - Possible issues include: missing email or password, invalid email format, unregistered email, or invalid credentials'
+        },
+    },
+    tags: ['Auth'],
+});
