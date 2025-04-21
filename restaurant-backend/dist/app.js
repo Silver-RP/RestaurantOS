@@ -27,12 +27,12 @@ const cors_1 = __importDefault(require("cors"));
 const app = (0, express_1.default)();
 dotenv_1.default.config();
 (0, db_1.default)();
-app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
 app.use((0, cors_1.default)({
     origin: 'http://localhost:5173',
     credentials: true
 }));
+app.use(express_1.default.json());
 const port = process.env.PORT || 4000;
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);

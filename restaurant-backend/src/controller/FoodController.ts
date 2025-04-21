@@ -56,7 +56,7 @@ class FoodController {
     async getAllFood (req: Request, res: Response): Promise<any> {
         try {
             const food = await FoodService.getAllFood();
-            res.status(200).json(food);
+            res.status(200).json({ message: 'All food retrieved successfully', data: food});
         } catch (error) {
             throw new Error('Error getting all food');
         }

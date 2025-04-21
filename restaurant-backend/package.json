@@ -6,6 +6,7 @@
     "clean": "rimraf src/**/*.js src/**/*.js.map",
     "start": "node dist/app.js",
     "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
+    "watch": "tsc --watch && cpx \"src/config/swagger.yml\" dist/config",
     "build": "tsc && cpx \"src/config/swagger.yml\" dist/config",
     "lint": "eslint . --ext .ts",
     "prettier": "prettier --write .",
@@ -37,7 +38,6 @@
     "passport-facebook": "^3.0.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
-    "ts-node-dev": "^2.0.0",
     "twilio": "^5.4.0",
     "typescript": "^5.8.3",
     "xlsx": "^0.18.5",
@@ -58,14 +58,16 @@
     "@types/passport-facebook": "^3.0.3",
     "@types/swagger-ui-express": "^4.1.7",
     "@types/yamljs": "^0.2.34",
-    "cpx": "^1.5.0",
+    "cpx": "^1.2.1",
     "eslint": "^8.41.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
     "husky": "^9.1.7",
     "lint-staged": "^15.2.11",
     "nodemon": "^3.1.9",
-    "prettier": "^3.4.2"
+    "prettier": "^3.4.2",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0"
   },
   "lint-staged": {
     "*.ts": [

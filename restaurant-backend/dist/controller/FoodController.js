@@ -73,7 +73,7 @@ class FoodController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const food = yield FoodService_1.default.getAllFood();
-                res.status(200).json(food);
+                res.status(200).json({ message: 'All food retrieved successfully', data: food });
             }
             catch (error) {
                 throw new Error('Error getting all food');

@@ -86,17 +86,7 @@ const userSchema = new mongoose_1.default.Schema({
     confirmPassword: {
         type: String,
         required: false,
-    },
-    emailVerificationToken: {
-        type: String,
-        required: false
-    },
-    // emailVerificationToken: dùng để xác thực email qua link 
-    emailVerificationExpires: {
-        type: Date,
-        required: false
-    },
-    // emailVerificationExpires	: thời gian hết hạn của token xác thực email
+    }
 }, {
     timestamps: true,
 });
