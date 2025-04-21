@@ -11,12 +11,14 @@ import ProfilePage from "../pages/Profile";
 import MenuPage from "../pages/Menu";
 import ProductDetail from "../pages/ProductDetail";
 import ContactUsPage from "../pages/ContactUsPage";
+// import AboutUsPage from "pages/AboutUs";
 // import AboutUs from "../pages/AboutUs";
 import FAQsCompoent from "../pages/FaqPage";
 
 const AppRoutes = () => {
   const routes = useRoutes([
     { path: "/", element: <Homepage /> },
+    // { path: "/aboutus", element: <AboutUsPage /> },
     // { path: "/aboutus", element: <AboutUs /> },
     { path: "/register", element: <Register /> },
     { path: "/login", element: <Login /> },

@@ -1,6 +1,6 @@
 import { Dish } from '../models/DishModel';
 import mongoose from 'mongoose';
-
+import Category from '../models/CategoryModel';
 class FoodService {
   async createFood(food: any) {
     const newfood = new Dish(food);
@@ -66,12 +66,19 @@ class FoodService {
     }
   }
 
-  async getFoodByCategory(id: string) {
+  async getFoodByCategoryType(cateType: string) {
     try {
-      const categoryId = new mongoose.Types.ObjectId(id); 
-      return await Dish.find({ categories: categoryId });
+      // B1: Lấy tất cả danh mục có Cate_type = "drink" hoặc "food"
+      const categories = await Category.find({ Cate_type: cateType });
+  
+      const categoryIds = categories.map((cat) => cat._id);
+  
+      // B2: Tìm dish có categories nằm trong danh sách categoryIds
+      const food = await Dish.find({ categories: { $in: categoryIds } });
+  
+      return food;
     } catch (error) {
-      throw new Error('Error getting food by category');
+      throw new Error('Error getting food by category type');
     }
   }
 
