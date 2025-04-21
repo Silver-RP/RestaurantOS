@@ -2,19 +2,12 @@ import React, { useEffect } from "react";
 import { BrowserRouter as Router, useLocation } from "react-router-dom";
 import AppRoutes from "./routers";
 import Footer from "./components/layout/footer/Footer";
-<<<<<<< HEAD
-import Sidebar from "./components/layout/sidebar/Sidebar";
-
-
-
-=======
 import ExtendSidebar from "./components/layout/sidebar/ExtendSidebar";
 import PrimarySidebar from "./components/layout/sidebar/PrimarySidebar";
 import { ToastContainer } from 'react-toastify';
 import { Provider } from 'react-redux';
 import { store } from './redux/store';
 import 'react-toastify/dist/ReactToastify.css';
->>>>>>> 9a9d0d57fb85df353c6d942b4285a62524fd05ab
 const AppLayout = () => {
   const location = useLocation();
   const hideSidebarFooter = ["/login", "/register" , "/reset-password", "/verify-otp", "/forgot-password"].includes(location.pathname);
