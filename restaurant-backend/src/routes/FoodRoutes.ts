@@ -13,7 +13,7 @@ const router = Router();
 
 // API upload ảnh lên Cloudinary
 router.post('/createfood', upload.single('image'), FoodController.createFood);
-router.get("/gettopfavoritefood", FoodController.getTopFavoriteFood);
+// router.get('/gettopfavoritefood', FoodController.getTopFavoriteFood);
 router.get("/getallfood", FoodController.getAllFood);
 router.get("/getfoodbyid/:id", FoodController.getFoodById);
 router.put("/updatefood/:id", FoodController.updateFood);

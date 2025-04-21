@@ -62,10 +62,18 @@ class FoodController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const foodFavoriteTop = yield FoodService_1.default.getTopFavoriteFood();
-                return res.status(200).json(foodFavoriteTop);
+                return res.status(200).json({
+                    success: true,
+                    data: foodFavoriteTop
+                });
             }
             catch (error) {
-                throw new Error('Error getting top favorite food');
+                console.error('Error fetching top favorite foods:', error);
+                return res.status(500).json({
+                    success: false,
+                    message: 'Failed to retrieve top favorite foods',
+                    error: error instanceof Error ? error.message : 'Unknown error'
+                });
             }
         });
     }
@@ -84,7 +92,7 @@ class FoodController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const foodId = String(req.params.id);
-                const food = yield FoodService_1.default.getFoodById(foodId, req);
+                const food = yield FoodService_1.default.getFoodById(foodId);
                 res.status(200).json(food);
             }
             catch (error) {

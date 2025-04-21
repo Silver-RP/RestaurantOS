@@ -15,7 +15,7 @@ const upload = (0, multer_1.default)({
 const router = (0, express_1.Router)();
 // API upload ảnh lên Cloudinary
 router.post('/createfood', upload.single('image'), FoodController_1.default.createFood);
-router.get("/gettopfavoritefood", FoodController_1.default.getTopFavoriteFood);
+// router.get('/gettopfavoritefood', FoodController.getTopFavoriteFood);
 router.get("/getallfood", FoodController_1.default.getAllFood);
 router.get("/getfoodbyid/:id", FoodController_1.default.getFoodById);
 router.put("/updatefood/:id", FoodController_1.default.updateFood);
