@@ -1,19 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiShoppingCart, FiEye, FiHeart } from 'react-icons/fi';
+import { ProductCardProps } from "../../types/ProductCard.types";
 
-interface ProductCardProps {
-  imageUrl?: string;
-  hoverImage?: string;
-  name: string;
-  cate?: string;
-  price?: number;
-  originalPrice?: number;
-  discount?: string;
-  isNew?: boolean;
-}
-
-const ProductCard: React.FC<ProductCardProps> = ({ ...rest }) => {
+const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
   const navigate = useNavigate();
 
   const handleNavigateToDetail = () => {
@@ -53,13 +43,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ ...rest }) => {
         </div>
 
         <div className="absolute bottom-5 left-1/2 transform -translate-x-1/2 translate-y-8 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 flex gap-4 transition-all duration-500 ease-in-out">
-          <div className="p-2 bg-white text-[#002B40] rounded-full shadow-md hover:bg-secondaryColor hover:text-headerBackground hover:-translate-y-1 transition-all duration-300">
+          <div className="p-2 bg-white text-[#002B40] rounded-full cursor-pointer shadow-md hover:bg-secondaryColor hover:text-headerBackground hover:-translate-y-1 transition-all duration-300">
             <FiShoppingCart size={20} />
           </div>
-          <div className="p-2 bg-white text-[#002B40] rounded-full shadow-md hover:bg-secondaryColor hover:text-headerBackground hover:-translate-y-1 transition-all duration-300">
+          <div className="p-2 bg-white text-[#002B40] rounded-full cursor-pointer shadow-md hover:bg-secondaryColor hover:text-headerBackground hover:-translate-y-1 transition-all duration-300">
             <FiEye size={20} />
           </div>
-          <div className="p-2 bg-white text-[#002B40] rounded-full shadow-md hover:bg-secondaryColor hover:text-headerBackground hover:-translate-y-1 transition-all duration-300">
+          <div className="p-2 bg-white text-[#002B40] rounded-full cursor-pointer shadow-md hover:bg-secondaryColor hover:text-headerBackground hover:-translate-y-1 transition-all duration-300">
             <FiHeart size={20} />
           </div>
         </div>
@@ -73,7 +63,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ ...rest }) => {
           {rest.cate || 'Danh mục sản phẩm'}
         </p>
         <h3
-          className="text-lg font-restora font-bold mt-1 cursor-pointer hover:text-secondaryColor"
+          className="text-lg font-restora font-light mt-1 cursor-pointer hover:text-secondaryColor"
           onClick={handleNavigateToDetail}
         >
           {rest.name || 'Tên sản phẩm'}
@@ -85,11 +75,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ ...rest }) => {
 
         <div className="min-h-[50px] flex flex-col items-center justify-end">
           {rest.originalPrice && (
-            <p className="text-gray-400 font-restora line-through text-sm">
+            <p className="text-gray-400 font-normal line-through text-sm">
               {rest.originalPrice.toLocaleString()} VND
             </p>
           )}
-          <p className="text-xl font-restora text-secondaryColor">
+          <p className="text-xl font-normal text-secondaryColor">
             {rest.price?.toLocaleString() || '0'} VND
           </p>
         </div>
@@ -98,4 +88,4 @@ const ProductCard: React.FC<ProductCardProps> = ({ ...rest }) => {
   );
 };
 
-export default ProductCard;
+export default ProductCardGrid;

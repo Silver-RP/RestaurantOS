@@ -9,13 +9,26 @@
 }
 
 body {
-  @apply font-sans;
+  @apply font-sans text-white;
   background-color: #012b40;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  @apply font-restora;
+  font-weight: 400
+}
+
+button {
+  @apply font-poppins uppercase tracking-wide;
+}
+
+p {
+  @apply font-roboto text-base leading-relaxed;
 }
 
 .hide-scrollbar {
   -ms-overflow-style: none;
-  scrollbar-width: none; 
+  scrollbar-width: none;
 }
 
 .hide-scrollbar::-webkit-scrollbar {
@@ -41,6 +54,5 @@ body {
 }
 
 .scrollbar-custom::-webkit-scrollbar-thumb:hover {
-  background-color: #F5B955
-  ;
+  background-color: #F5B955;
 }

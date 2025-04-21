@@ -6,7 +6,7 @@ import ReservationSection from '../components/pages/homepage/ReservationSection'
 import FeatureSection from '../components/pages/homepage/FeatureSection';
 import OrderOnlineSection from '../components/pages/homepage/OrderOnline';
 import Postcomponent from '../components/pages/homepage/post/Post';
-import BestOffersSection from '../components/pages/homepage/bestoffers/BestOffersSection';
+import BestOffersSection from '../components/pages/homepage/offer/BestOffersSection';
 
 const Homepage = () => {
     return (
