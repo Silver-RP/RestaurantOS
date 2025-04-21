@@ -278,21 +278,17 @@ class AuthService {
     return { message: 'OTP verified successfully' };
   }
   // Method reset password
-  async resetPassword(
-    phone: string,
-    newPassword: string,
-    confirmPassword: string,
-  ) {
-    const user = await User.findOne({ phone });
+  async changePassword(email: string, newPassword: string) {
+    const user = await User.findOne({ email });
     if (!user) {
-      throw new Error('User not found');
+      throw new Error("User not found");
     }
+  
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
-    user.otp = null;
-    user.otpExpiry = null;
     await user.save();
-    return { message: 'Password reset successfully' };
+  
+    return { message: "Password changed successfully" };
   }
   // Method send OTP email
   async sendOtpEmail(email: string): Promise<void>{

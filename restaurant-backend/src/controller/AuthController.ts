@@ -67,7 +67,6 @@ class AuthController {
   async login(req: Request, res: Response): Promise<any> {
     try {
       const { email, password } = req.body;
-
       const reg =
         /^[a-zA-Z0-9](\.?[a-zA-Z0-9_-])*[a-zA-Z0-9]@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
       const isCheckEmail = reg.test(email);
@@ -250,24 +249,23 @@ class AuthController {
       res.status(400).json({ message: error.message });
     }
   }
-  // Method to reset password
-  async resetPassword(req: Request, res: Response): Promise<any> {
-    const { phone, newPassword, confirmPassword } = req.body;
-    if (!phone || !newPassword || !confirmPassword) {
+  // Method to change password
+  async changePassword(req: Request, res: Response): Promise<any> {
+    const { newPassword, confirmPassword } = req.body;
+  
+    if (!newPassword || !confirmPassword) {
       return res.status(400).json({
-        message: 'Phone number, new password and confirm password are required',
+        message: "New password and confirm password are required",
       });
     }
+  
     if (newPassword !== confirmPassword) {
-      return res.status(400).json({ message: 'Passwords do not match' });
+      return res.status(400).json({ message: "Passwords do not match" });
     }
+  
     try {
-      const response = await AuthService.resetPassword(
-        phone,
-        newPassword,
-        confirmPassword,
-      );
-      res.status(200).json({ message: response });
+      const response = await AuthService.changePassword(email, newPassword);
+      res.status(200).json(response);
     } catch (error: any) {
       res.status(400).json({ message: error.message });
     }

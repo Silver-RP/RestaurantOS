@@ -99,15 +99,16 @@ class FoodController {
             throw new Error('Error getting food with pagination');
         }
     }
-    async getFoodByCategory (req: Request, res: Response): Promise<any> {
+    async getFoodByCategory(req: Request, res: Response): Promise<any> {
         try {
-            const { id } = req.query;
-            const food = await FoodService.getFoodByCategory(String(id));
-            res.status(200).json(food);
+          const { Cate_type } = req.query;
+          const food = await FoodService.getFoodByCategoryType(String(Cate_type));
+          res.status(200).json(food);
         } catch (error) {
-            throw new Error('Error getting food by category');
+          console.error(error);
+          res.status(500).json({ message: 'Error getting food by category type' });
         }
-    }
+      }
     async getFoodBySearch (req: Request, res: Response): Promise<any> {
         try {
             const { search } = req.query;
