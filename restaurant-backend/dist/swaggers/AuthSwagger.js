@@ -62,7 +62,7 @@ const swaggerOptions_1 = require("../utils/swaggerOptions");
     responses: {
         200: { description: 'User logged in successfully' },
         400: {
-            description: 'Bad request - Possible issues include: missing email or password, invalid email format, unregistered email, or invalid credentials'
+            description: 'Bad request - Possible issues include: missing email or password, invalid email format, unregistered email, or invalid credentials, Email not registered',
         },
     },
     tags: ['Auth'],
