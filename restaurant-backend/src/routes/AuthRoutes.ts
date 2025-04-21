@@ -13,7 +13,7 @@ router.post("/logout", AuthController.Logout); // => ok
 // router.post("/send-otp", AuthController.sendOtpController); // ok  
 router.post("/verify-otp", AuthController.verifyOtpController); // ok 
 router.post("/forgot-password", AuthController.forgotPasswordHandler); // ok
-router.post("/change-password", AuthController.changePassword); // ok
+router.post('/change-password', AuthController.changePassword); // ok
 router.post("/send-otpEmail", AuthController.sendOtpEmail); // ok
 router.post("/verify-otpEmail", AuthController.verifyOtpEmail); // ok
 router.post('/resend-verification', AuthController.resendVerificationEmail);
