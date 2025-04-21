@@ -7,7 +7,7 @@
     "start": "node dist/app.js",
     "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
     "watch": "tsc --watch && cpx \"src/config/swagger.yml\" dist/config",
-    "build": "tsc && cpx \"src/config/swagger.yml\" dist/config",
+    "build": "tsc",
     "lint": "eslint . --ext .ts",
     "prettier": "prettier --write .",
     "test": "echo \"Error: no test specified\" && exit 1"

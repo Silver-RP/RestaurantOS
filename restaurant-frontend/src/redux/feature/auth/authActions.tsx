@@ -22,7 +22,7 @@ export const RegisterUser = createAsyncThunk(
       }
     }
   );
-  
+
 // Login
 export const LoginUser = createAsyncThunk(
     'auth/login',
@@ -41,7 +41,8 @@ export const LoginUser = createAsyncThunk(
             return rejectWithValue('An unexpected error occurred');
         }
     }
-)
+);
+
 // Logout
 export const LogoutUser = createAsyncThunk(
     'auth/logout',
@@ -61,3 +62,4 @@ export const LogoutUser = createAsyncThunk(
         }
     }
 )
+
