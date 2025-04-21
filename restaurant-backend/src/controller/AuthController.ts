@@ -64,45 +64,47 @@ class AuthController {
   }
 
   // Method to login a user
-  async login(req: Request, res: Response): Promise<any> {
-    try {
-      const { email, password } = req.body;
+    async login(req: Request, res: Response): Promise<any> {
+      try {
+        const { email, password } = req.body;
 
-      const reg =
-        /^[a-zA-Z0-9](\.?[a-zA-Z0-9_-])*[a-zA-Z0-9]@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
-      const isCheckEmail = reg.test(email);
-      if (!email || !password) {
-        return res.status(400).json({
-          status: 'Error',
-          message: 'Please enter email and password',
+        // Kiểm tra định dạng email với regular expression
+        const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
+        const isCheckEmail = reg.test(email);
+
+        // Kiểm tra thông tin email và password
+        if (!email || !password) {
+          return res.status(400).json({
+            status: 'Error',
+            message: 'Please enter email and password',
+          });
+        } else if (!isCheckEmail) {
+          return res.status(400).json({
+            status: 'Error',
+            message: 'Invalid email format',
+          });
+        }
+        // Gọi AuthService để xử lý đăng nhập và lấy token
+        const { token, refresh_token, user } = await AuthService.login(req.body);
+
+        // Thiết lập cookie cho refresh token
+        res.cookie('refreshToken', refresh_token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production', // Chỉ sử dụng secure cookie trong môi trường production
+          sameSite: 'none', // Bảo mật cookie
+          maxAge: 24 * 60 * 60 * 1000, // 1 ngày
         });
-      } else if (!isCheckEmail) {
-        return res.status(400).json({
-          status: 'Error',
-          message: 'Invalid email format',
+
+        // Trả về access token và thông tin người dùng
+        res.status(200).json({
+          message: 'User logged in successfully',
+          user,
+          accessToken: token,
         });
+      } catch (error: any) {
+        res.status(400).json({ message: error.message });
       }
-      // Gọi AuthService để xử lý đăng nhập và lấy token
-      const { token, refresh_token, user } = await AuthService.login(req.body);
-
-      // Thiết lập cookie cho refresh token
-      res.cookie('refreshToken', refresh_token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production', // Chỉ sử dụng secure cookie trong môi trường production
-        sameSite: 'none', // Bảo mật cookie
-        maxAge: 24 * 60 * 60 * 1000, // 1 ngày
-      });
-
-      // Trả về access token và thông tin người dùng
-      res.status(200).json({
-        message: 'User logged in successfully',
-        user,
-        accessToken: token,
-      });
-    } catch (error: any) {
-      res.status(400).json({ message: error.message });
     }
-  }
   // Method to refresh access token
   async refreshAccessToken(req: Request, res: Response): Promise<any> {
     try {
@@ -250,17 +252,20 @@ class AuthController {
       res.status(400).json({ message: error.message });
     }
   }
-  // Method to reset password
-  async resetPassword(req: Request, res: Response): Promise<any> {
-    const { phone, newPassword, confirmPassword } = req.body;
-    if (!phone || !newPassword || !confirmPassword) {
+  // Method to change password
+  async changePassword(req: Request, res: Response): Promise<any> {
+    const { newPassword, confirmPassword } = req.body;
+  
+    if (!newPassword || !confirmPassword) {
       return res.status(400).json({
-        message: 'Phone number, new password and confirm password are required',
+        message: "New password and confirm password are required",
       });
     }
+  
     if (newPassword !== confirmPassword) {
-      return res.status(400).json({ message: 'Passwords do not match' });
+      return res.status(400).json({ message: "Passwords do not match" });
     }
+  
     try {
       const response = await AuthService.resetPassword(
         phone,

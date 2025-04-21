@@ -44,20 +44,23 @@ class FoodController {
             return res.status(500).json({message: 'Internal server error'});
         }
     }
-    async getTopFavoriteFood(req: Request, res: Response): Promise<Response> {
+    async getTopFavoriteFood(req: Request, res: Response): Promise<void> {
         try {
           const foodFavoriteTop = await FoodService.getTopFavoriteFood();
-          return res.status(200).json({
+            res.status(200).json({
             success: true,
             data: foodFavoriteTop
           });
+          return 
+          
         } catch (error) {
           console.error('Error fetching top favorite foods:', error);
-          return res.status(500).json({
+            res.status(500).json({
             success: false,
             message: 'Failed to retrieve top favorite foods',
             error: error instanceof Error ? error.message : 'Unknown error'
           });
+          return
         }
       }
     async getAllFood (req: Request, res: Response): Promise<any> {
@@ -105,15 +108,16 @@ class FoodController {
             throw new Error('Error getting food with pagination');
         }
     }
-    async getFoodByCategory (req: Request, res: Response): Promise<any> {
+    async getFoodByCategory(req: Request, res: Response): Promise<any> {
         try {
-            const { id } = req.query;
-            const food = await FoodService.getFoodByCategory(String(id));
-            res.status(200).json(food);
+          const { Cate_type } = req.query;
+          const food = await FoodService.getFoodByCategoryType(String(Cate_type));
+          res.status(200).json(food);
         } catch (error) {
-            throw new Error('Error getting food by category');
+          console.error(error);
+          res.status(500).json({ message: 'Error getting food by category type' });
         }
-    }
+      }
     async getFoodBySearch (req: Request, res: Response): Promise<any> {
         try {
             const { search } = req.query;
