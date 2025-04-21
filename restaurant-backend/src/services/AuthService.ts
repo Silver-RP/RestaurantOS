@@ -16,7 +16,6 @@ interface Register {
   email: string;
   password: string;
   confirmPassword?: string;
-  phone: string;
   roles: mongoose.Types.ObjectId[];
 }
 interface Login {
@@ -100,14 +99,11 @@ class AuthService {
         confirmPassword,
         roles: roleObjectIds,
       } = userData;
-      const existingUser = await User.findOne({
-        $or: [{ email }, { username }],
-      });
+      const existingUser = await User.findOne({ email });
+
       if (password !== confirmPassword) {
         throw new Error('Password do not match');
       }
-      // $or là gì
-      // Nếu không tìm thấy user thì trả về null
       if (existingUser) {
         throw new Error('User or email already exists');
       }
@@ -118,6 +114,9 @@ class AuthService {
         email,
         password: hashedPassword,
         roles: roleObjectIds,
+        isVerified: false, // hoặc true nếu đã xác thực
+        emailVerificationToken: crypto.randomBytes(32).toString('hex'),
+        emailVerificationExpires: new Date(Date.now() + 3600000), // 1 giờ
       });
       await newUser.save();
       return newUser;
@@ -309,14 +308,11 @@ class AuthService {
 
       throw new Error("You have exceeded the limit for sending OTPs. Please try again later");
     }
-    user.otp = otp; 
+    user.otp = otp;
     user.otpExpiry = expireAt;
     user.otpSentCount += 1;
     user.lastOtpSentAt = now;
-  
-    // Lưu OTP vào db 
-    await User.create({email, otp, otpExpiry: expireAt});
-    // Gửi OTP qua email
+    await user.save(); 
     const transporter = nodemailer.createTransport({
       host: process.env.MAIL_HOST, 
       port: Number(process.env.MAIL_PORT),
@@ -334,22 +330,33 @@ class AuthService {
     };
     await transporter.sendMail(mailOptions);
   }
-  async verifyOtpEmail(email: string, otp: string): Promise<void> {
-    const otpRecord = await User.findOne({ email, otp, isVerifiend: false });
-    if (!otpRecord) {
-      throw new Error('Invalid OTP');
-    }
-    if (!otpRecord.expireAt) {
-      console.error('exprireAt is missing or invalid');
-      throw new Error('OTP expiry time is not set');
-    }
+  async verifyOtpEmail(email: string, otp: string): Promise<string> {
+    const user = await User.findOne({ email, otp }); // ❌ bỏ điều kiện isVerified: false
 
-    if (otpRecord.expireAt < new Date()) {
-      throw new Error('OTP expired');
-    }
-    otpRecord.isVerified = true;
-    await otpRecord.save();
+  if (!user) {
+    throw new Error('Invalid OTP');
   }
+
+  if (user.isVerified) {
+    return 'Email has already been verified'; // ✅ thêm chỗ này sau khi tìm user
+  }
+
+  if (!user.otpExpiry) {
+    throw new Error('OTP expiry time is not set');
+  }
+
+  if (user.otpExpiry < new Date()) {
+    throw new Error('OTP expired');
+  }
+
+  user.isVerified = true;
+  user.otp = null; // ✅ xóa OTP sau xác minh
+  user.otpExpiry = null;
+  await user.save();
+
+  return 'Email verified successfully';
+  }
+  
   async sendOtpFlexible(identifier: string): Promise<{ message: string }> {
     try {
       let user;
@@ -417,7 +424,42 @@ class AuthService {
       throw new Error(error.message);
     }
   }
-  
+  async resendVerificationEmail(email: string): Promise<string> {
+    const user = await User.findOne({ email });
+    if (!user) {
+      throw new Error('User not found');
+    }
+    if (user.isVerified) {
+      throw new Error('Email is already verified');
+    }
+
+    const otp = crypto.randomInt(100000, 999999).toString();
+    const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
+
+    user.otp = otp;
+    user.otpExpiry = otpExpiry;
+    await user.save();
+
+    const transporter = nodemailer.createTransport({
+      host: process.env.MAIL_HOST,
+      port: Number(process.env.MAIL_PORT),
+      secure: process.env.MAIL_ENCRYPTION === 'ssl',
+      auth: {
+        user: process.env.MAIL_USERNAME,
+        pass: process.env.MAIL_PASSWORD,
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.MAIL_FROM_ADDRESS,
+      to: email,
+      subject: 'Verify Your Email Address',
+      text: `Your verification OTP is ${otp}. It will expire in 5 minutes.`,
+    };
+
+    await transporter.sendMail(mailOptions);
+    return 'Verification email sent successfully';
+  }
   
 }
 export default new AuthService();
