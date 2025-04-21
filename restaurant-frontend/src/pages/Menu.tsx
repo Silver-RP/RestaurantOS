@@ -1,13 +1,17 @@
+import React, { useState } from 'react';
 import FilterSidebar from '../components/pages/menu/FilterSidebar';
 import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
-import React, { useState } from 'react';
 import ProductGrid from '../components/pages/menu/ProductGrid';
 import Pagination from '../components/pages/menu/Pagination';
 import { BsGridFill, BsListUl } from 'react-icons/bs';
+import { useFoods } from '../hooks/useFoods';
+import { ProductCardProps } from 'types/ProductCard.types';
 
 const MenuPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
+  const { foods, loading, error } = useFoods();
 
   return (
     <section className="bg-bodyBackground w-full min-h-screen text-white">
@@ -30,21 +34,12 @@ const MenuPage: React.FC = () => {
               </select>
 
               <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-secondaryColor">
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M19 9l-7 7-7-7"
-                  />
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
             </div>
+
             <div className="flex items-center gap-2 text-secondaryColor">
               <button
                 onClick={() => setViewMode('grid')}
@@ -61,13 +56,31 @@ const MenuPage: React.FC = () => {
             </div>
           </div>
 
-          <ProductGrid viewMode={viewMode} />
+          {loading ? (
+            <div className="text-center py-20">Đang tải dữ liệu món ăn...</div>
+          ) : error ? (
+            <div className="text-center text-red-500 py-20">{error}</div>
+          ) : (
+            <ProductGrid
+              viewMode={viewMode}
+              products={foods.map(food => ({
+                id: food._id,
+                name: food.name,
+                price: food.discount_price || food.price,
+                originalPrice: food.price,
+                discount: food.discount_price
+                  ? `${Math.round((1 - food.discount_price / food.price) * 100)}% OFF`
+                  : undefined,
+                imageUrl: food.images?.[0] || '',
+                hoverImage: food.images?.[1] || '',
+                description: food.description || '',
+                cate: food.categories?.[0]?.name || 'Danh mục',
+              })) as ProductCardProps[]}
+            />
+          )}
 
           <div className="pt-8">
-            <Pagination
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
-            />
+            <Pagination currentPage={currentPage} setCurrentPage={setCurrentPage} />
           </div>
         </main>
       </div>

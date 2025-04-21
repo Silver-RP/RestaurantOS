@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const FoodService_1 = __importDefault(require("../services/FoodService"));
 const UploadImage_1 = __importDefault(require("../services/UploadImage"));
-const FoodModel_1 = require("../models/FoodModel");
+const DishModel_1 = require("../models/DishModel");
 const SearchService_1 = __importDefault(require("../services/SearchService"));
 const mongoose_1 = __importDefault(require("mongoose"));
 class FoodController {
@@ -191,7 +191,7 @@ class FoodController {
     SearchFood(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const result = yield SearchService_1.default.search(FoodModel_1.Food, req.query, ['name']);
+                const result = yield SearchService_1.default.search(DishModel_1.Dish, req.query, ['name']);
                 return res.status(200).json(result);
             }
             catch (error) {
