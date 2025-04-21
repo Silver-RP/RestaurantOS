@@ -267,12 +267,8 @@ class AuthController {
     }
   
     try {
-      const response = await AuthService.resetPassword(
-        phone,
-        newPassword,
-        confirmPassword,
-      );
-      res.status(200).json({ message: response });
+      const response = await AuthService.changePassword( newPassword);
+      res.status(200).json(response);
     } catch (error: any) {
       res.status(400).json({ message: error.message });
     }
