@@ -1,7 +1,8 @@
 /** @type {import('tailwindcss').Config} */
 import defaultTheme from 'tailwindcss/defaultTheme';
+
 export default {
-  important : true,
+  important: true,
   content: ['./src/**/*.{html,js,ts,jsx,tsx}'],
   theme: {
     extend: {
@@ -26,8 +27,13 @@ export default {
       },
       fontFamily: {
         sans: ['Manrope', ...defaultTheme.fontFamily.sans],
-        restora: ['Restora'],
-        cormorant: ["'Cormorant Garamond'", "serif"]
+        restora: ['Restora', ...defaultTheme.fontFamily.serif],
+        roboto: ['Roboto', ...defaultTheme.fontFamily.sans],
+        poppins: ['Poppins', ...defaultTheme.fontFamily.sans],
+        heading: ['Restora', ...defaultTheme.fontFamily.serif], 
+        button: ['Poppins', ...defaultTheme.fontFamily.sans],
+        body: ['Roboto', ...defaultTheme.fontFamily.sans],
+        cormorant: ["'Cormorant Garamond'", "serif"],
       },
       animation: {
         'fade-down': 'fadeDown 1s ease-out',
@@ -42,4 +48,3 @@ export default {
   },
   plugins: [],
 }
-
