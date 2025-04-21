@@ -44,10 +44,18 @@ class AuthController {
             .filter((role: string) => mongoose.Types.ObjectId.isValid(role)) // Kiểm tra tính hợp lệ
             .map((role: string) => new mongoose.Types.ObjectId(role)); // Dùng `new` để khởi tạo ObjectId
         } catch (err) {
+          console.error('Error during user registration:', err);
+
           return res.status(400).json({ message: 'Invalid role ID format' });
         }
       }
-      const user = await AuthService.register(req.body);
+      const user = await AuthService.register({
+        username,
+        email,
+        password,
+        confirmPassword,
+        roles: roleObjectIds, // dùng mảng đã convert đúng
+      });
       res.status(201).json({ message: 'User created successfully', user });
     } catch (error: any) {
       console.error('Error during user registration:', error);
@@ -227,9 +235,6 @@ class AuthController {
       throw new Error('Gửi OTP qua SMS thất bại, vui lòng thử lại');
     }
   }
-  
-  
-
   // Method to verify OTP
   async verifyOtpController(req: Request, res: Response): Promise<any> {
     const { phone, otp } = req.body;
@@ -292,14 +297,38 @@ class AuthController {
   async verifyOtpEmail(req: Request, res: Response): Promise<any> {
     try {
       const { email, otp } = req.body;
-
+  
       if (!email || !otp) {
         return res.status(400).json({ message: 'Email and OTP are required' });
       }
+      
+      const emailRegex = /^[a-zA-Z0-9](\.?[a-zA-Z0-9_-])*[a-zA-Z0-9]@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ message: 'Invalid email format' });
+      }
+      
+      if (!/^\d{6}$/.test(otp)) {
+        return res.status(400).json({ message: 'OTP must be a 6-digit number' });
+      }
+  
+      const message = await AuthService.verifyOtpEmail(email, otp); // ✅ nhận về message
+      return res.status(200).json({ message }); // ✅ trả về phản hồi rõ ràng
+    } catch (error: any) {
+      return res.status(400).json({ message: error.message });
+    }
+  }
+  // Route xác thực email 
+  async resendVerificationEmail(req: Request, res: Response): Promise<any> {
+    try {
+      const { email } = req.body;
+      if (email) {
+        const emailRegex = /^[a-zA-Z0-9](\.?[a-zA-Z0-9_-])*[a-zA-Z0-9]@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
+        if (!emailRegex.test(email)) {
+          return res.status(400).json({ message: 'Định dạng email không hợp lệ' });
+        }
+      }
 
-      // Xác nhận OTP
-      const response = await AuthService.verifyOtpEmail(email, otp);
-
+      const response = await AuthService.resendVerificationEmail(email);
       return res.status(200).json({ message: response });
     } catch (error: any) {
       return res.status(400).json({ message: error.message });
