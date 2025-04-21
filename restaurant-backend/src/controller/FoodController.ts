@@ -64,13 +64,12 @@ class FoodController {
     async getFoodById (req: Request, res: Response): Promise<any> {
         try {
             const foodId = String(req.params.id);  
-            const food = await FoodService.getFoodById(foodId, req);
+            const food = await FoodService.getFoodById(foodId);
             res.status(200).json(food);
         } catch (error) {
             throw new Error('Error getting food by id');
         }
     }
-    
     async updateFood (req: Request, res: Response): Promise<any> {
         try {
             const { id } = req.params;
