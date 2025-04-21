@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiShoppingCart, FiEye, FiHeart } from 'react-icons/fi';
-import { ProductCardProps } from "../../types/ProductCard.types";
+import { ProductCardProps } from '../../types/ProductCard.types';
 
 const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
   const navigate = useNavigate();
@@ -11,77 +11,76 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
   };
 
   return (
-    <div className="bg-headerBackground overflow-hidden shadow-md w-full h-full group">
-      <div className="relative w-full h-fit group perspective">
+    <div className="bg-primaryBackground rounded-lg overflow-hidden shadow-md w-full h-full group">
+      <div className="relative w-full pb-[100%] overflow-hidden group">
         <div
-          className="relative w-full h-full transform transition-transform duration-500 group-hover:rotate-y-180 cursor-pointer"
+          className="absolute inset-0 w-full h-full transition-transform duration-700 ease-in-out transform group-hover:scale-105 cursor-pointer"
           onClick={handleNavigateToDetail}
         >
           <img
             src={rest.imageUrl || '/assets/images/products/SP1.jpg'}
             alt={rest.name}
-            className="w-full h-full object-fit transition-all duration-500 transform group-hover:rotate-y-180"
+            className="w-full h-full object-cover"
           />
           <img
             src={rest.hoverImage || '/assets/images/products/SP1.1.jpg'}
             alt={rest.name}
-            className="w-full h-full object-contain absolute top-0 left-0 transition-opacity duration-500 opacity-0 group-hover:opacity-100"
+            className="w-full h-full object-cover absolute top-0 left-0 opacity-0 transition-opacity duration-700 group-hover:opacity-100"
           />
         </div>
 
-        <div className="absolute top-2 left-0 flex flex-col gap-1">
+        <div className="absolute top-2 left-2 flex flex-col gap-1">
           {rest.discount && (
-            <span className="bg-secondaryColor text-[#002B40] text-xs font-semibold px-4 py-1 mt-1 w-fit">
+            <span className="bg-secondaryColor text-black text-xs font-semibold px-2 py-1 rounded-sm">
               {rest.discount}
             </span>
           )}
           {rest.isNew && (
-            <span className="bg-secondaryColor text-[#002B40] text-xs font-semibold px-5 py-2 mt-1 w-fit">
+            <span className="bg-secondaryColor text-black text-xs font-semibold px-2 py-1 rounded-sm">
               NEW
             </span>
           )}
         </div>
 
-        <div className="absolute bottom-5 left-1/2 transform -translate-x-1/2 translate-y-8 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 flex gap-4 transition-all duration-500 ease-in-out">
-          <div className="p-2 bg-white text-[#002B40] rounded-full cursor-pointer shadow-md hover:bg-secondaryColor hover:text-headerBackground hover:-translate-y-1 transition-all duration-300">
+        <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 flex gap-3 transition-all duration-500 ease-in-out">
+          <button className="p-2 bg-white text-[#002B40] rounded-full shadow-md hover:bg-secondaryColor hover:text-white hover:-translate-y-1 transition-all duration-300">
             <FiShoppingCart size={20} />
-          </div>
-          <div className="p-2 bg-white text-[#002B40] rounded-full cursor-pointer shadow-md hover:bg-secondaryColor hover:text-headerBackground hover:-translate-y-1 transition-all duration-300">
+          </button>
+          <button className="p-2 bg-white text-[#002B40] rounded-full shadow-md hover:bg-secondaryColor hover:text-white hover:-translate-y-1 transition-all duration-300">
             <FiEye size={20} />
-          </div>
-          <div className="p-2 bg-white text-[#002B40] rounded-full cursor-pointer shadow-md hover:bg-secondaryColor hover:text-headerBackground hover:-translate-y-1 transition-all duration-300">
+          </button>
+          <button className="p-2 bg-white text-[#002B40] rounded-full shadow-md hover:bg-secondaryColor hover:text-white hover:-translate-y-1 transition-all duration-300">
             <FiHeart size={20} />
-          </div>
+          </button>
         </div>
       </div>
 
-      <div className="p-4 text-white text-center">
+      <div className="p-4 flex flex-col items-center text-center">
         <p
-          className="text-sm font-sans text-gray-300 cursor-pointer"
+          className="text-xs text-gray-400 mb-1 cursor-pointer hover:text-secondaryColor transition-colors"
           onClick={handleNavigateToDetail}
         >
           {rest.cate || 'Danh mục sản phẩm'}
         </p>
         <h3
-          className="text-lg font-restora font-light mt-1 cursor-pointer hover:text-secondaryColor"
+          className="text-lg font-light mb-1 cursor-pointer hover:text-secondaryColor transition-colors
+             line-clamp-2 break-words overflow-hidden text-ellipsis min-h-[3rem]"
           onClick={handleNavigateToDetail}
         >
           {rest.name || 'Tên sản phẩm'}
         </h3>
 
-        <div className="flex items-center justify-center text-secondaryColor text-sm mt-1">
-          <span>★★★★☆</span>
-        </div>
+        <div className="text-secondaryColor text-sm mb-1">★★★★☆</div>
 
-        <div className="min-h-[50px] flex flex-col items-center justify-end">
+        <div className="flex flex-col items-center space-y-1">
           {rest.originalPrice && (
-            <p className="text-gray-400 font-normal line-through text-sm">
+            <div className="text-sm font-light text-gray-400 line-through">
               {rest.originalPrice.toLocaleString()} VND
-            </p>
+            </div>
           )}
-          <p className="text-xl font-normal text-secondaryColor">
+          <div className="text-lg font-light text-secondaryColor">
             {rest.price?.toLocaleString() || '0'} VND
-          </p>
+          </div>
         </div>
       </div>
     </div>

@@ -2,7 +2,6 @@ import React, { useEffect } from "react";
 import { BrowserRouter as Router, useLocation } from "react-router-dom";
 import AppRoutes from "./routers";
 import Footer from "./components/layout/footer/Footer";
-import Sidebar from "./components/layout/sidebar/Sidebar";
 import ExtendSidebar from "./components/layout/sidebar/ExtendSidebar";
 import PrimarySidebar from "./components/layout/sidebar/PrimarySidebar";
 import { ToastContainer } from 'react-toastify';

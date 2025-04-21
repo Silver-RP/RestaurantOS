@@ -37,21 +37,14 @@
     {
       "Cate_name": "Đồ uống có cồn",
       "Cate_slug": "do-uong-co-con",
-      "Cate_type": "dish",
+      "Cate_type": "drink",
       "Cate_img": null,
       "parentCate": null
     },
     {
       "Cate_name": "Đồ uống không có cồn",
       "Cate_slug": "do-uong-khong-co-con",
-      "Cate_type": "dish",
-      "Cate_img": null,
-      "parentCate": null
-    },
-    {
-      "Cate_name": "Nước lọc",
-      "Cate_slug": "nuoc-loc",
-      "Cate_type": "dish",
+      "Cate_type": "drink",
       "Cate_img": null,
       "parentCate": null
     }

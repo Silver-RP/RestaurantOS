@@ -1,7 +1,18 @@
+
+import ProductCardGrid from '../../common/ProductCardGrid';
 import React, { useEffect, useState } from 'react';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
-import { ProductCardProps } from '../../../types/ProductCard.types';
-import ProductCardList from '../../common/ProductCardList';
+
+interface Product {
+  imageUrl?: string;
+  hoverImage?: string;
+  name: string;
+  cate?: string;
+  price?: number;
+  originalPrice?: number;
+  discount?: string;
+  isNew?: boolean;
+}
 
 interface RelatedProductListProps {
   products: ProductCardProps[];
@@ -60,7 +71,7 @@ const RelatedProductList: React.FC<RelatedProductListProps> = ({ products }) => 
         <div className="w-full">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 transition-all duration-300">
             {visibleProducts.map((product, index) => (
-              <ProductCardList key={index} {...product} />
+              <ProductCardGrid description={''} key={index} {...product} />
             ))}
           </div>
         </div>

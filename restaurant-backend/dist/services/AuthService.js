@@ -75,15 +75,11 @@ class AuthService {
     register(userData) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const { username, email, password, confirmPassword, phone, roles: roleObjectIds, } = userData;
-                const existingUser = yield UserModel_1.default.findOne({
-                    $or: [{ email }, { username }],
-                });
+                const { username, email, password, confirmPassword, roles: roleObjectIds, } = userData;
+                const existingUser = yield UserModel_1.default.findOne({ email });
                 if (password !== confirmPassword) {
                     throw new Error('Password do not match');
                 }
-                // $or là gì
-                // Nếu không tìm thấy user thì trả về null
                 if (existingUser) {
                     throw new Error('User or email already exists');
                 }
@@ -92,15 +88,16 @@ class AuthService {
                     username,
                     email,
                     password: hashedPassword,
-                    phone,
                     roles: roleObjectIds,
+                    isVerified: false, // hoặc true nếu đã xác thực
+                    emailVerificationToken: crypto_1.default.randomBytes(32).toString('hex'),
+                    emailVerificationExpires: new Date(Date.now() + 3600000), // 1 giờ
                 });
                 yield newUser.save();
                 return newUser;
             }
             catch (error) {
-                console.error('Error during user registration:', error);
-                throw new Error('Error during user registration: ' + error.message);
+                throw new Error(error.message);
             }
         });
     }
@@ -116,7 +113,7 @@ class AuthService {
                 // compare password
                 const isMatch = yield bcrypt_1.default.compare(password, user.password || '');
                 if (!isMatch) {
-                    throw new Error('Invalid credentials');
+                    throw new Error('Password is incorrect');
                 }
                 const token = (0, GenerateToken_1.accessToken)({ id: user._id, roles: user.roles }, process.env.ACCESS_TOKEN || '', 20);
                 const refresh_token = (0, GenerateToken_1.refreshToken)({ id: user._id, role: user.roles }, process.env.REFRESH_TOKEN || '', 365 * 24 * 60 * 60);
@@ -275,9 +272,7 @@ class AuthService {
             user.otpExpiry = expireAt;
             user.otpSentCount += 1;
             user.lastOtpSentAt = now;
-            // Lưu OTP vào db 
-            yield UserModel_1.default.create({ email, otp, otpExpiry: expireAt });
-            // Gửi OTP qua email
+            yield user.save();
             const transporter = nodemailer_1.default.createTransport({
                 host: process.env.MAIL_HOST,
                 port: Number(process.env.MAIL_PORT),
@@ -298,19 +293,120 @@ class AuthService {
     }
     verifyOtpEmail(email, otp) {
         return __awaiter(this, void 0, void 0, function* () {
-            const otpRecord = yield UserModel_1.default.findOne({ email, otp, isVerifiend: false });
-            if (!otpRecord) {
+            const user = yield UserModel_1.default.findOne({ email, otp }); // ❌ bỏ điều kiện isVerified: false
+            if (!user) {
                 throw new Error('Invalid OTP');
             }
-            if (!otpRecord.expireAt) {
-                console.error('exprireAt is missing or invalid');
+            if (user.isVerified) {
+                return 'Email has already been verified'; // ✅ thêm chỗ này sau khi tìm user
+            }
+            if (!user.otpExpiry) {
                 throw new Error('OTP expiry time is not set');
             }
-            if (otpRecord.expireAt < new Date()) {
+            if (user.otpExpiry < new Date()) {
                 throw new Error('OTP expired');
             }
-            otpRecord.isVerified = true;
-            yield otpRecord.save();
+            user.isVerified = true;
+            user.otp = null; // ✅ xóa OTP sau xác minh
+            user.otpExpiry = null;
+            yield user.save();
+            return 'Email verified successfully';
+        });
+    }
+    sendOtpFlexible(identifier) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                let user;
+                const otp = crypto_1.default.randomInt(100000, 999999).toString();
+                const expireAt = new Date(Date.now() + 5 * 60 * 1000); // 5 phút
+                const phoneRegex = /^(\+84|0)(3|5|7|8|9)\d{8}$/;
+                const emailRegex = /^[a-zA-Z0-9](\.?[a-zA-Z0-9_-])*[a-zA-Z0-9]@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
+                if (phoneRegex.test(identifier)) {
+                    // ✅ Kiểm tra tồn tại user theo số điện thoại
+                    user = yield UserModel_1.default.findOne({ phone: identifier });
+                    if (!user) {
+                        throw new Error('Số điện thoại không tồn tại trong hệ thống');
+                    }
+                    user.otp = otp;
+                    user.otpExpiry = expireAt;
+                    yield user.save();
+                    yield smsService_1.default.sendOtpToPhoneNumber(identifier, otp);
+                    return { message: 'OTP đã được gửi qua số điện thoại' };
+                }
+                else if (emailRegex.test(identifier)) {
+                    // ✅ Kiểm tra tồn tại user theo email
+                    user = yield UserModel_1.default.findOne({ email: identifier });
+                    if (!user) {
+                        throw new Error('Email không tồn tại trong hệ thống');
+                    }
+                    const now = new Date();
+                    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+                    if (user.otpSentCount >= 5 && user.lastOtpSentAt > oneHourAgo) {
+                        throw new Error('Bạn đã vượt quá số lần gửi OTP. Vui lòng thử lại sau');
+                    }
+                    user.otp = otp;
+                    user.otpExpiry = expireAt;
+                    user.otpSentCount += 1;
+                    user.lastOtpSentAt = now;
+                    yield user.save();
+                    const transporter = nodemailer_1.default.createTransport({
+                        host: process.env.MAIL_HOST,
+                        port: Number(process.env.MAIL_PORT),
+                        secure: process.env.MAIL_ENCRYPTION === 'ssl',
+                        auth: {
+                            user: process.env.MAIL_USERNAME,
+                            pass: process.env.MAIL_PASSWORD,
+                        },
+                    });
+                    const mailOptions = {
+                        from: process.env.MAIL_FROM_ADDRESS,
+                        to: identifier,
+                        subject: 'OTP for verification',
+                        text: `Your OTP is ${otp}. It will expire in 5 minutes`,
+                    };
+                    yield transporter.sendMail(mailOptions);
+                    return { message: 'OTP đã được gửi qua email' };
+                }
+                else {
+                    throw new Error('Số điện thoại hoặc email không hợp lệ');
+                }
+            }
+            catch (error) {
+                throw new Error(error.message);
+            }
+        });
+    }
+    resendVerificationEmail(email) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield UserModel_1.default.findOne({ email });
+            if (!user) {
+                throw new Error('User not found');
+            }
+            if (user.isVerified) {
+                throw new Error('Email is already verified');
+            }
+            const otp = crypto_1.default.randomInt(100000, 999999).toString();
+            const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
+            user.otp = otp;
+            user.otpExpiry = otpExpiry;
+            yield user.save();
+            const transporter = nodemailer_1.default.createTransport({
+                host: process.env.MAIL_HOST,
+                port: Number(process.env.MAIL_PORT),
+                secure: process.env.MAIL_ENCRYPTION === 'ssl',
+                auth: {
+                    user: process.env.MAIL_USERNAME,
+                    pass: process.env.MAIL_PASSWORD,
+                },
+            });
+            const mailOptions = {
+                from: process.env.MAIL_FROM_ADDRESS,
+                to: email,
+                subject: 'Verify Your Email Address',
+                text: `Your verification OTP is ${otp}. It will expire in 5 minutes.`,
+            };
+            yield transporter.sendMail(mailOptions);
+            return 'Verification email sent successfully';
         });
     }
 }

@@ -11,16 +11,22 @@ const categorySchema = new mongoose_1.default.Schema({
         unique: true,
         trim: true,
     },
+    slug: {
+        type: String,
+        required: true,
+        unique: true,
+        trim: true,
+    },
     image: {
         type: String,
         required: false,
     },
-    classify: {
+    cate_type: {
         type: String,
         required: true,
         enum: ['post', 'food'],
     },
-    sub: {
+    parent_cate: {
         type: String,
         required: false,
     },
