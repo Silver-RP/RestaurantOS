@@ -278,8 +278,8 @@ class AuthService {
     return { message: 'OTP verified successfully' };
   }
   // Method reset password
-  async changePassword(email: string, newPassword: string) {
-    const user = await User.findOne({ email });
+  async changePassword( newPassword: string) {
+    const user = await User.findOne();
     if (!user) {
       throw new Error("User not found");
     }
