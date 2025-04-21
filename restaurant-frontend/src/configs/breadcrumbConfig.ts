@@ -7,6 +7,7 @@ export const breadcrumbConfig: Record<string, string> = {
     "/aboutus": "Về chúng tôi",
     "/profile": "Thông tin tài khoản",
     "/productdetail": "Chi tiết sản phẩm",    
-    "/menu": "Thực đơn"
+    "/menu": "Thực đơn",
+    "/profile/address": "Sổ địa chỉ"
   };
   

@@ -14,6 +14,7 @@ import ContactUsPage from "../pages/ContactUsPage";
 // import AboutUsPage from "pages/AboutUs";
 // import AboutUs from "../pages/AboutUs";
 import FAQsCompoent from "../pages/FaqPage";
+import AddressPage from "../pages/AddressPage";
 
 const AppRoutes = () => {
   const routes = useRoutes([
@@ -31,6 +32,7 @@ const AppRoutes = () => {
     { path: "/productdetail", element: <ProductDetail/> },
     { path: "/contact", element: <ContactUsPage/> },
     { path: "/faqs", element: <FAQsCompoent /> },
+    { path: "/profile/address", element: <AddressPage /> },    
   ]);
   return routes;
 };
