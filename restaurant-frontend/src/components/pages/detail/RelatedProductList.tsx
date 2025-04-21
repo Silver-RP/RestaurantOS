@@ -79,7 +79,7 @@ const RelatedProductList: React.FC<RelatedProductListProps> = ({ products }) => 
         {slideIndex < maxSlideIndex && (
           <button
             onClick={handleNext}
-            className="absolute right-0 z-10 bg-white text-[#002B40] rounded-full p-2 shadow hover:bg-secondaryColor hover:text-white transition"
+            className="absolute right-0 z-10 bg-white text-headerBackground rounded-full p-2 shadow hover:bg-secondaryColor hover:text-white transition"
           >
             <FiChevronRight size={24} />
           </button>
