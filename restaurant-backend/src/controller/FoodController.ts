@@ -44,15 +44,22 @@ class FoodController {
             return res.status(500).json({message: 'Internal server error'});
         }
     }
-    async getTopFavoriteFood (req: Request, res: Response): Promise<any>{
+    async getTopFavoriteFood(req: Request, res: Response): Promise<Response> {
         try {
-            const foodFavoriteTop = await FoodService.getTopFavoriteFood(); 
-            return res.status(200).json(foodFavoriteTop);
+          const foodFavoriteTop = await FoodService.getTopFavoriteFood();
+          return res.status(200).json({
+            success: true,
+            data: foodFavoriteTop
+          });
         } catch (error) {
-            throw new Error('Error getting top favorite food');
-
+          console.error('Error fetching top favorite foods:', error);
+          return res.status(500).json({
+            success: false,
+            message: 'Failed to retrieve top favorite foods',
+            error: error instanceof Error ? error.message : 'Unknown error'
+          });
         }
-    }
+      }
     async getAllFood (req: Request, res: Response): Promise<any> {
         try {
             const food = await FoodService.getAllFood();
