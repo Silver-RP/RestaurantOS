@@ -2,7 +2,7 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
-    readonly VITE_API_AUTH_URL: string;
+    VITE_API_AUTH_URL: string;
     // Add more env vars here if needed
   }
   
