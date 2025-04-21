@@ -31,54 +31,54 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
 
         <div className="absolute top-2 left-2 flex flex-col gap-1">
           {rest.discount && (
-            <span className="bg-secondaryColor text-black text-xs font-semibold px-2 py-1 rounded-sm">
+            <span className="bg-secondaryColor text-black text-[10px] sm:text-xs font-semibold px-2 py-1 rounded-sm">
               {rest.discount}
             </span>
           )}
           {rest.isNew && (
-            <span className="bg-secondaryColor text-black text-xs font-semibold px-2 py-1 rounded-sm">
+            <span className="bg-secondaryColor text-black text-[10px] sm:text-xs font-semibold px-2 py-1 rounded-sm">
               NEW
             </span>
           )}
         </div>
 
-        <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 flex gap-3 transition-all duration-500 ease-in-out">
-          <button className="p-2 bg-white text-[#002B40] rounded-full shadow-md hover:bg-secondaryColor hover:text-white hover:-translate-y-1 transition-all duration-300">
-            <FiShoppingCart size={20} />
+        <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 flex gap-2 transition-all duration-500 ease-in-out">
+          <button className="p-1.5 sm:p-2 bg-white text-[#002B40] rounded-full shadow-md hover:bg-secondaryColor hover:text-white hover:-translate-y-1 transition-all duration-300">
+            <FiShoppingCart size={18} />
           </button>
-          <button className="p-2 bg-white text-[#002B40] rounded-full shadow-md hover:bg-secondaryColor hover:text-white hover:-translate-y-1 transition-all duration-300">
-            <FiEye size={20} />
+          <button className="p-1.5 sm:p-2 bg-white text-[#002B40] rounded-full shadow-md hover:bg-secondaryColor hover:text-white hover:-translate-y-1 transition-all duration-300">
+            <FiEye size={18} />
           </button>
-          <button className="p-2 bg-white text-[#002B40] rounded-full shadow-md hover:bg-secondaryColor hover:text-white hover:-translate-y-1 transition-all duration-300">
-            <FiHeart size={20} />
+          <button className="p-1.5 sm:p-2 bg-white text-[#002B40] rounded-full shadow-md hover:bg-secondaryColor hover:text-white hover:-translate-y-1 transition-all duration-300">
+            <FiHeart size={18} />
           </button>
         </div>
       </div>
 
-      <div className="p-4 flex flex-col items-center text-center">
+      <div className="p-3 sm:p-4 flex flex-col items-center text-center">
         <p
-          className="text-xs text-gray-400 mb-1 cursor-pointer hover:text-secondaryColor transition-colors"
+          className="text-[10px] sm:text-xs text-gray-400 mb-1 cursor-pointer hover:text-secondaryColor transition-colors"
           onClick={handleNavigateToDetail}
         >
           {rest.cate || 'Danh mục sản phẩm'}
         </p>
+
         <h3
-          className="text-lg font-light mb-1 cursor-pointer hover:text-secondaryColor transition-colors
-             line-clamp-2 break-words overflow-hidden text-ellipsis min-h-[3rem]"
+          className="text-base sm:text-lg font-light mb-1 cursor-pointer hover:text-secondaryColor transition-colors line-clamp-2 break-words overflow-hidden text-ellipsis min-h-[3rem]"
           onClick={handleNavigateToDetail}
         >
           {rest.name || 'Tên sản phẩm'}
         </h3>
 
-        <div className="text-secondaryColor text-sm mb-1">★★★★☆</div>
+        <div className="text-xs sm:text-sm text-secondaryColor mb-1">★★★★☆</div>
 
         <div className="flex flex-col items-center space-y-1">
           {rest.originalPrice && (
-            <div className="text-sm font-light text-gray-400 line-through">
+            <div className="text-xs sm:text-sm font-light text-gray-400 line-through">
               {rest.originalPrice.toLocaleString()} VND
             </div>
           )}
-          <div className="text-lg font-light text-secondaryColor">
+          <div className="text-base sm:text-lg font-light text-secondaryColor">
             {rest.price?.toLocaleString() || '0'} VND
           </div>
         </div>
