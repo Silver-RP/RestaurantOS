@@ -10,6 +10,7 @@ import EnterOTP from "../pages/EnterOTP";
 import ProfilePage from "../pages/Profile";
 import MenuPage from "../pages/Menu";
 import ProductDetail from "../pages/ProductDetail";
+import ContactUsPage from "../pages/ContactUsPage";
 // import AboutUs from "../pages/AboutUs";
 
 const AppRoutes = () => {
@@ -29,6 +30,7 @@ const AppRoutes = () => {
     { path: "/profile", element: <ProfilePage/> },
     { path: "/menu", element: <MenuPage/> },
     { path: "/productdetail", element: <ProductDetail/> },
+    { path: "/contact", element: <ContactUsPage/> },
   ]);
   return routes;
 };
