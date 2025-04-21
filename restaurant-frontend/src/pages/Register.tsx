@@ -11,8 +11,8 @@ import { RegisterUser } from '../redux/feature/auth/authActions';
 import { clearStatus } from '../redux/feature/auth/authSlice';
 import { useAppDispatch, useAppSelector } from '../redux/hook';
 
-import ButtonComponent from '../components/pages/login/ButtonComponents';
-import InputComponent from '../components/pages/login/InputComponents';
+import ButtonComponent from '../components/pages/Login/ButtonComponents';
+import InputComponent from '../components/pages/Login/InputComponents';
 const Register = () => {
   const usernameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
@@ -96,7 +96,7 @@ const Register = () => {
   };
   useEffect(() => {
     if (success) {
-      toast.success('Đăng ký thành công! 🎉');
+      toast.success('Đăng ký thành công!');
       navigate('/login');
       dispatch(clearStatus());
     }
@@ -144,9 +144,15 @@ const Register = () => {
       });
     })
     .catch((error) => {
+      const errorMessage =
+        typeof error === 'string'
+          ? error
+          : error?.message || error?.data?.message || 'Đăng ký thất bại';
+
       if (!hasErrorToast) {
-        toast.error(error);
-        setHasErrorToast(true); 
+        toast.error(errorMessage);
+        setHasErrorToast(true);
+        setTimeout(() => setHasErrorToast(false), 3000); // Reset sau 3s
       }
     })
     .finally(() => {

@@ -8,6 +8,9 @@ import { ToastContainer } from 'react-toastify';
 import { Provider } from 'react-redux';
 import { store } from './redux/store';
 import 'react-toastify/dist/ReactToastify.css';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+const queryClient = new QueryClient();
+
 const AppLayout = () => {
   const location = useLocation();
   const hideSidebarFooter = ["/login", "/register" , "/reset-password", "/verify-otp", "/forgot-password"].includes(location.pathname);
@@ -128,11 +131,13 @@ const AppLayout = () => {
 const App = () => {
   return (
     <Provider store={store}>
+    <QueryClientProvider client={queryClient}>
       <Router>
         <ToastContainer />
         <AppLayout />
       </Router>
-    </Provider>
+    </QueryClientProvider>
+  </Provider>
   );
 };
 
