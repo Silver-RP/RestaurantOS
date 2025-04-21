@@ -8,12 +8,18 @@ import ResetPassword from "../pages/ResetPassword";
 import ForgotPassword from "../pages/ForgotPassword";
 import EnterOTP from "../pages/EnterOTP";
 import ProfilePage from "../pages/Profile";
+import MenuPage from "../pages/Menu";
+import ProductDetail from "../pages/ProductDetail";
 // import AboutUs from "../pages/AboutUs";
 
 const AppRoutes = () => {
   const routes = useRoutes([
     { path: "/", element: <Homepage /> },
+<<<<<<< HEAD
+    { path: "/aboutus", element: <AboutUs /> },
+=======
     // { path: "/aboutus", element: <AboutUs /> },
+>>>>>>> 9a9d0d57fb85df353c6d942b4285a62524fd05ab
     { path: "/register", element: <Register /> },
     { path: "/login", element: <Login /> },
     { path: "/wishlist", element: <WishList/> },
@@ -21,6 +27,8 @@ const AppRoutes = () => {
     { path: "/forgot-password", element: <ForgotPassword/> },
     { path: "/verify-otp", element: <EnterOTP/> },
     { path: "/profile", element: <ProfilePage/> },
+    { path: "/menu", element: <MenuPage/> },
+    { path: "/productdetail", element: <ProductDetail/> },
   ]);
   return routes;
 };

@@ -188,7 +188,7 @@ const BestOffersSection: React.FC = () => {
   const currentMenu = menuData[activeTab] || [];
 
   return (
-    <section className="w-full bg-bodyBackground px-6 py-16">
+    <section className="w-full bg-bodyBackground py-16">
       <div className="w-11/12 md:w-container95 lg:w-mainContainer xl:w-container95 2xl:w-mainContainer  mx-auto">
         <img src="/assets/images/home/IconOnline.svg" alt="Icon" className="mx-auto mb-8" />
         <h2 className="text-3xl sm:text-4xl md:text-5xl font-restora justify-center text-white flex font-thin mb-4">
@@ -203,14 +203,12 @@ const BestOffersSection: React.FC = () => {
           </div>
         )}
         <div className="mt-12 text-center">
-          {/* Thời gian hoạt động */}
           <p className="text-sm md:text-base text-gray-300 mb-4">
             Phục vụ hàng ngày từ{" "}
             <span className="text-secondaryColor font-semibold">8:30 am</span> to{" "}
             <span className="text-secondaryColor font-semibold">11:00 pm</span>
           </p>
           
-          {/* Nút xem menu */}
           <button className="mt-4 px-8 py-3 text-sm md:text-base font-semibold text-secondaryColor border border-secondaryColor hover:bg-secondaryColor hover:text-black transition-all duration-300">
             XEM THỰC ĐƠN
           </button>
