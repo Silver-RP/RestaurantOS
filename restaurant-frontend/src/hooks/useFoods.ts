@@ -22,7 +22,7 @@ export const useFoods = () => {
     const fetchFoods = async () => {
       try {
         const res = await axios.get(`${API_URL}/food/getallfood`);
-        setFoods(res.data);
+        setFoods(res.data.data);
       } catch (err) {
         const error = err as Error;
         console.error("Error fetching foods:", error);

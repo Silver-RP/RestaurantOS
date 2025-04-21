@@ -54,6 +54,7 @@ class AuthController {
                             .map((role) => new mongoose_1.default.Types.ObjectId(role)); // Dùng `new` để khởi tạo ObjectId
                     }
                     catch (err) {
+                        console.error('Error during user registration:', err);
                         return res.status(400).json({ message: 'Invalid role ID format' });
                     }
                 }

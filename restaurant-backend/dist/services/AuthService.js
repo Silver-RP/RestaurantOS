@@ -76,9 +76,7 @@ class AuthService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { username, email, password, confirmPassword, roles: roleObjectIds, } = userData;
-                const existingUser = yield UserModel_1.default.findOne({
-                    $or: [{ email }, { username }],
-                });
+                const existingUser = yield UserModel_1.default.findOne({ email });
                 if (password !== confirmPassword) {
                     throw new Error('Password do not match');
                 }
@@ -308,8 +306,11 @@ class AuthService {
             if (user.otpExpiry < new Date()) {
                 throw new Error('OTP expired');
             }
-            otpRecord.isVerified = true;
-            yield otpRecord.save();
+            user.isVerified = true;
+            user.otp = null; // ✅ xóa OTP sau xác minh
+            user.otpExpiry = null;
+            yield user.save();
+            return 'Email verified successfully';
         });
     }
     sendOtpFlexible(identifier) {
@@ -373,6 +374,39 @@ class AuthService {
             catch (error) {
                 throw new Error(error.message);
             }
+        });
+    }
+    resendVerificationEmail(email) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield UserModel_1.default.findOne({ email });
+            if (!user) {
+                throw new Error('User not found');
+            }
+            if (user.isVerified) {
+                throw new Error('Email is already verified');
+            }
+            const otp = crypto_1.default.randomInt(100000, 999999).toString();
+            const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
+            user.otp = otp;
+            user.otpExpiry = otpExpiry;
+            yield user.save();
+            const transporter = nodemailer_1.default.createTransport({
+                host: process.env.MAIL_HOST,
+                port: Number(process.env.MAIL_PORT),
+                secure: process.env.MAIL_ENCRYPTION === 'ssl',
+                auth: {
+                    user: process.env.MAIL_USERNAME,
+                    pass: process.env.MAIL_PASSWORD,
+                },
+            });
+            const mailOptions = {
+                from: process.env.MAIL_FROM_ADDRESS,
+                to: email,
+                subject: 'Verify Your Email Address',
+                text: `Your verification OTP is ${otp}. It will expire in 5 minutes.`,
+            };
+            yield transporter.sendMail(mailOptions);
+            return 'Verification email sent successfully';
         });
     }
 }
