@@ -29,7 +29,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ name, price, description, image, ho
         <div className="flex items-center">
           <h3 className="text-lg font-bold text-white">{name}</h3>
           <div className="flex-grow border-t mt-4 border-dotted border-hr mx-4"></div>
-          <p className="text-secondaryColor font-bold">${price.toFixed(2)}</p>
+          <p className="text-secondaryColor font-bold">{price.toLocaleString()} VND</p>
         </div>
         <p className="text-sm text-gray-400 mt-2">{description}</p>
       </div>

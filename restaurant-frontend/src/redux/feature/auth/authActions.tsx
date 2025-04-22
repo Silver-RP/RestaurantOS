@@ -1,8 +1,9 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { RegisterPayload, LoginPayload } from './authTypes';
+import Cookies from 'js-cookie'; 
 
-// Base URLs
+
 const BASE_URL_REGISTER = import.meta.env.VITE_BACKEND_URL;
 const BASE_URL_LOGIN = import.meta.env.VITE_BACKEND_URL;
 
@@ -30,7 +31,7 @@ export const LoginUser = createAsyncThunk(
   'auth/login',
   async (payload: LoginPayload, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`${BASE_URL_LOGIN}/login`, payload, {
+      const response = await axios.post(`${BASE_URL_LOGIN}/auth/login`, payload, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -38,21 +39,21 @@ export const LoginUser = createAsyncThunk(
 
       console.log('RESPONSE FROM LOGIN API:', response.data);
 
-      const { token, user, message } = response.data;
+      const { accessToken: token, refreshToken, user, message } = response.data;
 
       if (!token) {
         console.warn('Token is missing in API response:', response.data);
       }
 
       if (payload.rememberMe) {
-        localStorage.setItem('accessToken', token || '');
-        localStorage.setItem('userInfo', JSON.stringify(user || {}));
+        Cookies.set('accessToken', token, { expires: 7 }); 
+        Cookies.set('refreshToken', refreshToken, { expires: 7 });
       } else {
-        sessionStorage.setItem('accessToken', token || '');
-        sessionStorage.setItem('userInfo', JSON.stringify(user || {}));
+        Cookies.set('accessToken', token);
+        Cookies.set('refreshToken', refreshToken);
       }
 
-      return { token, user, message };
+      return { token, refreshToken, user, message };
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {
         return rejectWithValue(error.response.data.message);

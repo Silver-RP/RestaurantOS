@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from 'react';
-import { fetchAllFoods, fetchFoodBySlug } from '../api/FoodApi';
+import { fetchAllFoods, fetchFoodByCategory, fetchFoodBySlug } from '../api/FoodApi';
 import { FoodDetail } from '../types/Dish.types';
+import { useQuery } from '@tanstack/react-query';
 
 export const useFoods = () => {
   const [foods, setFoods] = useState<FoodDetail[]>([]);
@@ -51,4 +52,14 @@ export const useFoodDetail = (slug: string) => {
   }, [slug]);
 
   return { food, loading, error };
+};
+
+
+export const useDishByCategory = (cateType: string) => {
+  return useQuery<FoodDetail[]>({
+    queryKey: ["dishByCategory", cateType],
+    queryFn: () => fetchFoodByCategory(cateType),
+    enabled: !!cateType, 
+    refetchOnWindowFocus: false,
+  });
 };

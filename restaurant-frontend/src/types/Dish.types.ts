@@ -1,6 +1,6 @@
 import { Category } from "./Category.type";
 
-export interface DishType {
+export interface FoodType {
     _id: string;
     name: string;
     price: number;
@@ -9,7 +9,7 @@ export interface DishType {
     categories: string[];
     countInStock: number;
     rating: number;
-    favorites: number;
+    favorites_count: number;
   }
   
   

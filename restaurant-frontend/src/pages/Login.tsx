@@ -11,6 +11,7 @@ import { LoginUser } from '../redux/feature/auth/authActions';
 import { toast } from 'react-toastify';
 import { clearStatus } from '../redux/feature/auth/authSlice';
 import { AxiosError } from 'axios';
+import Cookies from 'js-cookie';
 
 const Login = () => {
   const emailRef = useRef<HTMLInputElement>(null);
@@ -32,7 +33,6 @@ const Login = () => {
       toast.success('Đăng nhập thành công!');
       navigate('/');
     }
-
     if (error) {
       toast.error(error);
       dispatch(clearStatus());
@@ -45,7 +45,7 @@ const Login = () => {
       ...prevData,
       [name]: value,
     }));
-    setFormError(''); // Reset lỗi khi gõ lại
+    setFormError('');
   };
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -62,9 +62,12 @@ const Login = () => {
     return passwordRegex.test(password);
   };
 
+  const isFormValid = (): boolean => {
+    return isEmailValid(formData.email) && isPasswordValid(formData.password);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (isSubmitting) return;
 
     const { email, password } = formData;
@@ -81,16 +84,16 @@ const Login = () => {
 
     setIsSubmitting(true);
     try {
-      await dispatch(LoginUser({ email, password, rememberMe }))
-        .unwrap()
-        .then(() => {
-          if (rememberMe) {
-            localStorage.setItem('email', email);
-            localStorage.setItem('password', password);
-          }
-          toast.success('Đăng nhập thành công!');
-          navigate('/');
-        });
+      const res = await dispatch(LoginUser({ email, password, rememberMe })).unwrap();
+      const { accessToken, refreshToken } = res;
+
+      if (rememberMe) {
+        Cookies.set('accessToken', accessToken, { expires: 7 });
+        Cookies.set('refreshToken', refreshToken, { expires: 7 });
+      }
+
+      toast.success('Đăng nhập thành công!');
+      navigate('/');
     } catch (error) {
       if (error instanceof AxiosError && error?.response?.data?.message) {
         toast.error(error.response.data.message);
@@ -152,7 +155,12 @@ const Login = () => {
               Quên mật khẩu?
             </button>
           </div>
-          <ButtonComponent htmlType="submit" text="Đăng nhập" disabled={isSubmitting} />
+
+          <ButtonComponent
+            htmlType="submit"
+            text="Đăng nhập"
+            disabled={isSubmitting || !isFormValid()}
+          />
         </form>
 
         <div className="flex items-center my-8">

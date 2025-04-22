@@ -1,17 +1,18 @@
 import React, { useState } from "react";
 import TabNavigation from "./TabNavigation";
 import MenuGrid from "./MenuGrid";
-
-import { DishType } from "types/Dish.types";
-import { UseDish } from "../../../../hooks/UseDish";
+import { useDishByCategory } from "@hooks/useFoods";
 
 const BestOffersSection: React.FC = () => {
   const tabs = ["Đồ ăn", "Đồ uống"];
-  const cateTypes: DishType[] = ["food", "drink"]; 
+  const cateTypes = ["dish", "drink"];
 
   const [activeTab, setActiveTab] = useState(0);
-  const { data, isLoading, isError } = UseDish(cateTypes[activeTab]);
-
+  console.log("ACTIVE TAB:", activeTab);
+  
+  const { data, isLoading, isError } = useDishByCategory(cateTypes[activeTab]);
+  console.log("DATA FROM API:", data);
+  
   return (
     <section className="w-full bg-bodyBackground py-16">
       <div className="w-11/12 md:w-container95 lg:w-mainContainer xl:w-container95 2xl:w-mainContainer mx-auto">
@@ -27,8 +28,16 @@ const BestOffersSection: React.FC = () => {
           <div className="text-center text-gray-300 mt-8">Đang tải dữ liệu...</div>
         ) : isError ? (
           <div className="text-center text-red-400 mt-8">Lỗi tải dữ liệu</div>
-        ) : data?.length > 0 ? (
-          <MenuGrid items={data} />
+        ) : (data ?? []).length > 0 ? (
+          <MenuGrid
+            items={data.slice(0, 6).map((dish) => ({
+              name: dish.name,
+              price: dish.price,
+              description: dish.description,
+              image: dish.images?.[0] || '', // ✅ dùng ảnh đầu tiên trong mảng images
+              hoverImage: dish.images?.[1] || dish.images?.[0] || '', // ảnh hover nếu có
+            }))}
+          />
         ) : (
           <div className="text-center text-gray-400 mt-8">Không có món ăn trong danh mục này</div>
         )}
