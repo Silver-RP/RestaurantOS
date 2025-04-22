@@ -37,6 +37,7 @@ const ProductDetail: React.FC = () => {
 
   const sampleRelatedProducts = [
     {
+      id: '1',
       name: 'Sản phẩm A',
       imageUrl: '/assets/images/products/SP2.jpg',
       hoverImage: '/assets/images/products/SP2.1.jpg',
@@ -48,6 +49,7 @@ const ProductDetail: React.FC = () => {
       description: 'Mô tả ngắn gọn cho sản phẩm A',
     },
     {
+      id: '2',
       name: 'Sản phẩm B',
       imageUrl: '/assets/images/products/SP3.jpg',
       hoverImage: '/assets/images/products/SP3.1.jpg',
@@ -58,6 +60,7 @@ const ProductDetail: React.FC = () => {
       description: 'Mô tả ngắn gọn cho sản phẩm BB',
     },
     {
+      id: '3',
       name: 'Sản phẩm C',
       imageUrl: '/assets/images/products/SP4.jpg',
       hoverImage: '/assets/images/products/SP4.1.jpg',
@@ -69,6 +72,7 @@ const ProductDetail: React.FC = () => {
       description: 'Mô tả ngắn gọn cho sản phẩm CC',
     },
     {
+      id: '4',
       name: 'Sản phẩm D',
       imageUrl: '/assets/images/products/SP5.jpg',
       hoverImage: '/assets/images/products/SP5.1.jpg',
@@ -77,7 +81,7 @@ const ProductDetail: React.FC = () => {
       originalPrice: 229000,
       description: 'Mô tả ngắn gọn cho sản phẩm D',
     },
-  ];
+  ];  
 
   return (
     <>
