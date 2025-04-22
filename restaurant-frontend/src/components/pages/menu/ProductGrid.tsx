@@ -1,45 +1,37 @@
-
-import ProductCardGrid from '../../common/ProductCardGrid';
 import React from 'react';
+import ProductCardGrid from '../../common/ProductCardGrid';
 import ProductCardList from '../../common/ProductCardList';
-
-const dummyProducts = Array.from({ length: 12 }).map((_, i) => ({
-  id: i + 1,
-  name: `Sản phẩm ${i + 1}`,
-  price: 500000,
-  discount: '20% OFF',
-  imageUrl: '/assets/images/products/SP1.jpg',
-  hoverImage: '/assets/images/products/SP1.1.jpg',
-}));
+import { ProductCardProps } from 'types/ProductCard.types';
 
 interface ProductGridProps {
   viewMode: "grid" | "list";
+  products: ProductCardProps[]; 
+  isSidebarExtended: boolean;
 }
 
-const ProductGrid: React.FC<ProductGridProps> = ({ viewMode }) => {
+const ProductGrid: React.FC<ProductGridProps> = ({ viewMode, products }) => {
   return (
     <div
-    className={`grid ${
-      viewMode === 'grid'
-        ? 'grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6'
-        : 'grid-cols-1 md:grid-cols-2 gap-6'
-    }`}
-  >
-    {dummyProducts.map((product) =>
-      viewMode === "grid" ? (
-        <ProductCardGrid
-                description={''} key={product.id}
-                {...product}       
-        />
-      ) : (
-        <ProductCardList
-          key={product.id}
-          {...product}
-          description="Mô tả sản phẩm"
-        />
-      )
-    )}
-  </div>
+      className={`grid ${
+        viewMode === 'grid'
+          ? 'grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6'
+          : 'grid-cols-1 2xl:grid-cols-2 gap-6'
+      }`}
+    >
+      {products.map((product) =>
+        viewMode === "grid" ? (
+          <ProductCardGrid
+            key={product.id}
+            {...product}
+          />
+        ) : (
+          <ProductCardList
+            key={product.id}
+            {...product}
+          />
+        )
+      )}
+    </div>
   );
 };
 

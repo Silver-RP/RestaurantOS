@@ -1,16 +1,64 @@
 import React, { useState } from 'react';
-import InputComponent from '../components/pages/login/InputComponents';
-import ButtonComponent from '../components/pages/login/ButtonComponents';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import {
+  forgotPasswordSchema,
+  ForgotPasswordSchema,
+} from '../schemas/auth.schema';
+import InputComponent from '../components/pages/Login/InputComponents';
+import ButtonComponent from '../components/pages/Login/ButtonComponents';
 import { Link } from 'react-router-dom';
 import { SlActionUndo } from 'react-icons/sl';
+import { toast } from 'react-toastify';
+import { useSendOtpEmail } from '../api/AuthApi';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const ForgotPassword = () => {
-  const [email, setEmail] = useState('');
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    watch,
+  } = useForm<ForgotPasswordSchema>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: {
+      email: '',
+    },
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Gửi OTP tới email:', email);
-    // Thực hiện gửi OTP tại đây
+  const { sendOtpEmail, loading, error } = useSendOtpEmail();
+
+  const emailValue = watch('email');
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (error) {
+      console.log('Error state updated:', error);
+      if (error === 'User not found') {
+        toast.error('Email chưa được đăng ký trong hệ thống!');
+      } else if (
+        error ===
+        'You have exceeded the limit for sending OTPs. Please try again later'
+      ) {
+        toast.error('Bạn đã vượt quá giới hạn gửi OTP. Vui lòng thử lại sau!');
+      } else {
+        toast.error(error || 'Đã xảy ra lỗi khi gửi OTP!');
+      }
+    }
+  }, [error]);
+
+  const onSubmit = async (data: ForgotPasswordSchema) => {
+    console.log('error before API call:', error); 
+    try {
+      const res = await sendOtpEmail(data.email);
+      if (res && res.message === 'OTP sent successfully') {
+        toast.success('Đã gửi OTP đến email của bạn!');
+        navigate('/verify-otp', { state: { email: data.email } }); 
+      } 
+    } catch (err: any) {
+      console.log('API error:', err?.response?.data);
+    }
   };
 
   return (
@@ -21,20 +69,42 @@ const ForgotPassword = () => {
           Nhập email của bạn để nhận mã OTP.
         </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <InputComponent
-            type="email"
-            value={email}
-            placeholder="Nhập Email"
-            name="email"
-            onChange={(e) => setEmail(e.target.value)}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 text-left">
+          <div>
+            <Controller
+              name="email"
+              control={control}
+              render={({ field }) => (
+                <InputComponent
+                  type="text"
+                  placeholder="Nhập Email"
+                  name="email"
+                  value={field.value}
+                  onChange={field.onChange}
+                  hasError={!!errors.email}
+                />
+              )}
+            />
+            {errors.email && (
+              <p className="text-red-400 text-sm mt-1">
+                {errors.email.message}
+              </p>
+            )}
+          </div>
+
+          <ButtonComponent
+            htmlType="submit"
+            text={loading ? 'Đang gửi...' : 'Gửi Yêu Cầu'}
+            disabled={loading || !emailValue}
           />
-          <ButtonComponent htmlType="submit" text="Gửi Yêu Cầu" />
         </form>
 
         <div className="mt-6 text-sm text-white">
           <p className="flex items-center justify-start mt-6">
-            <Link to="/login" className="flex items-center text-white hover:text-secondaryColor">
+            <Link
+              to="/login"
+              className="flex items-center text-white hover:text-secondaryColor"
+            >
               <SlActionUndo className="mr-1 text-lg" />
               Quay lại đăng nhập
             </Link>

@@ -45,7 +45,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ isOpen, onClose }) => {
 
         <h2 className="text-2xl font-semibold text-white text-center mb-4">Quên Mật Khẩu</h2>
         <p className="text-gray-400 text-center mb-6 text-sm">
-          Nhập email để đặt lại mật khẩu.
+          Nhập Email/Số điện thoại để đặt lại mật khẩu.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -53,7 +53,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ isOpen, onClose }) => {
             type="email"
             name="email"
             value={email}
-            placeholder="Nhập Email"
+            placeholder="Nhập Email/Số điện thoại"
             onChange={(e) => setEmail(e.target.value)}
           />
 

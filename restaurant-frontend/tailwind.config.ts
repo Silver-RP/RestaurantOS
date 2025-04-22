@@ -21,6 +21,7 @@ export default {
         hr: '#03486B',
         grayText: '#BBBBBB',
       },
+      
       width: {
         mainContainer: '80%',
         container95: '95%',

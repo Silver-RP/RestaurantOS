@@ -7,13 +7,14 @@ type Props = {
   value: string;
   placeholder?: string;
   name: string;
+  hasError?: boolean;
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 };
 
 // 👇 forwardRef cho phép nhận ref từ bên ngoài
 const InputComponent = forwardRef<HTMLInputElement, Props>(
-  ({ type, value, placeholder, name, onChange, onKeyDown  }, ref) => {
+  ({ type, value, placeholder, name, onChange, onKeyDown, hasError }, ref) => {
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
     const togglePasswordVisibility = () => {
@@ -31,7 +32,10 @@ const InputComponent = forwardRef<HTMLInputElement, Props>(
           onChange={onChange}
           placeholder={placeholder}
           autoComplete="on"
-          className="bg-transparent mt-6 w-full px-4 py-3 text-white hover:bg-transparent focus:bg-transparent border border-white rounded-md placeholder-gray-400 focus:ring-white"
+          //   className="bg-transparent mt-6 w-full px-4 py-3 text-white hover:bg-transparent focus:bg-transparent border border-white rounded-md placeholder-gray-400 focus:ring-white"
+          className={`bg-transparent mt-6 w-full px-4 py-3 text-white hover:bg-transparent focus:bg-transparent border ${
+            hasError ? 'border-red-500' : 'border-white'
+          } rounded-md placeholder-gray-400 focus:ring-white`}
         />
         {type === 'password' && (
           <span
@@ -47,7 +51,7 @@ const InputComponent = forwardRef<HTMLInputElement, Props>(
         )}
       </div>
     );
-  }
+  },
 );
 
 // 👇 thêm display name để debug dễ hơn

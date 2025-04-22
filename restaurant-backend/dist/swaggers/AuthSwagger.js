@@ -67,3 +67,56 @@ const swaggerOptions_1 = require("../utils/swaggerOptions");
     },
     tags: ['Auth'],
 });
+// Swagger cho /auth/send-otpEmail
+(0, swaggerOptions_1.registerSwaggerRoute)({
+    path: '/auth/send-otpEmail',
+    method: 'post',
+    summary: 'Send OTP via email',
+    description: 'Send an OTP to the user via email for verification',
+    requestBody: {
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        email: { type: 'string', example: 'johndoe@example.com' },
+                    },
+                    required: ['email'],
+                },
+            },
+        },
+        required: true,
+    },
+    responses: {
+        200: { description: 'OTP sent successfully' },
+        400: { description: 'Invalid email format | Service error' },
+    },
+    tags: ['Auth'],
+});
+// Swagger cho /auth/verify-otpEmail
+(0, swaggerOptions_1.registerSwaggerRoute)({
+    path: '/auth/verify-otpEmail',
+    method: 'post',
+    summary: 'Verify OTP via email',
+    description: 'Verify the OTP sent to the user via email',
+    requestBody: {
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        email: { type: 'string', example: 'johndoe@example.com' },
+                        otp: { type: 'string', example: '123456' },
+                    },
+                    required: ['email', 'otp'],
+                },
+            },
+        },
+        required: true,
+    },
+    responses: {
+        200: { description: 'OTP verification response' },
+        400: { description: 'Email and OTP are required | Verification error' },
+    },
+    tags: ['Auth'],
+});

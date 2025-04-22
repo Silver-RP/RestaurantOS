@@ -1,5 +1,6 @@
 import { Dish } from '../models/DishModel';
 import mongoose from 'mongoose';
+import Category from '../models/CategoryModel';
 class FoodService {
   async createFood(food: any) {
     const newfood = new Dish(food);
@@ -9,107 +10,111 @@ class FoodService {
       throw new Error('Error creating food');
     }
   }
+
   async getTopFavoriteFood() {
     try {
-      const food = await Dish.find().sort({ favorites: -1 }).limit(5);
-      // -1 là giảm dần, 1 là tăng dần
+      const food = await Dish.find().sort({ favorites_count: -1 }).limit(5);
       if (!food || food.length === 0) {
         return { message: 'No food found' };
       }
       return food;
     } catch (error) {
-        throw new Error('Error getting top favorite food');
+      throw new Error('Error getting top favorite food');
     }
   }
-  async getAllFood() {
-  
-    try {
-        const food = await Dish.find(); 
-        return food;
-    } catch (error) {
-        throw new Error('Error getting all food'); 
-    }
-  }
-  async getFoodById(id: string,req: any) {
-    try {
-        const { id } = req.params;
-        const food = await Dish.findById(id).populate('categories');
-        return food;
 
+  async getAllFood() {
+    try {
+      return await Dish.find(); 
     } catch (error) {
-        throw new Error('Error getting food by id');
+      throw new Error('Error getting all food'); 
     }
   }
+
+  async getFoodById(id: string) {
+    try {
+      const food = await Dish.findById(id).populate('categories');
+      return food;
+    } catch (error) {
+      throw new Error('Error getting food by id');
+    }
+  }
+
   async updateFood(id: string, food: any) {
     try {
-        const updatedFood = await Dish.findByIdAndUpdate(id, food, { new: true });
-        return updatedFood;
+      return await Dish.findByIdAndUpdate(id, food, { new: true });
     } catch (error) {
-        throw new Error('Error updating food');
+      throw new Error('Error updating food');
     }
-}   
-    async deleteFood(id: string) {
-        try {
-            const deletedFood = await Dish.findByIdAndDelete(id);
-            return deletedFood;
-        } catch (error) {
-            throw new Error('Error deleting food');
-        }
+  }
+
+  async deleteFood(id: string) {
+    try {
+      return await Dish.findByIdAndDelete(id);
+    } catch (error) {
+      throw new Error('Error deleting food');
     }
-   
-    async getFoodWithPagination(page: number, limit: number) {
-        try {
-            const food = await Dish.find()
-              .skip((page - 1) * limit)
-              .limit(limit);
-            return food;
-        } catch (error) {
-            throw new Error('Error getting food with pagination');
-        }
+  }
+
+  async getFoodWithPagination(page: number, limit: number) {
+    try {
+      return await Dish.find()
+        .skip((page - 1) * limit)
+        .limit(limit);
+    } catch (error) {
+      throw new Error('Error getting food with pagination');
     }
-    async getFoodByCategory(id: string) {
-        try {
-            const categoryId = new mongoose.Types.ObjectId(id); 
-            const food = await Dish.find({ categories: categoryId });
-            return food;
-        } catch (error) {
-            throw new Error('Error getting food by category');
-        }
+  }
+
+  async getFoodByCategoryType(cateType: string) {
+    try {
+      // B1: Lấy tất cả danh mục có Cate_type = "drink" hoặc "food"
+      const categories = await Category.find({ Cate_type: cateType });
+  
+      const categoryIds = categories.map((cat) => cat._id);
+  
+      // B2: Tìm dish có categories nằm trong danh sách categoryIds
+      const food = await Dish.find({ categories: { $in: categoryIds } });
+  
+      return food;
+    } catch (error) {
+      throw new Error('Error getting food by category type');
     }
-    async getFoodBySearch(search: string) {
-        try {
-            const food = await Dish.find({ $text: { $search: search } });
-            return food;
-        } catch (error) {
-            throw new Error('Error getting food by search');
-        }
+  }
+
+  async getFoodBySearch(search: string) {
+    try {
+      return await Dish.find({ $text: { $search: search } });
+    } catch (error) {
+      throw new Error('Error getting food by search');
     }
-    async getFoodByPrice(pricemin: number, pricemax: number) {
-        try {
-            const food = await Dish.find({
-              pricemin: pricemin,
-              pricemax: pricemax,
-            });
-            return food;
-        } catch (error) {
-            throw new Error('Error getting food by price');
-        }
+  }
+
+  async getFoodByPrice(pricemin: number, pricemax: number) {
+    try {
+      return await Dish.find({
+        price: { $gte: pricemin, $lte: pricemax }
+      });
+    } catch (error) {
+      throw new Error('Error getting food by price');
     }
-    async getFoodByRating(rating: number) {
-        try {
-            const food = await Dish.find({ rating: rating });
-            return food;
-        } catch (error) {
-            throw new Error('Error getting food by rating');
-        }
+  }
+
+  async getFoodByRating(rating: number) {
+    try {
+      return await Dish.find({ rating: rating });
+    } catch (error) {
+      throw new Error('Error getting food by rating');
     }
-    async getFoodByFavorites(favorites: number) {
-        try {
-            const food = await Dish.find({ favorites: favorites });
-            return food;
-        } catch (error) {
-            throw new Error('Error getting food by favorites');
-        }
+  }
+
+  async getFoodByFavorites(favorites: number) {
+    try {
+      return await Dish.find({ favorites_count: favorites });
+    } catch (error) {
+      throw new Error('Error getting food by favorites');
     }
+  }
 }
+
 export default new FoodService();

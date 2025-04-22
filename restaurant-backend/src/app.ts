@@ -27,13 +27,13 @@ import './swaggers/AuthSwagger';
 
 dotenv.config();
 connectDB();
-
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({
   origin: 'http://localhost:5173',
   credentials: true 
 }));
-app.use(express.json());
+
 const port = process.env.PORT || 4000;
 
 // Cấu hình Swagger

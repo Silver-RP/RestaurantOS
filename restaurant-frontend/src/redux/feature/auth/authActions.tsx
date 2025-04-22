@@ -1,30 +1,27 @@
-import { createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-import { RegisterPayload, LoginPayload } from './authTypes';
-
-const BASE_URL_REGISTER = import.meta.env.VITE_API_AUTH_URL;
-const BASE_URL_LOGIN = import.meta.env.VITE_API_AUTH_URL;
-
-// Register
+import {createAsyncThunk } from '@reduxjs/toolkit';
+import axios from 'axios'; 
+import { RegisterPayload } from './authTypes';
+import { LoginPayload } from './authTypes';
+// Register 
+const BASE_URL_REGISTER = import.meta.env.VITE_BACKEND_URL; 
+const BASE_URL_LOGIN = import.meta.env.VITE_BACKEND_URL;
 export const RegisterUser = createAsyncThunk(
-  'auth/register',
-  async (payload: RegisterPayload, { rejectWithValue }) => {
-    try {
-      const response = await axios.post(`${BASE_URL_REGISTER}/register`, payload, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      return response.data;
-    } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        return rejectWithValue(
-          error.response?.data.message || 'Đăng ký thất bại, vui lòng thử lại'
-        );
+    'auth/register',
+    async (payload: RegisterPayload, { rejectWithValue }) => {
+      try {
+        const response = await axios.post(`${BASE_URL_REGISTER}/auth/register`, payload, {
+          headers: { 'Content-Type': 'application/json' },
+        });
+        return response.data;
+      } catch (error: unknown) {
+        if (axios.isAxiosError(error)) {
+          const msg = error.response?.data?.message || 'Đăng ký thất bại';
+          return rejectWithValue(msg);
+        }
+        return rejectWithValue('Đã xảy ra lỗi không xác định');
       }
     }
-  }
-);
+  );
 
 // Login
 export const LoginUser = createAsyncThunk(
@@ -62,7 +59,10 @@ export const LoginUser = createAsyncThunk(
       }
       return rejectWithValue('Đã xảy ra lỗi không xác định');
     }
+<<<<<<< HEAD
   }
+=======
+>>>>>>> 36b632ddbace00ab51cf717533a144eb5de51919
 );
 
 // Logout
@@ -82,5 +82,10 @@ export const LogoutUser = createAsyncThunk(
       }
       return rejectWithValue('An unexpected error occurred');
     }
+<<<<<<< HEAD
   }
 );
+=======
+)
+
+>>>>>>> 36b632ddbace00ab51cf717533a144eb5de51919

@@ -54,10 +54,17 @@ class AuthController {
                             .map((role) => new mongoose_1.default.Types.ObjectId(role)); // Dùng `new` để khởi tạo ObjectId
                     }
                     catch (err) {
+                        console.error('Error during user registration:', err);
                         return res.status(400).json({ message: 'Invalid role ID format' });
                     }
                 }
-                const user = yield AuthService_1.default.register(req.body);
+                const user = yield AuthService_1.default.register({
+                    username,
+                    email,
+                    password,
+                    confirmPassword,
+                    roles: roleObjectIds, // dùng mảng đã convert đúng
+                });
                 res.status(201).json({ message: 'User created successfully', user });
             }
             catch (error) {
@@ -305,8 +312,33 @@ class AuthController {
                 if (!email || !otp) {
                     return res.status(400).json({ message: 'Email and OTP are required' });
                 }
-                // Xác nhận OTP
-                const response = yield AuthService_1.default.verifyOtpEmail(email, otp);
+                const emailRegex = /^[a-zA-Z0-9](\.?[a-zA-Z0-9_-])*[a-zA-Z0-9]@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
+                if (!emailRegex.test(email)) {
+                    return res.status(400).json({ message: 'Invalid email format' });
+                }
+                if (!/^\d{6}$/.test(otp)) {
+                    return res.status(400).json({ message: 'OTP must be a 6-digit number' });
+                }
+                const message = yield AuthService_1.default.verifyOtpEmail(email, otp); // ✅ nhận về message
+                return res.status(200).json({ message }); // ✅ trả về phản hồi rõ ràng
+            }
+            catch (error) {
+                return res.status(400).json({ message: error.message });
+            }
+        });
+    }
+    // Route xác thực email 
+    resendVerificationEmail(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { email } = req.body;
+                if (email) {
+                    const emailRegex = /^[a-zA-Z0-9](\.?[a-zA-Z0-9_-])*[a-zA-Z0-9]@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
+                    if (!emailRegex.test(email)) {
+                        return res.status(400).json({ message: 'Định dạng email không hợp lệ' });
+                    }
+                }
+                const response = yield AuthService_1.default.resendVerificationEmail(email);
                 return res.status(200).json({ message: response });
             }
             catch (error) {
