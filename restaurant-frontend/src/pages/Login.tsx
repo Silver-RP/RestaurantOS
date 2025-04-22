@@ -1,19 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import InputComponent from '../components/pages/Login/InputComponents';
 import ButtonComponent from '../components/pages/Login/ButtonComponents';
-import { FaFacebook } from "react-icons/fa";
-import { FcGoogle } from "react-icons/fc";
+import { FaFacebook } from 'react-icons/fa';
+import { FcGoogle } from 'react-icons/fc';
 import CheckboxComponent from '../components/common/CheckboxComponents';
 import { Link, useNavigate } from 'react-router-dom';
 import { SlActionUndo } from 'react-icons/sl';
+import { useAppDispatch, useAppSelector } from '../redux/hook';
+import { LoginUser } from '../redux/feature/auth/authActions';
+import { toast } from 'react-toastify';
+import { clearStatus } from '../redux/feature/auth/authSlice';
+import { AxiosError } from 'axios';
 
 const Login = () => {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
-  const navigate = useNavigate();
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [rememberMe, setRememberMe] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState('');
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const { error, success } = useAppSelector((state) => state.auth);
+
+  useEffect(() => {
+    emailRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    if (success) {
+      toast.success('Đăng nhập thành công!');
+      navigate('/');
+    }
+
+    if (error) {
+      toast.error(error);
+      dispatch(clearStatus());
+    }
+  }, [success, error, navigate, dispatch]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -21,15 +45,69 @@ const Login = () => {
       ...prevData,
       [name]: value,
     }));
+    setFormError(''); // Reset lỗi khi gõ lại
   };
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setRememberMe(e.target.checked);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const isEmailValid = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const isPasswordValid = (password: string): boolean => {
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    return passwordRegex.test(password);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form Data:', formData);
+
+    if (isSubmitting) return;
+
+    const { email, password } = formData;
+
+    if (!isEmailValid(email)) {
+      setFormError('Email không hợp lệ');
+      return;
+    }
+
+    if (!isPasswordValid(password)) {
+      setFormError('Mật khẩu cần ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await dispatch(LoginUser({ email, password, rememberMe }))
+        .unwrap()
+        .then(() => {
+          if (rememberMe) {
+            localStorage.setItem('email', email);
+            localStorage.setItem('password', password);
+          }
+          toast.success('Đăng nhập thành công!');
+          navigate('/');
+        });
+    } catch (error) {
+      if (error instanceof AxiosError && error?.response?.data?.message) {
+        toast.error(error.response.data.message);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    nextRef?: React.RefObject<HTMLInputElement> | null
+  ) => {
+    if (e.key === 'Enter' && nextRef?.current) {
+      e.preventDefault();
+      nextRef.current.focus();
+    }
   };
 
   return (
@@ -43,6 +121,8 @@ const Login = () => {
             placeholder="Email"
             name="email"
             onChange={handleChange}
+            ref={emailRef}
+            onKeyDown={(e) => handleKeyDown(e, passwordRef)}
           />
           <InputComponent
             type="password"
@@ -50,12 +130,19 @@ const Login = () => {
             placeholder="Mật khẩu"
             name="password"
             onChange={handleChange}
+            ref={passwordRef}
+            onKeyDown={(e) => handleKeyDown(e, null)}
           />
-          <div className="flex justify-between items-center mt-6 mb-3">
-            <CheckboxComponent 
-              label="Ghi nhớ đăng nhập" 
-              checked={rememberMe} 
-              onChange={handleCheckboxChange} 
+
+          {formError && (
+            <div className="text-red-500 text-sm text-left mt-2">{formError}</div>
+          )}
+
+          <div className="flex justify-between items-center mt-4 mb-3">
+            <CheckboxComponent
+              label="Ghi nhớ đăng nhập"
+              checked={rememberMe}
+              onChange={handleCheckboxChange}
             />
             <button
               type="button"
@@ -65,7 +152,7 @@ const Login = () => {
               Quên mật khẩu?
             </button>
           </div>
-          <ButtonComponent htmlType="submit" text="Đăng nhập" />
+          <ButtonComponent htmlType="submit" text="Đăng nhập" disabled={isSubmitting} />
         </form>
 
         <div className="flex items-center my-8">

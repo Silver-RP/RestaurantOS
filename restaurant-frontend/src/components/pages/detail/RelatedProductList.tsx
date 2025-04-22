@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
-import ProductCard from '../../common/ProductComponents';
+// import ProductCard from '../../common/ProductComponents';
 
 interface Product {
   imageUrl?: string;
