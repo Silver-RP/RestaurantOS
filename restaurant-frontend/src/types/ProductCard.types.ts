@@ -1,6 +1,7 @@
 export interface ProductCardProps {
   id: string;
   name: string;
+  slug: string;
   imageUrl: string;        
   hoverImage?: string;      
   price: number;          

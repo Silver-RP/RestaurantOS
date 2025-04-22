@@ -11,12 +11,13 @@ const ProductCardList: React.FC<ProductCardProps> = ({
   originalPrice,
   discount,
   isNew,
+  slug,
   description,
 }) => {
   const navigate = useNavigate();
 
   const handleNavigateToDetail = () => {
-    navigate(`/product-detail/${name}`);
+    navigate(`/product/${slug}`);
   };
 
   return (

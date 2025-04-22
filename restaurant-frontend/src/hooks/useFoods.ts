@@ -1,39 +1,54 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
-
-export interface FoodItem {
-  _id: string;
-  name: string;
-  images: string[];
-  price: number;
-  discount_price: number;
-  description: string;
-  [key: string]: string | number | string[] | undefined;
-}
-
-const API_URL = import.meta.env.VITE_BACKEND_URL; 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useEffect, useState } from 'react';
+import { fetchAllFoods, fetchFoodBySlug } from '../api/FoodApi';
+import { FoodDetail } from '../types/Dish.types';
 
 export const useFoods = () => {
-  const [foods, setFoods] = useState<FoodItem[]>([]);
+  const [foods, setFoods] = useState<FoodDetail[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchFoods = async () => {
+    const loadFoods = async () => {
       try {
-        const res = await axios.get(`${API_URL}/food/getallfood`);
-        setFoods(res.data.data);
-      } catch (err) {
-        const error = err as Error;
-        console.error("Error fetching foods:", error);
-        setError(error.message || "Đã xảy ra lỗi.");
+        const data = await fetchAllFoods();
+        setFoods(data);
+      } catch (err: any) {
+        const message = err?.response?.data?.message || 'Đã xảy ra lỗi khi tải món ăn';
+        setError(message);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchFoods();
+    loadFoods();
   }, []);
 
   return { foods, loading, error };
+};
+
+export const useFoodDetail = (slug: string) => {
+  const [food, setFood] = useState<FoodDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadFood = async () => {
+      try {
+        const data = await fetchFoodBySlug(slug);
+        setFood(data);
+      } catch (err: any) {
+        const message = err?.response?.data?.message || 'Đã xảy ra lỗi khi tải món ăn';
+        setError(message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (slug) {
+      loadFood();
+    }
+  }, [slug]);
+
+  return { food, loading, error };
 };

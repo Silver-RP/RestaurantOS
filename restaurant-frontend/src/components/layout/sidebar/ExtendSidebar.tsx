@@ -33,7 +33,7 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
       <div className="w-72 h-screen flex flex-col relative">
         <div className="p-6 flex-shrink-0">
           <img
-            src="assets/images/logo.png"
+            src="/assets/images/logo.png"
             alt="Logo Beef Beef"
             className="w-40 md:w-48 lg:w-56 h-auto mx-auto"
           />

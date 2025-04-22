@@ -71,6 +71,32 @@ class FoodController {
             throw new Error('Error getting all food');
         }
     }
+
+    async getFoodBySlug(req: Request, res: Response): Promise<any> {
+        try {
+          const { slug } = req.params;
+          const food = await FoodService.getFoodBySlug(slug);
+      
+          if (!food) {
+            return res.status(404).json({
+              success: false,
+              message: 'Món ăn không tồn tại!'
+            });
+          }
+      
+          return res.status(200).json({
+            success: true,
+            data: food
+          });
+        } catch (error) {
+          console.error('Error getting food by slug:', error);
+          return res.status(500).json({
+            success: false,
+            message: 'Lỗi khi lấy món ăn'
+          });
+        }
+      }
+
     async getFoodById (req: Request, res: Response): Promise<any> {
         try {
             const foodId = String(req.params.id);  
