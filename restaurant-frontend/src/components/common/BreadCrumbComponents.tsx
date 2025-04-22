@@ -11,7 +11,10 @@ const BreadcrumbComponent = () => {
     { path: "/", label: "Trang chủ" },
     ...pathnames.map((value, index) => {
       const to = `/${pathnames.slice(0, index + 1).join("/")}`;
-      return { path: to, label: breadcrumbConfig[to] || decodeURIComponent(value) };
+      return {
+        path: to,
+        label: breadcrumbConfig[to] || decodeURIComponent(value).replace(/[_-]/g, " "),
+      };
     }),
   ];
 

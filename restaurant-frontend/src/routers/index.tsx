@@ -29,7 +29,7 @@ const AppRoutes = () => {
     { path: "/verify-otp", element: <EnterOTP/> },
     { path: "/profile", element: <ProfilePage/> },
     { path: "/menu", element: <MenuPage/> },
-    { path: "/productdetail", element: <ProductDetail/> },
+    { path: "/product/:slug", element: <ProductDetail /> },
     { path: "/contact", element: <ContactUsPage/> },
     { path: "/faqs", element: <FAQsCompoent /> },
     { path: "/profile/address", element: <AddressPage /> },    

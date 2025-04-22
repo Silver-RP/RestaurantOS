@@ -16,6 +16,7 @@ router.post('/createfood', upload.single('image'), FoodController.createFood);
 // router.get('/gettopfavoritefood', FoodController.getTopFavoriteFood);
 router.get("/getallfood", FoodController.getAllFood);
 router.get("/getfoodbyid/:id", FoodController.getFoodById);
+router.get("/getfoodbyslug/:slug", FoodController.getFoodBySlug);
 router.put("/updatefood/:id", FoodController.updateFood);
 router.delete("/deletefood/:id", FoodController.deleteFood);
 router.get("/getFoodWithPagination", FoodController.getFoodWithPagination);

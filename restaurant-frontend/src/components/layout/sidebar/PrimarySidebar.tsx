@@ -45,7 +45,7 @@ const PrimarySidebar: React.FC<PrimarySidebarProps> = ({ toggleSidebar }) => {
         </div>
         <div className="p-2 w-20 h-20 flex items-center justify-center mb-6">
           <img
-            src="assets/images/logo.png"
+            src="/assets/images/logo.png"
             alt="Logo"
             className="w-10 h-auto mx-auto"
           />

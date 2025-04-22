@@ -7,7 +7,7 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
   const navigate = useNavigate();
 
   const handleNavigateToDetail = () => {
-    navigate(`/product-detail/${rest.name}`);
+    navigate(`/product/${rest.slug}`);
   };
 
   return (

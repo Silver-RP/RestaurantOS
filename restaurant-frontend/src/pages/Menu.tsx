@@ -68,6 +68,7 @@ const MenuPage: React.FC = () => {
               products={foods.map(food => ({
                 id: food._id,
                 name: food.name,
+                slug: food.slug,
                 price: food.discount_price || food.price,
                 originalPrice: food.price,
                 discount: food.discount_price
@@ -76,7 +77,9 @@ const MenuPage: React.FC = () => {
                 imageUrl: food.images?.[0] || '',
                 hoverImage: food.images?.[1] || '',
                 description: food.description || '',
-                cate: food.categories?.[0]?.name || 'Danh mục',
+                cate: Array.isArray(food.categories) && food.categories.length > 0
+                  ? food.categories[0].name
+                  : 'Danh mục',
               })) as ProductCardProps[]}
               isSidebarExtended={isExtended}
             />

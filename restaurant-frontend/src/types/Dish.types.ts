@@ -1,3 +1,5 @@
+import { Category } from "./Category.type";
+
 export interface DishType {
     _id: string;
     name: string;
@@ -10,3 +12,24 @@ export interface DishType {
     favorites: number;
   }
   
+  
+  export interface FoodDetail {
+    _id: string;
+    name: string;
+    slug: string;
+    price: number;
+    discount_price?: number;
+    description: string;
+    shortDescription?: string;
+    ingredientsl?: string;
+    status: 'hidden' | 'available' | 'soldout';
+    views: number;
+    ordered_count: number;
+    average_rating: number;
+    rating_count: number;
+    favorites_count: number;
+    rating: number;
+    categories: Category[];
+    countInStock: number;
+    images: string[]; 
+  }
