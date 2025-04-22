@@ -41,7 +41,7 @@ export const LoginUser = createAsyncThunk(
       const { token, user, message } = response.data;
 
       if (!token) {
-        console.warn('⚠️ Token is missing in API response:', response.data);
+        console.warn('Token is missing in API response:', response.data);
       }
 
       if (payload.rememberMe) {

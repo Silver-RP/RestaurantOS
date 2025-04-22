@@ -96,7 +96,7 @@ const Register = () => {
   };
   useEffect(() => {
     if (success) {
-      toast.success('Đăng ký thành công! 🎉');
+      toast.success('Đăng ký thành công!');
       navigate('/login');
       dispatch(clearStatus());
     }
