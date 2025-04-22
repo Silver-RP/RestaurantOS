@@ -11,16 +11,15 @@ router.post(
     validateRequest(loginSchema),
     AuthController.login
   );
-  
 router.post("/refresh-token", AuthController.refreshAccessToken); 
 router.get("/google/callback", AuthController.googleCallback); 
 router.post("/google-login",GoogleAuthMiddleWare.verifyGoogleToken, AuthController.googleLogin); 
 router.post("/logout", AuthController.Logout); 
-// router.post("/send-otp", AuthController.sendOtpController);  
-router.post("/verify-otp", AuthController.verifyOtpController); 
+ 
+router.post("/verify-otpEmail", AuthController.verifyOtpEmail); 
 router.post("/forgot-password", AuthController.forgotPasswordHandler); 
 router.post('/change-password', AuthController.changePassword); 
-router.post("/send-otpEmail", AuthController.sendOtpEmail); 
-router.post("/verify-otpEmail", AuthController.verifyOtpEmail);
-router.post('/resend-verification', AuthController.resendVerificationEmail);
+
+router.post("/resend-verification", AuthController.resendVerificationEmail);
+router.post("/verify-resend-otpEmail", AuthController.verifyResendOtpEmail);
 export default router; 

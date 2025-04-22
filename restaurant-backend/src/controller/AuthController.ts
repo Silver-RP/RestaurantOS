@@ -148,8 +148,6 @@ class AuthController {
             'Vui lòng chỉ nhập số điện thoại HOẶC email, không nhập cả hai',
         });
     }
-
-    // Nếu nhập số điện thoại thì validate
     if (phone) {
       const phoneRegex = /^(?:\+84|0)(3|5|7|8|9)\d{8}$/;
       if (!phoneRegex.test(phone)) {
@@ -159,8 +157,6 @@ class AuthController {
       }
       identifier = phone;
     }
-
-  
     if (email) {
       const emailRegex =
         /^[a-zA-Z0-9](\.?[a-zA-Z0-9_-])*[a-zA-Z0-9]@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
@@ -174,26 +170,13 @@ class AuthController {
 
     try {
       const response = await AuthService.sendOtpFlexible(identifier);
-      return res.status(200).json({ message: response.message });
+      return res.status(200).json({ message: 'OTP sent successfully' }); 
     } catch (error: any) {
       return res.status(400).json({ message: error.message });
       throw new Error('Gửi OTP qua SMS thất bại, vui lòng thử lại');
     }
   }
-  async verifyOtpController(req: Request, res: Response): Promise<any> {
-    const { phone, otp } = req.body;
-    if (!phone || !otp) {
-      return res
-        .status(400)
-        .json({ message: 'Phone number and OTP are required' });
-    }
-    try {
-      const response = await AuthService.verifyOtp(phone, otp);
-      res.status(200).json({ message: response });
-    } catch (error: any) {
-      res.status(400).json({ message: error.message });
-    }
-  }
+  
   async changePassword(req: Request, res: Response): Promise<any> {
     try {
       const { email, newPassword, confirmPassword } = req.body;
@@ -223,21 +206,6 @@ class AuthController {
       return res.status(400).json({ message: error.message });
     }
   }
-  async sendOtpEmail(req: Request, res: Response): Promise<any> {
-    try {
-      const { email } = req.body;
-      const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
-      const isCheckEmail = reg.test(email);
-      if (!isCheckEmail) {
-        return res.status(400).json({ message: 'Invalid email format' });
-      }
-      await AuthService.sendOtpEmail(email);
-
-      return res.status(200).json({ message: 'OTP sent successfully' });
-    } catch (error: any) {
-      return res.status(400).json({ message: error.message });
-    }
-  }
   async verifyOtpEmail(req: Request, res: Response): Promise<any> {
     try {
       const { email, otp } = req.body;
@@ -258,8 +226,8 @@ class AuthController {
           .json({ message: 'OTP must be a 6-digit number' });
       }
 
-      const message = await AuthService.verifyOtpEmail(email, otp); // ✅ nhận về message
-      return res.status(200).json({ message }); // ✅ trả về phản hồi rõ ràng
+      const message = await AuthService.verifyForgotPasswordOtp(email, otp);
+      return res.status(200).json({ message });
     } catch (error: any) {
       return res.status(400).json({ message: error.message });
     }
@@ -283,6 +251,33 @@ class AuthController {
       return res.status(400).json({ message: error.message });
     }
   }
+  async verifyResendOtpEmail(req: Request, res: Response): Promise<any> {
+    try {
+      const { email, otp } = req.body;
+  
+      if (!email || !otp) {
+        return res.status(400).json({ message: 'Email và mã OTP là bắt buộc' });
+      }
+  
+      const emailRegex =
+        /^[a-zA-Z0-9](\.?[a-zA-Z0-9_-])*[a-zA-Z0-9]@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ message: 'Định dạng email không hợp lệ' });
+      }
+  
+      if (!/^\d{6}$/.test(otp)) {
+        return res
+          .status(400)
+          .json({ message: 'OTP phải gồm 6 chữ số' });
+      }
+  
+      const message = await AuthService.verifyEmailVerificationOtp(email, otp);
+      return res.status(200).json({ message });
+    } catch (error: any) {
+      return res.status(400).json({ message: error.message });
+    }
+  }
+  
 }
 
 export default new AuthController();

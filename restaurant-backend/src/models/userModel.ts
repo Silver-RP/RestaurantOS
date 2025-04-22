@@ -8,120 +8,56 @@ export interface IUser extends Document {
   birthday?: Date | null;
   avatar?: string | null;
   phone: string | null;
-  Active_code?: number | null;
   googleId?: string | null;
   facebookId?: string | null;
-  otp?: string | null;
-  otpExpiry?: Date | null;
+  isEmailVerified: boolean;
+  emailVerificationOtp?: string | null;
+  emailVerificationOtpExpiry?: Date | null;
+  changePasswordOtp?: string | null;
+  changePasswordOtpExpiry?: Date | null;
+  phoneOtp?: string | null;
+  phoneOtpExpiry?: Date | null;
   roles?: mongoose.Schema.Types.ObjectId[];
   gender?: string | null;
   status?: string | null;
   default_address_id?: mongoose.Schema.Types.ObjectId[];
-  isEmailVerifided: boolean;
-  otpSentCount: number;
   expireAt: Date;
-  isVerified: boolean;
+  otpSentCount: number;
   lastOtpSentAt: Date;
+  otpVerifiedForChangePassword: boolean;
 }
 
 const userSchema = new mongoose.Schema(
   {
-    username: {
-      type: String,
-      required: false,
-      trim: true,
-    },
-    email: {
-      type: String,
-      required: false,
-      unique: true,
-      trim: true,
-    },
-    password: {
-      type: String,
-      required: false,
-    },
-    birthday: {
-      type: Date,
-      required: false,
-    },
-    avatar: {
-      type: String,
-      required: false,
-    },
-    phone: {
-      type: String,
-      required: false,
-      unique: true,
-    },
-    otp: {
-      type: String,
-      required: false,
-    },
-    otpExpiry: {
-      type: Date,
-      required: false,
-    },
-    googleId: {
-      type: String,
-      required: false,
-    },
-    roles: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Roles',
-        required: false,
-      },
-    ],
-    gender: {
-      type: String,
-      required: false,
-    },
+    username: { type: String, trim: true },
+    email: { type: String, unique: true, trim: true },
+    password: { type: String },
+    birthday: { type: Date },
+    avatar: { type: String },
+    phone: { type: String, unique: true },
+    isEmailVerified: { type: Boolean, default: false },
+    emailVerificationOtp: { type: String },
+    emailVerificationOtpExpiry: { type: Date },
+    changePasswordOtp: { type: String },
+    changePasswordOtpExpiry: { type: Date },
+    phoneOtp: { type: String },
+    phoneOtpExpiry: { type: Date },
+    googleId: { type: String },
+    facebookId: { type: String },
+    roles: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Roles' }],
+    gender: { type: String },
     status: {
       type: String,
-      required: false,
       enum: ['active', 'inactive', 'block'],
     },
     default_address_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Address',
-      required: false,
     },
-    expireAt: {
-      type: Date,
-      required: false,
-    },
-    isVerified: {
-      type: Boolean,
-      required: false,
-    },
-    otpSentCount: {
-      type: Number,
-      default: 0,
-    },
-    lastOtpSentAt: {
-      type: Date,
-      default: Date.now,
-    },
-    confirmPassword: {
-      type: String,
-      required: false,
-    },
-    emailVerificationToken: { 
-        type: String, 
-        required: false 
-    },
-    // emailVerificationToken: dùng để xác thực email qua link 
-    emailVerificationExpires: { 
-        type: Date, 
-        required: false 
-    },
-    isEmailVerifided: {
-      type: Boolean, 
-      default: false,
-    }
-    // emailVerificationExpires	: thời gian hết hạn của token xác thực email
-
+    otpVerifiedForChangePassword: { type: Boolean, default: false },
+    expireAt: { type: Date },
+    otpSentCount: { type: Number, default: 0 },
+    lastOtpSentAt: { type: Date, default: Date.now },
   },
   {
     timestamps: true,

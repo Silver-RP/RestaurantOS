@@ -35,3 +35,4 @@ export const changePasswordSchema = z
   });
 export type Register = z.infer<typeof registerSchema>;
 export type Login = z.infer<typeof loginSchema>;
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;

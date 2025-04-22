@@ -11,8 +11,8 @@ import { RegisterUser } from '../redux/feature/auth/authActions';
 import { clearStatus } from '../redux/feature/auth/authSlice';
 import { useAppDispatch, useAppSelector } from '../redux/hook';
 
-import ButtonComponent from '../components/pages/Login/ButtonComponents';
-import InputComponent from '../components/pages/Login/InputComponents';
+import ButtonComponent from '../components/pages/login/ButtonComponents';
+import InputComponent from '../components/pages/login/InputComponents';
 const Register = () => {
   const usernameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
