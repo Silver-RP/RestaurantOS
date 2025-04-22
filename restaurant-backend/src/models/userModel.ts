@@ -116,6 +116,10 @@ const userSchema = new mongoose.Schema(
         type: Date, 
         required: false 
     },
+    isEmailVerifided: {
+      type: Boolean, 
+      default: false,
+    }
     // emailVerificationExpires	: thời gian hết hạn của token xác thực email
 
   },

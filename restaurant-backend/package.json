@@ -41,7 +41,8 @@
     "twilio": "^5.4.0",
     "typescript": "^5.8.3",
     "xlsx": "^0.18.5",
-    "yamljs": "^0.3.0"
+    "yamljs": "^0.3.0",
+    "zod": "^3.24.3"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
