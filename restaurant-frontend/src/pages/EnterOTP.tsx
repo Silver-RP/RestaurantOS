@@ -54,7 +54,7 @@ const EnterOTP = () => {
     console.log('Submitting OTP:', { email, otp: data.otp });
     try {
       const res = await verifyOtp(email, data.otp);
-      if (res && res.message === 'Email verified successfully') {
+      if (res && res.message.includes('OTP verified')) {
         toast.success('Xác minh OTP thành công!');
         navigate('/reset-password', { state: { email } });
       }

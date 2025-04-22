@@ -22,7 +22,6 @@ export const RegisterUser = createAsyncThunk(
       }
     }
   );
-
 // Login
 export const LoginUser = createAsyncThunk(
     'auth/login',
@@ -33,6 +32,7 @@ export const LoginUser = createAsyncThunk(
                     'Content-Type': 'application/json',
                 },
             });
+            console.log('Login response:', response.data); 
             return response.data;
         } catch (error: unknown) {
             if (axios.isAxiosError(error) && error.response) {

@@ -22,7 +22,7 @@ export const useSendOtpEmail = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.post<SendOtpResponse>('/auth/send-otpEmail', {
+      const res = await api.post<SendOtpResponse>('/auth/forgot-password', {
         email,
       });
       return res.data;
@@ -51,11 +51,12 @@ export const useVerifyOtp = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.post<VerifyOtpResponse>('/auth/verify-otpEmail', {
-        email,
-        otp,
+      const res = await api.post('/auth/verify-otpEmail', {
+        email: email.trim(),
+        otp: otp.trim(),
       });
       return res.data;
+
     } catch (err: any) {
       const message =
         err?.response?.data?.message || 'Đã xảy ra lỗi khi xác minh OTP';
@@ -89,6 +90,8 @@ export const useChangePassword = () => {
           confirmPassword,
         },
       );
+      console.log('Change password response:', res.data);
+      
       return res.data;
     } catch (err: any) {
       const message = err?.response?.data?.message || 'Lỗi khi đổi mật khẩu';
