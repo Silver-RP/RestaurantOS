@@ -5,6 +5,12 @@ import { Dish } from '../models/DishModel';
 import SearchService from '../services/SearchService';
 import mongoose from 'mongoose';
 import Category from '../models/CategoryModel';
+
+interface QueryParams {
+    page?: string | number;
+    limit?: string | number;
+    sort?: string;
+}
 class FoodController {
     async createFood(req: Request, res: Response): Promise<any> {
         try {
@@ -65,14 +71,25 @@ class FoodController {
         }
     }
 
-    async getAllFood(req: Request, res: Response): Promise<any> {
+    async getAllFood(req: Request<{}, {}, {}, QueryParams>, res: Response): Promise<any> {
         try {
-            const food = await FoodService.getAllFood();
+            const { page = 1, limit = 12, sort = 'default' } = req.query;
+    
+            const pageNumber = parseInt(page as string);
+            const limitNumber = parseInt(limit as string);
+            
+            const food = await FoodService.getAllFood({
+                page: pageNumber > 0 ? pageNumber : 1, 
+                limit: limitNumber > 0 ? limitNumber : 12, 
+                sort: sort as string,
+            });
+    
             res.status(200).json({ message: 'All food retrieved successfully', data: food });
-        } catch (error) {
-            throw new Error('Error getting all food');
+        } catch (error: any) {
+            res.status(500).json({ message: 'Error getting all food', error: error.message });
         }
     }
+    
 
     async getFoodBySlug(req: Request, res: Response): Promise<any> {
         try {
@@ -160,7 +177,7 @@ class FoodController {
             throw new Error('Error getting food by search');
         }
     }
-    
+
     async getFoodByPrice(req: Request, res: Response): Promise<any> {
         try {
             const { min, max } = req.query;

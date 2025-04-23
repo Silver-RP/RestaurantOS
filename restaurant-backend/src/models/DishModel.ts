@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
+import mongoosePaginate from 'mongoose-paginate-v2';
 
-export interface IProduct extends mongoose.Document {
+export interface IDish extends mongoose.Document {
     name: string;
     slug: string;
     price: number;
@@ -52,4 +53,7 @@ const dishSchema = new mongoose.Schema({
 dishSchema.index({ name: 'text' });
 dishSchema.index({ slug: 1 });  
 
-export const Dish = mongoose.model<IProduct>("Dish", dishSchema);
+dishSchema.plugin(mongoosePaginate);
+export type DishDocument = mongoose.PaginateModel<IDish>;
+
+export const Dish = mongoose.model<IDish, DishDocument>("Dish", dishSchema);

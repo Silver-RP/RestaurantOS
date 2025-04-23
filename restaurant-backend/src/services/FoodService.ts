@@ -5,7 +5,7 @@ class FoodService {
   async createFood(food: any) {
     const newfood = new Dish(food);
     try {
-      return await newfood.save(); 
+      return await newfood.save();
     } catch (error) {
       throw new Error('Error creating food');
     }
@@ -23,13 +23,50 @@ class FoodService {
     }
   }
 
-  async getAllFood() {
+  async getAllFood({ page, limit, sort }: { page: number, limit: number, sort: string }) {
+    const sortQuery = this.getSortQuery(sort);
+    const options = {
+      page: parseInt(page as unknown as string, 10),
+      limit: parseInt(limit as unknown as string),
+      sort: sortQuery,
+      lean: true,
+      populate: {
+        path: 'categories',
+        select: 'Cate_name',
+      }
+    };
+
     try {
-      return await Dish.find(); 
+      return await Dish.paginate({}, options);
     } catch (error) {
-      throw new Error('Error getting all food'); 
+      throw new Error('Error fetching food items');
     }
   }
+
+
+  private getSortQuery(sort: string) {
+    switch (sort) {
+      case 'priceLow':
+        return { price: 1 };
+      case 'priceHigh':
+        return { price: -1 };
+      case 'newest':
+        return { createdAt: -1 };
+      case 'relevance':
+        return { _id: -1 };
+      case 'highestRated':
+        return { average_rating: -1 };
+      case 'mostViewed':
+        return { views: -1 };
+      case 'mostOrdered':
+        return { ordered_count: -1 };
+      case 'mostFavorite':
+        return { favorites_count: -1 };
+      default:
+        return { createdAt: -1 };
+    }
+  }
+
 
   async getFoodBySlug(slug: string) {
     const food = await Dish.findOne({ slug }).populate('categories');
@@ -78,12 +115,12 @@ class FoodService {
     try {
       // B1: Lấy tất cả danh mục có Cate_type = "drink" hoặc "food"
       const categories = await Category.find({ Cate_type: cateType });
-  
+
       const categoryIds = categories.map((cat) => cat._id);
-  
+
       // B2: Tìm dish có categories nằm trong danh sách categoryIds
       const food = await Dish.find({ categories: { $in: categoryIds } });
-  
+
       return food;
     } catch (error) {
       throw new Error('Error getting food by category type');
