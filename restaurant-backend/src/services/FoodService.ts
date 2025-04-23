@@ -31,6 +31,14 @@ class FoodService {
     }
   }
 
+  async getFoodBySlug(slug: string) {
+    const food = await Dish.findOne({ slug }).populate('categories');
+    if (!food) {
+      return null;
+    }
+    return food;
+  }
+
   async getFoodById(id: string) {
     try {
       const food = await Dish.findById(id).populate('categories');

@@ -1,11 +1,12 @@
 import React from 'react';
 import ProductCardGrid from '../../common/ProductCardGrid';
 import ProductCardList from '../../common/ProductCardList';
-import { ProductCardProps } from 'types/ProductCard.types'; // 👈 THÊM import này
+import { ProductCardProps } from 'types/ProductCard.types';
 
 interface ProductGridProps {
   viewMode: "grid" | "list";
-  products: ProductCardProps[]; // 👈 Dùng ProductCardProps chuẩn
+  products: ProductCardProps[]; 
+  isSidebarExtended: boolean;
 }
 
 const ProductGrid: React.FC<ProductGridProps> = ({ viewMode, products }) => {
@@ -13,8 +14,8 @@ const ProductGrid: React.FC<ProductGridProps> = ({ viewMode, products }) => {
     <div
       className={`grid ${
         viewMode === 'grid'
-          ? 'grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6'
-          : 'grid-cols-1 md:grid-cols-2 gap-6'
+          ? 'grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6'
+          : 'grid-cols-1 2xl:grid-cols-2 gap-6'
       }`}
     >
       {products.map((product) =>

@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { FaHeart, FaRegHeart, FaStar, FaStarHalfAlt } from "react-icons/fa";
-import ButtonComponents from "../../common/ButtonComponents";
+import React, { useEffect, useState } from 'react';
+import { FaHeart, FaRegHeart, FaStar, FaStarHalfAlt } from 'react-icons/fa';
+import ButtonComponents from '../../common/ButtonComponents';
 
 interface ProductInfoProps {
   name: string;
@@ -23,9 +23,9 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
   rating,
   reviews,
   description,
-  brand,
+  // brand,
   categories,
-  sku,
+  // sku,
 }) => {
   const [quantity, setQuantity] = useState(1);
   const [wishlisted, setWishlisted] = useState(false);
@@ -35,15 +35,15 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
     const handleResize = () => {
       setScreenWidth(window.innerWidth);
     };
-  
+
     handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const getButtonSize = () => {
-    if (screenWidth >= 768) return "medium"; 
-    return "small"; 
+    if (screenWidth >= 768) return 'medium';
+    return 'small';
   };
 
   const renderStars = () => {
@@ -62,18 +62,22 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
 
   return (
     <div className="w-full">
-      <h2 className="text-2xl md:text-3xl font-bold font-restora mb-4 md:mb-6">{name}</h2>
+      <h2 className="text-2xl md:text-3xl font-bold font-restora mb-4 md:mb-6">
+        {name}
+      </h2>
 
-      <div className="flex sm:flex-row sm:items-center gap-2 sm:gap-4 mb-4">
-        <span className="text-gray-400 line-through text-sm sm:text-base">
-          {originalPrice.toFixed(2)} VND
+      <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-4">
+        <span className="text-gray-400 line-through text-xs sm:text-sm">
+          {originalPrice.toLocaleString('vi-VN')} VND
         </span>
-        <span className="text-xl sm:text-2xl text-secondaryColor font-semibold">
-          {price.toFixed(2)} VND
+        <span className="text-2xl font-bold text-secondaryColor">
+          {price.toLocaleString('vi-VN')} VND
         </span>
-        <span className="bg-secondaryColor text-black font-semibold px-2 py-1 text-xs w-22 sm:text-sm mt-2 sm:mt-0 rounded">
-          GIẢM {discount}%
-        </span>
+        {discount > 0 && (
+          <span className="bg-secondaryColor text-black font-bold text-xs px-3 py-1 rounded-lg">
+            GIẢM {discount}%
+          </span>
+        )}
       </div>
 
       <div className="flex items-center gap-2 mb-2">
@@ -81,49 +85,65 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
         <span className="text-sm text-gray-400">({reviews} đánh giá)</span>
       </div>
 
+      <div className="text-sm my-4 space-y-2 ">
+        {/* <p>
+          <span className="text-gray-400">Thương hiệu:</span>{' '}
+          <span className="text-white">{brand}</span>
+        </p> */}
+        <p>
+          <span className="text-gray-400"> Danh mục:</span>{' '}
+          <span className="text-white">{categories.join(', ')}</span>
+        </p>
+        {/* <p>
+          <span className="text-gray-400">SKU:</span>{' '}
+          <span className="text-white">{sku}</span>
+        </p> */}
+      </div>
+
       <p className="text-sm text-gray-400 mb-4">{description}</p>
 
       <hr className="my-6 bg-hr h-[1px] border-0" />
 
       <div className="flex sm:flex-row sm:items-center gap-4 mb-6">
-        <input
-          type="number"
-          value={quantity}
-          min={1}
-          onChange={(e) => setQuantity(Number(e.target.value))}
-          className="lg:w-24 lg:py-3 md:w-16 md:py-3 w-14 py-0 text-white text-center bg-transparent border border-hr "
-        />
-        <ButtonComponents
+        <div className="flex items-center border border-hr rounded overflow-hidden">
+          <button
+            onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
+            className="px-3 py-2 text-white hover:bg-secondaryColor transition"
+          >
+            –
+          </button>
+          <span className="px-5 py-2 text-white">{quantity}</span>
+          <button
+            onClick={() => setQuantity((prev) => prev + 1)}
+            className="px-3 py-2 text-white hover:bg-secondaryColor transition"
+          >
+            +
+          </button>
+        </div>
+       
+      </div>
+      <div className='flex'>
+      <ButtonComponents
           variant="filled"
           size={getButtonSize()}
           onClick={() => console.log(`Thêm ${quantity} sản phẩm vào giỏ hàng`)}
         >
           THÊM GIỎ HÀNG
         </ButtonComponents>
-        <button
-          className={`flex items-center justify-center gap-2 px-4 py-2 rounded transition duration-300 text-sm ${
-            wishlisted ? "text-red-500" : "text-white"
+      <button
+          className={`flex items-center justify-center gap-2 px-4 py-2 hover:text-secondaryColor rounded transition duration-300 text-sm ${
+            wishlisted ? 'text-secondaryColor' : 'text-white'
           }`}
           onClick={() => setWishlisted(!wishlisted)}
         >
           {wishlisted ? <FaHeart /> : <FaRegHeart />}
-          {wishlisted ? "Đã yêu thích" : "Yêu thích"}
+          {wishlisted ? 'Đã yêu thích' : 'Yêu thích'}
         </button>
-      </div>
 
+      </div>
       <hr className="my-6 bg-hr h-[1px] border-0" />
 
-      <div className="text-sm mt-4 space-y-2">
-        <p><strong>Thương hiệu:</strong> {brand}</p>
-        <p><strong>Danh mục:</strong> {categories.join(", ")}</p>
-        <p><strong>SKU:</strong> {sku}</p>
-      </div>
-
-      <div className="mt-4 flex flex-wrap gap-4 text-sm text-blue-400">
-        <span className="cursor-pointer">Chia sẻ</span>
-        <span className="cursor-pointer">Tweet</span>
-        <span className="cursor-pointer">Ghim</span>
-      </div>
+      
     </div>
   );
 };

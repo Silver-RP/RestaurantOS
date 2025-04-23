@@ -1,6 +1,6 @@
 import express from 'express';
 import swaggerUi from 'swagger-ui-express';
-import swaggerJsdoc from 'swagger-jsdoc';
+// import swaggerJsdoc from 'swagger-jsdoc';
 import { generateSwaggerSpec, getSwaggerRoutes } from './utils/swaggerOptions';
 import HealthCheckRoutes from './routes/HealthChecks';
 import AuthRoutes from './routes/AuthRoutes';

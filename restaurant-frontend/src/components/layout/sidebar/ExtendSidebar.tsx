@@ -33,9 +33,9 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
       <div className="w-72 h-screen flex flex-col relative">
         <div className="p-6 flex-shrink-0">
           <img
-            src="assets/images/logo.png"
+            src="/assets/images/logo.png"
             alt="Logo Beef Beef"
-            className="w-40 sm:w-48 md:w-56 lg:w-64 h-auto mx-auto"
+            className="w-40 md:w-48 lg:w-56 h-auto mx-auto"
           />
           <h1 className="text-center text-xl sm:text-2xl font-restora font-normal">
             Beef Beef

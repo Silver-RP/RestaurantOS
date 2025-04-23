@@ -1,214 +1,52 @@
 import React, { useState } from "react";
 import TabNavigation from "./TabNavigation";
 import MenuGrid from "./MenuGrid";
+import { useDishByCategory } from "@hooks/useFoods";
 
 const BestOffersSection: React.FC = () => {
   const tabs = ["Đồ ăn", "Đồ uống"];
+  const cateTypes = ["dish", "drink"];
+
   const [activeTab, setActiveTab] = useState(0);
-
-  const menuData = [
-    [
-      {
-        name: "Spaghetti Pasta",
-        price: 19.12,
-        description: "Regular fit, round neckline, short sleeves.",
-        image: "/assets/images/products/SP1.1.jpg",
-        hoverImage: "/assets/images/products/SP1.jpg",
-      },
-      {
-        name: "Beef Meat Steak",
-        price: 28.72,
-        description: "100% cotton, brushed inner side.",
-        image: "/assets/images/products/SP2.1.jpg",
-        hoverImage: "/assets/images/products/SP2.jpg",
-      },
-      {
-        name: "Lomo De Salmon",
-        price: 29.0,
-        description: "Printed on rigid matt paper.",
-        image: "/assets/images/products/SP3.1.jpg",
-        hoverImage: "/assets/images/products/SP3.jpg",
-      },
-      {
-        name: "Chicken Alfredo",
-        price: 15.99,
-        description: "Served with creamy Alfredo sauce.",
-        image: "/assets/images/products/SP4.1.jpg",
-        hoverImage: "/assets/images/products/SP4.jpg",
-      },
-      {
-        name: "Vegetarian Pizza",
-        price: 12.5,
-        description: "Topped with fresh vegetables.",
-        image: "/assets/images/products/SP5.1.jpg",
-        hoverImage: "/assets/images/products/SP5.jpg",
-      },
-      {
-        name: "Caesar Salad",
-        price: 9.99,
-        description: "Fresh romaine lettuce with Caesar dressing.",
-        image: "/assets/images/products/SP6.1.jpg",
-        hoverImage: "/assets/images/products/SP6.jpg",
-      },
-    ],
-    [
-      {
-        name: "Steamed Lobster",
-        price: 29.0,
-        description: "Printed on rigid matt finish.",
-        image: "/assets/images/products/SP7.1.jpg",
-        hoverImage: "/assets/images/products/SP7.jpg",
-      },
-      {
-        name: "Pumpkin Soup",
-        price: 29.0,
-        description: "Printed on rigid paper.",
-        image: "/assets/images/products/SP8.1.jpg",
-        hoverImage: "/assets/images/products/SP8.jpg",
-      },
-      {
-        name: "Garlic Shrimp Spaghetti",
-        price: 11.9,
-        description: "White Ceramic Mug.",
-        image: "/assets/images/products/SP9.1.jpg",
-        hoverImage: "/assets/images/products/SP9.jpg",
-      },
-      {
-        name: "Grilled Chicken Sandwich",
-        price: 14.99,
-        description: "Served with lettuce and tomato.",
-        image: "/assets/images/products/SP10.1.jpg",
-        hoverImage: "/assets/images/products/SP10.jpg",
-      },
-      {
-        name: "Classic Cheeseburger",
-        price: 10.5,
-        description: "Topped with cheddar cheese and pickles.",
-        image: "/assets/images/products/SP1.1.jpg",
-        hoverImage: "/assets/images/products/SP1.jpg",
-      },
-      {
-        name: "French Fries",
-        price: 5.0,
-        description: "Crispy and golden.",
-        image: "/assets/images/products/SP2.1.jpg",
-        hoverImage: "/assets/images/products/SP2.jpg",
-      },
-    ],
-    [
-      {
-        name: "Roast Beef",
-        price: 22.99,
-        description: "Tender roast beef with gravy.",
-        image: "/assets/images/products/SP3.1.jpg",
-        hoverImage: "/assets/images/products/SP3.jpg",
-      },
-      {
-        name: "Baked Ziti",
-        price: 18.5,
-        description: "Pasta baked with marinara and cheese.",
-        image: "/assets/images/products/SP4.1.jpg",
-        hoverImage: "/assets/images/products/SP4.jpg",
-      },
-      {
-        name: "Barbecue Ribs",
-        price: 25.0,
-        description: "Smoked ribs with barbecue sauce.",
-        image: "/assets/images/products/SP5.1.jpg",
-        hoverImage: "/assets/images/products/SP5.jpg",
-      },
-      {
-        name: "Stuffed Peppers",
-        price: 16.0,
-        description: "Peppers stuffed with rice and beef.",
-        image: "/assets/images/products/SP6.1.jpg",
-        hoverImage: "/assets/images/products/SP6.jpg",
-      },
-      {
-        name: "Chicken Tenders",
-        price: 12.5,
-        description: "Breaded and fried chicken strips.",
-        image: "/assets/images/products/SP7.1.jpg",
-        hoverImage: "/assets/images/products/SP7.jpg",
-      },
-      {
-        name: "Mashed Potatoes",
-        price: 8.0,
-        description: "Served with butter and cream.",
-        image: "/assets/images/products/SP8.1.jpg",
-        hoverImage: "/assets/images/products/SP8.jpg",
-      },
-    ],
-    [
-      {
-        name: "Chardonnay",
-        price: 45.0,
-        description: "Smooth and buttery white wine.",
-        image: "/assets/images/products/SP9.1.jpg",
-        hoverImage: "/assets/images/products/SP9.jpg",
-      },
-      {
-        name: "Merlot",
-        price: 50.0,
-        description: "Full-bodied red wine.",
-        image: "/assets/images/products/SP10.1.jpg",
-        hoverImage: "/assets/images/products/SP10.jpg",
-      },
-      {
-        name: "Cabernet Sauvignon",
-        price: 60.0,
-        description: "Rich and complex red wine.",
-        image: "/assets/images/products/SP1.1.jpg",
-        hoverImage: "/assets/images/products/SP1.jpg",
-      },
-      {
-        name: "Pinot Noir",
-        price: 55.0,
-        description: "Light and fruity red wine.",
-        image: "/assets/images/products/SP2.1.jpg",
-        hoverImage: "/assets/images/products/SP2.jpg",
-      },
-      {
-        name: "Riesling",
-        price: 40.0,
-        description: "Sweet and crisp white wine.",
-        image: "/assets/images/products/SP3.1.jpg",
-        hoverImage: "/assets/images/products/SP3.jpg",
-      },
-      {
-        name: "Sparkling Rosé",
-        price: 48.0,
-        description: "Bubbly and refreshing.",
-        image: "/assets/images/products/SP6.1.jpg",
-        hoverImage: "/assets/images/products/SP6.jpg",
-      },
-    ],
-  ];
-
-  const currentMenu = menuData[activeTab] || [];
-
+  console.log("ACTIVE TAB:", activeTab);
+  
+  const { data, isLoading, isError } = useDishByCategory(cateTypes[activeTab]);
+  console.log("DATA FROM API:", data);
+  
   return (
     <section className="w-full bg-bodyBackground py-16">
-      <div className="w-11/12 md:w-container95 lg:w-mainContainer xl:w-container95 2xl:w-mainContainer  mx-auto">
+      <div className="w-11/12 md:w-container95 lg:w-mainContainer xl:w-container95 2xl:w-mainContainer mx-auto">
         <img src="/assets/images/home/IconOnline.svg" alt="Icon" className="mx-auto mb-8" />
         <h2 className="text-3xl sm:text-4xl md:text-5xl font-restora justify-center text-white flex font-thin mb-4">
           Lựa chọn tốt nhất cho bạn
         </h2>
+
         <TabNavigation tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
-        {currentMenu.length > 0 ? (
-          <MenuGrid items={currentMenu} />
+
+        {/* Content */}
+        {isLoading ? (
+          <div className="text-center text-gray-300 mt-8">Đang tải dữ liệu...</div>
+        ) : isError ? (
+          <div className="text-center text-red-400 mt-8">Lỗi tải dữ liệu</div>
+        ) : (data ?? []).length > 0 ? (
+          <MenuGrid
+            items={data.slice(0, 6).map((dish) => ({
+              name: dish.name,
+              price: dish.price,
+              description: dish.description,
+              image: dish.images?.[0] || '', // ✅ dùng ảnh đầu tiên trong mảng images
+              hoverImage: dish.images?.[1] || dish.images?.[0] || '', // ảnh hover nếu có
+            }))}
+          />
         ) : (
-          <div className="text-center text-gray-400 mt-8">
-            <p>No items available for this category.</p>
-          </div>
+          <div className="text-center text-gray-400 mt-8">Không có món ăn trong danh mục này</div>
         )}
+
         <div className="mt-12 text-center">
           <p className="text-sm md:text-base text-gray-300 mb-4">
-            Phục vụ hàng ngày từ{" "}
-            <span className="text-secondaryColor font-semibold">8:30 am</span> to{" "}
+            Phục vụ hàng ngày từ <span className="text-secondaryColor font-semibold">8:30 am</span> đến{" "}
             <span className="text-secondaryColor font-semibold">11:00 pm</span>
           </p>
-          
           <button className="mt-4 px-8 py-3 text-sm md:text-base font-semibold text-secondaryColor border border-secondaryColor hover:bg-secondaryColor hover:text-black transition-all duration-300">
             XEM THỰC ĐƠN
           </button>

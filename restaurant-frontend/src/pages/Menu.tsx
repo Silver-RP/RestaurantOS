@@ -6,10 +6,12 @@ import Pagination from '../components/pages/menu/Pagination';
 import { BsGridFill, BsListUl } from 'react-icons/bs';
 import { useFoods } from '../hooks/useFoods';
 import { ProductCardProps } from 'types/ProductCard.types';
+import { useSidebar } from '../contexts/SidebarContext';
 
 const MenuPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const { isExtended } = useSidebar();
 
   const { foods, loading, error } = useFoods();
 
@@ -19,16 +21,16 @@ const MenuPage: React.FC = () => {
         <BreadCrumbComponents />
       </div>
 
-      <div className="w-mainContainer mx-auto flex gap-8 py-10">
-        <aside className="w-1/4 hidden lg:block">
+      <div className="px-4 md:px-8 flex gap-8 py-10 w-full max-w-[1500px] mx-auto">
+        <aside className="w-1/6 hidden lg:block">
           <FilterSidebar />
         </aside>
 
         <main className="flex-1 space-y-8">
           <div className="flex flex-wrap justify-end items-center gap-4">
             <div className="relative">
-              <select className="appearance-none bg-bodyBackground border border-gray-500 text-white rounded px-4 py-2 text-sm pr-10 focus:outline-none focus:ring-2 focus:ring-secondaryColor">
-                <option value="relevance">Sắp xếp theo liên quan</option>
+              <select className="appearance-none bg-bodyBackground border border-gray-500 text-white rounded px-2 py-2 text-sm pr-10 focus:outline-none focus:ring-2 focus:ring-secondaryColor">
+                <option value="relevance">Sắp xếp theo</option>
                 <option value="priceLow">Giá thấp đến cao</option>
                 <option value="priceHigh">Giá cao đến thấp</option>
               </select>
@@ -66,6 +68,7 @@ const MenuPage: React.FC = () => {
               products={foods.map(food => ({
                 id: food._id,
                 name: food.name,
+                slug: food.slug,
                 price: food.discount_price || food.price,
                 originalPrice: food.price,
                 discount: food.discount_price
@@ -74,8 +77,11 @@ const MenuPage: React.FC = () => {
                 imageUrl: food.images?.[0] || '',
                 hoverImage: food.images?.[1] || '',
                 description: food.description || '',
-                cate: food.categories?.[0]?.name || 'Danh mục',
+                cate: Array.isArray(food.categories) && food.categories.length > 0
+                  ? food.categories[0].name
+                  : 'Danh mục',
               })) as ProductCardProps[]}
+              isSidebarExtended={isExtended}
             />
           )}
 

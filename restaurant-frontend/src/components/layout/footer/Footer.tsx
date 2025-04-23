@@ -4,7 +4,7 @@ import { FaFacebookF, FaTwitter, FaYoutube, FaPinterest, FaInstagram, FaClock } 
 const Footer = () => {
   return (
     <footer className="bg-black w-full text-gray-400 pt-14 pb-8 font-sans">
-      <div className="w-11/12 md:w-container95 lg:w-mainContainer xl:w-container95 2xl:w-mainContainer  mx-auto">
+      <div className="w-11/12 md:w-container95 lg:w-container95 xl:w-container95 2xl:w-mainContainer  mx-auto">
         <div className="grid grid-cols-8 xl:grid-cols-15 gap-3">
           <div className="flex flex-col col-span-8 xl:col-span-4  items-center xl:items-start">
               <img
