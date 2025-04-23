@@ -5,7 +5,7 @@ class FoodService {
   async createFood(food: any) {
     const newfood = new Dish(food);
     try {
-      return await newfood.save(); 
+      return await newfood.save();
     } catch (error) {
       throw new Error('Error creating food');
     }
@@ -21,66 +21,52 @@ class FoodService {
       throw new Error('Error getting top favorite food');
     }
   }
-  async getAllFood(filters: {
-    page?: number;
-    limit?: number;
-    minPrice?: number;
-    maxPrice?: number;
-    minRating?: number;
-    maxRating?: number;
-    keyword?: string;
-    category?: string;
-  }) {
+
+  async getAllFood({ page, limit, sort }: { page: number, limit: number, sort: string }) {
+    const sortQuery = this.getSortQuery(sort);
+    const options = {
+      page: parseInt(page as unknown as string, 10),
+      limit: parseInt(limit as unknown as string),
+      sort: sortQuery,
+      lean: true,
+      populate: {
+        path: 'categories',
+        select: 'Cate_name',
+      }
+    };
+
     try {
-      const {
-        page = 1,
-        limit = 10,
-        minPrice,
-        maxPrice,
-        minRating,
-        maxRating,
-        keyword,
-        category
-      } = filters;
-  
-      const query: any = {};
-  
-      if (minPrice || maxPrice) {
-        query.price = {};
-        if (minPrice) query.price.$gte = minPrice;
-        if (maxPrice) query.price.$lte = maxPrice;
-      }
-  
-      if (minRating || maxRating) {
-        query.rating = {};
-        if (minRating) query.rating.$gte = minRating;
-        if (maxRating) query.rating.$lte = maxRating;
-      }
-  
-      if (keyword) {
-        query.name = { $regex: keyword, $options: 'i' };
-      }
-  
-      if (category) {
-        query.categories = category; // category là ID danh mục
-      }
-  
-      const total = await Dish.countDocuments(query);
-      const food = await Dish.find(query)
-        .skip((page - 1) * limit)
-        .limit(limit)
-        .populate('categories');
-  
-      return {
-        data: food,
-        currentPage: page,
-        totalPages: Math.ceil(total / limit),
-        totalItems: total
-      };
+      return await Dish.paginate({}, options);
     } catch (error) {
-      throw new Error('Error getting filtered food');
+      throw new Error('Error fetching food items');
     }
   }
+
+
+  private getSortQuery(sort: string) {
+    switch (sort) {
+      case 'priceLow':
+        return { price: 1 };
+      case 'priceHigh':
+        return { price: -1 };
+      case 'newest':
+        return { createdAt: -1 };
+      case 'relevance':
+        return { _id: -1 };
+      case 'highestRated':
+        return { average_rating: -1 };
+      case 'mostViewed':
+        return { views: -1 };
+      case 'mostOrdered':
+        return { ordered_count: -1 };
+      case 'mostFavorite':
+        return { favorites_count: -1 };
+      default:
+        return { createdAt: -1 };
+    }
+  }
+
+
   async getFoodBySlug(slug: string) {
     const food = await Dish.findOne({ slug }).populate('categories');
     if (!food) {
@@ -113,8 +99,12 @@ class FoodService {
   async getFoodByCategoryType(cateType: string) {
     try {
       const categories = await Category.find({ Cate_type: cateType });
+
       const categoryIds = categories.map((cat) => cat._id);
+
+      // B2: Tìm dish có categories nằm trong danh sách categoryIds
       const food = await Dish.find({ categories: { $in: categoryIds } });
+
       return food;
     } catch (error) {
       throw new Error('Error getting food by category type');

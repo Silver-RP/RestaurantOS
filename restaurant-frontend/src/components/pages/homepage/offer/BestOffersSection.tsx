@@ -23,7 +23,7 @@ const BestOffersSection: React.FC = () => {
           <div className="text-center text-red-400 mt-8">Lỗi tải dữ liệu</div>
         ) : (data ?? []).length > 0 ? (
           <MenuGrid
-            items={data.slice(0, 8).map((dish) => ({
+            items={(data ?? []).slice(0, 6).map((dish) => ({
               name: dish.name,
               price: dish.price,
               description: dish.description,

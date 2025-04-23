@@ -21,6 +21,7 @@ export interface User {
   }
   
   export interface LoginPayload {
+    rememberMe: any;
     email: string;
     password: string;
     rememberMe: boolean;

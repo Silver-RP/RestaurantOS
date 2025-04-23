@@ -10,6 +10,7 @@ class ReservationDetailContactController {
             res.status(400).json({message: error.message});
         }
     }
+
     async getAllReservationDetailContact (req: Request, res: Response) {
         try {
             const reservationDetailContact = await ReservationDetailContactService.getAllReservationDetailContact();
@@ -18,6 +19,7 @@ class ReservationDetailContactController {
             res.status(400).json({message: error.message});
         }
     }
+
     async getReservationDetailContactById (req: Request, res: Response) {
         try {
             const { id } = req.params;
@@ -27,6 +29,7 @@ class ReservationDetailContactController {
             res.status(400).json({message: error.message});
         }
     }
+
     async updateReservationDetailContact (req: Request, res: Response) {
         try {
             const { id } = req.params;
@@ -36,6 +39,7 @@ class ReservationDetailContactController {
             res.status(400).json({message: error.message});
         }
     }
+    
     async deleteReservationDetailContact (req: Request, res: Response) {
         try {
             const { id } = req.params;

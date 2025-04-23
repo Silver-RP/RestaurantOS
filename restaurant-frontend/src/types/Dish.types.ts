@@ -33,3 +33,17 @@ export interface FoodType {
     countInStock: number;
     images: string[]; 
   }
+
+  export type FoodResponse = {
+    docs: FoodDetail[];
+    totalDocs: number;
+    limit: number;
+    currentPage: number;
+    totalPages: number;
+    page: number;
+    hasNextPage: boolean;
+    hasPrevPage: boolean;
+    nextPage: number | null;
+    prevPage: number | null;
+    data: any[]; 
+  };

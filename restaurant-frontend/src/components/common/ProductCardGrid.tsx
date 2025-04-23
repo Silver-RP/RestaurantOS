@@ -55,7 +55,7 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
         </div>
       </div>
 
-      <div className="p-3 sm:p-4 flex flex-col items-center text-center">
+      <div className="p-3 sm:p-4 bg-headerBackground flex flex-col items-center text-center">
         <p
           className="text-[10px] sm:text-xs text-gray-400 mb-1 cursor-pointer hover:text-secondaryColor transition-colors"
           onClick={handleNavigateToDetail}
