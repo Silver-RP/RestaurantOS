@@ -18,7 +18,7 @@ const AppLayout: React.FC = () => {
   ].includes(location.pathname);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [isExtended, setIsExtended] = useState(true);
+  const [isExtended, setIsExtended] = useState(location.pathname === '/');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const toggleSidebarExtend = () => {
@@ -29,6 +29,17 @@ const AppLayout: React.FC = () => {
   const toggleMobileSidebar = () => {
     setIsMobileSidebarOpen((prev) => !prev);
   };
+
+  useEffect(() => {
+    if (window.innerWidth >= 1280) {
+      setIsSidebarOpen(true);
+      setIsMobileSidebarOpen(false);
+      setIsExtended(location.pathname === '/');
+    } else {
+      setIsSidebarOpen(false);
+      setIsExtended(false);
+    }
+  }, [location.pathname]);
 
   useEffect(() => {
     const handleResize = () => {

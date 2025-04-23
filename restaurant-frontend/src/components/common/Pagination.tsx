@@ -13,18 +13,23 @@ const Pagination: React.FC<PaginationProps> = ({
 }) => {
   const getPageNumbers = () => {
     const maxVisible = 5;
-    const start = Math.max(currentPage - Math.floor(maxVisible / 2), 1); 
+    const start = Math.max(currentPage - Math.floor(maxVisible / 2), 1);
     const end = Math.min(start + maxVisible - 1, totalPages);
-
-    return Array.from({ length: end - start + 1 }, (_, i) => start + i); 
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
   };
 
+  const buttonBase =
+    "px-4 py-2 rounded-md font-medium transition-all duration-200";
+  const defaultStyle =
+    "bg-Background border border-secondaryColor text-white hover:bg-secondaryColor hover:text-headerBackground";
+  const activeStyle = "bg-secondaryColor text-headerBackground";
+
   return (
-    <nav className="flex items-center space-x-2">
+    <nav className="flex items-center justify-center flex-wrap gap-2 mt-10">
       <button
-        className="px-4 py-2 rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50"
+        className={`${buttonBase} ${defaultStyle}`}
         disabled={currentPage === 1}
-        onClick={() => onPageChange(Math.max(currentPage - 1, 1))}
+        onClick={() => onPageChange(currentPage - 1)}
         aria-label="Previous page"
       >
         PREV
@@ -33,10 +38,8 @@ const Pagination: React.FC<PaginationProps> = ({
       {getPageNumbers().map((page) => (
         <button
           key={page}
-          className={`px-4 py-2 rounded-md ${
-            page === currentPage
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          className={`${buttonBase} ${
+            page === currentPage ? activeStyle : defaultStyle
           }`}
           onClick={() => onPageChange(page)}
         >
@@ -45,9 +48,9 @@ const Pagination: React.FC<PaginationProps> = ({
       ))}
 
       <button
-        className="px-4 py-2 rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50"
+        className={`${buttonBase} ${defaultStyle}`}
         disabled={currentPage === totalPages}
-        onClick={() => onPageChange(Math.min(currentPage + 1, totalPages))}
+        onClick={() => onPageChange(currentPage + 1)}
         aria-label="Next page"
       >
         NEXT

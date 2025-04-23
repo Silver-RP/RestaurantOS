@@ -91,7 +91,7 @@ const Carousel = () => {
   };
 
   return (
-    <div className="relative h-[75vh] md:h-screen overflow-hidden group">
+    <div className="relative h-[75vh] md:h-screen w-full overflow-hidden group">
       {slides.map((slide, index) => (
         <div
           key={slide.id}
