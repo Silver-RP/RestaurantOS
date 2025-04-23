@@ -85,10 +85,9 @@ const Login = () => {
     setIsSubmitting(true);
     try {
       const res = await dispatch(LoginUser({ email, password, rememberMe })).unwrap();
-      const { accessToken, refreshToken } = res;
-
+      const { token, refreshToken } = res;
       if (rememberMe) {
-        Cookies.set('accessToken', accessToken, { expires: 7 });
+        Cookies.set('accessToken', token, { expires: 7 });
         Cookies.set('refreshToken', refreshToken, { expires: 7 });
       }
 

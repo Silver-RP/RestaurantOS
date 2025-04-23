@@ -11,7 +11,9 @@ interface VerifyOtpResponse {
 interface ChangePasswordResponse {
   message: string;
 }
-
+interface RefreshTokenResponse {
+  accessToken: string;
+}
 export const useSendOtpEmail = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,7 +40,6 @@ export const useSendOtpEmail = () => {
 
   return { sendOtpEmail, loading, error };
 };
-
 
 export const useVerifyOtp = () => {
   const [loading, setLoading] = useState<boolean>(false);
@@ -73,7 +74,6 @@ export const useVerifyOtp = () => {
 export const useChangePassword = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   const changePassword = async (
     email: string,
     newPassword: string,
@@ -103,4 +103,17 @@ export const useChangePassword = () => {
   };
 
   return { changePassword, loading, error };
+};
+
+
+export const refreshAccessToken = async (): Promise<RefreshTokenResponse | null> => {
+  try {
+    const response = await api.post<RefreshTokenResponse>('/auth/refresh-token', {}, {
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (err: any) {
+    console.error('Failed to refresh access token:', err?.response?.data || err);
+    return null;
+  }
 };

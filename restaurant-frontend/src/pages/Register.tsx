@@ -101,7 +101,7 @@ const Register = () => {
       dispatch(clearStatus());
     }
     if (error) {
-      toast.error(error);
+      // toast.error(error);
       dispatch(clearStatus());
     }
   }, [success, error, navigate, dispatch]);

@@ -1,9 +1,8 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { RegisterPayload, LoginPayload } from './authTypes';
-import Cookies from 'js-cookie'; 
-
-
+import { setAccessToken, setRefreshToken } from '@/utils/tokenHelpers';
+import axiosInstance from '@/api/axiosInstance';
 const BASE_URL_REGISTER = import.meta.env.VITE_BACKEND_URL;
 const BASE_URL_LOGIN = import.meta.env.VITE_BACKEND_URL;
 
@@ -31,10 +30,9 @@ export const LoginUser = createAsyncThunk(
   'auth/login',
   async (payload: LoginPayload, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`${BASE_URL_LOGIN}/auth/login`, payload, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      const response = await axiosInstance.post(`${BASE_URL_LOGIN}/auth/login`, payload, {
+        headers: { 'Content-Type': 'application/json' },
+        withCredentials: true, 
       });
 
       console.log('RESPONSE FROM LOGIN API:', response.data);
@@ -44,14 +42,8 @@ export const LoginUser = createAsyncThunk(
       if (!token) {
         console.warn('Token is missing in API response:', response.data);
       }
-
-      if (payload.rememberMe) {
-        Cookies.set('accessToken', token, { expires: 7 }); 
-        Cookies.set('refreshToken', refreshToken, { expires: 7 });
-      } else {
-        Cookies.set('accessToken', token);
-        Cookies.set('refreshToken', refreshToken);
-      }
+      setAccessToken(token, payload.rememberMe);
+      // setRefreshToken(refreshToken, payload.rememberMe);
 
       return { token, refreshToken, user, message };
     } catch (error: unknown) {
