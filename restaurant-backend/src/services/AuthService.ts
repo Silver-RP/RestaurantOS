@@ -64,6 +64,7 @@ class AuthService {
       throw error;
     }
   }
+
   async register(userData: {
     username: string;
     email: string;
@@ -97,6 +98,7 @@ class AuthService {
   
     return populatedUser;
   }
+
   async login(loginUser: { email: string; password: string }) {
     const { email, password } = loginUser;
   
@@ -112,7 +114,7 @@ class AuthService {
     const token = accessToken(
       { id: user._id, roles: user.roles },
       process.env.ACCESS_TOKEN || '',
-      20
+      60,
     );
   
     const refresh_token = refreshToken(
@@ -120,9 +122,9 @@ class AuthService {
       process.env.REFRESH_TOKEN || '',
       365 * 24 * 60 * 60
     );
-  
     return { token, refresh_token, user };
   }
+
   async refreshAccessToken(refreshTokenFromClient: string) {
     try {
       if (!refreshTokenFromClient) {
@@ -136,17 +138,17 @@ class AuthService {
       if (!user) {
         throw new Error('User not found');
       }
-      // Tạo access token mới
       const newAccessToken = accessToken(
         { id: user._id },
         process.env.ACCESS_TOKEN || '',
-        2,
+        60,
       );
       return { newAccessToken };
     } catch (error: any) {
       throw new Error(error.message);
     }
   }
+
   async googleLogin(googleUser: GoogleUser) {
     try {
       const { email, googleId, username, avatar } = googleUser;
@@ -183,6 +185,7 @@ class AuthService {
       throw new Error('Error during Google login: ' + error.message);
     }
   }
+
   async logout(refreshToken: string) {
     try {
       const decode: any = jwt.verify(
@@ -198,7 +201,7 @@ class AuthService {
       throw new Error(error.message);
     }
   }
- 
+
   async changePasswordByEmail(email: string, newPassword: string) {
     const user = await User.findOne({ email });
     if (!user) {
@@ -236,6 +239,7 @@ class AuthService {
   
     return 'OTP verified. You can now reset your password.';
   }
+
   async sendOtpFlexible(identifier: string): Promise<{ message: string }> {
     try {
       let user;
@@ -303,6 +307,7 @@ class AuthService {
       throw new Error(error.message);
     }
   }
+
   async resendVerificationEmail(email: string): Promise<string> {
     const user = await User.findOne({ email });
     if (!user) {

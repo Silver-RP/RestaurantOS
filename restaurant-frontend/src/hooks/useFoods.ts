@@ -54,7 +54,6 @@ export const useFoodDetail = (slug: string) => {
   return { food, loading, error };
 };
 
-
 export const useDishByCategory = (cateType: string) => {
   return useQuery<FoodDetail[]>({
     queryKey: ["dishByCategory", cateType],
