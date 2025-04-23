@@ -32,7 +32,7 @@ const Pagination: React.FC<PaginationProps> = ({
         onClick={() => onPageChange(currentPage - 1)}
         aria-label="Previous page"
       >
-        PREV
+        Trước
       </button>
 
       {getPageNumbers().map((page) => (
@@ -53,7 +53,7 @@ const Pagination: React.FC<PaginationProps> = ({
         onClick={() => onPageChange(currentPage + 1)}
         aria-label="Next page"
       >
-        NEXT
+        Tiếp
       </button>
     </nav>
   );
