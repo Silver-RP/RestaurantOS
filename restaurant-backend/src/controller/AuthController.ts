@@ -32,16 +32,17 @@ class AuthController {
       const { token, refresh_token, user } = await AuthService.login({ email, password });
   
       res.cookie('refreshToken', refresh_token, {
-        httpOnly: true,
+        httpOnly: false,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'none',
-        maxAge: 24 * 60 * 60 * 1000,
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        maxAge: 365 * 24 * 60 * 60 * 1000, 
       });
   
       res.status(200).json({
         message: 'User logged in successfully',
         user,
         accessToken: token,
+      
       });
     } catch (error: any) {
       res.status(400).json({ message: error.message });
@@ -51,9 +52,15 @@ class AuthController {
   async refreshAccessToken(req: Request, res: Response): Promise<any> {
     try {
       const { refreshToken } = req.cookies;
-      const { newAccessToken } =
-        await AuthService.refreshAccessToken(refreshToken);
-      res.status(200).json({ accessToken: newAccessToken });
+      const { newAccessToken } = await AuthService.refreshAccessToken(refreshToken);
+      res.cookie('accessToken', newAccessToken, {
+        httpOnly: false, 
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        maxAge: 60 * 1000,
+      });
+  
+      res.status(200).json({ accessToken: newAccessToken }); // vẫn trả ra nếu FE dùng
     } catch (error: any) {
       res.status(400).json({ message: error.message });
     }

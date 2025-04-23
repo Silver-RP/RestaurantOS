@@ -1,10 +1,10 @@
-import { accessToken, refreshToken } from "../services/GenerateToken";
-import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
-import { User } from "../@types/express";
-import { IUser } from "../models/UserModel"; 
-import Roles from "../models/RoleModel"; 
-import mongoose from "mongoose";
+import { accessToken, refreshToken } from '../services/GenerateToken';
+import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import { User } from '../@types/express';
+import { IUser } from '../models/UserModel';
+import Roles from '../models/RoleModel';
+import mongoose from 'mongoose';
 
 class AuthMiddleWare {
   async verifyToken(
@@ -14,84 +14,90 @@ class AuthMiddleWare {
   ): Promise<any> {
     try {
       const authHeader = req.headers['authorization'];
-      const token = authHeader && authHeader.split(' ')[1];
-      if (token == null) return res.sendStatus(401);
-      jwt.verify(
-        token,
-        process.env.ACCESS_TOKEN as string,
-        (err: any, user: any) => {
-          if (err) return res.sendStatus(403);
-          req.user = user;
-          next();
-        },
-      );
+      const token = typeof authHeader === 'string' ? authHeader.split(' ')[1] : null;
+  
+      if (!token) {
+        return res.status(401).json({ message: 'Access token not provided' });
+      }
+  
+      jwt.verify(token, process.env.ACCESS_TOKEN as string, (err: any, user: any) => {
+        if (err) {
+          console.error('Token verification failed:', err);
+          return res.status(403).json({ message: 'Invalid or expired token' });
+        }
+  
+        req.user = user;
+        next();
+      });
     } catch (error: any) {
-      throw new Error(error);
+      return res.status(500).json({ message: 'Token middleware error', error: error.message });
     }
   }
-
   async verifyRefreshToken(
     req: Request,
     res: Response,
     next: NextFunction,
   ): Promise<any> {
     try {
-      const refreshToken = req.body.token;
-      if (refreshToken == null) return res.sendStatus(401);
+      const token = req.cookies.refreshToken;
+      if (!token)
+        return res.status(401).json({ message: 'Refresh token not found' });
+
       jwt.verify(
-        refreshToken,
+        token,
         process.env.REFRESH_TOKEN as string,
         (err: any, user: any) => {
-          if (err) return res.sendStatus(403);
+          if (err)
+            return res
+              .status(403)
+              .json({ message: 'Invalid or expired refresh token' });
+          req.user = user;
           next();
         },
       );
     } catch (error: any) {
-      throw new Error(error);
+      return res
+        .status(500)
+        .json({ message: 'Internal server error', error: error.message });
     }
-    }
-    
-  
-   verifyRole(roles: string[]) {
+  }
+
+  verifyRole(roles: string[]) {
     return async (req: Request, res: Response, next: NextFunction) => {
       try {
         if (!req.user) {
-          res.status(401).json({ message: "User not authenticated" });
+          res.status(401).json({ message: 'User not authenticated' });
           return;
         }
-
         const user = req.user as IUser;
         if (!user.roles || user.roles.length === 0) {
-          res.status(401).json({ message: "User role not found" });
+          res.status(401).json({ message: 'User role not found' });
           return;
         }
-
-        // Kiểm tra các vai trò của người dùng có tồn tại trong database hay không
         const userRoles = await Roles.find({
-          _id: { $in: user.roles }
-        }).lean(); // Sử dụng lean() để nhận dữ liệu dưới dạng JSON thuần
-
+          _id: { $in: user.roles },
+        }).lean();
         if (!userRoles || userRoles.length === 0) {
-          res.status(401).json({ message: "No valid roles found" });
+          res.status(401).json({ message: 'No valid roles found' });
           return;
         }
-
-        // Kiểm tra xem người dùng có quyền hợp lệ không
-        const roleNames = userRoles.map((role: any) => role.name); // Lấy tên của các vai trò
-        const hasRole = roles.some(role => roleNames.includes(role)); // Kiểm tra vai trò
-
+        const roleNames = userRoles.map((role: any) => role.name);
+        const hasRole = roles.some((role) => roleNames.includes(role));
         if (hasRole) {
-          return next(); 
+          return next();
         } else {
-          res.status(403).json({ message: "Permission denied: Insufficient role" });
+          res
+            .status(403)
+            .json({ message: 'Permission denied: Insufficient role' });
           return;
         }
       } catch (error: any) {
-        res.status(500).json({ message: "Internal server error", error: error.message });
+        res
+          .status(500)
+          .json({ message: 'Internal server error', error: error.message });
         return;
       }
     };
   }
-  
-  }
-export default new AuthMiddleWare(); 
+}
+export default new AuthMiddleWare();

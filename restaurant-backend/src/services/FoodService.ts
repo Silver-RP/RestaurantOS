@@ -10,7 +10,6 @@ class FoodService {
       throw new Error('Error creating food');
     }
   }
-
   async getTopFavoriteFood() {
     try {
       const food = await Dish.find().sort({ favorites_count: -1 }).limit(5);
@@ -75,7 +74,6 @@ class FoodService {
     }
     return food;
   }
-
   async getFoodById(id: string) {
     try {
       const food = await Dish.findById(id).populate('categories');
@@ -84,7 +82,6 @@ class FoodService {
       throw new Error('Error getting food by id');
     }
   }
-
   async updateFood(id: string, food: any) {
     try {
       return await Dish.findByIdAndUpdate(id, food, { new: true });
@@ -92,7 +89,6 @@ class FoodService {
       throw new Error('Error updating food');
     }
   }
-
   async deleteFood(id: string) {
     try {
       return await Dish.findByIdAndDelete(id);
@@ -100,20 +96,8 @@ class FoodService {
       throw new Error('Error deleting food');
     }
   }
-
-  async getFoodWithPagination(page: number, limit: number) {
-    try {
-      return await Dish.find()
-        .skip((page - 1) * limit)
-        .limit(limit);
-    } catch (error) {
-      throw new Error('Error getting food with pagination');
-    }
-  }
-
   async getFoodByCategoryType(cateType: string) {
     try {
-      // B1: Lấy tất cả danh mục có Cate_type = "drink" hoặc "food"
       const categories = await Category.find({ Cate_type: cateType });
 
       const categoryIds = categories.map((cat) => cat._id);

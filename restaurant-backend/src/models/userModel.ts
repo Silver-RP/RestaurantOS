@@ -9,7 +9,6 @@ export interface IUser extends Document {
   avatar?: string | null;
   phone: string | null;
   googleId?: string | null;
-  facebookId?: string | null;
   isEmailVerified: boolean;
   emailVerificationOtp?: string | null;
   emailVerificationOtpExpiry?: Date | null;
@@ -25,6 +24,7 @@ export interface IUser extends Document {
   otpSentCount: number;
   lastOtpSentAt: Date;
   otpVerifiedForChangePassword: boolean;
+  
 }
 
 const userSchema = new mongoose.Schema(
@@ -43,7 +43,6 @@ const userSchema = new mongoose.Schema(
     phoneOtp: { type: String },
     phoneOtpExpiry: { type: Date },
     googleId: { type: String },
-    facebookId: { type: String },
     roles: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Roles' }],
     gender: { type: String },
     status: {
@@ -61,8 +60,35 @@ const userSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    toJSON: {
+      transform(doc, ret) {
+        delete ret.password;
+        delete ret.emailVerificationOtp;
+        delete ret.emailVerificationOtpExpiry;
+        delete ret.changePasswordOtp;
+        delete ret.changePasswordOtpExpiry;
+        delete ret.phoneOtp;
+        delete ret.phoneOtpExpiry;
+        delete ret.__v; 
+        return ret;
+      },
+    },
+    toObject: {
+      transform(doc, ret) {
+        delete ret.password;
+        delete ret.emailVerificationOtp;
+        delete ret.emailVerificationOtpExpiry;
+        delete ret.changePasswordOtp;
+        delete ret.changePasswordOtpExpiry;
+        delete ret.phoneOtp;
+        delete ret.phoneOtpExpiry;
+        delete ret.__v;
+        return ret;
+      },
+    },
   },
 );
+
 
 userSchema.plugin(mongoosePaginate);
 

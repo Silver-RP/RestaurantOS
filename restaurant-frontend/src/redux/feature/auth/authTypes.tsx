@@ -24,6 +24,7 @@ export interface User {
     rememberMe: any;
     email: string;
     password: string;
+    rememberMe: boolean;
   }
   
   export interface RegisterPayload {
