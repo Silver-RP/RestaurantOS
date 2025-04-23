@@ -69,10 +69,10 @@ const run = async () => {
   })
   const Dish = mongoose.model<IDish>('Dish', dishSchema)
 
-  // const cateIdDelete = new mongoose.Types.ObjectId("6803416bdf9079c175db7953")
-  // await Dish.deleteMany({ categories: cateIdDelete })
-  // await deleteAllCloudinaryImagesInFolder('dishes/orders')
-  // console.log('🧼 Cleaned up existing data and images!')
+  const cateIdDelete = new mongoose.Types.ObjectId("6803416bdf9079c175db7952")
+  await Dish.deleteMany({ categories: cateIdDelete })
+  await deleteAllCloudinaryImagesInFolder('dishes/main_course')
+  console.log('🧼 Cleaned up existing data and images!')
 
   const getRandomFromArray = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)]
   const getRandomInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min
