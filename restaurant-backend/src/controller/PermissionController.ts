@@ -10,6 +10,7 @@ class PermissionController {
             res.status(400).json({message: error.message});
         }
     }
+
     async AddPermission(req: Request, res: Response) {
         try {
             const {name, description} = req.body; 
@@ -19,6 +20,7 @@ class PermissionController {
             res.status(400).json({message: error.message});
         }
     }
+
     async GetPermissionById(req: Request, res: Response) {
         try {
             const id = req.params.id; 
@@ -28,6 +30,7 @@ class PermissionController {
             res.status(400).json({message: error.message});
         }
     }
+
     async UpdatePermission(req: Request, res: Response) {
         try {
             const id = req.params.id; 
@@ -37,6 +40,7 @@ class PermissionController {
             res.status(400).json({message: error.message});
         }
     }
+    
     async DeletePermission(req: Request, res: Response) {
         try {
             const id = req.params.id; 

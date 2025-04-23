@@ -15,7 +15,6 @@ class UserController {
                 error: error.message || 'Internal Server Error'
             });
         }
-
     }
 
     async getAllUserByUserRole(req: Request, res: Response): Promise<void> {

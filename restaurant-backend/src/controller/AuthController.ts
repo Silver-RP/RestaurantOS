@@ -24,6 +24,7 @@ class AuthController {
       res.status(400).json({ message: error.message });
     }
   } 
+
   async login(req: Request, res: Response): Promise<any> {
     try {
       const { email, password } = req.body;
@@ -46,6 +47,7 @@ class AuthController {
       res.status(400).json({ message: error.message });
     }
   }
+
   async refreshAccessToken(req: Request, res: Response): Promise<any> {
     try {
       const { refreshToken } = req.cookies;
@@ -56,6 +58,7 @@ class AuthController {
       res.status(400).json({ message: error.message });
     }
   }
+
   async googleLogin(req: Request, res: Response): Promise<any> {
     try {
       const googleUser = req.body.googleUser; 
@@ -90,6 +93,7 @@ class AuthController {
         .json({ message: 'Error during Google login', error: error.message });
     }
   }
+
   async googleCallback(
     req: Request,
     res: Response,
@@ -110,6 +114,7 @@ class AuthController {
       next(error);
     }
   }
+
   async Logout(req: Request, res: Response): Promise<any> {
     try {
       const { refreshToken } = req.cookies;
@@ -129,6 +134,7 @@ class AuthController {
       res.status(400).json({ message: error.message });
     }
   }
+
   async forgotPasswordHandler(req: Request, res: Response): Promise<any> {
     const { phone, email } = req.body;
 
@@ -206,6 +212,7 @@ class AuthController {
       return res.status(400).json({ message: error.message });
     }
   }
+
   async verifyOtpEmail(req: Request, res: Response): Promise<any> {
     try {
       const { email, otp } = req.body;
@@ -232,6 +239,7 @@ class AuthController {
       return res.status(400).json({ message: error.message });
     }
   }
+
   async resendVerificationEmail(req: Request, res: Response): Promise<any> {
     try {
       const { email } = req.body;
@@ -251,6 +259,7 @@ class AuthController {
       return res.status(400).json({ message: error.message });
     }
   }
+  
   async verifyResendOtpEmail(req: Request, res: Response): Promise<any> {
     try {
       const { email, otp } = req.body;
