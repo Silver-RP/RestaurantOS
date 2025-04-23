@@ -71,7 +71,8 @@ const run = async () => {
 
   const cateIdDelete = new mongoose.Types.ObjectId("6803416bdf9079c175db7952")
   await Dish.deleteMany({ categories: cateIdDelete })
-  await deleteAllCloudinaryImagesInFolder('dishes/main_course')
+  // await deleteAllCloudinaryImagesInFolder('dishes/main_course')
+  await cloudinary.api.delete_resources_by_prefix("dishes/main_course");
   console.log('🧼 Cleaned up existing data and images!')
 
   const getRandomFromArray = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)]
