@@ -10,6 +10,7 @@ class FoodService {
       throw new Error('Error creating food');
     }
   }
+
   async getTopFavoriteFood() {
     try {
       const food = await Dish.find().sort({ favorites_count: -1 }).limit(5);
@@ -65,8 +66,6 @@ class FoodService {
         return { createdAt: -1 };
     }
   }
-
-
   async getFoodBySlug(slug: string) {
     const food = await Dish.findOne({ slug }).populate('categories');
     if (!food) {
@@ -137,13 +136,88 @@ class FoodService {
     }
   }
 
-  async getFoodByFavorites(favorites: number) {
+  async getFoodByFavorites(favorites: number, type: string) {
     try {
-      return await Dish.find({ favorites_count: favorites });
+      const dishes = await Dish.aggregate([
+        {
+          $match: { favorites_count: favorites }
+        },
+        {
+          $lookup: {
+            from: 'categories',
+            localField: 'categories',
+            foreignField: '_id',
+            as: 'categories'
+          }
+        },
+        { $unwind: "$categories" },
+        {
+          $match: { "categories.Cate_type": type }
+        },
+        {
+          $project: {
+            _id: 1,
+            name: 1,
+            price: 1,
+            description: 1,
+            images: 1,               
+            favorites_count: 1,
+            rating: 1,
+            categories: 1, 
+            slug: 1, 
+          }
+        }
+      ]);
+      return dishes;
     } catch (error) {
-      throw new Error('Error getting food by favorites');
+      console.error('Error in getFoodByFavorites:', error);
+      throw new Error('Error fetching food by favorites');
     }
   }
+  
+  async getTopFavoriteFoods(type: string) {
+    try {
+      const dishes = await Dish.aggregate([
+        {
+          $lookup: {
+            from: 'categories',
+            localField: 'categories',
+            foreignField: '_id',
+            as: 'categories'
+          }
+        },
+        { $unwind: "$categories" },
+        {
+          $match: { "categories.Cate_type": type }
+        },
+        {
+          $sort: { favorites_count: -1 }
+        },
+        {
+          $limit: 6
+        },
+        {
+          $project: {
+            _id: 1,
+            name: 1,
+            price: 1,
+            description: 1,
+            images: 1,                
+            favorites_count: 1,
+            rating: 1,
+            categories: 1, 
+            slug: 1,
+          }
+        }
+      ]);
+      return dishes;
+    } catch (error) {
+      console.error('Error in getTopFavoriteFoods:', error);
+      throw new Error('Error fetching top favorite foods');
+    }
+  }
+  
+
 }
 
 export default new FoodService();

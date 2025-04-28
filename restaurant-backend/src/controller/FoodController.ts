@@ -147,16 +147,6 @@ class FoodController {
         }
     }
 
-    async getFoodWithPagination(req: Request, res: Response): Promise<any> {
-        try {
-            const { page, limit } = req.query;
-            const food = await FoodService.getFoodWithPagination(Number(page), Number(limit));
-            res.status(200).json(food);
-        } catch (error) {
-            throw new Error('Error getting food with pagination');
-        }
-    }
-
     async getFoodByCategory(req: Request, res: Response): Promise<any> {
         try {
             const { Cate_type } = req.query;
@@ -200,13 +190,33 @@ class FoodController {
 
     async getFoodByFavorites(req: Request, res: Response): Promise<any> {
         try {
-            const { favorites } = req.query;
-            const food = await FoodService.getFoodByFavorites(Number(favorites));
-            res.status(200).json(food);
+          const { favorites, type } = req.query;
+          if (!type || typeof type !== 'string') {
+            return res.status(400).json({ success: false, message: 'Missing or invalid type parameter' });
+          }
+          let dishes;
+          if (favorites) {
+            const favoritesNumber = Number(favorites);
+            if (isNaN(favoritesNumber)) {
+              return res.status(400).json({ success: false, message: 'Favorites must be a number' });
+            }
+            dishes = await FoodService.getFoodByFavorites(favoritesNumber, type);
+          } else {
+            dishes = await FoodService.getTopFavoriteFoods(type);
+          }
+      
+          if (!dishes || dishes.length === 0) {
+            return res.status(404).json({ success: false, message: 'No food found matching the criteria', data: [] });
+          }
+      
+          return res.status(200).json({ success: true, message: 'Food retrieved successfully', data: dishes });
         } catch (error) {
-            throw new Error('Error getting food by favorites');
+          console.error('Error in getFoodByFavorites:', error);
+          return res.status(500).json({ success: false, message: 'Internal server error' });
         }
-    }
+      }
+      
+    
 
   async SearchFood(req: Request, res: Response): Promise<any> {
     try {
@@ -217,6 +227,5 @@ class FoodController {
     }
   }
  
-
 }
 export default new FoodController();
