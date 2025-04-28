@@ -23,26 +23,66 @@ class FoodService {
     }
   }
 
-  async getAllFood({ page, limit, sort }: { page: number, limit: number, sort: string }) {
+  async getAllFood({
+    page = 1,
+    limit = 10,
+    sort = 'newest',
+    search = '',
+    category = '',
+    priceMin,
+    priceMax,
+  }: {
+    page?: number;
+    limit?: number;
+    sort?: string;
+    search?: string;
+    category?: string;
+    priceMin?: number;
+    priceMax?: number;
+  }) {
+    const query: any = {};
+
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    if (priceMin !== undefined || priceMax !== undefined) {
+      query.price = {};
+      if (priceMin !== undefined) {
+        query.price.$gte = priceMin;
+      }
+      if (priceMax !== undefined) {
+        query.price.$lte = priceMax;
+      }
+    }
+
+    if (category) {
+      query.categories = { $in: [category] };
+    }
+
     const sortQuery = this.getSortQuery(sort);
+
     const options = {
-      page: parseInt(page as unknown as string, 10),
-      limit: parseInt(limit as unknown as string),
+      page,
+      limit,
       sort: sortQuery,
       lean: true,
       populate: {
         path: 'categories',
         select: 'Cate_name',
-      }
+      },
     };
 
     try {
-      return await Dish.paginate({}, options);
+      return await Dish.paginate(query, options);
     } catch (error) {
+      console.error('Error in getAllFood:', error);
       throw new Error('Error fetching food items');
     }
   }
-
 
   private getSortQuery(sort: string) {
     switch (sort) {

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import FilterSidebar from '../components/pages/menu/FilterSidebar';
 import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
 import ProductGrid from '../components/pages/menu/ProductGrid';
@@ -7,6 +7,7 @@ import { BsGridFill, BsListUl } from 'react-icons/bs';
 import { useFoods } from '../hooks/useFoods';
 import { ProductCardProps } from 'types/ProductCard.types';
 import { useSidebar } from '../contexts/SidebarContext';
+import { FiFilter } from 'react-icons/fi';
 
 const MenuPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -39,17 +40,18 @@ const MenuPage: React.FC = () => {
       }))
     : [];
 
-  const handleSortChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
-    const sortValue = event.target.value;
-    setSearchParams(prevParams => {
-      const newParams = new URLSearchParams(prevParams);
-      newParams.set("sort", sortValue);  
-      return newParams;
-    });
-  }, [setSearchParams]);
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const sortValue = e.target.value;
+  setSearchParams((prevParams) => {
+    const newParams = new URLSearchParams(prevParams);
+    newParams.set('sort', sortValue);
+    newParams.set('page', '1'); // Reset về trang 1
+    return newParams;
+  });
+};
 
   const toggleFilter = () => {
-    setIsFilterOpen(prev => !prev);
+    setIsFilterOpen((prev) => !prev);
   };
 
   return (
@@ -57,30 +59,33 @@ const MenuPage: React.FC = () => {
       <div className="w-full mx-auto">
         <BreadCrumbComponents />
       </div>
-
       <div className="px-4 md:px-8 flex gap-8 py-10 w-full max-w-[1500px] mx-auto">
-        {/* Sidebar filter */}
-        <aside className="w-1/6 hidden lg:block">
-          <FilterSidebar />
-        </aside>
-
-        {/* Main content */}
+        {isFilterOpen && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300"
+            onClick={toggleFilter}
+          ></div>
+        )}
+        <div
+          className={`fixed top-0 left-0 w-80 bg-bodyBackground h-full z-50 transform ${
+            isFilterOpen ? 'translate-x-0' : '-translate-x-full'
+          } transition-transform duration-300 ease-in-out`}
+        >
+          <div className="p-6 overflow-y-auto h-full">
+            <FilterSidebar />
+          </div>
+        </div>
         <main className="flex-1 space-y-8">
-          {/* Toolbar */}
           <div className="flex justify-between items-center flex-wrap gap-4">
             <div className="flex items-center gap-4 flex-wrap">
-              {/* Filter button */}
               <button
                 onClick={toggleFilter}
                 className="flex items-center gap-2 text-white hover:text-secondaryColor transition"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L15 12.414V19a1 1 0 01-1.447.894l-4-2A1 1 0 019 17v-4.586L3.293 6.707A1 1 0 013 6V4z" />
-                </svg>
-                <span className="text-sm">FILTER</span>
+                <FiFilter className="h-5 w-5" /> {/* dùng react-icons */}
+                <span className="text-sm">Lọc</span>
               </button>
 
-              {/* View mode buttons */}
               <div className="flex items-center gap-2 text-secondaryColor">
                 <button
                   onClick={() => setViewMode('grid')}
@@ -96,7 +101,6 @@ const MenuPage: React.FC = () => {
                 </button>
               </div>
 
-              {/* Sort dropdown */}
               <div className="relative">
                 <select
                   onChange={handleSortChange}
@@ -112,22 +116,41 @@ const MenuPage: React.FC = () => {
                   <option value="mostFavorite">Được yêu thích nhất</option>
                 </select>
 
-                {/* Chevron icon */}
                 <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-secondaryColor">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </div>
               </div>
             </div>
 
-            {/* Showing result */}
             <div className="text-sm text-white">
-              Showing {(pagination.currentPage - 1) * pagination.limit + 1}-{Math.min(pagination.currentPage * pagination.limit, foods?.totalDocs || 0)} of {foods?.totalDocs || 0} results
+              Hiển thị{' '}
+              <span className="font-semibold text-secondaryColor">
+                {(pagination.currentPage - 1) * pagination.limit + 1} -{' '}
+                {Math.min(
+                  pagination.currentPage * pagination.limit,
+                  foods?.totalDocs || 0,
+                )}
+              </span>{' '}
+              trên tổng{' '}
+              <span className="font-semibold text-secondaryColor">
+                {foods?.totalDocs || 0}
+              </span>{' '}
+              sản phẩm
             </div>
           </div>
 
-          {/* Product list */}
           {loading ? (
             <div className="text-center py-20">Đang tải dữ liệu món ăn...</div>
           ) : error ? (
@@ -140,31 +163,28 @@ const MenuPage: React.FC = () => {
             />
           )}
 
-          {/* Pagination */}
-          <div className="pt-8">
-            <Pagination
-              currentPage={pagination.currentPage}
-              totalPages={pagination.totalPages}
-              onPageChange={(newPage) => {
-                if (
-                  !isNaN(newPage) &&
-                  newPage >= 1 &&
-                  newPage <= pagination.totalPages
-                ) {
-                  setSearchParams({
-                    page: newPage.toString(),
-                    sort: searchParams.get('sort') || 'default',
-                  });
-                  setPagination((prev) => ({
-                    ...prev,
-                    currentPage: newPage,
-                    prevPage: Math.max(newPage - 1, 1),
-                    nextPage: Math.min(newPage + 1, pagination.totalPages),
-                  }));
-                }
-              }}
-            />
-          </div>
+          <Pagination
+            currentPage={pagination.currentPage}
+            totalPages={pagination.totalPages}
+            onPageChange={(newPage) => {
+              if (
+                !isNaN(newPage) &&
+                newPage >= 1 &&
+                newPage <= pagination.totalPages
+              ) {
+                setSearchParams({
+                  page: newPage.toString(),
+                  sort: searchParams.get('sort') || 'default',
+                });
+                setPagination((prev) => ({
+                  ...prev,
+                  currentPage: newPage,
+                  prevPage: Math.max(newPage - 1, 1),
+                  nextPage: Math.min(newPage + 1, pagination.totalPages),
+                }));
+              }
+            }}
+          />
         </main>
       </div>
     </section>

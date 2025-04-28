@@ -2,9 +2,12 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiShoppingCart, FiEye, FiHeart } from 'react-icons/fi';
 import { ProductCardProps } from '../../types/ProductCard.types';
+import { useAppDispatch } from '../../redux/hook';
+import { openQuickView } from '../../redux/feature/quickView/quickViewSlice';
 
 const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   const handleNavigateToDetail = () => {
     navigate(`/product/${rest.slug}`);
@@ -46,7 +49,29 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
           <button className="p-1.5 sm:p-2 bg-white text-[#002B40] rounded-full shadow-md hover:bg-secondaryColor hover:text-white hover:-translate-y-1 transition-all duration-300">
             <FiShoppingCart size={18} />
           </button>
-          <button className="p-1.5 sm:p-2 bg-white text-[#002B40] rounded-full shadow-md hover:bg-secondaryColor hover:text-white hover:-translate-y-1 transition-all duration-300">
+          <button
+           onClick={() => dispatch(openQuickView({
+            _id: rest.id,
+            name: rest.name,
+            slug: rest.slug,
+            price: rest.price,
+            discount_price: rest.originalPrice ?? rest.price,
+            description: rest.description,
+            shortDescription: rest.description,
+            ingredientsl: '',
+            status: 'available',
+            views: rest.views ?? 0,
+            ordered_count: rest.ordered_count ?? 0,
+            average_rating: rest.rating ?? 4,
+            rating_count: 10,
+            favorites_count: 0,
+            rating: rest.rating ?? 4,
+            categories: [],
+            countInStock: 10,
+            images: [rest.imageUrl],
+          }))}
+            className="p-1.5 sm:p-2 bg-white text-[#002B40] rounded-full shadow-md hover:bg-secondaryColor hover:text-white hover:-translate-y-1 transition-all duration-300"
+          >
             <FiEye size={18} />
           </button>
           <button className="p-1.5 sm:p-2 bg-white text-[#002B40] rounded-full shadow-md hover:bg-secondaryColor hover:text-white hover:-translate-y-1 transition-all duration-300">
@@ -70,7 +95,16 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
           {rest.name || 'Tên sản phẩm'}
         </h3>
 
-        <div className="text-xs sm:text-sm text-secondaryColor mb-1">★★★★☆</div>
+        {/* ★★★★☆ */}
+        <div className="text-xs sm:text-sm text-secondaryColor mb-1">
+          {rest.rating ? (
+            <>
+              {'★'.repeat(Math.round(rest.rating))}{'☆'.repeat(5 - Math.round(rest.rating))}
+            </>
+          ) : (
+            '★★★★☆'
+          )}
+        </div>
 
         <div className="flex flex-col items-center space-y-1">
           {rest.originalPrice && (
@@ -82,6 +116,11 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
             {rest.price?.toLocaleString() || '0'} VND
           </div>
         </div>
+
+        <div className="flex items-center justify-center gap-4 mt-2 text-gray-400 text-xs">
+  <div>👁 {rest.views ?? 0} lượt xem</div>
+  <div>🛒 {rest.ordered_count ?? 0} lượt mua</div>
+</div>
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import React from "react";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 interface PaginationProps {
   currentPage: number;
@@ -12,49 +13,50 @@ const Pagination: React.FC<PaginationProps> = ({
   onPageChange,
 }) => {
   const getPageNumbers = () => {
-    const maxVisible = 5;
+    const maxVisible = 10;
     const start = Math.max(currentPage - Math.floor(maxVisible / 2), 1);
     const end = Math.min(start + maxVisible - 1, totalPages);
     return Array.from({ length: end - start + 1 }, (_, i) => start + i);
   };
 
-  const buttonBase =
-    "px-4 py-2 rounded-md font-medium transition-all duration-200";
-  const defaultStyle =
-    "bg-Background border border-secondaryColor text-white hover:bg-secondaryColor hover:text-headerBackground";
-  const activeStyle = "bg-secondaryColor text-headerBackground";
-
   return (
-    <nav className="flex items-center justify-center flex-wrap gap-2 mt-10">
-      <button
-        className={`${buttonBase} ${defaultStyle}`}
-        disabled={currentPage === 1}
-        onClick={() => onPageChange(currentPage - 1)}
-        aria-label="Previous page"
-      >
-        Trước
-      </button>
+    <nav className="flex items-center justify-center flex-wrap gap-4">
+      {/* Nút Previous */}
+      {currentPage > 1 && (
+        <button
+          onClick={() => onPageChange(currentPage - 1)}
+          aria-label="Previous page"
+          className="text-white hover:text-secondaryColor transition"
+        >
+          <FaChevronLeft />
+        </button>
+      )}
 
+      {/* Các trang */}
       {getPageNumbers().map((page) => (
         <button
           key={page}
-          className={`${buttonBase} ${
-            page === currentPage ? activeStyle : defaultStyle
-          }`}
           onClick={() => onPageChange(page)}
+          className={`w-10 h-10 flex items-center justify-center text-sm font-semibold transition ${
+            page === currentPage
+              ? "border-2 border-[#FFDEA0] rounded-full text-white"
+              : "text-white hover:text-secondaryColor"
+          }`}
         >
           {page}
         </button>
       ))}
 
-      <button
-        className={`${buttonBase} ${defaultStyle}`}
-        disabled={currentPage === totalPages}
-        onClick={() => onPageChange(currentPage + 1)}
-        aria-label="Next page"
-      >
-        Tiếp
-      </button>
+      {/* Nút Next */}
+      {currentPage < totalPages && (
+        <button
+          onClick={() => onPageChange(currentPage + 1)}
+          aria-label="Next page"
+          className="text-white hover:text-secondaryColor transition"
+        >
+          <FaChevronRight />
+        </button>
+      )}
     </nav>
   );
 };

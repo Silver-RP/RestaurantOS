@@ -6,21 +6,24 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import AppLayout from "./layouts/AppLayout";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-const queryClient = new QueryClient(); 
 import { ToastConfig } from "@components/common/ToastConfig";
 import ScrollToTop from "@components/common/ScrollToTop";
+import QuickViewModal from "@components/pages/menu/QuickViewModal";
+
+const queryClient = new QueryClient();
 
 const App = () => {
   return (
     <Provider store={store}>
-    <QueryClientProvider client={queryClient}>
-      <Router>
-       <ScrollToTop /> 
-        <ToastConfig />
-        <AppLayout />
-      </Router>
-    </QueryClientProvider>
-  </Provider>
+      <QueryClientProvider client={queryClient}>
+        <Router>
+          <ScrollToTop />
+          <ToastConfig />
+          <AppLayout />
+          <QuickViewModal /> 
+        </Router>
+      </QueryClientProvider>
+    </Provider>
   );
 };
 

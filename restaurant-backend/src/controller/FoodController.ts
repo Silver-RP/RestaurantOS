@@ -71,24 +71,47 @@ class FoodController {
         }
     }
 
-    async getAllFood(req: Request<{}, {}, {}, QueryParams>, res: Response): Promise<any> {
+    async getAllFood(req: Request, res: Response): Promise<any> {
         try {
-            const { page = 1, limit = 12, sort = 'default' } = req.query;
-    
-            const pageNumber = parseInt(page as string);
-            const limitNumber = parseInt(limit as string);
-            
-            const food = await FoodService.getAllFood({
-                page: pageNumber > 0 ? pageNumber : 1, 
-                limit: limitNumber > 0 ? limitNumber : 12, 
-                sort: sort as string,
-            });
-    
-            res.status(200).json({ message: 'All food retrieved successfully', data: food });
+          const {
+            page = 1,
+            limit = 12,
+            sort = 'newest',
+            search = '',
+            category = '',
+            priceMin,
+            priceMax,
+          } = req.query;
+      
+          const pageNumber = parseInt(page as string, 10);
+          const limitNumber = parseInt(limit as string, 10);
+          const priceMinNumber = priceMin ? Number(priceMin) : undefined;
+          const priceMaxNumber = priceMax ? Number(priceMax) : undefined;
+      
+          const foods = await FoodService.getAllFood({
+            page: pageNumber > 0 ? pageNumber : 1,
+            limit: limitNumber > 0 ? limitNumber : 12,
+            sort: sort as string,
+            search: search as string,
+            category: category as string,
+            priceMin: priceMinNumber,
+            priceMax: priceMaxNumber,
+          });
+      
+          return res.status(200).json({
+            success: true,
+            message: 'All food retrieved successfully',
+            data: foods,
+          });
         } catch (error: any) {
-            res.status(500).json({ message: 'Error getting all food', error: error.message });
+          console.error('Error in getAllFood:', error);
+          return res.status(500).json({
+            success: false,
+            message: 'Error getting all food',
+            error: error.message,
+          });
         }
-    }
+      }
     
 
     async getFoodBySlug(req: Request, res: Response): Promise<any> {

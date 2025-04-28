@@ -1,11 +1,56 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useCategories } from '../../../hooks/useCategories';
+import Slider from 'rc-slider';
+import 'rc-slider/assets/index.css';
+import { useSearchParams } from 'react-router-dom';
 
 const FilterSidebar: React.FC = () => {
   const { categories, loading, error } = useCategories();
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000]);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const handlePriceChange = (values: number | number[]) => {
+    if (Array.isArray(values)) {
+      setPriceRange([values[0], values[1]]);
+    }
+  };
+
+  const handleApplyFilter = () => {
+    const currentCategory = searchParams.get('category');
+    const currentSort = searchParams.get('sort') || 'default';
+
+    const newParams = new URLSearchParams();
+    newParams.set('page', '1'); // Reset về page 1
+    newParams.set('sort', currentSort);
+    if (currentCategory) newParams.set('category', currentCategory);
+    newParams.set('priceMin', priceRange[0].toString());
+    newParams.set('priceMax', priceRange[1].toString());
+
+    setSearchParams(newParams);
+  };
+
+  const handleCategoryFilter = (categoryId: string) => {
+    const currentSort = searchParams.get('sort') || 'default';
+
+    const newParams = new URLSearchParams();
+    newParams.set('page', '1');
+    newParams.set('sort', currentSort);
+    newParams.set('category', categoryId);
+
+    // Giữ giá nếu có lọc giá
+    if (searchParams.get('priceMin')) {
+      newParams.set('priceMin', searchParams.get('priceMin')!);
+    }
+    if (searchParams.get('priceMax')) {
+      newParams.set('priceMax', searchParams.get('priceMax')!);
+    }
+
+    setSearchParams(newParams);
+  };
 
   return (
     <div className="space-y-10">
+      {/* Category Filter */}
       <div>
         <h3 className="text-xl font-light mb-6 border-b border-gray-600 pb-2">
           Mua sắm theo danh mục
@@ -14,14 +59,29 @@ const FilterSidebar: React.FC = () => {
           <div>Đang tải danh mục...</div>
         ) : error ? (
           <div className="text-red-500">{error}</div>
-        ) : categories && categories.data && categories.data.length > 0 ? (
+        ) : (categories?.data?.length ?? 0) > 0 ? (
           <ul className="space-y-3 text-sm">
-            {categories.data.map((category) => (
+            <li
+              className="flex justify-between hover:text-secondaryColor cursor-pointer capitalize"
+              onClick={() => {
+                // Xóa category lọc về tất cả
+                const newParams = new URLSearchParams(searchParams.toString());
+                newParams.delete('category');
+                newParams.set('page', '1');
+                setSearchParams(newParams);
+              }}
+            >
+              <span>Tất Cả</span>
+              <span>({categories?.data?.reduce((t, c) => t + (c.foodCount || 0), 0)})</span>
+            </li>
+            {categories?.data?.map((category) => (
               <li
                 key={category._id}
-                className="hover:text-secondaryColor cursor-pointer capitalize"
+                className="flex justify-between hover:text-secondaryColor cursor-pointer capitalize"
+                onClick={() => handleCategoryFilter(category._id)}
               >
-                {category.Cate_name}
+                <span>{category.Cate_name}</span>
+                <span>({category.foodCount ?? 0})</span>
               </li>
             ))}
           </ul>
@@ -30,47 +90,55 @@ const FilterSidebar: React.FC = () => {
         )}
       </div>
 
+      {/* Price Filter */}
       <div>
-        <h3 className="text-xl font-light mb-6 border-b border-gray-600 pb-2">
-          Lọc theo
-        </h3>
+        <h4 className="text-lg font-light mb-4 border-b-2 border-secondaryColor inline-block pb-1">
+          Giá
+        </h4>
 
-        <div className="mb-8">
-          <h4 className="text-lg font-light mb-4 border-b-2 border-secondaryColor inline-block pb-1">
-            Thể loại
-          </h4>
-          <div className="space-y-3 mt-4 text-sm">
-            <label className="flex items-center">
-              <input type="radio" name="category" className="mr-2" />
-              Món khai vị (11)
-            </label>
-            <label className="flex items-center">
-              <input type="radio" name="category" className="mr-2" />
-              Đồ uống (7)
-            </label>
-            <label className="flex items-center">
-              <input type="radio" name="category" className="mr-2" />
-              Đặc biệt (2)
-            </label>
+        <div className="relative w-full px-1">
+          <Slider
+            range
+            min={0}
+            max={1000000}
+            step={10000}
+            value={priceRange}
+            onChange={handlePriceChange}
+            trackStyle={[{ backgroundColor: '#FFDEA0', height: 2 }]}
+            handleStyle={[
+              { borderColor: '#FFDEA0', backgroundColor: '#FFF', width: 14, height: 14, borderWidth: 2, marginTop: -6 },
+              { borderColor: '#FFDEA0', backgroundColor: '#FFF', width: 14, height: 14, borderWidth: 2, marginTop: -6 },
+            ]}
+            railStyle={{ backgroundColor: '#e2e8f0', height: 2 }}
+          />
+
+          <div className="flex items-center justify-between mt-6 text-white text-sm">
+            <span>{priceRange[0].toLocaleString('vi-VN')} VND</span>
+            <span>{priceRange[1].toLocaleString('vi-VN')} VND</span>
+            <button
+              onClick={handleApplyFilter}
+              className="text-secondaryColor text-xs tracking-widest uppercase hover:opacity-80 transition"
+            >
+              FILTER
+            </button>
           </div>
         </div>
+      </div>
 
-        <div>
-          <h4 className="text-lg font-light mb-4 border-b-2 border-secondaryColor inline-block pb-1">
-            Giá
-          </h4>
-          <div className="mt-6">
-            <input
-              type="range"
-              min={0}
-              max={1000}
-              className="w-full accent-secondaryColor"
-            />
-            <div className="flex justify-between text-xs mt-2">
-              <span>0 VND</span>
-              <span>1.000.000 VND</span>
-            </div>
-          </div>
+      {/* Banner */}
+      <div className="relative w-full h-[500px] rounded bg-black bg-opacity-40 overflow-hidden mt-10">
+        <img
+          src="/assets/images/banner/banner-sidebar.jpg"
+          alt="Thực Đơn Hữu Cơ"
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 flex flex-col top-10 px-6 text-white">
+          <p className="text-xs tracking-widest text-secondaryColor uppercase mb-2">
+            Ưu Đãi Đặc Biệt
+          </p>
+          <h3 className="text-2xl font-semibold leading-tight">
+            Thực Đơn <br /> Hữu Cơ
+          </h3>
         </div>
       </div>
     </div>
