@@ -1,27 +1,40 @@
-import React from "react";
+import React from 'react';
+import { useCategories } from '../../../hooks/useCategories';
 
 const FilterSidebar: React.FC = () => {
+  const { categories, loading, error } = useCategories();
+
   return (
     <div className="space-y-10">
-      {/* Mua sắm theo danh mục */}
       <div>
         <h3 className="text-xl font-light mb-6 border-b border-gray-600 pb-2">
           Mua sắm theo danh mục
         </h3>
-        <ul className="space-y-3 text-sm">
-          <li className="hover:text-secondaryColor cursor-pointer">Khuyến Mãi</li>
-          <li className="hover:text-secondaryColor cursor-pointer">Món Khai Vị</li>
-          <li className="hover:text-secondaryColor cursor-pointer">Đồ Uống</li>
-        </ul>
+        {loading ? (
+          <div>Đang tải danh mục...</div>
+        ) : error ? (
+          <div className="text-red-500">{error}</div>
+        ) : categories && categories.data && categories.data.length > 0 ? (
+          <ul className="space-y-3 text-sm">
+            {categories.data.map((category) => (
+              <li
+                key={category._id}
+                className="hover:text-secondaryColor cursor-pointer capitalize"
+              >
+                {category.Cate_name}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div>Không có danh mục nào.</div>
+        )}
       </div>
 
-      {/* Bộ lọc */}
       <div>
         <h3 className="text-xl font-light mb-6 border-b border-gray-600 pb-2">
           Lọc theo
         </h3>
 
-        {/* Thể loại */}
         <div className="mb-8">
           <h4 className="text-lg font-light mb-4 border-b-2 border-secondaryColor inline-block pb-1">
             Thể loại
@@ -42,28 +55,6 @@ const FilterSidebar: React.FC = () => {
           </div>
         </div>
 
-        {/* Thành phần */}
-        <div className="mb-8">
-          <h4 className="text-lg font-light mb-4 border-b-2 border-secondaryColor inline-block pb-1">
-            Thành phần
-          </h4>
-          <div className="space-y-3 mt-4 text-sm">
-            <label className="flex items-center">
-              <input type="checkbox" className="mr-2" />
-              Bò (4)
-            </label>
-            <label className="flex items-center">
-              <input type="checkbox" className="mr-2" />
-              Gà (3)
-            </label>
-            <label className="flex items-center">
-              <input type="checkbox" className="mr-2" />
-              Hải sản (2)
-            </label>
-          </div>
-        </div>
-
-        {/* Giá */}
         <div>
           <h4 className="text-lg font-light mb-4 border-b-2 border-secondaryColor inline-block pb-1">
             Giá
@@ -81,7 +72,6 @@ const FilterSidebar: React.FC = () => {
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );

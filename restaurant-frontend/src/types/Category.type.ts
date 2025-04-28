@@ -7,7 +7,6 @@ export interface Category {
     parentCate: string | null;
   }
 
-// Đại diện cho response khi fetch all categories
 export interface CategoryResponse {
   total: number;
   page: number;
