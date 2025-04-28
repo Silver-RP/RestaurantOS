@@ -25,8 +25,9 @@ const LayoutContent: React.FC = () => {
     toggleMobileSidebar,
     closeMobileSidebar,
   } = useSidebar();
-
+ 
   return (
+   
     <div className="flex overflow-hidden min-h-screen relative">
   {!hideSidebarFooter && (
     <>

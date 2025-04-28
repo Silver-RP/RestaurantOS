@@ -17,7 +17,16 @@ export const fetchFoodBySlug = async (slug: string): Promise<FoodDetail> => {
   return res.data.data;
 };
 
-export const fetchFoodByCategory = async (cateType: string): Promise<FoodDetail[]> => {
-  const res = await api.get<{ data: FoodDetail[] }>(`/food/getFoodByCategory?Cate_type=${cateType}`);
-  return res.data.data;
+export const fetchFoodByFavorite = async (type: string): Promise<FoodDetail[]> => {
+  try {
+    const res = await api.get<{ data: FoodDetail[] }>('/food/getFoodByFavorites', {
+      params: { type },
+    });
+    return res.data.data;
+  } catch (error) {
+    console.error('Error fetching food by favorite:', error);
+    return [];
+  }
 };
+
+

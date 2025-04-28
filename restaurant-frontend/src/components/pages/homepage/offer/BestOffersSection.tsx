@@ -1,19 +1,19 @@
 import React, { useState } from "react";
 import TabNavigation from "./TabNavigation";
 import MenuGrid from "./MenuGrid";
-import { useDishByCategory } from "@hooks/useFoods";
+import {  useDishByFavoriteCategory } from "@hooks/useFoods";
 
 const BestOffersSection: React.FC = () => {
   const tabs = ["Đồ ăn", "Đồ uống"];
   const cateTypes = ["dish", "drink"];
   const [activeTab, setActiveTab] = useState(0);
-  const { data, isLoading, isError } = useDishByCategory(cateTypes[activeTab]);  
+  const { data, isLoading, isError } = useDishByFavoriteCategory(cateTypes[activeTab]);  
   return (
     <section className="w-full bg-bodyBackground py-16">
       <div className="w-11/12 md:w-container95 lg:w-mainContainer xl:w-container95 2xl:w-mainContainer mx-auto">
         <img src="/assets/images/home/IconOnline.svg" alt="Icon" className="mx-auto mb-8" />
         <h2 className="text-3xl sm:text-4xl md:text-5xl font-restora justify-center text-white flex font-thin mb-4">
-          Lựa chọn tốt nhất cho bạn
+          Món ăn yêu thích nhất
         </h2>
         <TabNavigation tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
         {/* Content */}
@@ -27,8 +27,9 @@ const BestOffersSection: React.FC = () => {
               name: dish.name,
               price: dish.price,
               description: dish.description,
-              image: dish.images?.[0] || '', // ✅ dùng ảnh đầu tiên trong mảng images
-              hoverImage: dish.images?.[1] || dish.images?.[0] || '', // ảnh hover nếu có
+              image: dish.images?.[0] || '', 
+              hoverImage: dish.images?.[1] || dish.images?.[0] || '', 
+              slug: dish.slug || '', 
             }))}
           />
         ) : (

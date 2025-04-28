@@ -2,7 +2,7 @@ import React from "react";
 import MenuItem from "./MenuItem";
 
 interface MenuGridProps {
-  items: { name: string; price: number; description: string; image: string; hoverImage: string }[];
+  items: { name: string; price: number; description: string; image: string; hoverImage: string, slug: string  }[];
 }
 
 const MenuGrid: React.FC<MenuGridProps> = ({ items }) => {

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from 'react';
 import { useSearchParams } from "react-router-dom"; 
-import { fetchAllFoods, fetchFoodByCategory, fetchFoodBySlug } from '../api/FoodApi';
+import { fetchAllFoods, fetchFoodByCategory, fetchFoodByFavorite, fetchFoodBySlug } from '../api/FoodApi';
 import { FoodResponse, FoodDetail } from '../types/Dish.types';
 import { useQuery } from '@tanstack/react-query';
 
@@ -81,11 +81,11 @@ export const useFoodDetail = (slug: string) => {
   return { food, loading, error };
 };
 
-export const useDishByCategory = (cateType: string) => {
+export const useDishByFavoriteCategory = (cateType: string) => {
   return useQuery<FoodDetail[]>({
-    queryKey: ["dishByCategory", cateType],
-    queryFn: () => fetchFoodByCategory(cateType),
-    enabled: !!cateType, 
+    queryKey: ["useDishByFavoriteCategory", cateType],
+    queryFn: () => fetchFoodByFavorite(cateType),
+    enabled: !!cateType,
     refetchOnWindowFocus: false,
   });
 };

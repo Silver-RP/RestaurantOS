@@ -8,12 +8,14 @@ import AppLayout from "./layouts/AppLayout";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 const queryClient = new QueryClient(); 
 import { ToastConfig } from "@components/common/ToastConfig";
+import ScrollToTop from "@components/common/ScrollToTop";
 
 const App = () => {
   return (
     <Provider store={store}>
     <QueryClientProvider client={queryClient}>
       <Router>
+       <ScrollToTop /> 
         <ToastConfig />
         <AppLayout />
       </Router>
