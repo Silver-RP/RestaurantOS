@@ -14,6 +14,7 @@ import ContactUsPage from "../pages/ContactUsPage";
 import AboutUs from "../pages/AboutUs";
 import FAQsCompoent from "../pages/FaqPage";
 import AddressPage from "../pages/AddressPage";
+import PostPage from "../pages/PostPage";
 
 const AppRoutes = () => {
   const routes = useRoutes([
@@ -26,11 +27,12 @@ const AppRoutes = () => {
     { path: "/forgot-password", element: <ForgotPassword/> },
     { path: "/verify-otp", element: <EnterOTP/> },
     { path: "/profile", element: <ProfilePage/> },
+    { path: "/profile/address", element: <AddressPage /> },    
     { path: "/menu", element: <MenuPage/> },
     { path: "/product/:slug", element: <ProductDetail /> },
     { path: "/contact", element: <ContactUsPage/> },
     { path: "/faqs", element: <FAQsCompoent /> },
-    { path: "/profile/address", element: <AddressPage /> },    
+    { path: "/posts", element: <PostPage /> },    
   ]);
   return routes;
 };
