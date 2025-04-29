@@ -14,6 +14,8 @@ import SearchRoutes from './routes/SearchRoutes';
 import StaffRoutes from './routes/StaffRoutes';
 import FoodRoutes from './routes/FoodRoutes';
 import PermissionRoutes from './routes/PermissionRoutes';
+import OrderRoutes from './routes/OrderRoutes';
+import AuthMiddleWare from './middleware/AuthMiddleWare';
 import dotenv from 'dotenv';
 import connectDB from './config/db';
 import cookieParser from 'cookie-parser';
@@ -24,6 +26,7 @@ const app = express();
 
 // Import file authSwagger để đăng ký metadata
 import './swaggers/AuthSwagger';
+import './swaggers/OrderSwagger';
 
 dotenv.config();
 connectDB();
@@ -90,6 +93,7 @@ app.use('/api/reservationdetailcontact', ReservationDetailContactRoutes);
 app.use('/api/search', SearchRoutes);
 app.use('/api/staff', StaffRoutes);
 app.use('/api/food', FoodRoutes);
+app.use('/api/order',  AuthMiddleWare.verifyToken, OrderRoutes); 
 app.use('/api', HealthCheckRoutes);
 
 app.listen(port, () => {
