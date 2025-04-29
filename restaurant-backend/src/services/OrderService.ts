@@ -45,7 +45,9 @@ class OrderService {
                 throw { statusCode: 400, message: 'Address is required' };
             }
 
-            await OrderValidator.validateAddress(finalAddressId);
+            if (address_id) {
+                await OrderValidator.validateAddress(finalAddressId);
+              }
 
             let totalAmount = 0;
             const orderItems = [];
@@ -73,7 +75,7 @@ class OrderService {
                 total_amount: totalAmount,
                 vat_amount: totalAmount * 0.1,
                 shipping_fee: 5000,
-                delivery_status: 'Pending',
+                delivery_status: 'PENDING_PICKUP',
                 order_type,
             });
 
@@ -118,33 +120,65 @@ class OrderService {
         try {
             const orders = await Order.find({ user_id: userId })
                 .populate('address_id')
-                .populate({
-                    path: 'order_items',
-                    model: 'OrderDetail',
-                    populate: { path: 'dish_id' }
-                })
-                .sort({ createdAt: -1 });
-
-            return orders;
+                .sort({ createdAt: -1 })
+                .lean();
+    
+            const orderIds = orders.map(order => order._id);
+    
+            const orderDetails = await OrderDetail.find({ order_id: { $in: orderIds } })
+                .populate('dish_id')
+                .lean();
+    
+            // Gom nhóm orderDetails theo order_id
+            const detailsMap = new Map<string, any[]>();
+            for (const detail of orderDetails) {
+                const key = detail.order_id.toString();
+                if (!detailsMap.has(key)) {
+                    detailsMap.set(key, []);
+                }
+                detailsMap.get(key)!.push(detail);
+            }
+    
+            const ordersWithDetails = orders.map(order => ({
+                ...order,
+                order_items: detailsMap.get(order._id.toString()) || [],
+            }));
+    
+            return ordersWithDetails;
         } catch (error: any) {
-            throw { statusCode: error.statusCode || 500, message: error.message || 'Error retrieving orders' };
+            throw {
+                statusCode: error.statusCode || 500,
+                message: error.message || 'Error retrieving orders',
+            };
         }
     }
+    
 
     async getOrderById(orderId: mongoose.Types.ObjectId) {
         try {
-            const order = Order.findById(orderId)
-                .populate('address_id')
-                .populate({
-                    path: 'order_items',
-                    model: 'OrderDetail',
-                    populate: { path: 'dish_id' }
-                });
-            return order;
+            const order = await Order.findById(orderId)
+                .populate('address_id') 
+                .lean();
+    
+            if (!order) {
+                throw { statusCode: 404, message: 'Order not found' };
+            }
+            const orderItems = await OrderDetail.find({ order_id: orderId })
+                .populate('dish_id')
+                .lean();
+    
+            return {
+                ...order,
+                order_items: orderItems,
+            };
         } catch (error: any) {
-            throw { statusCode: error.statusCode || 500, message: error.message || 'Error retrieving order' };
+            throw {
+                statusCode: error.statusCode || 500,
+                message: error.message || 'Error retrieving order',
+            };
         }
     }
+    
 
     async updateOrderStatus(orderId: mongoose.Types.ObjectId, status: string) {
         try {

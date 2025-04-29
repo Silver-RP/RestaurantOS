@@ -114,7 +114,7 @@ class AuthService {
     const token = accessToken(
       { id: user._id, roles: user.roles },
       process.env.ACCESS_TOKEN || '',
-      60,
+      60 * 60,
     );
   
     const refresh_token = refreshToken(

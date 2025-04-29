@@ -1,7 +1,7 @@
 import { registerSwaggerRoute } from '../utils/swaggerOptions';
 
 registerSwaggerRoute({
-    path: '/api/order/place-order',
+    path: '/order/place-order',
     method: 'post',
     summary: 'Place an order',
     description: 'Place an order with specified details. Requires authentication. Either `address_id` or `address` must be provided.',
@@ -104,7 +104,7 @@ registerSwaggerRoute({
 });
 
 registerSwaggerRoute({
-    path: '/api/order/all-orders',
+    path: '/order/all-orders',
     method: 'get',
     summary: 'Get all orders',
     description: 'Retrieve a list of all orders. Requires authentication and admin privileges.',
@@ -198,7 +198,7 @@ registerSwaggerRoute({
 });
 
 registerSwaggerRoute({
-    path: '/api/order/user-orders',
+    path: '/order/user-orders',
     method: 'get',
     summary: 'Get user orders',
     description: 'Retrieve all orders of the currently authenticated user. Requires authentication.',
@@ -294,7 +294,7 @@ registerSwaggerRoute({
 });
 
 registerSwaggerRoute({
-    path: '/api/order/{id}',
+    path: '/order/{id}',
     method: 'get',
     summary: 'Get order by ID',
     description: 'Retrieve detailed information for a specific order by its ID. Requires authentication.',
@@ -408,7 +408,7 @@ registerSwaggerRoute({
 });
 
 registerSwaggerRoute({
-    path: '/api/order/order-status/{id}',
+    path: '/order/order-status/{id}',
     method: 'put',
     summary: 'Update order status',
     description: 'Update the delivery and overall status of a specific order by its ID. Requires authentication.',

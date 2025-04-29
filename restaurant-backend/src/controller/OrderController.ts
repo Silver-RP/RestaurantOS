@@ -5,13 +5,13 @@ import { Types } from 'mongoose';
 
 class OrderController {
 
-  async placeOrder(req: Request, res: Response, next: NextFunction): Promise<any> {
+  async placeOrder(req: Request, res: Response): Promise<any> {
     try {
       if (!req.user) {
         return res.status(401).json({ message: 'Unauthorized' });
       }
-      const userId = (req.user as IUser)._id as Types.ObjectId;
-      const { address_id, address, payment_method, delivery_type, items } = req.body;
+      const userId = (req.user as IUser).id as Types.ObjectId;
+      const { address_id, address, payment_method, delivery_type, items, order_type } = req.body;
 
       const order = await OrderService.placeOrder({
         userId,
@@ -20,6 +20,7 @@ class OrderController {
         payment_method,
         delivery_type,
         items,
+        order_type
       });
 
       return res.status(201).json({
@@ -28,7 +29,6 @@ class OrderController {
       });
     } catch (error: any) {
       console.error('Error placing order:', error.message);
-      next(error);
       return res.status(error.statusCode || 500).json({ message: error.message || 'Internal Server Error' });
     }
   }
@@ -53,7 +53,7 @@ class OrderController {
       if (!req.user) {
         return res.status(401).json({ message: 'Unauthorized' });
       }
-      const userId = (req.user as IUser)._id as Types.ObjectId;
+      const userId = (req.user as IUser).id as Types.ObjectId;
       const orders = await OrderService.getUserOrders(userId);
 
       return res.status(200).json({

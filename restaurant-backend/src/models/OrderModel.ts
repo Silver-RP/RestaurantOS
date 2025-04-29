@@ -6,7 +6,7 @@ export interface IOrder extends Document {
   cashier_order_id?: Types.ObjectId | null;
   address_id: Types.ObjectId;
   payment_method: 'CASH' | 'BANKING' | 'VNPAY' | 'MOMO' | 'CREDIT_CARD';
-  delivery_type: 0 | 1;
+  delivery_type: 'DELIVERY' | 'PICKUP';
   delivery_status: 'PENDING_PICKUP' | 'PICKED_UP' | 'IN_TRANSIT' | 'DELIVERED' | 'DELIVERY_FAILED' | 'RETURN_REQUESTED' | 'RETURNED' | 'CANCELLED';
   status: 'PENDING' | 'PREPARING' | 'SHIPPING' | 'COMPLETED' | 'CANCELLED' | 'RETURNED';
   shipping_fee: number;
@@ -31,7 +31,7 @@ const OrderSchema = new Schema<IOrder>({
   cashier_order_id: { type: Schema.Types.ObjectId, ref: 'Order', default: null },
   address_id: { type: Schema.Types.ObjectId, ref: 'Address', required: true },
   payment_method: { type: String, enum: ['CASH', 'BANKING', 'VNPAY', 'MOMO'], required: true },
-  delivery_type: { type: Number, enum: [0, 1], required: true },
+  delivery_type: { type: String,  enum: ['DELIVERY', 'PICKUP'], required: true },
   delivery_status: { type: String, enum: ['PENDING_PICKUP', 'PICKED_UP', 'IN_TRANSIT', 'DELIVERED', 'DELIVERY_FAILED', 'RETURN_REQUESTED', 'RETURNED', 'CANCELLED'], default: 'PENDING_PICKUP' },
   status: { type: String, enum: ['PENDING', 'PREPARING', 'SHIPPING', 'COMPLETED', 'CANCELLED', 'RETURNED'], default: 'PENDING' },
   shipping_fee: { type: Number, required: true, default: 0 },
