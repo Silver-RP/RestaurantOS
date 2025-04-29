@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import InputComponent from '../components/pages/Login/InputComponents';
-import ButtonComponent from '../components/pages/Login/ButtonComponents';
+import InputComponent from '../components/pages/login/InputComponents';
+import ButtonComponent from '../components/pages/login/ButtonComponents';
 import { FaFacebook } from 'react-icons/fa';
 import { FcGoogle } from 'react-icons/fc';
 import CheckboxComponent from '../components/common/CheckboxComponents';
@@ -27,6 +27,16 @@ const Login = () => {
     emailRef.current?.focus();
   }, []);
 
+  // Load email/password từ localStorage nếu có
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('email') || '';
+    const savedPassword = localStorage.getItem('password') || '';
+    if (savedEmail && savedPassword) {
+      setFormData({ email: savedEmail, password: savedPassword });
+      setRememberMe(true);
+    }
+  }, []);
+
   useEffect(() => {
     if (success) {
       toast.success('Đăng nhập thành công!');
@@ -45,7 +55,7 @@ const Login = () => {
       ...prevData,
       [name]: value,
     }));
-    setFormError(''); // Reset lỗi khi gõ lại
+    setFormError('');
   };
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -87,6 +97,9 @@ const Login = () => {
           if (rememberMe) {
             localStorage.setItem('email', email);
             localStorage.setItem('password', password);
+          } else {
+            localStorage.removeItem('email');
+            localStorage.removeItem('password');
           }
           toast.success('Đăng nhập thành công!');
           navigate('/');
