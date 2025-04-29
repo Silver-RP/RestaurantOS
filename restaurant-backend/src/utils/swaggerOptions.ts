@@ -103,6 +103,18 @@ export function generateSwaggerSpec(
        title: 'API Documentation',
        version: '1.0.0',
      },
+     tags: [
+      {
+        name: 'Auth',
+        description: 'Authentication APIs',
+        'x-order': 1,
+      },
+      {
+        name: 'Cart',
+        description: 'Cart APIs',
+        'x-order': 2,
+      },
+    ],
      paths,
    };
 }

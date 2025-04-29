@@ -16,11 +16,13 @@ import FoodRoutes from './routes/FoodRoutes';
 import PermissionRoutes from './routes/PermissionRoutes';
 import OrderRoutes from './routes/OrderRoutes';
 import AuthMiddleWare from './middleware/AuthMiddleWare';
+import CartRouter from './routes/CartRoutes';
 import dotenv from 'dotenv';
 import connectDB from './config/db';
 import cookieParser from 'cookie-parser';
 import passport from 'passport';
 import cors from 'cors';
+import './swaggers/CartSwagger';
 
 const app = express();
 
@@ -95,13 +97,12 @@ app.use('/api/staff', StaffRoutes);
 app.use('/api/food', FoodRoutes);
 app.use('/api/order',  AuthMiddleWare.verifyToken, OrderRoutes); 
 app.use('/api', HealthCheckRoutes);
+app.use('/api/cart', CartRouter); 
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
   console.log('Mongo URI:', process.env.MONGO_URI);
   console.log(`Swagger UI available at http://localhost:${port}/api-docs`);
 });
-// function cors(arg0: { origin: string; credentials: boolean; }): any {
-//   throw new Error('Function not implemented.');
-// }
+
 

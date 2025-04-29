@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
+// import swaggerJsdoc from 'swagger-jsdoc';
 const swaggerOptions_1 = require("./utils/swaggerOptions");
 const HealthChecks_1 = __importDefault(require("./routes/HealthChecks"));
 const AuthRoutes_1 = __importDefault(require("./routes/AuthRoutes"));
@@ -18,11 +19,13 @@ const SearchRoutes_1 = __importDefault(require("./routes/SearchRoutes"));
 const StaffRoutes_1 = __importDefault(require("./routes/StaffRoutes"));
 const FoodRoutes_1 = __importDefault(require("./routes/FoodRoutes"));
 const PermissionRoutes_1 = __importDefault(require("./routes/PermissionRoutes"));
+const CartRoutes_1 = __importDefault(require("./routes/CartRoutes"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const db_1 = __importDefault(require("./config/db"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const passport_1 = __importDefault(require("passport"));
 const cors_1 = __importDefault(require("cors"));
+require("./swaggers/CartSwagger");
 const app = (0, express_1.default)();
 // Import file authSwagger để đăng ký metadata
 require("./swaggers/AuthSwagger");
@@ -84,11 +87,9 @@ app.use('/api/search', SearchRoutes_1.default);
 app.use('/api/staff', StaffRoutes_1.default);
 app.use('/api/food', FoodRoutes_1.default);
 app.use('/api', HealthChecks_1.default);
+app.use('/api/cart', CartRoutes_1.default);
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
     console.log('Mongo URI:', process.env.MONGO_URI);
     console.log(`Swagger UI available at http://localhost:${port}/api-docs`);
 });
-// function cors(arg0: { origin: string; credentials: boolean; }): any {
-//   throw new Error('Function not implemented.');
-// }

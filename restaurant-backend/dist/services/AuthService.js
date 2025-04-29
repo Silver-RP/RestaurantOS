@@ -22,16 +22,14 @@ const nodemailer_1 = __importDefault(require("nodemailer"));
 const smsService_1 = __importDefault(require("../utils/smsService"));
 dotenv_1.default.config();
 const UserModel_1 = __importDefault(require("../models/UserModel"));
+const RoleModel_1 = __importDefault(require("../models/RoleModel"));
 class AuthService {
-    // test bằng gg => OK, và ko test được postman bởi vì postman ko có các chức của trình duyệt OAuth 2.0
-    // Method handle google callback
     handleGoogleCallBack(code) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const clientId = process.env.GG_CLIENT_ID || '';
                 const clientSecret = process.env.GG_CLIENT_SECRET || '';
                 const redirectUri = process.env.GOOGLE_REDIRECT_URI || '';
-                // Gửi POST request tới Google OAuth2 token endpoint để lấy access_token
                 const tokenResponse = yield axios_1.default.post('https://oauth2.googleapis.com/token', {
                     code,
                     client_id: clientId,
@@ -39,16 +37,13 @@ class AuthService {
                     redirect_uri: redirectUri,
                     grant_type: 'authorization_code',
                 });
-                console.log(tokenResponse.data); // Kiểm tra tokenResponse
                 const { access_token, id_token } = tokenResponse.data;
-                // Lấy thông tin người dùng từ Google API
                 const userProfileResponse = yield axios_1.default.get('https://www.googleapis.com/oauth2/v2/userinfo', {
                     headers: {
-                        Authorization: `Bearer ${access_token}`, // Đảm bảo gửi access_token từ Google
+                        Authorization: `Bearer ${access_token}`,
                     },
                 });
                 const user = userProfileResponse.data;
-                // Kiểm tra xem người dùng đã tồn tại chưa trong hệ thống của bạn
                 let existingUser = yield UserModel_1.default.findOne({ email: user.email });
                 if (!existingUser) {
                     existingUser = new UserModel_1.default({
@@ -59,10 +54,9 @@ class AuthService {
                     });
                     yield existingUser.save();
                 }
-                // Quay lại thông tin người dùng và Google access_token
                 return {
                     user: existingUser,
-                    accessToken: access_token, // Trả về token từ Google OAuth
+                    accessToken: access_token,
                 };
             }
             catch (error) {
@@ -71,60 +65,49 @@ class AuthService {
             }
         });
     }
-    // Method register user
     register(userData) {
         return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const { username, email, password, confirmPassword, roles: roleObjectIds, } = userData;
-                const existingUser = yield UserModel_1.default.findOne({ email });
-                if (password !== confirmPassword) {
-                    throw new Error('Password do not match');
-                }
-                if (existingUser) {
-                    throw new Error('User or email already exists');
-                }
-                const hashedPassword = yield bcrypt_1.default.hash(password, 10);
-                const newUser = new UserModel_1.default({
-                    username,
-                    email,
-                    password: hashedPassword,
-                    roles: roleObjectIds,
-                    isVerified: false, // hoặc true nếu đã xác thực
-                    emailVerificationToken: crypto_1.default.randomBytes(32).toString('hex'),
-                    emailVerificationExpires: new Date(Date.now() + 3600000), // 1 giờ
-                });
-                yield newUser.save();
-                return newUser;
+            const { username, email, password } = userData;
+            const existingUser = yield UserModel_1.default.findOne({ email });
+            if (existingUser) {
+                throw new Error('Email đã tồn tại trong hệ thống');
             }
-            catch (error) {
-                throw new Error(error.message);
+            const hashedPassword = yield bcrypt_1.default.hash(password, 10);
+            const defaultRole = yield RoleModel_1.default.findOne({ name: 'user' });
+            if (!defaultRole) {
+                throw new Error('Default role not found');
             }
+            const newUser = new UserModel_1.default({
+                username,
+                email,
+                password: hashedPassword,
+                roles: [defaultRole._id],
+                isVerified: false,
+                emailVerificationToken: crypto_1.default.randomBytes(32).toString('hex'),
+                emailVerificationExpires: new Date(Date.now() + 3600000), // 1h
+            });
+            yield newUser.save();
+            const populatedUser = yield UserModel_1.default.findById(newUser._id)
+                .populate('roles', 'name');
+            return populatedUser;
         });
     }
-    // Method login user
     login(loginUser) {
         return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const { email, password } = loginUser;
-                const user = yield UserModel_1.default.findOne({ email });
-                if (!user) {
-                    throw new Error('Email not registered');
-                }
-                // compare password
-                const isMatch = yield bcrypt_1.default.compare(password, user.password || '');
-                if (!isMatch) {
-                    throw new Error('Password is incorrect');
-                }
-                const token = (0, GenerateToken_1.accessToken)({ id: user._id, roles: user.roles }, process.env.ACCESS_TOKEN || '', 20);
-                const refresh_token = (0, GenerateToken_1.refreshToken)({ id: user._id, role: user.roles }, process.env.REFRESH_TOKEN || '', 365 * 24 * 60 * 60);
-                return { token, user, refresh_token };
+            const { email, password } = loginUser;
+            const user = yield UserModel_1.default.findOne({ email }).populate('roles', 'name');
+            if (!user) {
+                throw new Error('Email not registered');
             }
-            catch (error) {
-                throw new Error(error.message);
+            const isMatch = yield bcrypt_1.default.compare(password, user.password || '');
+            if (!isMatch) {
+                throw new Error('Password is incorrect');
             }
+            const token = (0, GenerateToken_1.accessToken)({ id: user._id, roles: user.roles }, process.env.ACCESS_TOKEN || '', 60);
+            const refresh_token = (0, GenerateToken_1.refreshToken)({ id: user._id, roles: user.roles }, process.env.REFRESH_TOKEN || '', 365 * 24 * 60 * 60);
+            return { token, refresh_token, user };
         });
     }
-    // Method refresh token
     refreshAccessToken(refreshTokenFromClient) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -136,8 +119,7 @@ class AuthService {
                 if (!user) {
                     throw new Error('User not found');
                 }
-                // Tạo access token mới
-                const newAccessToken = (0, GenerateToken_1.accessToken)({ id: user._id }, process.env.ACCESS_TOKEN || '', 2);
+                const newAccessToken = (0, GenerateToken_1.accessToken)({ id: user._id }, process.env.ACCESS_TOKEN || '', 60);
                 return { newAccessToken };
             }
             catch (error) {
@@ -145,15 +127,12 @@ class AuthService {
             }
         });
     }
-    // Method login with google
     googleLogin(googleUser) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { email, googleId, username, avatar } = googleUser;
-                // Kiểm tra xem người dùng đã tồn tại chưa
                 let user = yield UserModel_1.default.findOne({ email });
                 if (!user) {
-                    // Nếu không tồn tại, tạo mới
                     user = new UserModel_1.default({
                         email,
                         username: username || '',
@@ -162,12 +141,11 @@ class AuthService {
                     });
                     yield user.save();
                 }
-                // Tạo access token sau khi đăng nhập thành công
                 const accessToken = jsonwebtoken_1.default.sign({ id: user._id }, process.env.ACCESS_TOKEN || '', {
-                    expiresIn: 7200, // Thời gian hết hạn 2 giờ
+                    expiresIn: 7200,
                 });
                 const refreshToken = jsonwebtoken_1.default.sign({ id: user._id }, process.env.REFRESH_TOKEN || '', {
-                    expiresIn: 365 * 24 * 60 * 60 // Thời gian hết hạn 1 năm
+                    expiresIn: 365 * 24 * 60 * 60,
                 });
                 return {
                     user,
@@ -176,12 +154,10 @@ class AuthService {
                 };
             }
             catch (error) {
-                // Xử lý lỗi khi đăng nhập Google
                 throw new Error('Error during Google login: ' + error.message);
             }
         });
     }
-    // Method logout
     logout(refreshToken) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -197,120 +173,40 @@ class AuthService {
             }
         });
     }
-    // Method send OTP
-    sendOtp(phone) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                let user = yield UserModel_1.default.findOne({ phone });
-                if (!user) {
-                    user = new UserModel_1.default({ phone });
-                    yield user.save();
-                }
-                const otp = crypto_1.default.randomInt(100000, 999999).toString();
-                user.otp = otp;
-                user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 5 phut
-                yield user.save();
-                yield smsService_1.default.sendOtpToPhoneNumber(phone, otp);
-                return {
-                    message: 'OTP sent successfully',
-                };
-            }
-            catch (error) {
-                throw new Error(error.message);
-            }
-        });
-    }
-    // Method verify OTP
-    verifyOtp(phone, otp) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const user = yield UserModel_1.default.findOne({ phone });
-            if (!user) {
-                throw new Error('User not found');
-            }
-            if (user.otp !== otp) {
-                throw new Error('Invalid OTP');
-            }
-            if (!user.otpExpiry) {
-                throw new Error('OTP expiry date is missing');
-            }
-            if (new Date() > user.otpExpiry) {
-                throw new Error('OTP expired');
-            }
-            return { message: 'OTP verified successfully' };
-        });
-    }
-    // Method reset password
-    resetPassword(phone, newPassword, confirmPassword) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const user = yield UserModel_1.default.findOne({ phone });
-            if (!user) {
-                throw new Error('User not found');
-            }
-            const hashedPassword = yield bcrypt_1.default.hash(newPassword, 10);
-            user.password = hashedPassword;
-            user.otp = null;
-            user.otpExpiry = null;
-            yield user.save();
-            return { message: 'Password reset successfully' };
-        });
-    }
-    // Method send OTP email
-    sendOtpEmail(email) {
+    changePasswordByEmail(email, newPassword) {
         return __awaiter(this, void 0, void 0, function* () {
             const user = yield UserModel_1.default.findOne({ email });
             if (!user) {
-                throw new Error("User not found");
+                throw new Error('User not found');
             }
-            const otp = crypto_1.default.randomInt(100000, 999999).toString();
-            const expireAt = new Date(Date.now() + 5 * 60 * 1000); // 5 phut
-            const now = new Date();
-            const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
-            if (user.otpSentCount >= 5 && user.lastOtpSentAt > oneHourAgo) {
-                throw new Error("You have exceeded the limit for sending OTPs. Please try again later");
+            if (!user.otpVerifiedForChangePassword) {
+                throw new Error('You must verify OTP before changing password');
             }
-            user.otp = otp;
-            user.otpExpiry = expireAt;
-            user.otpSentCount += 1;
-            user.lastOtpSentAt = now;
+            const hashedPassword = yield bcrypt_1.default.hash(newPassword, 10);
+            user.password = hashedPassword;
+            // Sau khi đổi mật khẩu xong → hủy flag
+            user.otpVerifiedForChangePassword = false;
             yield user.save();
-            const transporter = nodemailer_1.default.createTransport({
-                host: process.env.MAIL_HOST,
-                port: Number(process.env.MAIL_PORT),
-                secure: process.env.MAIL_ENCRYPTION === "ssl",
-                auth: {
-                    user: process.env.MAIL_USERNAME,
-                    pass: process.env.MAIL_PASSWORD,
-                }
-            });
-            const mailOptions = {
-                from: process.env.MAIL_FROM_ADDRESS,
-                to: email,
-                subject: 'OTP for password reset',
-                text: `Your OTP is ${otp}. It will expire in 5 minutes`,
-            };
-            yield transporter.sendMail(mailOptions);
+            return { message: 'Password changed successfully' };
         });
     }
-    verifyOtpEmail(email, otp) {
+    verifyForgotPasswordOtp(email, otp) {
         return __awaiter(this, void 0, void 0, function* () {
-            const user = yield UserModel_1.default.findOne({ email, otp }); // ❌ bỏ điều kiện isVerified: false
-            if (!user) {
+            var _a;
+            const user = yield UserModel_1.default.findOne({ email });
+            if (!user)
+                throw new Error('User not found');
+            if (((_a = user.changePasswordOtp) === null || _a === void 0 ? void 0 : _a.trim()) !== otp.trim()) {
                 throw new Error('Invalid OTP');
             }
-            if (user.isVerified) {
-                return 'Email has already been verified'; // ✅ thêm chỗ này sau khi tìm user
-            }
-            if (!user.otpExpiry) {
-                throw new Error('OTP expiry time is not set');
-            }
-            if (user.otpExpiry < new Date()) {
+            if (!user.changePasswordOtpExpiry || user.changePasswordOtpExpiry < new Date()) {
                 throw new Error('OTP expired');
             }
-            user.isVerified = true;
-            user.otp = null; // ✅ xóa OTP sau xác minh
-            user.otpExpiry = null;
+            user.changePasswordOtp = null;
+            user.changePasswordOtpExpiry = null;
+            user.otpVerifiedForChangePassword = true;
             yield user.save();
-            return 'Email verified successfully';
+            return 'OTP verified. You can now reset your password.';
         });
     }
     sendOtpFlexible(identifier) {
@@ -318,23 +214,21 @@ class AuthService {
             try {
                 let user;
                 const otp = crypto_1.default.randomInt(100000, 999999).toString();
-                const expireAt = new Date(Date.now() + 5 * 60 * 1000); // 5 phút
+                const expireAt = new Date(Date.now() + 5 * 60 * 1000);
                 const phoneRegex = /^(\+84|0)(3|5|7|8|9)\d{8}$/;
                 const emailRegex = /^[a-zA-Z0-9](\.?[a-zA-Z0-9_-])*[a-zA-Z0-9]@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
                 if (phoneRegex.test(identifier)) {
-                    // ✅ Kiểm tra tồn tại user theo số điện thoại
                     user = yield UserModel_1.default.findOne({ phone: identifier });
                     if (!user) {
                         throw new Error('Số điện thoại không tồn tại trong hệ thống');
                     }
-                    user.otp = otp;
-                    user.otpExpiry = expireAt;
+                    user.phoneOtp = otp;
+                    user.phoneOtpExpiry = expireAt;
                     yield user.save();
                     yield smsService_1.default.sendOtpToPhoneNumber(identifier, otp);
                     return { message: 'OTP đã được gửi qua số điện thoại' };
                 }
                 else if (emailRegex.test(identifier)) {
-                    // ✅ Kiểm tra tồn tại user theo email
                     user = yield UserModel_1.default.findOne({ email: identifier });
                     if (!user) {
                         throw new Error('Email không tồn tại trong hệ thống');
@@ -344,8 +238,8 @@ class AuthService {
                     if (user.otpSentCount >= 5 && user.lastOtpSentAt > oneHourAgo) {
                         throw new Error('Bạn đã vượt quá số lần gửi OTP. Vui lòng thử lại sau');
                     }
-                    user.otp = otp;
-                    user.otpExpiry = expireAt;
+                    user.changePasswordOtp = otp;
+                    user.changePasswordOtpExpiry = expireAt;
                     user.otpSentCount += 1;
                     user.lastOtpSentAt = now;
                     yield user.save();
@@ -361,7 +255,7 @@ class AuthService {
                     const mailOptions = {
                         from: process.env.MAIL_FROM_ADDRESS,
                         to: identifier,
-                        subject: 'OTP for verification',
+                        subject: 'OTP for password reset',
                         text: `Your OTP is ${otp}. It will expire in 5 minutes`,
                     };
                     yield transporter.sendMail(mailOptions);
@@ -382,13 +276,20 @@ class AuthService {
             if (!user) {
                 throw new Error('User not found');
             }
-            if (user.isVerified) {
+            if (user.isEmailVerified) {
                 throw new Error('Email is already verified');
             }
             const otp = crypto_1.default.randomInt(100000, 999999).toString();
-            const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
-            user.otp = otp;
-            user.otpExpiry = otpExpiry;
+            const otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+            const now = new Date();
+            const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+            if (user.otpSentCount >= 5 && user.lastOtpSentAt > oneHourAgo) {
+                throw new Error('You have exceeded the OTP request limit. Please try again later.');
+            }
+            user.emailVerificationOtp = otp;
+            user.emailVerificationOtpExpiry = otpExpiry;
+            user.otpSentCount += 1;
+            user.lastOtpSentAt = now;
             yield user.save();
             const transporter = nodemailer_1.default.createTransport({
                 host: process.env.MAIL_HOST,
@@ -407,6 +308,27 @@ class AuthService {
             };
             yield transporter.sendMail(mailOptions);
             return 'Verification email sent successfully';
+        });
+    }
+    verifyEmailVerificationOtp(email, otp) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield UserModel_1.default.findOne({ email });
+            if (!user)
+                throw new Error('Không tìm thấy người dùng');
+            if (user.isEmailVerified) {
+                return 'Email đã được xác minh trước đó';
+            }
+            if (user.emailVerificationOtp !== otp) {
+                throw new Error('Mã OTP không đúng');
+            }
+            if (!user.emailVerificationOtpExpiry || user.emailVerificationOtpExpiry < new Date()) {
+                throw new Error('OTP đã hết hạn');
+            }
+            user.isEmailVerified = true;
+            user.emailVerificationOtp = null;
+            user.emailVerificationOtpExpiry = null;
+            yield user.save();
+            return 'Xác minh email thành công';
         });
     }
 }
