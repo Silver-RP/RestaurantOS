@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Dish = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
+const mongoose_paginate_v2_1 = __importDefault(require("mongoose-paginate-v2"));
 const dishSchema = new mongoose_1.default.Schema({
     name: { type: String, required: true },
     slug: { type: String, required: true, unique: true },
@@ -35,4 +36,5 @@ const dishSchema = new mongoose_1.default.Schema({
 });
 dishSchema.index({ name: 'text' });
 dishSchema.index({ slug: 1 });
+dishSchema.plugin(mongoose_paginate_v2_1.default);
 exports.Dish = mongoose_1.default.model("Dish", dishSchema);

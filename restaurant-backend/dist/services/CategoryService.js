@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const CategoryModel_1 = __importDefault(require("../models/CategoryModel"));
+const DishModel_1 = require("../models/DishModel");
 class CategoryService {
     // async GetAllCategory(req: Request, res: Response): Promise<any> {
     //   try {
@@ -37,15 +38,20 @@ class CategoryService {
                 if (categories.length === 0) {
                     return res.status(404).json({ message: 'No categories found!' });
                 }
+                const categoriesWithCount = yield Promise.all(categories.map((category) => __awaiter(this, void 0, void 0, function* () {
+                    const foodCount = yield DishModel_1.Dish.countDocuments({ categories: category._id });
+                    return Object.assign(Object.assign({}, category.toObject()), { foodCount });
+                })));
                 return res.status(200).json({
                     total: totalCategories,
                     page: pageNumber,
                     limit: limitNumber,
                     totalPages: Math.ceil(totalCategories / limitNumber),
-                    data: categories,
+                    data: categoriesWithCount, // dùng data mới
                 });
             }
             catch (error) {
+                console.error(error);
                 return res.status(500).json({ message: 'An error occurred', error });
             }
         });

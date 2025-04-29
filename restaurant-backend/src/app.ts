@@ -20,6 +20,7 @@ import connectDB from './config/db';
 import cookieParser from 'cookie-parser';
 import passport from 'passport';
 import cors from 'cors';
+import './swaggers/CartSwagger';
 
 const app = express();
 
@@ -99,7 +100,5 @@ app.listen(port, () => {
   console.log('Mongo URI:', process.env.MONGO_URI);
   console.log(`Swagger UI available at http://localhost:${port}/api-docs`);
 });
-// function cors(arg0: { origin: string; credentials: boolean; }): any {
-//   throw new Error('Function not implemented.');
-// }
+
 

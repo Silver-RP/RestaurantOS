@@ -4,13 +4,14 @@ import cartService from '../services/CartService';
 class CartController {
   static async UpdateCart(req: Request, res: Response): Promise<void> {
     try {
-      const { cartId, dishId, quantity } = req.body;
+      const { id } = req.params; 
+      const { dishId, quantity } = req.body;
 
-      if (!cartId || !dishId || typeof quantity !== 'number') {
+      if (!id || !dishId || typeof quantity !== 'number') {
         res.status(400).json({ success: false, message: 'Missing or invalid input fields' });
         return;
       }
-      const updatedCart = await cartService.UpdateCart(cartId, dishId, quantity);
+      const updatedCart = await cartService.UpdateCart(id, dishId, quantity);
       res.status(200).json({
         success: true,
         message: 'Cart updated successfully',
@@ -21,7 +22,7 @@ class CartController {
       res.status(500).json({ success: false, message: error.message || 'Internal Server Error' });
     }
   }
-  
+
   static async DeleteCartItem(req: Request, res: Response): Promise<void> {
       try {
         const { cartId, dishId } = req.params; 

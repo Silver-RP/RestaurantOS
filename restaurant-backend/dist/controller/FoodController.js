@@ -62,29 +62,78 @@ class FoodController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const foodFavoriteTop = yield FoodService_1.default.getTopFavoriteFood();
-                return res.status(200).json({
+                res.status(200).json({
                     success: true,
                     data: foodFavoriteTop
                 });
+                return;
             }
             catch (error) {
                 console.error('Error fetching top favorite foods:', error);
-                return res.status(500).json({
+                res.status(500).json({
                     success: false,
                     message: 'Failed to retrieve top favorite foods',
                     error: error instanceof Error ? error.message : 'Unknown error'
                 });
+                return;
             }
         });
     }
     getAllFood(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const food = yield FoodService_1.default.getAllFood();
-                res.status(200).json({ message: 'All food retrieved successfully', data: food });
+                const { page = 1, limit = 12, sort = 'newest', search = '', category = '', priceMin, priceMax, } = req.query;
+                const pageNumber = parseInt(page, 10);
+                const limitNumber = parseInt(limit, 10);
+                const priceMinNumber = priceMin ? Number(priceMin) : undefined;
+                const priceMaxNumber = priceMax ? Number(priceMax) : undefined;
+                const foods = yield FoodService_1.default.getAllFood({
+                    page: pageNumber > 0 ? pageNumber : 1,
+                    limit: limitNumber > 0 ? limitNumber : 12,
+                    sort: sort,
+                    search: search,
+                    category: category,
+                    priceMin: priceMinNumber,
+                    priceMax: priceMaxNumber,
+                });
+                return res.status(200).json({
+                    success: true,
+                    message: 'All food retrieved successfully',
+                    data: foods,
+                });
             }
             catch (error) {
-                throw new Error('Error getting all food');
+                console.error('Error in getAllFood:', error);
+                return res.status(500).json({
+                    success: false,
+                    message: 'Error getting all food',
+                    error: error.message,
+                });
+            }
+        });
+    }
+    getFoodBySlug(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { slug } = req.params;
+                const food = yield FoodService_1.default.getFoodBySlug(slug);
+                if (!food) {
+                    return res.status(404).json({
+                        success: false,
+                        message: 'Món ăn không tồn tại!'
+                    });
+                }
+                return res.status(200).json({
+                    success: true,
+                    data: food
+                });
+            }
+            catch (error) {
+                console.error('Error getting food by slug:', error);
+                return res.status(500).json({
+                    success: false,
+                    message: 'Lỗi khi lấy món ăn'
+                });
             }
         });
     }
@@ -124,27 +173,16 @@ class FoodController {
             }
         });
     }
-    getFoodWithPagination(req, res) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const { page, limit } = req.query;
-                const food = yield FoodService_1.default.getFoodWithPagination(Number(page), Number(limit));
-                res.status(200).json(food);
-            }
-            catch (error) {
-                throw new Error('Error getting food with pagination');
-            }
-        });
-    }
     getFoodByCategory(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const { id } = req.query;
-                const food = yield FoodService_1.default.getFoodByCategory(String(id));
+                const { Cate_type } = req.query;
+                const food = yield FoodService_1.default.getFoodByCategoryType(String(Cate_type));
                 res.status(200).json(food);
             }
             catch (error) {
-                throw new Error('Error getting food by category');
+                console.error(error);
+                res.status(500).json({ message: 'Error getting food by category type' });
             }
         });
     }
@@ -187,12 +225,29 @@ class FoodController {
     getFoodByFavorites(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const { favorites } = req.query;
-                const food = yield FoodService_1.default.getFoodByFavorites(Number(favorites));
-                res.status(200).json(food);
+                const { favorites, type } = req.query;
+                if (!type || typeof type !== 'string') {
+                    return res.status(400).json({ success: false, message: 'Missing or invalid type parameter' });
+                }
+                let dishes;
+                if (favorites) {
+                    const favoritesNumber = Number(favorites);
+                    if (isNaN(favoritesNumber)) {
+                        return res.status(400).json({ success: false, message: 'Favorites must be a number' });
+                    }
+                    dishes = yield FoodService_1.default.getFoodByFavorites(favoritesNumber, type);
+                }
+                else {
+                    dishes = yield FoodService_1.default.getTopFavoriteFoods(type);
+                }
+                if (!dishes || dishes.length === 0) {
+                    return res.status(404).json({ success: false, message: 'No food found matching the criteria', data: [] });
+                }
+                return res.status(200).json({ success: true, message: 'Food retrieved successfully', data: dishes });
             }
             catch (error) {
-                throw new Error('Error getting food by favorites');
+                console.error('Error in getFoodByFavorites:', error);
+                return res.status(500).json({ success: false, message: 'Internal server error' });
             }
         });
     }
