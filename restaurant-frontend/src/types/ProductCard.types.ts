@@ -9,5 +9,9 @@ export interface ProductCardProps {
   discount?: string;        
   description: string;      
   cate?: string;             
-  isNew?: boolean;         
+  isNew?: boolean;
+
+  views?: number;
+  ordered_count?: number;
+  rating?: number;
 }

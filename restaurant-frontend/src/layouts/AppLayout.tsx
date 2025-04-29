@@ -23,7 +23,6 @@ const LayoutContent: React.FC = () => {
     isMobileSidebarOpen,
     toggleSidebarExtend,
     toggleMobileSidebar,
-    closeMobileSidebar,
   } = useSidebar();
  
 

@@ -1,4 +1,5 @@
 export interface Category {
+    foodCount: number;
     _id: string;
     Cate_name: string;
     Cate_slug: string;
@@ -7,7 +8,6 @@ export interface Category {
     parentCate: string | null;
   }
 
-// Đại diện cho response khi fetch all categories
 export interface CategoryResponse {
   total: number;
   page: number;

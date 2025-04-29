@@ -1,8 +1,7 @@
-import { CategoryResponse } from 'types/Category.type';
 import api from './axiosInstance';
+import { CategoryResponse } from '../types/Category.type';
 
-// Hàm fetch toàn bộ category
 export const fetchAllCategories = async (): Promise<CategoryResponse> => {
-  const res = await api.get<{ data: CategoryResponse }>('/category/getallcategory');
-  return res.data.data;
-};
+    const res = await api.get<CategoryResponse>('/category/getallcategory');
+    return res.data;
+  };
