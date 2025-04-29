@@ -14,6 +14,7 @@ import SearchRoutes from './routes/SearchRoutes';
 import StaffRoutes from './routes/StaffRoutes';
 import FoodRoutes from './routes/FoodRoutes';
 import PermissionRoutes from './routes/PermissionRoutes';
+import CartRouter from './routes/CartRoutes';
 import dotenv from 'dotenv';
 import connectDB from './config/db';
 import cookieParser from 'cookie-parser';
@@ -91,6 +92,7 @@ app.use('/api/search', SearchRoutes);
 app.use('/api/staff', StaffRoutes);
 app.use('/api/food', FoodRoutes);
 app.use('/api', HealthCheckRoutes);
+app.use('/api/cart', CartRouter); 
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
