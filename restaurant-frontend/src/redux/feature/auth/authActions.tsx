@@ -17,6 +17,10 @@ const apiRequest = async (url: string, payload: object, method: 'POST' | 'GET') 
     throw new Error('An unexpected error occurred');
   }
 };
+import { setAccessToken, setRefreshToken } from '@/utils/tokenHelpers';
+import axiosInstance from '@/api/axiosInstance';
+const BASE_URL_REGISTER = import.meta.env.VITE_BACKEND_URL;
+const BASE_URL_LOGIN = import.meta.env.VITE_BACKEND_URL;
 
 // Register
 export const RegisterUser = createAsyncThunk(
@@ -42,14 +46,16 @@ export const LoginUser = createAsyncThunk(
       if (!token) {
         console.warn('⚠️ Token is missing in API response');
       }
+      setAccessToken(token, payload.rememberMe);
+      // setRefreshToken(refreshToken, payload.rememberMe);
 
       const storage = payload.rememberMe ? localStorage : sessionStorage;
       storage.setItem('accessToken', token || '');
       storage.setItem('userInfo', JSON.stringify(user || {}));
 
       return { token, user, message };
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+    } catch (error: unknown) {
+      return rejectWithValue((error as { message: string })?.message || 'An unexpected error occurred');
     }
   }
 );

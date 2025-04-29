@@ -5,7 +5,7 @@ class FoodService {
   async createFood(food: any) {
     const newfood = new Dish(food);
     try {
-      return await newfood.save(); 
+      return await newfood.save();
     } catch (error) {
       throw new Error('Error creating food');
     }
@@ -23,14 +23,96 @@ class FoodService {
     }
   }
 
-  async getAllFood() {
+  async getAllFood({
+    page = 1,
+    limit = 10,
+    sort = 'newest',
+    search = '',
+    category = '',
+    priceMin,
+    priceMax,
+  }: {
+    page?: number;
+    limit?: number;
+    sort?: string;
+    search?: string;
+    category?: string;
+    priceMin?: number;
+    priceMax?: number;
+  }) {
+    const query: any = {};
+
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    if (priceMin !== undefined || priceMax !== undefined) {
+      query.price = {};
+      if (priceMin !== undefined) {
+        query.price.$gte = priceMin;
+      }
+      if (priceMax !== undefined) {
+        query.price.$lte = priceMax;
+      }
+    }
+
+    if (category) {
+      query.categories = { $in: [category] };
+    }
+
+    const sortQuery = this.getSortQuery(sort);
+
+    const options = {
+      page,
+      limit,
+      sort: sortQuery,
+      lean: true,
+      populate: {
+        path: 'categories',
+        select: 'Cate_name',
+      },
+    };
+
     try {
-      return await Dish.find(); 
+      return await Dish.paginate(query, options);
     } catch (error) {
-      throw new Error('Error getting all food'); 
+      console.error('Error in getAllFood:', error);
+      throw new Error('Error fetching food items');
     }
   }
 
+  private getSortQuery(sort: string) {
+    switch (sort) {
+      case 'priceLow':
+        return { price: 1 };
+      case 'priceHigh':
+        return { price: -1 };
+      case 'newest':
+        return { createdAt: -1 };
+      case 'relevance':
+        return { _id: -1 };
+      case 'highestRated':
+        return { average_rating: -1 };
+      case 'mostViewed':
+        return { views: -1 };
+      case 'mostOrdered':
+        return { ordered_count: -1 };
+      case 'mostFavorite':
+        return { favorites_count: -1 };
+      default:
+        return { createdAt: -1 };
+    }
+  }
+  async getFoodBySlug(slug: string) {
+    const food = await Dish.findOne({ slug }).populate('categories');
+    if (!food) {
+      return null;
+    }
+    return food;
+  }
   async getFoodById(id: string) {
     try {
       const food = await Dish.findById(id).populate('categories');
@@ -39,7 +121,6 @@ class FoodService {
       throw new Error('Error getting food by id');
     }
   }
-
   async updateFood(id: string, food: any) {
     try {
       return await Dish.findByIdAndUpdate(id, food, { new: true });
@@ -47,7 +128,6 @@ class FoodService {
       throw new Error('Error updating food');
     }
   }
-
   async deleteFood(id: string) {
     try {
       return await Dish.findByIdAndDelete(id);
@@ -55,27 +135,15 @@ class FoodService {
       throw new Error('Error deleting food');
     }
   }
-
-  async getFoodWithPagination(page: number, limit: number) {
-    try {
-      return await Dish.find()
-        .skip((page - 1) * limit)
-        .limit(limit);
-    } catch (error) {
-      throw new Error('Error getting food with pagination');
-    }
-  }
-
   async getFoodByCategoryType(cateType: string) {
     try {
-      // B1: Lấy tất cả danh mục có Cate_type = "drink" hoặc "food"
       const categories = await Category.find({ Cate_type: cateType });
-  
+
       const categoryIds = categories.map((cat) => cat._id);
-  
+
       // B2: Tìm dish có categories nằm trong danh sách categoryIds
       const food = await Dish.find({ categories: { $in: categoryIds } });
-  
+
       return food;
     } catch (error) {
       throw new Error('Error getting food by category type');
@@ -108,13 +176,88 @@ class FoodService {
     }
   }
 
-  async getFoodByFavorites(favorites: number) {
+  async getFoodByFavorites(favorites: number, type: string) {
     try {
-      return await Dish.find({ favorites_count: favorites });
+      const dishes = await Dish.aggregate([
+        {
+          $match: { favorites_count: favorites }
+        },
+        {
+          $lookup: {
+            from: 'categories',
+            localField: 'categories',
+            foreignField: '_id',
+            as: 'categories'
+          }
+        },
+        { $unwind: "$categories" },
+        {
+          $match: { "categories.Cate_type": type }
+        },
+        {
+          $project: {
+            _id: 1,
+            name: 1,
+            price: 1,
+            description: 1,
+            images: 1,               
+            favorites_count: 1,
+            rating: 1,
+            categories: 1, 
+            slug: 1, 
+          }
+        }
+      ]);
+      return dishes;
     } catch (error) {
-      throw new Error('Error getting food by favorites');
+      console.error('Error in getFoodByFavorites:', error);
+      throw new Error('Error fetching food by favorites');
     }
   }
+  
+  async getTopFavoriteFoods(type: string) {
+    try {
+      const dishes = await Dish.aggregate([
+        {
+          $lookup: {
+            from: 'categories',
+            localField: 'categories',
+            foreignField: '_id',
+            as: 'categories'
+          }
+        },
+        { $unwind: "$categories" },
+        {
+          $match: { "categories.Cate_type": type }
+        },
+        {
+          $sort: { favorites_count: -1 }
+        },
+        {
+          $limit: 6
+        },
+        {
+          $project: {
+            _id: 1,
+            name: 1,
+            price: 1,
+            description: 1,
+            images: 1,                
+            favorites_count: 1,
+            rating: 1,
+            categories: 1, 
+            slug: 1,
+          }
+        }
+      ]);
+      return dishes;
+    } catch (error) {
+      console.error('Error in getTopFavoriteFoods:', error);
+      throw new Error('Error fetching top favorite foods');
+    }
+  }
+  
+
 }
 
 export default new FoodService();

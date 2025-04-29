@@ -1,39 +1,107 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
-
-export interface FoodItem {
-  _id: string;
-  name: string;
-  images: string[];
-  price: number;
-  discount_price: number;
-  description: string;
-  [key: string]: string | number | string[] | undefined;
-}
-
-const API_URL = import.meta.env.VITE_BACKEND_URL; 
+import { useEffect, useState } from 'react';
+import { useSearchParams } from "react-router-dom";
+import { fetchAllFoods, fetchFoodByFavorite, fetchFoodBySlug, FetchFoodsParams } from '../api/FoodApi';
+import { FoodResponse, FoodDetail } from '../types/Dish.types';
+import { useQuery } from '@tanstack/react-query';
+import { AxiosError } from 'axios';
 
 export const useFoods = () => {
-  const [foods, setFoods] = useState<FoodItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [foods, setFoods] = useState<FoodResponse | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    limit: 12,
+    hasPrevPage: false,
+    hasNextPage: false,
+    prevPage: 1,
+    nextPage: 2,
+  });
+
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
-    const fetchFoods = async () => {
+    const loadFoods = async () => {
+      const page = parseInt(searchParams.get("page") || "1", 10);
+      const sort = searchParams.get("sort") || "default";
+      const priceMin = searchParams.get("priceMin");
+      const priceMax = searchParams.get("priceMax");
+      const category = searchParams.get("category");
+      const keyword = searchParams.get("keyword");
+
+      setLoading(true);
+      setError(null);
+
       try {
-        const res = await axios.get(`${API_URL}/food/getallfood`);
-        setFoods(res.data.data);
-      } catch (err) {
-        const error = err as Error;
-        console.error("Error fetching foods:", error);
-        setError(error.message || "Đã xảy ra lỗi.");
+        const params: FetchFoodsParams = {
+          page,
+          sort,
+          priceMin: priceMin ? Number(priceMin) : undefined,
+          priceMax: priceMax ? Number(priceMax) : undefined,
+          category: category || undefined,
+          keyword: keyword || undefined,
+        };
+
+        const data = await fetchAllFoods(params);
+        setFoods(data);
+        setPagination({
+          currentPage: data.page,
+          totalPages: data.totalPages,
+          limit: data.limit,
+          hasPrevPage: data.hasPrevPage,
+          hasNextPage: data.hasNextPage,
+          prevPage: data.prevPage ?? 1,
+          nextPage: data.nextPage ?? data.totalPages,
+        });
+      } catch (error) {
+        const err = error as AxiosError<{ message?: string }>;
+        setError(err.response?.data?.message || 'Đã xảy ra lỗi khi tải món ăn');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchFoods();
-  }, []);
+    loadFoods();
+  }, [searchParams]);
 
-  return { foods, loading, error };
+  return { foods, loading, error, pagination, setPagination, searchParams, setSearchParams };
+};
+
+export const useFoodDetail = (slug: string) => {
+  const [food, setFood] = useState<FoodDetail | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadFood = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const data = await fetchFoodBySlug(slug);
+        setFood(data);
+      } catch (error) {
+        const err = error as AxiosError<{ message?: string }>;
+        setError(err.response?.data?.message || 'Đã xảy ra lỗi khi tải món ăn');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (slug) {
+      loadFood();
+    }
+  }, [slug]);
+
+  return { food, loading, error };
+};
+
+export const useDishByFavoriteCategory = (cateType: string) => {
+  return useQuery<FoodDetail[]>({
+    queryKey: ["dishByFavoriteCategory", cateType],
+    queryFn: () => fetchFoodByFavorite(cateType),
+    enabled: !!cateType,
+    refetchOnWindowFocus: false,
+  });
 };

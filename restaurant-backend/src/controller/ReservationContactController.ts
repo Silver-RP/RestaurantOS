@@ -14,6 +14,7 @@ class ReservationContactController {
             res.status(400).json({message: error.message});
         }
     }
+
     async getAllReservationContact (req: Request, res: Response) {
         try {
             // Gọi phương thức getAllReservationContact từ đối tượng này
@@ -23,6 +24,7 @@ class ReservationContactController {
             res.status(400).json({message: error.message});
         }
     }
+
     async getReservationById (req: Request, res: Response) {
         try {
             const { id } = req.params;
@@ -33,6 +35,7 @@ class ReservationContactController {
             res.status(400).json({message: error.message});
         }
     }
+
     async updateReservationContact (req: Request, res: Response){
         try {
             const { id } = req.params;
@@ -44,6 +47,7 @@ class ReservationContactController {
         }
 
     }
+    
     async deleteReservationContact (req: Request, res: Response) {
         try {
             const { id } = req.params;

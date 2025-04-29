@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 
 interface ProductGalleryProps {
   mainImage: string;
@@ -16,38 +16,41 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
   const [selectedImage, setSelectedImage] = useState(mainImage);
 
   return (
-    <div className="w-full items-center lg:items-start sm:items-center md:items-center lg:w-1/2 flex flex-col lg:flex-row mb-8 lg:mb-0">
-      {/* Ảnh chính */}
-      <div className="relative w-full overflow-hidden">
-        {discount > 0 && (
-          <span className="absolute top-4 left-2 bg-secondaryColor font-semibold font-sans text-black text-sm px-3 py-1 rounded">
-            -{discount}%
-          </span>
-        )}
-        {isNew && (
-          <span className="absolute top-14 left-2 bg-secondaryColor font-semibold font-sans text-black text-sm px-3 py-1 rounded">
-            NEW
-          </span>
-        )}
-        <img
-          src={selectedImage}
-          alt="product"
-          className="w-full object-cover"
-        />
-      </div>
-
-      {/* Thumbnail */}
-      <div className="flex lg:flex-col gap-2 mt-4 lg:mt-0 lg:ml-4 overflow-x-auto lg:overflow-y-auto max-w-full lg:max-h-[400px] items-center">
+    <div className="flex flex-col-reverse lg:flex-row gap-6 w-full">
+      <div className="flex lg:flex-col gap-2 lg:overflow-y-auto overflow-x-auto max-h-[500px] lg:max-w-[120px]">
         {thumbnails.map((src, idx) => (
           <img
             key={idx}
             src={src}
             alt={`thumb-${idx}`}
             onClick={() => setSelectedImage(src)}
-            className={`w-20 h-20 object-cover border cursor-pointer transition 
-              ${selectedImage === src ? "border-secondaryColor" : "border-gray-600"}`}
+            className={`w-20 h-20 object-fit rounded-md cursor-pointer transition-all border-2 ${
+              selectedImage === src
+                ? 'border-secondaryColor'
+                : 'border-transparent hover:border-gray-400'
+            }`}
           />
         ))}
+      </div>
+
+      <div
+        className="relative flex-1 h-[300px] sm:h-[350px] md:h-[400px] lg:h-[500px] 2xl:h-[700px] flex justify-center items-center overflow-hidden rounded-lg shadow-md bg-white"
+      >
+        {discount > 0 && (
+          <span className="absolute top-4 left-4 bg-secondaryColor text-black text-xs font-semibold px-2 py-1 rounded">
+            -{discount}%
+          </span>
+        )}
+        {isNew && (
+          <span className="absolute top-14 left-4 bg-secondaryColor text-black text-xs font-semibold px-2 py-1 rounded">
+            NEW
+          </span>
+        )}
+        <img
+          src={selectedImage}
+          alt="product"
+          className="h-full w-full object-fit transition-all duration-300"
+        />
       </div>
     </div>
   );

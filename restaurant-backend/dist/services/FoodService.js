@@ -13,7 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const DishModel_1 = require("../models/DishModel");
-const mongoose_1 = __importDefault(require("mongoose"));
+const CategoryModel_1 = __importDefault(require("../models/CategoryModel"));
 class FoodService {
     createFood(food) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -40,14 +40,76 @@ class FoodService {
             }
         });
     }
-    getAllFood() {
-        return __awaiter(this, void 0, void 0, function* () {
+    getAllFood(_a) {
+        return __awaiter(this, arguments, void 0, function* ({ page = 1, limit = 10, sort = 'newest', search = '', category = '', priceMin, priceMax, }) {
+            const query = {};
+            if (search) {
+                query.$or = [
+                    { name: { $regex: search, $options: 'i' } },
+                    { description: { $regex: search, $options: 'i' } },
+                ];
+            }
+            if (priceMin !== undefined || priceMax !== undefined) {
+                query.price = {};
+                if (priceMin !== undefined) {
+                    query.price.$gte = priceMin;
+                }
+                if (priceMax !== undefined) {
+                    query.price.$lte = priceMax;
+                }
+            }
+            if (category) {
+                query.categories = { $in: [category] };
+            }
+            const sortQuery = this.getSortQuery(sort);
+            const options = {
+                page,
+                limit,
+                sort: sortQuery,
+                lean: true,
+                populate: {
+                    path: 'categories',
+                    select: 'Cate_name',
+                },
+            };
             try {
-                return yield DishModel_1.Dish.find();
+                return yield DishModel_1.Dish.paginate(query, options);
             }
             catch (error) {
-                throw new Error('Error getting all food');
+                console.error('Error in getAllFood:', error);
+                throw new Error('Error fetching food items');
             }
+        });
+    }
+    getSortQuery(sort) {
+        switch (sort) {
+            case 'priceLow':
+                return { price: 1 };
+            case 'priceHigh':
+                return { price: -1 };
+            case 'newest':
+                return { createdAt: -1 };
+            case 'relevance':
+                return { _id: -1 };
+            case 'highestRated':
+                return { average_rating: -1 };
+            case 'mostViewed':
+                return { views: -1 };
+            case 'mostOrdered':
+                return { ordered_count: -1 };
+            case 'mostFavorite':
+                return { favorites_count: -1 };
+            default:
+                return { createdAt: -1 };
+        }
+    }
+    getFoodBySlug(slug) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const food = yield DishModel_1.Dish.findOne({ slug }).populate('categories');
+            if (!food) {
+                return null;
+            }
+            return food;
         });
     }
     getFoodById(id) {
@@ -81,26 +143,17 @@ class FoodService {
             }
         });
     }
-    getFoodWithPagination(page, limit) {
+    getFoodByCategoryType(cateType) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                return yield DishModel_1.Dish.find()
-                    .skip((page - 1) * limit)
-                    .limit(limit);
+                const categories = yield CategoryModel_1.default.find({ Cate_type: cateType });
+                const categoryIds = categories.map((cat) => cat._id);
+                // B2: Tìm dish có categories nằm trong danh sách categoryIds
+                const food = yield DishModel_1.Dish.find({ categories: { $in: categoryIds } });
+                return food;
             }
             catch (error) {
-                throw new Error('Error getting food with pagination');
-            }
-        });
-    }
-    getFoodByCategory(id) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const categoryId = new mongoose_1.default.Types.ObjectId(id);
-                return yield DishModel_1.Dish.find({ categories: categoryId });
-            }
-            catch (error) {
-                throw new Error('Error getting food by category');
+                throw new Error('Error getting food by category type');
             }
         });
     }
@@ -136,13 +189,88 @@ class FoodService {
             }
         });
     }
-    getFoodByFavorites(favorites) {
+    getFoodByFavorites(favorites, type) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                return yield DishModel_1.Dish.find({ favorites_count: favorites });
+                const dishes = yield DishModel_1.Dish.aggregate([
+                    {
+                        $match: { favorites_count: favorites }
+                    },
+                    {
+                        $lookup: {
+                            from: 'categories',
+                            localField: 'categories',
+                            foreignField: '_id',
+                            as: 'categories'
+                        }
+                    },
+                    { $unwind: "$categories" },
+                    {
+                        $match: { "categories.Cate_type": type }
+                    },
+                    {
+                        $project: {
+                            _id: 1,
+                            name: 1,
+                            price: 1,
+                            description: 1,
+                            images: 1,
+                            favorites_count: 1,
+                            rating: 1,
+                            categories: 1,
+                            slug: 1,
+                        }
+                    }
+                ]);
+                return dishes;
             }
             catch (error) {
-                throw new Error('Error getting food by favorites');
+                console.error('Error in getFoodByFavorites:', error);
+                throw new Error('Error fetching food by favorites');
+            }
+        });
+    }
+    getTopFavoriteFoods(type) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const dishes = yield DishModel_1.Dish.aggregate([
+                    {
+                        $lookup: {
+                            from: 'categories',
+                            localField: 'categories',
+                            foreignField: '_id',
+                            as: 'categories'
+                        }
+                    },
+                    { $unwind: "$categories" },
+                    {
+                        $match: { "categories.Cate_type": type }
+                    },
+                    {
+                        $sort: { favorites_count: -1 }
+                    },
+                    {
+                        $limit: 6
+                    },
+                    {
+                        $project: {
+                            _id: 1,
+                            name: 1,
+                            price: 1,
+                            description: 1,
+                            images: 1,
+                            favorites_count: 1,
+                            rating: 1,
+                            categories: 1,
+                            slug: 1,
+                        }
+                    }
+                ]);
+                return dishes;
+            }
+            catch (error) {
+                console.error('Error in getTopFavoriteFoods:', error);
+                throw new Error('Error fetching top favorite foods');
             }
         });
     }

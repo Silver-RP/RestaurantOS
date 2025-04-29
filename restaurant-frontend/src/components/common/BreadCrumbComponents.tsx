@@ -11,7 +11,10 @@ const BreadcrumbComponent = () => {
     { path: "/", label: "Trang chủ" },
     ...pathnames.map((value, index) => {
       const to = `/${pathnames.slice(0, index + 1).join("/")}`;
-      return { path: to, label: breadcrumbConfig[to] || decodeURIComponent(value) };
+      return {
+        path: to,
+        label: breadcrumbConfig[to] || decodeURIComponent(value).replace(/[_-]/g, " "),
+      };
     }),
   ];
 
@@ -27,14 +30,14 @@ const BreadcrumbComponent = () => {
           {breadcrumbList.map((item, index) => (
             <li key={item.path} className="flex items-center">
               {index > 0 && (
-                <MdOutlineNavigateNext className="text-secondaryColor mx-1" />
+                <MdOutlineNavigateNext className="text-secondaryColor text-xl mx-1" />
               )}
               {index === breadcrumbList.length - 1 ? (
-                <span className="text-white font-semibold">{item.label}</span>
+                <span className="text-white text-xl font-semibold">{item.label}</span>
               ) : (
                 <Link
                   to={item.path}
-                  className="hover:text-secondaryColor transition"
+                  className="hover:text-secondaryColor transition text-xl"
                 >
                   {item.label}
                 </Link>

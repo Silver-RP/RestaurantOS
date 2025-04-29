@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 interface MenuItemProps {
   name: string;
@@ -6,11 +7,16 @@ interface MenuItemProps {
   description: string;
   image: string;
   hoverImage: string; 
+  slug: string;  
 }
 
-const MenuItem: React.FC<MenuItemProps> = ({ name, price, description, image, hoverImage }) => {
+const MenuItem: React.FC<MenuItemProps> = ({ name, price, description, image, hoverImage, slug  }) => {
+  const navigate = useNavigate();
+  const handleNavigateToDetail = () => {
+    navigate(`/product/${slug}`);
+  };
   return (
-    <div className="relative flex items-center space-x-4 py-4 group">
+    <div className="relative flex items-center space-x-4 py-4 group cursor-pointer" onClick={handleNavigateToDetail}>
       <div className="relative w-20 h-20">
         <img
           src={image}
@@ -29,7 +35,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ name, price, description, image, ho
         <div className="flex items-center">
           <h3 className="text-lg font-bold text-white">{name}</h3>
           <div className="flex-grow border-t mt-4 border-dotted border-hr mx-4"></div>
-          <p className="text-secondaryColor font-bold">${price.toFixed(2)}</p>
+          <p className="text-secondaryColor font-bold">{price.toLocaleString()} VND</p>
         </div>
         <p className="text-sm text-gray-400 mt-2">{description}</p>
       </div>

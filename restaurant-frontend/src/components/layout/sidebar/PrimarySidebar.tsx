@@ -38,30 +38,30 @@ const PrimarySidebar: React.FC<PrimarySidebarProps> = ({ toggleSidebar }) => {
   return (
     <div className="h-screen fixed top-0 left-0 w-16 bg-headerBackground transform transition-transform duration-300 flex flex-col items-center py-4 justify-start">
       <div className="flex flex-col items-center space-y-6">
-        <div className="p-2 w-12 h-12 flex items-center justify-center mb-4">
+        <div className="p-2 w-12 h-12 flex items-center justify-center">
           <button onClick={toggleSidebar} aria-label="Close Sidebar">
             <FiArrowRight className="text-white hover:text-secondaryColor text-2xl" />
           </button>
         </div>
         <div className="p-2 w-20 h-20 flex items-center justify-center mb-6">
           <img
-            src="assets/images/logo.png"
+            src="/assets/images/logo.png"
             alt="Logo"
             className="w-10 h-auto mx-auto"
           />
         </div>
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {menuItemsMain.map((item, index) => (
             <Link
               key={index}
               to={item.link}
-              className={`relative h-1/4 flex items-center justify-center group transition ${
+              className={`relative h-1/6 flex items-center justify-center group transition text-base sm:text-lg ${
                 location.pathname === item.link
                   ? "text-secondaryColor"
                   : "text-white hover:text-secondaryColor"
               }`}
             >
-              <div className="text-xl">{item.icon}</div>
+              <div className="text-xl ">{item.icon}</div>
               <span
                 className={`absolute left-10 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 translate-x-2 transition-all duration-300 bg-headerBackground text-secondaryColor uppercase text-xs md:text-sm px-4 py-2 shadow-lg whitespace-nowrap`}
               >
@@ -72,7 +72,7 @@ const PrimarySidebar: React.FC<PrimarySidebarProps> = ({ toggleSidebar }) => {
         </div>
       </div>
 
-      <div className="space-y-6 mt-56">
+      <div className="space-y-4 sm:space-y-6 mt-32">
         {menuItemsBottom.map((item, index) => (
           <Link
             key={index}

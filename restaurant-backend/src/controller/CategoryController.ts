@@ -3,9 +3,6 @@ import CategoryService from '../services/CategoryService';
 import SearchService from '../services/SearchService';
 import Category from '../models/CategoryModel';
 import PaginateService from '../services/PaginateService';
-
-
-
 class CategoryController {
     async GetAllCategory(req: Request, res: Response): Promise<void> {
         await CategoryService.GetAllCategory(req, res);

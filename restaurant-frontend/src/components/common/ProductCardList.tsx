@@ -11,12 +11,13 @@ const ProductCardList: React.FC<ProductCardProps> = ({
   originalPrice,
   discount,
   isNew,
+  slug,
   description,
 }) => {
   const navigate = useNavigate();
 
   const handleNavigateToDetail = () => {
-    navigate(`/product-detail/${name}`);
+    navigate(`/product/${slug}`);
   };
 
   return (
@@ -62,8 +63,7 @@ const ProductCardList: React.FC<ProductCardProps> = ({
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col justify-center p-3 sm:p-4">
-        {/* Sửa ở đây: mobile = column, desktop = row */}
+      <div className="flex-1 bg-headerBackground flex flex-col justify-center p-3 sm:p-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0 mb-2">
           <div className="flex-1">
             <h3
@@ -77,7 +77,6 @@ const ProductCardList: React.FC<ProductCardProps> = ({
             </p>
           </div>
 
-          {/* Giá để flex-col khi mobile */}
           <div className="text-right sm:text-right flex flex-col sm:flex-col items-start sm:items-end gap-1 w-full sm:w-auto">
             {originalPrice && (
               <div className="text-xs sm:text-sm font-light line-through text-gray-400">

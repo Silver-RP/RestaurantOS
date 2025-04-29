@@ -11,16 +11,15 @@ import ProfilePage from "../pages/Profile";
 import MenuPage from "../pages/Menu";
 import ProductDetail from "../pages/ProductDetail";
 import ContactUsPage from "../pages/ContactUsPage";
-// import AboutUsPage from "pages/AboutUs";
-// import AboutUs from "../pages/AboutUs";
+import AboutUs from "../pages/AboutUs";
 import FAQsCompoent from "../pages/FaqPage";
 import AddressPage from "../pages/AddressPage";
+import PostPage from "../pages/PostPage";
 
 const AppRoutes = () => {
   const routes = useRoutes([
     { path: "/", element: <Homepage /> },
-    // { path: "/aboutus", element: <AboutUsPage /> },
-    // { path: "/aboutus", element: <AboutUs /> },
+    { path: "/aboutus", element: <AboutUs /> },
     { path: "/register", element: <Register /> },
     { path: "/login", element: <Login /> },
     { path: "/wishlist", element: <WishList/> },
@@ -28,11 +27,12 @@ const AppRoutes = () => {
     { path: "/forgot-password", element: <ForgotPassword/> },
     { path: "/verify-otp", element: <EnterOTP/> },
     { path: "/profile", element: <ProfilePage/> },
+    { path: "/profile/address", element: <AddressPage /> },    
     { path: "/menu", element: <MenuPage/> },
-    { path: "/productdetail", element: <ProductDetail/> },
+    { path: "/product/:slug", element: <ProductDetail /> },
     { path: "/contact", element: <ContactUsPage/> },
     { path: "/faqs", element: <FAQsCompoent /> },
-    { path: "/profile/address", element: <AddressPage /> },    
+    { path: "/posts", element: <PostPage /> },    
   ]);
   return routes;
 };

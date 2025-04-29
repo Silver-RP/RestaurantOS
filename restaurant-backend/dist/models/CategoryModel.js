@@ -5,31 +5,33 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
 const categorySchema = new mongoose_1.default.Schema({
-    name: {
+    Cate_name: {
         type: String,
         required: true,
         unique: true,
         trim: true,
     },
-    slug: {
+    Cate_slug: {
         type: String,
         required: true,
         unique: true,
         trim: true,
     },
-    image: {
+    Cate_img: {
         type: String,
-        required: false,
+        default: null,
     },
-    cate_type: {
+    Cate_type: {
         type: String,
         required: true,
-        enum: ['post', 'food'],
+        enum: ['drink', 'food', 'post'],
     },
-    parent_cate: {
+    parentCate: {
         type: String,
-        required: false,
+        default: null,
     },
+}, {
+    timestamps: true,
 });
 const Category = mongoose_1.default.model('categories', categorySchema);
 exports.default = Category;

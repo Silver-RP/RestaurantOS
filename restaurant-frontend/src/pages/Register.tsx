@@ -96,12 +96,12 @@ const Register = () => {
   };
   useEffect(() => {
     if (success) {
-      toast.success('Đăng ký thành công! 🎉');
+      toast.success('Đăng ký thành công!');
       navigate('/login');
       dispatch(clearStatus());
     }
     if (error) {
-      toast.error(error);
+      // toast.error(error);
       dispatch(clearStatus());
     }
   }, [success, error, navigate, dispatch]);
@@ -144,9 +144,15 @@ const Register = () => {
       });
     })
     .catch((error) => {
+      const errorMessage =
+        typeof error === 'string'
+          ? error
+          : error?.message || error?.data?.message || 'Đăng ký thất bại';
+
       if (!hasErrorToast) {
-        toast.error(error);
-        setHasErrorToast(true); 
+        toast.error(errorMessage);
+        setHasErrorToast(true);
+        setTimeout(() => setHasErrorToast(false), 3000); // Reset sau 3s
       }
     })
     .finally(() => {

@@ -11,6 +11,7 @@ class ProfileController {
             res.status(400).json({ message: error.message });
         }
     }
+
     async updateUserProfile(req: Request, res: Response) {
         try {
             const userId = req.params._id;
@@ -20,6 +21,7 @@ class ProfileController {
             res.status(400).json({ message: error.message });
         }
     }
+    
     async changePasswordProfile(req: Request, res: Response) {
         try {
             const userId = req.params._id;
