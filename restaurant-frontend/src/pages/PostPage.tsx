@@ -26,6 +26,24 @@ const mockPosts: PostType[] = [
     author: 'News',
     category: 'Healthy Food',
   },
+  {
+    id: '3',
+    title: 'Không gian của nhà hàng chúng tôi',
+    image: '../../public/assets/images/posts/Post_2.png',
+    date: '2022-05-18',
+    description: 'Khung cảnh được thiết lập cho mọi dịp...',
+    author: 'News',
+    category: 'Healthy Food',
+  },
+  {
+    id: '4',
+    title: 'Không gian của nhà hàng chúng tôi',
+    image: '../../public/assets/images/posts/Post_2.png',
+    date: '2022-05-18',
+    description: 'Khung cảnh được thiết lập cho mọi dịp...',
+    author: 'News',
+    category: 'Healthy Food',
+  },
 ];
 
 const PostPage: React.FC = () => {
