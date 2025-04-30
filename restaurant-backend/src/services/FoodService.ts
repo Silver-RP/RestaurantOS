@@ -60,7 +60,18 @@ class FoodService {
     }
 
     if (category) {
-      query.categories = { $in: [category] };
+      const categoryDoc = await Category.findOne({ Cate_slug: category }).lean();
+      if (categoryDoc) {
+        query.categories = { $in: [categoryDoc._id] };
+      } else {
+        return {
+          docs: [],
+          totalDocs: 0,
+          limit,
+          page,
+          totalPages: 0,
+        };
+      }
     }
 
     const sortQuery = this.getSortQuery(sort);

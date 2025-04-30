@@ -5,18 +5,6 @@ import { Model } from "mongoose";
 import { Dish } from "../models/DishModel";
 
 class CategoryService {
-  // async GetAllCategory(req: Request, res: Response): Promise<any> {
-  //   try {
-  //     const categories = await Category.find();
-  //     if (categories.length === 0) {
-  //       return res.status(404).json({ message: "No categories found!" });
-  //     }
-
-  //     return res.status(200).json(categories);
-  //   } catch (error) {
-  //     return res.status(500).json(error);
-  //   }
-  // }
 
   async GetAllCategory(req: Request, res: Response): Promise<any> {
     try {

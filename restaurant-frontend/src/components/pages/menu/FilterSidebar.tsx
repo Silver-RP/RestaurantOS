@@ -29,13 +29,13 @@ const FilterSidebar: React.FC = () => {
     setSearchParams(newParams);
   };
 
-  const handleCategoryFilter = (categoryId: string) => {
+  const handleCategoryFilter = (categorySlug: string) => {
     const currentSort = searchParams.get('sort') || 'default';
 
     const newParams = new URLSearchParams();
     newParams.set('page', '1');
     newParams.set('sort', currentSort);
-    newParams.set('category', categoryId);
+    newParams.set('category', categorySlug);
 
     // Giữ giá nếu có lọc giá
     if (searchParams.get('priceMin')) {
@@ -78,7 +78,7 @@ const FilterSidebar: React.FC = () => {
               <li
                 key={category._id}
                 className="flex justify-between hover:text-secondaryColor cursor-pointer capitalize"
-                onClick={() => handleCategoryFilter(category._id)}
+                onClick={() => handleCategoryFilter(category.Cate_slug)}
               >
                 <span>{category.Cate_name}</span>
                 <span>({category.foodCount ?? 0})</span>
