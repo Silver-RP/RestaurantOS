@@ -2,6 +2,9 @@ import { Request, Response, NextFunction } from 'express';
 import OrderService from '../services/OrderService';
 import { IUser } from '../models/UserModel';
 import { Types } from 'mongoose';
+import QueryString from 'express';
+import { ParsedQs } from 'qs';
+
 
 class OrderController {
 
@@ -35,8 +38,25 @@ class OrderController {
 
   async getAllOrders(req: Request, res: Response, next: NextFunction): Promise<any> {
     try {
-      const orders = await OrderService.getAllOrders();
+      const { page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc', filters } = req.query;
+      const parsedSortOrder: 1 | -1 = sortOrder === 'asc' ? 1 : -1;
+      const parsedPage = parseInt(page as string, 10);
+      const parsedLimit = parseInt(limit as string, 10);
+      const filtersObject = filters ? (filters as { [key: string]: string }) : {};
 
+      console.log('Filters:', filters); 
+      console.log('MongoDB Query:', req.query);
+  
+      const options = {
+        page: parsedPage,
+        limit: parsedLimit,
+        sortBy: sortBy as string,
+        sortOrder: parsedSortOrder,
+        filters: filtersObject
+      };
+  
+      const orders = await OrderService.getAllOrders(options);
+  
       return res.status(200).json({
         message: 'Orders retrieved successfully',
         orders,
@@ -47,6 +67,7 @@ class OrderController {
       return res.status(error.statusCode || 500).json({ message: error.message || 'Internal Server Error' });
     }
   }
+  
 
   async getUserOrders(req: Request, res: Response, next: NextFunction): Promise<any> {
     try {

@@ -106,6 +106,7 @@ class FoodService {
         return { createdAt: -1 };
     }
   }
+
   async getFoodBySlug(slug: string) {
     const food = await Dish.findOne({ slug }).populate('categories');
     if (!food) {
@@ -113,6 +114,7 @@ class FoodService {
     }
     return food;
   }
+  
   async getFoodById(id: string) {
     try {
       const food = await Dish.findById(id).populate('categories');

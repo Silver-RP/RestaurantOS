@@ -47,7 +47,7 @@ class OrderService {
 
             if (address_id) {
                 await OrderValidator.validateAddress(finalAddressId);
-              }
+            }
 
             let totalAmount = 0;
             const orderItems = [];
@@ -107,13 +107,43 @@ class OrderService {
         }
     }
 
-    async getAllOrders() {
-        try {
-            const orders = await Order.find();
-            return orders;
-        } catch (error: any) {
-            throw { statusCode: error.statusCode || 500, message: error.message || 'Error retrieving orders' };
-        }
+    async getAllOrders(options: {
+        page: number;
+        limit: number;
+        sortBy: string;
+        sortOrder: 1 | -1;
+        filters: any;
+    }) {
+        const { page, limit, sortBy, sortOrder, filters } = options;
+
+        const allowedSortBy = ['createdAt', 'total_price', 'status', 'payment_method', 'delivery_type', 'order_type'];
+        const sortField = allowedSortBy.includes(sortBy) ? sortBy : 'createdAt';
+
+        const allowedFilters = ['status', 'payment_method', 'delivery_type', 'order_type'];
+        const query: any = {};
+
+        allowedFilters.forEach((key) => {
+            if (filters[key]) {
+                query[key] = filters[key];
+            }
+        });
+
+        const skip = (page - 1) * limit;
+        const [orders, total] = await Promise.all([
+            Order.find(query)
+                .sort({ [sortField]: sortOrder })
+                .skip(skip)
+                .limit(limit)
+                .populate('user_id address_id'),
+            Order.countDocuments(query),
+        ]);
+
+        return {
+            orders,
+            total,
+            currentPage: page,
+            totalPages: Math.ceil(total / limit),
+        };
     }
 
     async getUserOrders(userId: mongoose.Types.ObjectId) {
@@ -122,13 +152,13 @@ class OrderService {
                 .populate('address_id')
                 .sort({ createdAt: -1 })
                 .lean();
-    
+
             const orderIds = orders.map(order => order._id);
-    
+
             const orderDetails = await OrderDetail.find({ order_id: { $in: orderIds } })
                 .populate('dish_id')
                 .lean();
-    
+
             // Gom nhóm orderDetails theo order_id
             const detailsMap = new Map<string, any[]>();
             for (const detail of orderDetails) {
@@ -138,12 +168,12 @@ class OrderService {
                 }
                 detailsMap.get(key)!.push(detail);
             }
-    
+
             const ordersWithDetails = orders.map(order => ({
                 ...order,
                 order_items: detailsMap.get(order._id.toString()) || [],
             }));
-    
+
             return ordersWithDetails;
         } catch (error: any) {
             throw {
@@ -152,21 +182,20 @@ class OrderService {
             };
         }
     }
-    
 
     async getOrderById(orderId: mongoose.Types.ObjectId) {
         try {
             const order = await Order.findById(orderId)
-                .populate('address_id') 
+                .populate('address_id')
                 .lean();
-    
+
             if (!order) {
                 throw { statusCode: 404, message: 'Order not found' };
             }
             const orderItems = await OrderDetail.find({ order_id: orderId })
                 .populate('dish_id')
                 .lean();
-    
+
             return {
                 ...order,
                 order_items: orderItems,
@@ -178,7 +207,6 @@ class OrderService {
             };
         }
     }
-    
 
     async updateOrderStatus(orderId: mongoose.Types.ObjectId, status: string) {
         try {

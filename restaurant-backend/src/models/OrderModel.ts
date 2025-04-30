@@ -1,4 +1,5 @@
-import { Schema, model, Document, Types } from 'mongoose';
+import { Schema, model, Document, Types, PaginateModel } from 'mongoose';
+import mongoosePaginate from 'mongoose-paginate-v2';
 
 
 export interface IOrder extends Document {
@@ -49,4 +50,6 @@ const OrderSchema = new Schema<IOrder>({
   order_type: { type: String, enum: ['DINE_IN', 'ONLINE'], required: true },
 }, { timestamps: true });
 
-export const Order = model<IOrder>('Order', OrderSchema);
+OrderSchema.plugin(mongoosePaginate);
+export type OrderDocument = PaginateModel<IOrder>;
+export const Order = model<IOrder, OrderDocument>('Order', OrderSchema);
