@@ -37,7 +37,7 @@ const Pagination: React.FC<PaginationProps> = ({
           <option value={24}>24</option>
           <option value={36}>36</option>
           <option value={48}>48</option>
-          <option value={99}>100</option>
+          <option value={100}>100</option>
         </select>
         <span className="text-white ml-2">món ăn mỗi trang</span>
       </div>
