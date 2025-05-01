@@ -115,6 +115,7 @@ export function generateSwaggerSpec(
         'x-order': 2,
       },
     ],
+    security: [{ bearerAuth: [] }],
      paths,
    };
 }

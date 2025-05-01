@@ -1,7 +1,7 @@
 import { registerSwaggerRoute } from '../utils/swaggerOptions';
 
 registerSwaggerRoute({
-    path: '/api/order/place-order',
+    path: '/order/place-order',
     method: 'post',
     summary: 'Place an order',
     description: 'Place an order with specified details. Requires authentication. Either `address_id` or `address` must be provided.',
@@ -100,14 +100,72 @@ registerSwaggerRoute({
             },
         },
     },
+    security: [{ bearerAuth: [] }],
     tags: ['Order'],
 });
 
 registerSwaggerRoute({
-    path: '/api/order/all-orders',
+    path: '/order/all-orders',
     method: 'get',
     summary: 'Get all orders',
-    description: 'Retrieve a list of all orders. Requires authentication and admin privileges.',
+    description: 'Retrieve a list of all orders with support for pagination, sorting, and filtering. Requires authentication and admin privileges.',
+    parameters: [
+        {
+            name: 'page',
+            in: 'query',
+            description: 'Page number for pagination.',
+            required: false,
+            schema: {
+                type: 'integer',
+                example: 1,
+            },
+        },
+        {
+            name: 'limit',
+            in: 'query',
+            description: 'Number of orders per page.',
+            required: false,
+            schema: {
+                type: 'integer',
+                example: 10,
+            },
+        },
+        {
+            name: 'sortBy',
+            in: 'query',
+            description: 'Field to sort the orders by.',
+            required: false,
+            schema: {
+                type: 'string',
+                example: 'createdAt',
+            },
+        },
+        {
+            name: 'sortOrder',
+            in: 'query',
+            description: 'Order of sorting: `asc` for ascending or `desc` for descending.',
+            required: false,
+            schema: {
+                type: 'string',
+                enum: ['asc', 'desc'],
+                example: 'desc',
+            },
+        },
+        {
+            name: 'filters[status]',
+            in: 'query',
+            description: 'Filter by order status.',
+            required: false,
+            schema: { type: 'string', example: 'PREPARING' },
+        },
+        {
+            name: 'filters[payment_method]',
+            in: 'query',
+            description: 'Filter by payment method.',
+            required: false,
+            schema: { type: 'string', example: 'cash' },
+        },
+    ],
     responses: {
         '200': {
             description: 'Orders retrieved successfully',
@@ -156,6 +214,21 @@ registerSwaggerRoute({
                                     },
                                 },
                             },
+                            total: {
+                                type: 'integer',
+                                example: 100,
+                                description: 'Total number of orders available',
+                            },
+                            currentPage: {
+                                type: 'integer',
+                                example: 1,
+                                description: 'The current page number',
+                            },
+                            totalPages: {
+                                type: 'integer',
+                                example: 10,
+                                description: 'Total number of pages',
+                            },
                         },
                     },
                 },
@@ -194,11 +267,12 @@ registerSwaggerRoute({
             },
         },
     },
+    security: [{ bearerAuth: [] }],
     tags: ['Order'],
 });
 
 registerSwaggerRoute({
-    path: '/api/order/user-orders',
+    path: '/order/user-orders',
     method: 'get',
     summary: 'Get user orders',
     description: 'Retrieve all orders of the currently authenticated user. Requires authentication.',
@@ -290,11 +364,12 @@ registerSwaggerRoute({
             },
         },
     },
+    security: [{ bearerAuth: [] }],
     tags: ['Order'],
 });
 
 registerSwaggerRoute({
-    path: '/api/order/{id}',
+    path: '/order/{id}',
     method: 'get',
     summary: 'Get order by ID',
     description: 'Retrieve detailed information for a specific order by its ID. Requires authentication.',
@@ -404,11 +479,12 @@ registerSwaggerRoute({
             },
         },
     },
+    security: [{ bearerAuth: [] }],
     tags: ['Order'],
 });
 
 registerSwaggerRoute({
-    path: '/api/order/order-status/{id}',
+    path: '/order/order-status/{id}',
     method: 'put',
     summary: 'Update order status',
     description: 'Update the delivery and overall status of a specific order by its ID. Requires authentication.',
@@ -528,6 +604,7 @@ registerSwaggerRoute({
             },
         },
     },
+    security: [{ bearerAuth: [] }],
     tags: ['Order'],
 });
 

@@ -1,63 +1,89 @@
-import React from "react";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import React from 'react';
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 interface PaginationProps {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
+  limit: number;
+  onLimitChange: (newLimit: number) => void;
 }
 
 const Pagination: React.FC<PaginationProps> = ({
   currentPage,
   totalPages,
   onPageChange,
+  limit,
+  onLimitChange,
 }) => {
   const getPageNumbers = () => {
-    const maxVisible = 10;
+    const maxVisible = 8;
     const start = Math.max(currentPage - Math.floor(maxVisible / 2), 1);
     const end = Math.min(start + maxVisible - 1, totalPages);
     return Array.from({ length: end - start + 1 }, (_, i) => start + i);
   };
 
   return (
-    <nav className="flex items-center justify-center flex-wrap gap-4">
-      {/* Nút Previous */}
-      {currentPage > 1 && (
-        <button
-          onClick={() => onPageChange(currentPage - 1)}
-          aria-label="Previous page"
-          className="text-white hover:text-secondaryColor transition"
+    <div className="flex justify-between items-center flex-wrap gap-4 md:gap-6">
+      {/* limit */}
+      <div className="flex items-center mb-4 md:mb-0">
+        <span className="text-white mr-2">Hiển thị</span>
+        <select
+          value={limit}
+          onChange={(e) => onLimitChange(Number(e.target.value))}
+          className="bg-bodyBackground text-white rounded px-2 py-1 text-sm md:text-base border border-gray-600"
         >
-          <FaChevronLeft />
-        </button>
-      )}
+          <option value={12}>12</option>
+          <option value={24}>24</option>
+          <option value={36}>36</option>
+          <option value={48}>48</option>
+          <option value={99}>100</option>
+        </select>
+        <span className="text-white ml-2">món ăn mỗi trang</span>
+      </div>
 
-      {/* Các trang */}
-      {getPageNumbers().map((page) => (
-        <button
-          key={page}
-          onClick={() => onPageChange(page)}
-          className={`w-10 h-10 flex items-center justify-center text-sm font-semibold transition ${
-            page === currentPage
-              ? "border-2 border-[#FFDEA0] rounded-full text-white"
-              : "text-white hover:text-secondaryColor"
-          }`}
-        >
-          {page}
-        </button>
-      ))}
+      {/* phân trang */}
+      <nav className="flex items-center justify-center flex-wrap gap-4">
+        {currentPage > 1 && (
+          <button
+            onClick={() => onPageChange(currentPage - 1)}
+            aria-label="Previous page"
+            className="text-white hover:text-secondaryColor transition px-3 py-2 rounded-md"
+          >
+            <FaChevronLeft />
+          </button>
+        )}
 
-      {/* Nút Next */}
-      {currentPage < totalPages && (
-        <button
-          onClick={() => onPageChange(currentPage + 1)}
-          aria-label="Next page"
-          className="text-white hover:text-secondaryColor transition"
-        >
-          <FaChevronRight />
-        </button>
-      )}
-    </nav>
+        {getPageNumbers().map((page) => (
+          <button
+            key={page}
+            onClick={() => onPageChange(page)}
+            className={`w-10 h-10 flex items-center justify-center text-sm font-semibold transition ${
+              page === currentPage
+                ? 'border-2 border-[#FFDEA0] rounded-full text-white'
+                : 'text-white hover:text-secondaryColor'
+            }`}
+          >
+            {page}
+          </button>
+        ))}
+
+        {currentPage < totalPages && (
+          <button
+            onClick={() => onPageChange(currentPage + 1)}
+            aria-label="Next page"
+            className="text-white hover:text-secondaryColor transition px-3 py-2 rounded-md"
+          >
+            <FaChevronRight />
+          </button>
+        )}
+      </nav>
+
+      {/* Thông tin phân trang */}
+      <div className="text-white text-sm md:text-base">
+        <span>{`Trang ${currentPage} của ${totalPages}`}</span>
+      </div>
+    </div>
   );
 };
 

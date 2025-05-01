@@ -15,6 +15,7 @@ import AboutUs from "../pages/AboutUs";
 import FAQsCompoent from "../pages/FaqPage";
 import AddressPage from "../pages/AddressPage";
 import PostPage from "../pages/PostPage";
+import OrderPage from "../pages/OrderPage";
 
 const AppRoutes = () => {
   const routes = useRoutes([
@@ -33,6 +34,7 @@ const AppRoutes = () => {
     { path: "/contact", element: <ContactUsPage/> },
     { path: "/faqs", element: <FAQsCompoent /> },
     { path: "/posts", element: <PostPage /> },    
+    { path: "/order", element: <OrderPage /> },   
   ]);
   return routes;
 };
