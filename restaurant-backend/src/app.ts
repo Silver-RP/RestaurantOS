@@ -34,10 +34,12 @@ dotenv.config();
 connectDB();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors({
-  origin: 'http://localhost:5173',
-  credentials: true 
-}));
+app.use(
+  cors({
+    origin: 'http://localhost:5173',
+    credentials: true,
+  }),
+);
 
 const port = process.env.PORT || 4000;
 
@@ -95,14 +97,12 @@ app.use('/api/reservationdetailcontact', ReservationDetailContactRoutes);
 app.use('/api/search', SearchRoutes);
 app.use('/api/staff', StaffRoutes);
 app.use('/api/food', FoodRoutes);
-app.use('/api/order',  AuthMiddleWare.verifyToken, OrderRoutes); 
+app.use('/api/order', AuthMiddleWare.verifyToken, OrderRoutes);
 app.use('/api', HealthCheckRoutes);
-app.use('/api/cart', CartRouter); 
+app.use('/api/cart', CartRouter);
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
   console.log('Mongo URI:', process.env.MONGO_URI);
   console.log(`Swagger UI available at http://localhost:${port}/api-docs`);
 });
-
-

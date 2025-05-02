@@ -24,7 +24,6 @@ export interface IUser extends Document {
   otpSentCount: number;
   lastOtpSentAt: Date;
   otpVerifiedForChangePassword: boolean;
-  
 }
 
 const userSchema = new mongoose.Schema(
@@ -69,7 +68,7 @@ const userSchema = new mongoose.Schema(
         delete ret.changePasswordOtpExpiry;
         delete ret.phoneOtp;
         delete ret.phoneOtpExpiry;
-        delete ret.__v; 
+        delete ret.__v;
         return ret;
       },
     },
@@ -88,7 +87,6 @@ const userSchema = new mongoose.Schema(
     },
   },
 );
-
 
 userSchema.plugin(mongoosePaginate);
 

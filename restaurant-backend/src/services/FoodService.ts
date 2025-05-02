@@ -60,7 +60,9 @@ class FoodService {
     }
 
     if (category) {
-      const categoryDoc = await Category.findOne({ Cate_slug: category }).lean();
+      const categoryDoc = await Category.findOne({
+        Cate_slug: category,
+      }).lean();
       if (categoryDoc) {
         query.categories = { $in: [categoryDoc._id] };
       } else {
@@ -125,7 +127,7 @@ class FoodService {
     }
     return food;
   }
-  
+
   async getFoodById(id: string) {
     try {
       const food = await Dish.findById(id).populate('categories');
@@ -174,7 +176,7 @@ class FoodService {
   async getFoodByPrice(pricemin: number, pricemax: number) {
     try {
       return await Dish.find({
-        price: { $gte: pricemin, $lte: pricemax }
+        price: { $gte: pricemin, $lte: pricemax },
       });
     } catch (error) {
       throw new Error('Error getting food by price');
@@ -193,19 +195,19 @@ class FoodService {
     try {
       const dishes = await Dish.aggregate([
         {
-          $match: { favorites_count: favorites }
+          $match: { favorites_count: favorites },
         },
         {
           $lookup: {
             from: 'categories',
             localField: 'categories',
             foreignField: '_id',
-            as: 'categories'
-          }
+            as: 'categories',
+          },
         },
-        { $unwind: "$categories" },
+        { $unwind: '$categories' },
         {
-          $match: { "categories.Cate_type": type }
+          $match: { 'categories.Cate_type': type },
         },
         {
           $project: {
@@ -213,13 +215,13 @@ class FoodService {
             name: 1,
             price: 1,
             description: 1,
-            images: 1,               
+            images: 1,
             favorites_count: 1,
             rating: 1,
-            categories: 1, 
-            slug: 1, 
-          }
-        }
+            categories: 1,
+            slug: 1,
+          },
+        },
       ]);
       return dishes;
     } catch (error) {
@@ -227,7 +229,7 @@ class FoodService {
       throw new Error('Error fetching food by favorites');
     }
   }
-  
+
   async getTopFavoriteFoods(type: string) {
     try {
       const dishes = await Dish.aggregate([
@@ -236,18 +238,18 @@ class FoodService {
             from: 'categories',
             localField: 'categories',
             foreignField: '_id',
-            as: 'categories'
-          }
+            as: 'categories',
+          },
         },
-        { $unwind: "$categories" },
+        { $unwind: '$categories' },
         {
-          $match: { "categories.Cate_type": type }
-        },
-        {
-          $sort: { favorites_count: -1 }
+          $match: { 'categories.Cate_type': type },
         },
         {
-          $limit: 6
+          $sort: { favorites_count: -1 },
+        },
+        {
+          $limit: 6,
         },
         {
           $project: {
@@ -255,13 +257,13 @@ class FoodService {
             name: 1,
             price: 1,
             description: 1,
-            images: 1,                
+            images: 1,
             favorites_count: 1,
             rating: 1,
-            categories: 1, 
+            categories: 1,
             slug: 1,
-          }
-        }
+          },
+        },
       ]);
       return dishes;
     } catch (error) {
@@ -269,8 +271,6 @@ class FoodService {
       throw new Error('Error fetching top favorite foods');
     }
   }
-  
-
 }
 
 export default new FoodService();

@@ -97,13 +97,13 @@ export function generateSwaggerSpec(
     };
   });
 
-   return {
-     ...swaggerConfig,
-     info: swaggerConfig.info || {
-       title: 'API Documentation',
-       version: '1.0.0',
-     },
-     tags: [
+  return {
+    ...swaggerConfig,
+    info: swaggerConfig.info || {
+      title: 'API Documentation',
+      version: '1.0.0',
+    },
+    tags: [
       {
         name: 'Auth',
         description: 'Authentication APIs',
@@ -116,6 +116,6 @@ export function generateSwaggerSpec(
       },
     ],
     security: [{ bearerAuth: [] }],
-     paths,
-   };
+    paths,
+  };
 }

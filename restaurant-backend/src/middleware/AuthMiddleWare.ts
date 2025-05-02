@@ -7,16 +7,21 @@ import Roles from '../models/RoleModel';
 import mongoose from 'mongoose';
 
 class AuthMiddleWare {
-  
   async verifyToken(req: Request, res: Response, next: NextFunction) {
     try {
       const authHeader = req.headers['authorization'];
-      const token = authHeader && typeof authHeader === 'string' ? authHeader.split(' ')[1] : null;
+      const token =
+        authHeader && typeof authHeader === 'string'
+          ? authHeader.split(' ')[1]
+          : null;
       if (!token) {
         res.status(401).json({ message: 'Access token not provided' });
         return;
       }
-      const user = jwt.verify(token, process.env.ACCESS_TOKEN as string) as IUser;
+      const user = jwt.verify(
+        token,
+        process.env.ACCESS_TOKEN as string,
+      ) as IUser;
       req.user = user;
       next();
     } catch (err: any) {
@@ -25,22 +30,29 @@ class AuthMiddleWare {
       return;
     }
   }
-  
 
-  async verifyRefreshToken(req: Request, res: Response, next: NextFunction): Promise<any> {
+  async verifyRefreshToken(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<any> {
     try {
       const token = req.cookies.refreshToken;
       if (!token) {
         return res.status(401).json({ message: 'Refresh token not found' });
       }
-      const user = await jwt.verify(token, process.env.REFRESH_TOKEN as string) as IUser;
+      const user = (await jwt.verify(
+        token,
+        process.env.REFRESH_TOKEN as string,
+      )) as IUser;
       req.user = user;
       next();
     } catch (err) {
-      return res.status(403).json({ message: 'Invalid or expired refresh token' });
+      return res
+        .status(403)
+        .json({ message: 'Invalid or expired refresh token' });
     }
   }
-  
 
   verifyRole(roles: string[]) {
     return async (req: Request, res: Response, next: NextFunction) => {
@@ -58,15 +70,17 @@ class AuthMiddleWare {
         if (hasRole) {
           return next();
         } else {
-          return res.status(403).json({ message: 'Permission denied: Insufficient role' });
+          return res
+            .status(403)
+            .json({ message: 'Permission denied: Insufficient role' });
         }
       } catch (err: any) {
-        return res.status(500).json({ message: 'Internal server error', error: err.message });
+        return res
+          .status(500)
+          .json({ message: 'Internal server error', error: err.message });
       }
     };
   }
-  
 }
-
 
 export default new AuthMiddleWare();

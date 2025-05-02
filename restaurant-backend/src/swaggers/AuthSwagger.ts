@@ -42,7 +42,6 @@ registerSwaggerRoute({
   tags: ['Auth'],
 });
 
-
 registerSwaggerRoute({
   path: '/auth/login',
   method: 'post',
