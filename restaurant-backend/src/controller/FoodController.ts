@@ -7,11 +7,6 @@ import mongoose from 'mongoose';
 import { Types } from 'mongoose';
 import { IUser } from '../models/UserModel';
 
-interface QueryParams {
-  page?: string | number;
-  limit?: string | number;
-  sort?: string;
-}
 class FoodController {
   async createFood(req: Request, res: Response): Promise<any> {
     try {

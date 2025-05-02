@@ -39,29 +39,36 @@ class AuthMiddleWare {
     }
   }
 
-  verifyRole(roles: string[]) {
-    return async (req: Request, res: Response, next: NextFunction) => {
-      try {
-        if (!req.user) {
-          return res.status(401).json({ message: 'User not authenticated' });
-        }
-        const user = req.user as IUser;
-        if (!user.roles || user.roles.length === 0) {
-          return res.status(401).json({ message: 'User role not found' });
-        }
-        const userRoles = await Roles.find({ _id: { $in: user.roles } }).lean();
-        const roleNames = userRoles.map((role: any) => role.name);
-        const hasRole = roles.some((role) => roleNames.includes(role));
-        if (hasRole) {
-          return next();
-        } else {
-          return res.status(403).json({ message: 'Permission denied: Insufficient role' });
-        }
-      } catch (err: any) {
-        return res.status(500).json({ message: 'Internal server error', error: err.message });
+  async verifyRole(req: Request, res: Response, next: NextFunction) {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: 'User not authenticated' });
       }
-    };
+  
+      const user = req.user as IUser;
+      if (!user.roles || user.roles.length === 0) {
+        return res.status(401).json({ message: 'User role not found' });
+      }
+  
+      const userRoles = await Roles.find({ _id: { $in: user.roles } }).lean();
+      if (!userRoles || userRoles.length === 0) {
+        return res.status(404).json({ message: 'Roles not found in database' });
+      }
+  
+      const roleNames = userRoles.map((role: any) => role.name);
+  
+      const hasRole = roleNames.some((role: string) => roleNames.includes(role));
+      if (hasRole) {
+        return next(); 
+      } else {
+        return res.status(403).json({ message: 'Permission denied: Insufficient role' });
+      }
+    } catch (err: any) {
+      return res.status(500).json({ message: 'Internal server error', error: err.message });
+    }
   }
+  
+  
 }
 
 export default new AuthMiddleWare();

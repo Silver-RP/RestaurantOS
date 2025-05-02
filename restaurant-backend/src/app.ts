@@ -1,6 +1,5 @@
 import express from 'express';
 import swaggerUi from 'swagger-ui-express';
-// import swaggerJsdoc from 'swagger-jsdoc';
 import { generateSwaggerSpec, getSwaggerRoutes } from './utils/swaggerOptions';
 import AuthRoutes from './routes/AuthRoutes';
 import UserRoutes from './routes/UserRoutes';
@@ -29,6 +28,8 @@ import './swaggers/AuthSwagger';
 import './swaggers/OrderSwagger';
 import './swaggers/FoodSwagger';
 import './swaggers/CartSwagger';
+import './swaggers/StaffSwagger';
+import './swaggers/UserSwagger';
 
 
 dotenv.config();
@@ -96,7 +97,10 @@ app.use('/api/category', CateRoutes);
 app.use('/api/reservationcontact', ReservationContactRoutes);
 app.use('/api/reservationdetailcontact', ReservationDetailContactRoutes);
 app.use('/api/search', SearchRoutes);
-app.use('/api/staff', StaffRoutes);
+app.use('/api/staff', (req, res, next) => {
+  AuthMiddleWare.verifyToken(req, res, next);
+  AuthMiddleWare.verifyRole(req, res, next);
+}, StaffRoutes);
 app.use('/api/food', FoodRoutes);
 app.use('/api/order', AuthMiddleWare.verifyToken, OrderRoutes);
 app.use('/api/cart', CartRouter);
