@@ -56,7 +56,6 @@ const dishSchema = new mongoose.Schema(
 );
 
 dishSchema.index({ name: 'text' });
-dishSchema.index({ slug: 1 });
 
 dishSchema.plugin(mongoosePaginate);
 export type DishDocument = mongoose.PaginateModel<IDish>;

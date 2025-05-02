@@ -1,6 +1,8 @@
 import { Dish } from '../models/DishModel';
 import mongoose from 'mongoose';
 import Category from '../models/CategoryModel';
+import { Favorite } from '../models/FavoriteModel';
+import { Types } from 'mongoose';
 class FoodService {
   async createFood(food: any) {
     const newfood = new Dish(food);
@@ -135,7 +137,8 @@ class FoodService {
     } catch (error) {
       throw new Error('Error getting food by id');
     }
-  }
+  } 
+
   async updateFood(id: string, food: any) {
     try {
       return await Dish.findByIdAndUpdate(id, food, { new: true });
@@ -143,6 +146,7 @@ class FoodService {
       throw new Error('Error updating food');
     }
   }
+
   async deleteFood(id: string) {
     try {
       return await Dish.findByIdAndDelete(id);
@@ -150,6 +154,7 @@ class FoodService {
       throw new Error('Error deleting food');
     }
   }
+
   async getFoodByCategoryType(cateType: string) {
     try {
       const categories = await Category.find({ Cate_type: cateType });
@@ -271,6 +276,29 @@ class FoodService {
       throw new Error('Error fetching top favorite foods');
     }
   }
+
+  async toggleFavorite(foodId: string, userId: Types.ObjectId) {
+    try {
+      const food = await Dish.findById(foodId);
+     
+      if (!food) {
+        throw new Error('Food not found');
+      }
+
+      const existingFavorite = await Favorite.findOne({ foodId, userId });
+      if (existingFavorite) {
+        await Favorite.findByIdAndDelete(existingFavorite._id);
+        return { isFavorite: false };
+      } else {
+        await Favorite.create({ foodId, userId });
+        return { isFavorite: true };
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      throw new Error('Error toggling favorite');
+    }
+  }
+
 }
 
 export default new FoodService();

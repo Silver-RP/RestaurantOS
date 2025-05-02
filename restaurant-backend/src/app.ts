@@ -2,7 +2,6 @@ import express from 'express';
 import swaggerUi from 'swagger-ui-express';
 // import swaggerJsdoc from 'swagger-jsdoc';
 import { generateSwaggerSpec, getSwaggerRoutes } from './utils/swaggerOptions';
-import HealthCheckRoutes from './routes/HealthChecks';
 import AuthRoutes from './routes/AuthRoutes';
 import UserRoutes from './routes/UserRoutes';
 import RoleRoutes from './routes/RoleRouter';
@@ -98,7 +97,6 @@ app.use('/api/search', SearchRoutes);
 app.use('/api/staff', StaffRoutes);
 app.use('/api/food', FoodRoutes);
 app.use('/api/order', AuthMiddleWare.verifyToken, OrderRoutes);
-app.use('/api', HealthCheckRoutes);
 app.use('/api/cart', CartRouter);
 
 app.listen(port, () => {

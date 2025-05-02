@@ -4,7 +4,8 @@ import UploadImage from '../services/UploadImage';
 import { Dish } from '../models/DishModel';
 import SearchService from '../services/SearchService';
 import mongoose from 'mongoose';
-import Category from '../models/CategoryModel';
+import { Types } from 'mongoose';
+import { IUser } from '../models/UserModel';
 
 interface QueryParams {
   page?: string | number;
@@ -263,5 +264,31 @@ class FoodController {
       return res.status(500).json({ message: 'An error occurred', error });
     }
   }
+
+  async toggleFavorite(req: Request, res: Response): Promise<any> {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+
+      const userId = (req.user as IUser).id as Types.ObjectId;
+      const { foodId } = req.body;
+
+      console.log('User ID:', userId);
+      console.log('Food ID:', foodId);
+
+      if(!foodId){
+        return res.status(400).json({ message: 'Food ID is required' });
+      }
+
+      const updatedFood = await FoodService.toggleFavorite(foodId, userId);
+      return res.status(200).json({ message: 'Toggle favorite successful', data: updatedFood });
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
+  
 }
 export default new FoodController();
