@@ -21,13 +21,15 @@ import connectDB from './config/db';
 import cookieParser from 'cookie-parser';
 import passport from 'passport';
 import cors from 'cors';
-import './swaggers/CartSwagger';
 
 const app = express();
 
 // Import file authSwagger để đăng ký metadata
 import './swaggers/AuthSwagger';
 import './swaggers/OrderSwagger';
+import './swaggers/FoodSwagger';
+import './swaggers/CartSwagger';
+
 
 dotenv.config();
 connectDB();
