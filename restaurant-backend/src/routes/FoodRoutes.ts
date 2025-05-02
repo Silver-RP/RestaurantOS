@@ -26,5 +26,6 @@ router.get('/getFoodByRating', FoodController.getFoodByRating);
 router.get('/getFoodByFavorites', FoodController.getFoodByFavorites);
 router.get('/searchfood', FoodController.SearchFood);
 router.post('/favorite', AuthMiddleWare.verifyToken, FoodController.toggleFavorite);
+router.get('/getFavoriteFoods', AuthMiddleWare.verifyToken, FoodController.getFavoriteFoods);
 
 export default router;

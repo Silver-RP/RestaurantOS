@@ -272,19 +272,40 @@ class FoodController {
       }
 
       const userId = (req.user as IUser).id as Types.ObjectId;
-      const { foodId } = req.body;
+      const { dishId } = req.body;
 
       console.log('User ID:', userId);
-      console.log('Food ID:', foodId);
+      console.log('Dish ID:', dishId);
 
-      if(!foodId){
-        return res.status(400).json({ message: 'Food ID is required' });
+      if(!dishId){
+        return res.status(400).json({ message: 'Dish ID is required' });
       }
 
-      const updatedFood = await FoodService.toggleFavorite(foodId, userId);
-      return res.status(200).json({ message: 'Toggle favorite successful', data: updatedFood });
+      const updatedFood = await FoodService.toggleFavorite(dishId, userId);
+      return res.status(200).json({ data: updatedFood });
     } catch (error) {
       console.error('Error toggling favorite:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
+  async getFavoriteFoods(req: Request, res: Response): Promise<any> {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+
+      const userId = (req.user as IUser).id as Types.ObjectId;
+      const favoriteFoods = await FoodService.getFavoriteFoods(userId);
+      if (!favoriteFoods || (Array.isArray(favoriteFoods) && favoriteFoods.length === 0)) {
+        return res.status(200).json({
+          message: 'Favorite foods retrieved successfully',
+          data: favoriteFoods ?? [],
+        });
+      }
+      return res.status(200).json({ message: 'Favorite foods retrieved successfully', data: favoriteFoods });
+    } catch (error) {
+      console.error('Error getting favorite foods:', error);
       return res.status(500).json({ message: 'Internal server error' });
     }
   }

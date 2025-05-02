@@ -1,5 +1,4 @@
 import { Dish } from '../models/DishModel';
-import mongoose from 'mongoose';
 import Category from '../models/CategoryModel';
 import { Favorite } from '../models/FavoriteModel';
 import { Types } from 'mongoose';
@@ -277,21 +276,35 @@ class FoodService {
     }
   }
 
-  async toggleFavorite(foodId: string, userId: Types.ObjectId) {
+  async toggleFavorite(dishId: string, userId: Types.ObjectId) {
     try {
-      const food = await Dish.findById(foodId);
-     
+      const food = await Dish.findById(dishId);
       if (!food) {
         throw new Error('Food not found');
       }
-
-      const existingFavorite = await Favorite.findOne({ foodId, userId });
+      const existingFavorite = await Favorite.findOne({ userId, dishId });
+      
       if (existingFavorite) {
-        await Favorite.findByIdAndDelete(existingFavorite._id);
-        return { isFavorite: false };
+        await Favorite.deleteOne({ userId, dishId });
+        return { 
+          message: 'Favorite removed successfully',
+          isFavortite: false,
+       };
       } else {
-        await Favorite.create({ foodId, userId });
-        return { isFavorite: true };
+        const newFavorite = new Favorite({
+          userId,
+          dishId, 
+        });
+  
+        if (!newFavorite.dishId) {
+          throw new Error('dishId is required');
+        }
+  
+        await newFavorite.save();
+        return { 
+          message: 'Favorite added successfully',
+          isFavortite: true,
+         };
       }
     } catch (error) {
       console.error('Error toggling favorite:', error);
@@ -299,6 +312,26 @@ class FoodService {
     }
   }
 
+  async getFavoriteFoods(userId: Types.ObjectId) {
+    try {
+      const favorites = await Favorite.find({ userId })
+        .populate('dishId')
+        .lean();
+  
+      if (!favorites || favorites.length === 0) {
+        return {
+          message: 'No favorite foods found',
+          data: [],
+        };
+      }
+  
+      return favorites.map((fav) => fav.dishId);
+    } catch (error) {
+      console.error('Error getting favorite foods:', error);
+      throw new Error('Error getting favorite foods');
+    }
+  }
+  
 }
 
 export default new FoodService();

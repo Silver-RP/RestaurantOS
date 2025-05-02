@@ -7,9 +7,9 @@ const favoriteSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
-    foodId: {
+    dishId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Food',
+      ref: 'Dish',
       required: true,
     },
   },
@@ -18,6 +18,6 @@ const favoriteSchema = new mongoose.Schema(
   },
 );
 
-favoriteSchema.index({ userId: 1, foodId: 1 }, { unique: true });
+favoriteSchema.index({ userId: 1, dishId: 1 }, { unique: true });
 
 export const Favorite = mongoose.model('Favorite', favoriteSchema);
