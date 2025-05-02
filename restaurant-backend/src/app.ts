@@ -97,10 +97,13 @@ app.use('/api/category', CateRoutes);
 app.use('/api/reservationcontact', ReservationContactRoutes);
 app.use('/api/reservationdetailcontact', ReservationDetailContactRoutes);
 app.use('/api/search', SearchRoutes);
-app.use('/api/staff', (req, res, next) => {
-  AuthMiddleWare.verifyToken(req, res, next);
-  AuthMiddleWare.verifyRole(req, res, next);
-}, StaffRoutes);
+app.use(
+  '/api/staff',
+  AuthMiddleWare.verifyToken,
+  AuthMiddleWare.verifyRole(['superadmin', 'manager',]),
+  StaffRoutes
+);
+
 app.use('/api/food', FoodRoutes);
 app.use('/api/order', AuthMiddleWare.verifyToken, OrderRoutes);
 app.use('/api/cart', CartRouter);
