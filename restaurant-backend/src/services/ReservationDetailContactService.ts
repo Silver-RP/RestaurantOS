@@ -6,6 +6,7 @@ class ReservationDetailContactService {
         await reservationDetailContact.save(); 
         return reservationDetailContact;
     }
+    
     async getAllReservationDetailContact (): Promise<any> {
         const reservationDetailContact = await ReservationDetailContact.find({})
         .populate("reservation", "tableType")
@@ -13,7 +14,7 @@ class ReservationDetailContactService {
         .populate("foods", "name price countInStock");
         return reservationDetailContact;
     }
-    
+
     async getReservationDetailContactById (id: string): Promise<any> {
         const reservationDetailContact = await ReservationDetailContact.findById(id)
         .populate("reservation", "tableType")
