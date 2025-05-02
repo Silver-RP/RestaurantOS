@@ -22,10 +22,10 @@ class ReservationDetailContactService {
         .populate("foods", "name price countInStock");
         return reservationDetailContact;
     }
-
+    
     async updateReservationDetailContact (id: string, input: IReservationDetailContact): Promise<any> {
         const reservationDetailContact = await ReservationDetailContact.findByIdAndUpdate(id, input, {new: true});
-        return "abc";
+        return reservationDetailContact_2;
     }
     async deleteReservationDetailContact(id: string): Promise<any> {
         const reservationDetailContact = await ReservationDetailContact.findById(id);
