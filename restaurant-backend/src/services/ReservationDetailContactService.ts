@@ -7,7 +7,7 @@ class ReservationDetailContactService {
         return reservationDetailContact;
     }
 
-    async getAllReservationDetailContact (): Promise<any> {
+                            async getAllReservationDetailContact (): Promise<any> {
         const reservationDetailContact = await ReservationDetailContact.find({})
         .populate("reservation", "tableType")
         .populate("users", "userName phone")
@@ -23,11 +23,11 @@ class ReservationDetailContactService {
         return reservationDetailContact;
     }
     
-    async updateReservationDetailContact (id: string, input: IReservationDetailContact): Promise<any> {
+            async updateReservationDetailContact (id: string, input: IReservationDetailContact): Promise<any> {
         const reservationDetailContact = await ReservationDetailContact.findByIdAndUpdate(id, input, {new: true});
-        return reservationDetailContact_2;
+        return reservationDetailContact;
     }
-    async deleteReservationDetailContact(id: string): Promise<any> {
+                async deleteReservationDetailContact(id: string): Promise<any> {
         const reservationDetailContact = await ReservationDetailContact.findById(id);
         
        // Kiểm tra xem đơn hàng có món ăn đã chọn hay không nếu lớn 0 thì không thể xóa
