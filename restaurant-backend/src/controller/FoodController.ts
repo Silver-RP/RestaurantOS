@@ -73,46 +73,45 @@ class FoodController {
 
     async getAllFood(req: Request, res: Response): Promise<any> {
         try {
-          const {
-            page = 1,
-            limit = 12,
-            sort = 'newest',
-            search = '',
-            category = '',
-            priceMin,
-            priceMax,
-          } = req.query;
-      
-          const pageNumber = parseInt(page as string, 10);
-          const limitNumber = parseInt(limit as string, 10);
-          const priceMinNumber = priceMin ? Number(priceMin) : undefined;
-          const priceMaxNumber = priceMax ? Number(priceMax) : undefined;
-      
-          const foods = await FoodService.getAllFood({
-            page: pageNumber > 0 ? pageNumber : 1,
-            limit: limitNumber > 0 ? limitNumber : 12,
-            sort: sort as string,
-            search: search as string,
-            category: category as string,
-            priceMin: priceMinNumber,
-            priceMax: priceMaxNumber,
-          });
-      
-          return res.status(200).json({
-            success: true,
-            message: 'All food retrieved successfully',
-            data: foods,
-          });
+            const {
+                page = 1,
+                limit = 12,
+                sort = 'newest',
+                search = '',
+                category = '',
+                priceMin,
+                priceMax,
+            } = req.query;
+
+            const pageNumber = parseInt(page as string, 10);
+            const limitNumber = parseInt(limit as string, 10);
+            const priceMinNumber = priceMin ? Number(priceMin) : undefined;
+            const priceMaxNumber = priceMax ? Number(priceMax) : undefined;
+
+            const foods = await FoodService.getAllFood({
+                page: pageNumber > 0 ? pageNumber : 1,
+                limit: limitNumber > 0 ? limitNumber : 12,
+                sort: sort as string,
+                search: search as string,
+                category: category as string,
+                priceMin: priceMinNumber,
+                priceMax: priceMaxNumber,
+            });
+
+            return res.status(200).json({
+                success: true,
+                message: 'All food retrieved successfully',
+                data: foods,
+            });
         } catch (error: any) {
-          console.error('Error in getAllFood:', error);
-          return res.status(500).json({
-            success: false,
-            message: 'Error getting all food',
-            error: error.message,
-          });
+            console.error('Error in getAllFood:', error);
+            return res.status(500).json({
+                success: false,
+                message: 'Error getting all food',
+                error: error.message,
+            });
         }
-      }
-    
+    }
 
     async getFoodBySlug(req: Request, res: Response): Promise<any> {
         try {
@@ -213,42 +212,42 @@ class FoodController {
 
     async getFoodByFavorites(req: Request, res: Response): Promise<any> {
         try {
-          const { favorites, type } = req.query;
-          if (!type || typeof type !== 'string') {
-            return res.status(400).json({ success: false, message: 'Missing or invalid type parameter' });
-          }
-          let dishes;
-          if (favorites) {
-            const favoritesNumber = Number(favorites);
-            if (isNaN(favoritesNumber)) {
-              return res.status(400).json({ success: false, message: 'Favorites must be a number' });
+            const { favorites, type } = req.query;
+            if (!type || typeof type !== 'string') {
+                return res.status(400).json({ success: false, message: 'Missing or invalid type parameter' });
             }
-            dishes = await FoodService.getFoodByFavorites(favoritesNumber, type);
-          } else {
-            dishes = await FoodService.getTopFavoriteFoods(type);
-          }
-      
-          if (!dishes || dishes.length === 0) {
-            return res.status(404).json({ success: false, message: 'No food found matching the criteria', data: [] });
-          }
-      
-          return res.status(200).json({ success: true, message: 'Food retrieved successfully', data: dishes });
-        } catch (error) {
-          console.error('Error in getFoodByFavorites:', error);
-          return res.status(500).json({ success: false, message: 'Internal server error' });
-        }
-      }
-      
-    
+            let dishes;
+            if (favorites) {
+                const favoritesNumber = Number(favorites);
+                if (isNaN(favoritesNumber)) {
+                    return res.status(400).json({ success: false, message: 'Favorites must be a number' });
+                }
+                dishes = await FoodService.getFoodByFavorites(favoritesNumber, type);
+            } else {
+                dishes = await FoodService.getTopFavoriteFoods(type);
+            }
 
-  async SearchFood(req: Request, res: Response): Promise<any> {
-    try {
-      const result = await SearchService.search(Dish, req.query, ['name']);
-      return res.status(200).json(result);
-    } catch (error) {
-      return res.status(500).json({ message: 'An error occurred', error });
+            if (!dishes || dishes.length === 0) {
+                return res.status(404).json({ success: false, message: 'No food found matching the criteria', data: [] });
+            }
+
+            return res.status(200).json({ success: true, message: 'Food retrieved successfully', data: dishes });
+        } catch (error) {
+            console.error('Error in getFoodByFavorites:', error);
+            return res.status(500).json({ success: false, message: 'Internal server error' });
+        }
     }
-  }
- 
+
+
+
+    async SearchFood(req: Request, res: Response): Promise<any> {
+        try {
+            const result = await SearchService.search(Dish, req.query, ['name']);
+            return res.status(200).json(result);
+        } catch (error) {
+            return res.status(500).json({ message: 'An error occurred', error });
+        }
+    }
+
 }
 export default new FoodController();
