@@ -17,6 +17,7 @@ var __awaiter =
           reject(e);
         }
       }
+
       function rejected(value) {
         try {
           step(generator['throw'](value));
@@ -24,10 +25,9 @@ var __awaiter =
           reject(e);
         }
       }
+
       function step(result) {
-        result.done
-          ? resolve(result.value)
-          : adopt(result.value).then(fulfilled, rejected);
+        result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
       }
       step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
@@ -38,46 +38,42 @@ var __importDefault =
     return mod && mod.__esModule ? mod : { default: mod };
   };
 Object.defineProperty(exports, '__esModule', { value: true });
-const ReservationContactModel_1 = __importDefault(
-  require('../models/ReservationContactModel'),
-);
+const ReservationContactModel_1 = __importDefault(require('../models/ReservationContactModel'));
 class ReservationContact {
   createReservationContact(input) {
     return __awaiter(this, void 0, void 0, function* () {
-      const reservationcontact =
-        yield ReservationContactModel_1.default.create(input);
+      const reservationcontact = yield ReservationContactModel_1.default.create(input);
       yield reservationcontact.save();
       return reservationcontact;
     });
   }
   getAllReservationContact() {
     return __awaiter(this, void 0, void 0, function* () {
-      const reservationcontact = yield ReservationContactModel_1.default.find(
-        {},
-      );
+      const reservationcontact = yield ReservationContactModel_1.default.find({});
       return reservationcontact;
     });
   }
   getReservationContactById(id) {
     return __awaiter(this, void 0, void 0, function* () {
-      const reservationcontact =
-        yield ReservationContactModel_1.default.findById(id);
+      const reservationcontact = yield ReservationContactModel_1.default.findById(id);
       return reservationcontact;
     });
   }
   updateReservationContact(id, input) {
     return __awaiter(this, void 0, void 0, function* () {
-      const reservationcontact =
-        yield ReservationContactModel_1.default.findByIdAndUpdate(id, input, {
+      const reservationcontact = yield ReservationContactModel_1.default.findByIdAndUpdate(
+        id,
+        input,
+        {
           new: true,
-        });
+        },
+      );
       return reservationcontact;
     });
   }
   deleteReservationCotact(id) {
     return __awaiter(this, void 0, void 0, function* () {
-      const reservationcontact =
-        yield ReservationContactModel_1.default.findByIdAndDelete(id);
+      const reservationcontact = yield ReservationContactModel_1.default.findByIdAndDelete(id);
       return { message: 'Delete success' };
     });
   }

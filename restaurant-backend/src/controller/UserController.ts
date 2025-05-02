@@ -67,16 +67,10 @@ class UserController {
         emailSort: req.query.emailSort as string, // 'A->Z', 'Z->A'
         gender: req.query.gender as string, // 'male', 'female', 'other'
         status: req.query.status as string, // 'active', 'inactive', 'blocked'
-        startDate: req.query.startDate
-          ? new Date(req.query.startDate as string)
-          : undefined,
-        endDate: req.query.endDate
-          ? new Date(req.query.endDate as string)
-          : undefined,
+        startDate: req.query.startDate ? new Date(req.query.startDate as string) : undefined,
+        endDate: req.query.endDate ? new Date(req.query.endDate as string) : undefined,
         page: req.query.page ? parseInt(req.query.page as string) : 1,
-        pageSize: req.query.pageSize
-          ? parseInt(req.query.pageSize as string)
-          : 10,
+        pageSize: req.query.pageSize ? parseInt(req.query.pageSize as string) : 10,
       };
 
       const result = await UserService.filterUsers(filterOptions);

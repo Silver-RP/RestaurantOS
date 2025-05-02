@@ -17,6 +17,7 @@ var __awaiter =
           reject(e);
         }
       }
+
       function rejected(value) {
         try {
           step(generator['throw'](value));
@@ -24,10 +25,9 @@ var __awaiter =
           reject(e);
         }
       }
+
       function step(result) {
-        result.done
-          ? resolve(result.value)
-          : adopt(result.value).then(fulfilled, rejected);
+        result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
       }
       step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
@@ -52,11 +52,7 @@ class CartController {
           });
           return;
         }
-        const updatedCart = yield CartService_1.default.UpdateCart(
-          id,
-          dishId,
-          quantity,
-        );
+        const updatedCart = yield CartService_1.default.UpdateCart(id, dishId, quantity);
         res.status(200).json({
           success: true,
           message: 'Cart updated successfully',
@@ -76,15 +72,10 @@ class CartController {
       try {
         const { cartId, dishId } = req.params;
         if (!cartId || !dishId) {
-          res
-            .status(400)
-            .json({ success: false, message: 'Missing cartId or dishId' });
+          res.status(400).json({ success: false, message: 'Missing cartId or dishId' });
           return;
         }
-        const updatedCart = yield CartService_1.default.DeleteCartItem(
-          cartId,
-          dishId,
-        );
+        const updatedCart = yield CartService_1.default.DeleteCartItem(cartId, dishId);
         if (!updatedCart) {
           res.status(404).json({ success: false, message: 'Cart not found' });
           return;
@@ -99,9 +90,7 @@ class CartController {
         if (error instanceof Error) {
           res.status(500).json({ success: false, message: error.message });
         } else {
-          res
-            .status(500)
-            .json({ success: false, message: 'Internal Server Error' });
+          res.status(500).json({ success: false, message: 'Internal Server Error' });
         }
       }
     });
@@ -129,9 +118,7 @@ class CartController {
         if (error instanceof Error) {
           res.status(500).json({ success: false, message: error.message });
         } else {
-          res
-            .status(500)
-            .json({ success: false, message: 'Internal Server Error' });
+          res.status(500).json({ success: false, message: 'Internal Server Error' });
         }
       }
     });

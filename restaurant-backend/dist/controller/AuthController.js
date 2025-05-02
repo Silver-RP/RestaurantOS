@@ -17,6 +17,7 @@ var __awaiter =
           reject(e);
         }
       }
+
       function rejected(value) {
         try {
           step(generator['throw'](value));
@@ -24,10 +25,9 @@ var __awaiter =
           reject(e);
         }
       }
+
       function step(result) {
-        result.done
-          ? resolve(result.value)
-          : adopt(result.value).then(fulfilled, rejected);
+        result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
       }
       step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
@@ -63,8 +63,10 @@ class AuthController {
     return __awaiter(this, void 0, void 0, function* () {
       try {
         const { email, password } = req.body;
-        const { token, refresh_token, user } =
-          yield AuthService_1.default.login({ email, password });
+        const { token, refresh_token, user } = yield AuthService_1.default.login({
+          email,
+          password,
+        });
         res.cookie('refreshToken', refresh_token, {
           httpOnly: false,
           secure: process.env.NODE_ENV === 'production',
@@ -85,8 +87,7 @@ class AuthController {
     return __awaiter(this, void 0, void 0, function* () {
       try {
         const { refreshToken } = req.cookies;
-        const { newAccessToken } =
-          yield AuthService_1.default.refreshAccessToken(refreshToken);
+        const { newAccessToken } = yield AuthService_1.default.refreshAccessToken(refreshToken);
         res.cookie('accessToken', newAccessToken, {
           httpOnly: false,
           secure: process.env.NODE_ENV === 'production',
@@ -104,19 +105,16 @@ class AuthController {
       try {
         const googleUser = req.body.googleUser;
         if (!googleUser) {
-          return res
-            .status(400)
-            .json({ message: 'Google user data is missing' });
+          return res.status(400).json({ message: 'Google user data is missing' });
         }
         const { email, name, avatar, sub } = googleUser;
-        const { user, accessToken, refreshToken } =
-          yield AuthService_1.default.googleLogin({
-            id: sub,
-            email,
-            googleId: sub,
-            username: name,
-            avatar,
-          });
+        const { user, accessToken, refreshToken } = yield AuthService_1.default.googleLogin({
+          id: sub,
+          email,
+          googleId: sub,
+          username: name,
+          avatar,
+        });
         res.cookie('refreshToken', refreshToken, {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
@@ -130,9 +128,7 @@ class AuthController {
           accessToken,
         });
       } catch (error) {
-        return res
-          .status(400)
-          .json({ message: 'Error during Google login', error: error.message });
+        return res.status(400).json({ message: 'Error during Google login', error: error.message });
       }
     });
   }
@@ -178,23 +174,18 @@ class AuthController {
     return __awaiter(this, void 0, void 0, function* () {
       const { phone, email } = req.body;
       if (!phone && !email) {
-        return res
-          .status(400)
-          .json({ message: 'Vui lòng nhập số điện thoại hoặc email' });
+        return res.status(400).json({ message: 'Vui lòng nhập số điện thoại hoặc email' });
       }
       let identifier = '';
       if (phone && email) {
         return res.status(400).json({
-          message:
-            'Vui lòng chỉ nhập số điện thoại HOẶC email, không nhập cả hai',
+          message: 'Vui lòng chỉ nhập số điện thoại HOẶC email, không nhập cả hai',
         });
       }
       if (phone) {
         const phoneRegex = /^(?:\+84|0)(3|5|7|8|9)\d{8}$/;
         if (!phoneRegex.test(phone)) {
-          return res
-            .status(400)
-            .json({ message: 'Định dạng số điện thoại không hợp lệ' });
+          return res.status(400).json({ message: 'Định dạng số điện thoại không hợp lệ' });
         }
         identifier = phone;
       }
@@ -202,15 +193,12 @@ class AuthController {
         const emailRegex =
           /^[a-zA-Z0-9](\.?[a-zA-Z0-9_-])*[a-zA-Z0-9]@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
         if (!emailRegex.test(email)) {
-          return res
-            .status(400)
-            .json({ message: 'Định dạng email không hợp lệ' });
+          return res.status(400).json({ message: 'Định dạng email không hợp lệ' });
         }
         identifier = email;
       }
       try {
-        const response =
-          yield AuthService_1.default.sendOtpFlexible(identifier);
+        const response = yield AuthService_1.default.sendOtpFlexible(identifier);
         return res.status(200).json({ message: 'OTP sent successfully' });
       } catch (error) {
         return res.status(400).json({ message: error.message });
@@ -235,10 +223,7 @@ class AuthController {
         if (newPassword !== confirmPassword) {
           return res.status(400).json({ message: 'Passwords do not match' });
         }
-        const result = yield AuthService_1.default.changePasswordByEmail(
-          email,
-          newPassword,
-        );
+        const result = yield AuthService_1.default.changePasswordByEmail(email, newPassword);
         return res.status(200).json(result); // { message: "..."}
       } catch (error) {
         return res.status(400).json({ message: error.message });
@@ -250,9 +235,7 @@ class AuthController {
       try {
         const { email, otp } = req.body;
         if (!email || !otp) {
-          return res
-            .status(400)
-            .json({ message: 'Email and OTP are required' });
+          return res.status(400).json({ message: 'Email and OTP are required' });
         }
         const emailRegex =
           /^[a-zA-Z0-9](\.?[a-zA-Z0-9_-])*[a-zA-Z0-9]@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
@@ -260,14 +243,9 @@ class AuthController {
           return res.status(400).json({ message: 'Invalid email format' });
         }
         if (!/^\d{6}$/.test(otp)) {
-          return res
-            .status(400)
-            .json({ message: 'OTP must be a 6-digit number' });
+          return res.status(400).json({ message: 'OTP must be a 6-digit number' });
         }
-        const message = yield AuthService_1.default.verifyForgotPasswordOtp(
-          email,
-          otp,
-        );
+        const message = yield AuthService_1.default.verifyForgotPasswordOtp(email, otp);
         return res.status(200).json({ message });
       } catch (error) {
         return res.status(400).json({ message: error.message });
@@ -282,13 +260,10 @@ class AuthController {
           const emailRegex =
             /^[a-zA-Z0-9](\.?[a-zA-Z0-9_-])*[a-zA-Z0-9]@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
           if (!emailRegex.test(email)) {
-            return res
-              .status(400)
-              .json({ message: 'Định dạng email không hợp lệ' });
+            return res.status(400).json({ message: 'Định dạng email không hợp lệ' });
           }
         }
-        const response =
-          yield AuthService_1.default.resendVerificationEmail(email);
+        const response = yield AuthService_1.default.resendVerificationEmail(email);
         return res.status(200).json({ message: response });
       } catch (error) {
         return res.status(400).json({ message: error.message });
@@ -300,24 +275,17 @@ class AuthController {
       try {
         const { email, otp } = req.body;
         if (!email || !otp) {
-          return res
-            .status(400)
-            .json({ message: 'Email và mã OTP là bắt buộc' });
+          return res.status(400).json({ message: 'Email và mã OTP là bắt buộc' });
         }
         const emailRegex =
           /^[a-zA-Z0-9](\.?[a-zA-Z0-9_-])*[a-zA-Z0-9]@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
         if (!emailRegex.test(email)) {
-          return res
-            .status(400)
-            .json({ message: 'Định dạng email không hợp lệ' });
+          return res.status(400).json({ message: 'Định dạng email không hợp lệ' });
         }
         if (!/^\d{6}$/.test(otp)) {
           return res.status(400).json({ message: 'OTP phải gồm 6 chữ số' });
         }
-        const message = yield AuthService_1.default.verifyEmailVerificationOtp(
-          email,
-          otp,
-        );
+        const message = yield AuthService_1.default.verifyEmailVerificationOtp(email, otp);
         return res.status(200).json({ message });
       } catch (error) {
         return res.status(400).json({ message: error.message });

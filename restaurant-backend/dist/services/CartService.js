@@ -17,6 +17,7 @@ var __awaiter =
           reject(e);
         }
       }
+
       function rejected(value) {
         try {
           step(generator['throw'](value));
@@ -24,10 +25,9 @@ var __awaiter =
           reject(e);
         }
       }
+
       function step(result) {
-        result.done
-          ? resolve(result.value)
-          : adopt(result.value).then(fulfilled, rejected);
+        result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
       }
       step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
@@ -64,9 +64,7 @@ class CartService {
       if (dish.status !== 'available') {
         throw new Error('Dish is not available for purchase');
       }
-      const existingItem = cart.items.find(
-        (item) => item.dishId.toString() === dishId,
-      );
+      const existingItem = cart.items.find((item) => item.dishId.toString() === dishId);
       if (existingItem) {
         const newQuantity = existingItem.quantity + quantity;
         if (newQuantity > dish.countInStock) {
@@ -75,9 +73,7 @@ class CartService {
         if (newQuantity > 0) {
           existingItem.quantity = newQuantity;
         } else {
-          cart.items = cart.items.filter(
-            (item) => item.dishId.toString() !== dishId,
-          );
+          cart.items = cart.items.filter((item) => item.dishId.toString() !== dishId);
         }
       } else {
         if (quantity <= 0) {
@@ -90,10 +86,7 @@ class CartService {
         });
       }
       // Cập nhật lại tổng tiền
-      cart.totalPrice = cart.items.reduce(
-        (sum, item) => sum + item.price * item.quantity,
-        0,
-      );
+      cart.totalPrice = cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
       yield cart.save();
       return cart;
     });
@@ -116,17 +109,12 @@ class CartService {
       if (cart.items.length === 0) {
         throw new Error('Cart is already empty');
       }
-      const itemIndex = cart.items.findIndex(
-        (item) => item.dishId.toString() === dishId,
-      );
+      const itemIndex = cart.items.findIndex((item) => item.dishId.toString() === dishId);
       if (itemIndex === -1) {
         throw new Error('Item not found in cart');
       }
       cart.items.splice(itemIndex, 1);
-      cart.totalPrice = cart.items.reduce(
-        (sum, item) => sum + item.price * item.quantity,
-        0,
-      );
+      cart.totalPrice = cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
       yield cart.save();
       return cart;
     });

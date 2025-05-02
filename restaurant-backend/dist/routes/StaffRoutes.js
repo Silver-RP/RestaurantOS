@@ -17,6 +17,7 @@ var __awaiter =
           reject(e);
         }
       }
+
       function rejected(value) {
         try {
           step(generator['throw'](value));
@@ -24,10 +25,9 @@ var __awaiter =
           reject(e);
         }
       }
+
       function step(result) {
-        result.done
-          ? resolve(result.value)
-          : adopt(result.value).then(fulfilled, rejected);
+        result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
       }
       step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
@@ -39,9 +39,7 @@ var __importDefault =
   };
 Object.defineProperty(exports, '__esModule', { value: true });
 const express_1 = require('express');
-const StaffController_1 = __importDefault(
-  require('../controller/StaffController'),
-);
+const StaffController_1 = __importDefault(require('../controller/StaffController'));
 const router = (0, express_1.Router)();
 router.get('/getAllStaff', (req, res) =>
   __awaiter(void 0, void 0, void 0, function* () {

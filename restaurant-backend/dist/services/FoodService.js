@@ -17,6 +17,7 @@ var __awaiter =
           reject(e);
         }
       }
+
       function rejected(value) {
         try {
           step(generator['throw'](value));
@@ -24,10 +25,9 @@ var __awaiter =
           reject(e);
         }
       }
+
       function step(result) {
-        result.done
-          ? resolve(result.value)
-          : adopt(result.value).then(fulfilled, rejected);
+        result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
       }
       step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
@@ -54,9 +54,7 @@ class FoodService {
   getTopFavoriteFood() {
     return __awaiter(this, void 0, void 0, function* () {
       try {
-        const food = yield DishModel_1.Dish.find()
-          .sort({ favorites_count: -1 })
-          .limit(5);
+        const food = yield DishModel_1.Dish.find().sort({ favorites_count: -1 }).limit(5);
         if (!food || food.length === 0) {
           return { message: 'No food found' };
         }
@@ -143,9 +141,7 @@ class FoodService {
   }
   getFoodBySlug(slug) {
     return __awaiter(this, void 0, void 0, function* () {
-      const food = yield DishModel_1.Dish.findOne({ slug }).populate(
-        'categories',
-      );
+      const food = yield DishModel_1.Dish.findOne({ slug }).populate('categories');
       if (!food) {
         return null;
       }

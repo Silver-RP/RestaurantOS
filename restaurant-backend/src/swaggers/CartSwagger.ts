@@ -32,8 +32,7 @@ registerSwaggerRoute({
             },
             quantity: {
               type: 'integer',
-              description:
-                'Quantity change (positive to increase, negative to decrease)',
+              description: 'Quantity change (positive to increase, negative to decrease)',
             },
           },
           required: ['dishId', 'quantity'],

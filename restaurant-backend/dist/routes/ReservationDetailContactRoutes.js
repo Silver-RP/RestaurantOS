@@ -10,14 +10,8 @@ const ReservationDetailContactController_1 = __importDefault(
   require('../controller/ReservationDetailContactController'),
 );
 const router = (0, express_1.Router)();
-router.post(
-  '/create',
-  ReservationDetailContactController_1.default.createReservationDetailContact,
-);
-router.get(
-  '/getall',
-  ReservationDetailContactController_1.default.getAllReservationDetailContact,
-);
+router.post('/create', ReservationDetailContactController_1.default.createReservationDetailContact);
+router.get('/getall', ReservationDetailContactController_1.default.getAllReservationDetailContact);
 router.get(
   '/getbyid/:id',
   ReservationDetailContactController_1.default.getReservationDetailContactById,

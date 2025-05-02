@@ -17,6 +17,7 @@ var __awaiter =
           reject(e);
         }
       }
+
       function rejected(value) {
         try {
           step(generator['throw'](value));
@@ -24,10 +25,9 @@ var __awaiter =
           reject(e);
         }
       }
+
       function step(result) {
-        result.done
-          ? resolve(result.value)
-          : adopt(result.value).then(fulfilled, rejected);
+        result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
       }
       step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
@@ -101,8 +101,7 @@ class PermissionService {
   DeletePermission(id) {
     return __awaiter(this, void 0, void 0, function* () {
       try {
-        const permission =
-          yield PermissionModel_1.default.findByIdAndDelete(id);
+        const permission = yield PermissionModel_1.default.findByIdAndDelete(id);
         return permission;
       } catch (error) {
         throw new Error(error.message);

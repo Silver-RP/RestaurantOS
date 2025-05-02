@@ -14,9 +14,7 @@ const AuthRoutes_1 = __importDefault(require('./routes/AuthRoutes'));
 const UserRoutes_1 = __importDefault(require('./routes/UserRoutes'));
 const RoleRouter_1 = __importDefault(require('./routes/RoleRouter'));
 const CategoryRoutes_1 = __importDefault(require('./routes/CategoryRoutes'));
-const ReservationContactRoutes_1 = __importDefault(
-  require('./routes/ReservationContactRoutes'),
-);
+const ReservationContactRoutes_1 = __importDefault(require('./routes/ReservationContactRoutes'));
 const ReservationDetailContactRoutes_1 = __importDefault(
   require('./routes/ReservationDetailContactRoutes'),
 );
@@ -24,9 +22,7 @@ const ProfileRoutes_1 = __importDefault(require('./routes/ProfileRoutes'));
 const SearchRoutes_1 = __importDefault(require('./routes/SearchRoutes'));
 const StaffRoutes_1 = __importDefault(require('./routes/StaffRoutes'));
 const FoodRoutes_1 = __importDefault(require('./routes/FoodRoutes'));
-const PermissionRoutes_1 = __importDefault(
-  require('./routes/PermissionRoutes'),
-);
+const PermissionRoutes_1 = __importDefault(require('./routes/PermissionRoutes'));
 const CartRoutes_1 = __importDefault(require('./routes/CartRoutes'));
 const dotenv_1 = __importDefault(require('dotenv'));
 const db_1 = __importDefault(require('./config/db'));
@@ -74,10 +70,7 @@ const swaggerDefinition = {
 };
 const allRoutes = (0, swaggerOptions_1.getSwaggerRoutes)();
 // Tạo Swagger specification
-const swaggerSpec = (0, swaggerOptions_1.generateSwaggerSpec)(
-  allRoutes,
-  swaggerDefinition,
-);
+const swaggerSpec = (0, swaggerOptions_1.generateSwaggerSpec)(allRoutes, swaggerDefinition);
 // Thiết lập Swagger UI
 app.use(
   '/api-docs',
@@ -99,10 +92,7 @@ app.use('/api/role', RoleRouter_1.default);
 app.use('/api/permission', PermissionRoutes_1.default);
 app.use('/api/category', CategoryRoutes_1.default);
 app.use('/api/reservationcontact', ReservationContactRoutes_1.default);
-app.use(
-  '/api/reservationdetailcontact',
-  ReservationDetailContactRoutes_1.default,
-);
+app.use('/api/reservationdetailcontact', ReservationDetailContactRoutes_1.default);
 app.use('/api/search', SearchRoutes_1.default);
 app.use('/api/staff', StaffRoutes_1.default);
 app.use('/api/food', FoodRoutes_1.default);

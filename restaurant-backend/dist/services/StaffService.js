@@ -17,6 +17,7 @@ var __awaiter =
           reject(e);
         }
       }
+
       function rejected(value) {
         try {
           step(generator['throw'](value));
@@ -24,10 +25,9 @@ var __awaiter =
           reject(e);
         }
       }
+
       function step(result) {
-        result.done
-          ? resolve(result.value)
-          : adopt(result.value).then(fulfilled, rejected);
+        result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
       }
       step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
@@ -228,12 +228,7 @@ class StaffService {
         const limit = options.pageSize || 10;
         const skip = (page - 1) * limit;
         const [staff, totalDocuments] = yield Promise.all([
-          UserModel_1.default
-            .find(query)
-            .select('-password')
-            .sort(sort)
-            .skip(skip)
-            .limit(limit),
+          UserModel_1.default.find(query).select('-password').sort(sort).skip(skip).limit(limit),
           UserModel_1.default.countDocuments(query),
         ]);
         return {

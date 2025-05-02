@@ -33,8 +33,7 @@ const swaggerOptions_1 = require('../utils/swaggerOptions');
             },
             quantity: {
               type: 'integer',
-              description:
-                'Quantity change (positive to increase, negative to decrease)',
+              description: 'Quantity change (positive to increase, negative to decrease)',
             },
           },
           required: ['dishId', 'quantity'],

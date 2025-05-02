@@ -14,11 +14,7 @@ export const accessToken = (
   }
 };
 
-export const refreshToken = (
-  payload: object,
-  secretKey: string,
-  expires: number,
-): string => {
+export const refreshToken = (payload: object, secretKey: string, expires: number): string => {
   try {
     return jwt.sign(payload, secretKey, { expiresIn: expires });
   } catch (error) {

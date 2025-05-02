@@ -6,9 +6,7 @@ var __importDefault =
   };
 Object.defineProperty(exports, '__esModule', { value: true });
 const express_1 = require('express');
-const FoodController_1 = __importDefault(
-  require('../controller/FoodController'),
-);
+const FoodController_1 = __importDefault(require('../controller/FoodController'));
 const multer_1 = __importDefault(require('multer'));
 // Sử dụng bộ nhớ tạm để upload ảnh
 const storage = multer_1.default.memoryStorage();
@@ -18,11 +16,7 @@ const upload = (0, multer_1.default)({
 });
 const router = (0, express_1.Router)();
 // API upload ảnh lên Cloudinary
-router.post(
-  '/createfood',
-  upload.single('image'),
-  FoodController_1.default.createFood,
-);
+router.post('/createfood', upload.single('image'), FoodController_1.default.createFood);
 router.get('/getallfood', FoodController_1.default.getAllFood);
 router.get('/getfoodbyid/:id', FoodController_1.default.getFoodById);
 router.get('/getfoodbyslug/:slug', FoodController_1.default.getFoodBySlug);

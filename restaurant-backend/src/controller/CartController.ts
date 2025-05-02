@@ -8,9 +8,7 @@ class CartController {
       const { dishId, quantity } = req.body;
 
       if (!id || !dishId || typeof quantity !== 'number') {
-        res
-          .status(400)
-          .json({ success: false, message: 'Missing or invalid input fields' });
+        res.status(400).json({ success: false, message: 'Missing or invalid input fields' });
         return;
       }
       const updatedCart = await cartService.UpdateCart(id, dishId, quantity);
@@ -32,9 +30,7 @@ class CartController {
     try {
       const { cartId, dishId } = req.params;
       if (!cartId || !dishId) {
-        res
-          .status(400)
-          .json({ success: false, message: 'Missing cartId or dishId' });
+        res.status(400).json({ success: false, message: 'Missing cartId or dishId' });
         return;
       }
       const updatedCart = await cartService.DeleteCartItem(cartId, dishId);
@@ -52,9 +48,7 @@ class CartController {
       if (error instanceof Error) {
         res.status(500).json({ success: false, message: error.message });
       } else {
-        res
-          .status(500)
-          .json({ success: false, message: 'Internal Server Error' });
+        res.status(500).json({ success: false, message: 'Internal Server Error' });
       }
     }
   }
@@ -81,9 +75,7 @@ class CartController {
       if (error instanceof Error) {
         res.status(500).json({ success: false, message: error.message });
       } else {
-        res
-          .status(500)
-          .json({ success: false, message: 'Internal Server Error' });
+        res.status(500).json({ success: false, message: 'Internal Server Error' });
       }
     }
   }

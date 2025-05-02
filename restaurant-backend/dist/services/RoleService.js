@@ -17,6 +17,7 @@ var __awaiter =
           reject(e);
         }
       }
+
       function rejected(value) {
         try {
           step(generator['throw'](value));
@@ -24,10 +25,9 @@ var __awaiter =
           reject(e);
         }
       }
+
       function step(result) {
-        result.done
-          ? resolve(result.value)
-          : adopt(result.value).then(fulfilled, rejected);
+        result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
       }
       step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
@@ -46,13 +46,10 @@ class RoleService {
   GetAllRole() {
     return __awaiter(this, void 0, void 0, function* () {
       try {
-        const roles = yield RoleModel_1.default
-          .find()
-          .populate('permissions')
-          .populate({
-            path: 'users',
-            model: UserModel_1.default,
-          });
+        const roles = yield RoleModel_1.default.find().populate('permissions').populate({
+          path: 'users',
+          model: UserModel_1.default,
+        });
         return roles.length > 0 ? roles : null;
       } catch (error) {
         throw new Error(error.message);
@@ -67,9 +64,7 @@ class RoleService {
           throw new Error('Role already exists!');
         }
         // Chuyển các permission id từ chuỗi thành ObjectId hợp lệ
-        const permissionIds = permission.map(
-          (id) => new mongoose_1.default.Types.ObjectId(id),
-        );
+        const permissionIds = permission.map((id) => new mongoose_1.default.Types.ObjectId(id));
         console.log('permiss', permissionIds);
         // Kiểm tra xem các permission đã tồn tại chưa
         const permissions = yield PermissionModel_1.default.find({
@@ -120,11 +115,10 @@ class RoleService {
           }
         }
         // Cập nhật role với các thay đổi
-        const updatedRole = yield RoleModel_1.default.findByIdAndUpdate(
-          id,
-          data,
-          { new: true, runValidators: true },
-        );
+        const updatedRole = yield RoleModel_1.default.findByIdAndUpdate(id, data, {
+          new: true,
+          runValidators: true,
+        });
         return updatedRole;
       } catch (error) {
         throw new Error(error.message);

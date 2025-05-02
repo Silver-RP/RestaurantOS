@@ -17,6 +17,7 @@ var __awaiter =
           reject(e);
         }
       }
+
       function rejected(value) {
         try {
           step(generator['throw'](value));
@@ -24,10 +25,9 @@ var __awaiter =
           reject(e);
         }
       }
+
       function step(result) {
-        result.done
-          ? resolve(result.value)
-          : adopt(result.value).then(fulfilled, rejected);
+        result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
       }
       step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
@@ -38,14 +38,10 @@ var __importDefault =
     return mod && mod.__esModule ? mod : { default: mod };
   };
 Object.defineProperty(exports, '__esModule', { value: true });
-const CategoryService_1 = __importDefault(
-  require('../services/CategoryService'),
-);
+const CategoryService_1 = __importDefault(require('../services/CategoryService'));
 const SearchService_1 = __importDefault(require('../services/SearchService'));
 const CategoryModel_1 = __importDefault(require('../models/CategoryModel'));
-const PaginateService_1 = __importDefault(
-  require('../services/PaginateService'),
-);
+const PaginateService_1 = __importDefault(require('../services/PaginateService'));
 class CategoryController {
   GetAllCategory(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -75,11 +71,9 @@ class CategoryController {
   SearchCategory(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
       try {
-        const result = yield SearchService_1.default.search(
-          CategoryModel_1.default,
-          req.query,
-          ['name'],
-        );
+        const result = yield SearchService_1.default.search(CategoryModel_1.default, req.query, [
+          'name',
+        ]);
         return res.status(200).json(result);
       } catch (error) {
         return res.status(500).json({ message: 'An error occurred', error });
@@ -88,11 +82,7 @@ class CategoryController {
   }
   PaginateCate(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-      yield PaginateService_1.default.paginate(
-        CategoryModel_1.default,
-        req,
-        res,
-      );
+      yield PaginateService_1.default.paginate(CategoryModel_1.default, req, res);
     });
   }
 }

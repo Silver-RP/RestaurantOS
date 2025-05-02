@@ -17,6 +17,7 @@ var __awaiter =
           reject(e);
         }
       }
+
       function rejected(value) {
         try {
           step(generator['throw'](value));
@@ -24,10 +25,9 @@ var __awaiter =
           reject(e);
         }
       }
+
       function step(result) {
-        result.done
-          ? resolve(result.value)
-          : adopt(result.value).then(fulfilled, rejected);
+        result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
       }
       step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
@@ -46,9 +46,7 @@ class FacebookAuthMiddleware {
       try {
         const { access_token } = req.body;
         if (!access_token) {
-          return res
-            .status(401)
-            .json({ message: 'Access Denied - No token provided' });
+          return res.status(401).json({ message: 'Access Denied - No token provided' });
         }
         const url = `https://graph.facebook.com/me?fields=id,name,email,picture&access_token=${access_token}`;
         const response = yield axios_1.default.get(url);
@@ -62,9 +60,7 @@ class FacebookAuthMiddleware {
         return next();
       } catch (error) {
         console.error('Error verifying Facebook token:', error);
-        return res
-          .status(401)
-          .json({ message: 'Access Denied - Error verifying token' });
+        return res.status(401).json({ message: 'Access Denied - Error verifying token' });
       }
     });
   }

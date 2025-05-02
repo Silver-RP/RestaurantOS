@@ -17,6 +17,7 @@ var __awaiter =
           reject(e);
         }
       }
+
       function rejected(value) {
         try {
           step(generator['throw'](value));
@@ -24,10 +25,9 @@ var __awaiter =
           reject(e);
         }
       }
+
       function step(result) {
-        result.done
-          ? resolve(result.value)
-          : adopt(result.value).then(fulfilled, rejected);
+        result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
       }
       step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
@@ -57,44 +57,39 @@ class UserService {
     });
   }
   getAllUserByUserRole() {
-    return __awaiter(
-      this,
-      arguments,
-      void 0,
-      function* (page = 1, pageSize = 10) {
-        try {
-          const allUserByUserRole = yield UserModel_1.default.find();
-          const options = {
-            page,
-            limit: pageSize,
-            populate: {
-              path: 'roles',
-              match: { name: 'user' },
-              select: 'name description',
-            },
-            select: '-password',
-          };
-          const result = yield UserModel_1.default.paginate({}, options);
-          const filteredUsers = allUserByUserRole.filter(
-            (user) => user.roles && user.roles.length > 0,
-          );
-          return {
-            status: 'OK',
-            message: 'getAllUserByUserRole success',
-            data: result.docs,
-            pagination: {
-              total: result.totalDocs,
-              page: result.page,
-              pageSize: result.limit,
-              totalPages: result.totalPages,
-            },
-          };
-        } catch (error) {
-          console.error('Error fetching users with role user:', error);
-          throw new Error('Failed to fetch users with role user');
-        }
-      },
-    );
+    return __awaiter(this, arguments, void 0, function* (page = 1, pageSize = 10) {
+      try {
+        const allUserByUserRole = yield UserModel_1.default.find();
+        const options = {
+          page,
+          limit: pageSize,
+          populate: {
+            path: 'roles',
+            match: { name: 'user' },
+            select: 'name description',
+          },
+          select: '-password',
+        };
+        const result = yield UserModel_1.default.paginate({}, options);
+        const filteredUsers = allUserByUserRole.filter(
+          (user) => user.roles && user.roles.length > 0,
+        );
+        return {
+          status: 'OK',
+          message: 'getAllUserByUserRole success',
+          data: result.docs,
+          pagination: {
+            total: result.totalDocs,
+            page: result.page,
+            pageSize: result.limit,
+            totalPages: result.totalPages,
+          },
+        };
+      } catch (error) {
+        console.error('Error fetching users with role user:', error);
+        throw new Error('Failed to fetch users with role user');
+      }
+    });
   }
   getUserById(userId) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -205,12 +200,7 @@ class UserService {
         const limit = options.pageSize || 10;
         const skip = (page - 1) * limit;
         const [users, totalDocuments] = yield Promise.all([
-          UserModel_1.default
-            .find(query)
-            .select('-password')
-            .sort(sort)
-            .skip(skip)
-            .limit(limit),
+          UserModel_1.default.find(query).select('-password').sort(sort).skip(skip).limit(limit),
           UserModel_1.default.countDocuments(query),
         ]);
         return {

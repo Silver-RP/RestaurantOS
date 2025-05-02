@@ -25,10 +25,7 @@ class ProfileService {
       if (!user) {
         throw new Error('User not found');
       }
-      const isPasswordValid = await bcrypt.compare(
-        data.oldPassword,
-        user.password || '',
-      );
+      const isPasswordValid = await bcrypt.compare(data.oldPassword, user.password || '');
       if (!isPasswordValid) {
         throw new Error('Old password is incorrect');
       }

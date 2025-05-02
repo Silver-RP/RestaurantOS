@@ -17,6 +17,7 @@ var __awaiter =
           reject(e);
         }
       }
+
       function rejected(value) {
         try {
           step(generator['throw'](value));
@@ -24,10 +25,9 @@ var __awaiter =
           reject(e);
         }
       }
+
       function step(result) {
-        result.done
-          ? resolve(result.value)
-          : adopt(result.value).then(fulfilled, rejected);
+        result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
       }
       step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
@@ -58,8 +58,7 @@ class UserController {
   getAllUserByUserRole(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
       try {
-        const getAllUserByUserRole =
-          yield UserService_1.default.getAllUserByUserRole();
+        const getAllUserByUserRole = yield UserService_1.default.getAllUserByUserRole();
         res.status(200).json(getAllUserByUserRole);
       } catch (error) {
         console.error('Error fetching users by role:', error.message);
@@ -111,9 +110,7 @@ class UserController {
           emailSort: req.query.emailSort, // 'A->Z', 'Z->A'
           gender: req.query.gender, // 'male', 'female', 'other'
           status: req.query.status, // 'active', 'inactive', 'blocked'
-          startDate: req.query.startDate
-            ? new Date(req.query.startDate)
-            : undefined,
+          startDate: req.query.startDate ? new Date(req.query.startDate) : undefined,
           endDate: req.query.endDate ? new Date(req.query.endDate) : undefined,
           page: req.query.page ? parseInt(req.query.page) : 1,
           pageSize: req.query.pageSize ? parseInt(req.query.pageSize) : 10,

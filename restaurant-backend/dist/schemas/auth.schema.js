@@ -1,9 +1,6 @@
 'use strict';
 Object.defineProperty(exports, '__esModule', { value: true });
-exports.changePasswordSchema =
-  exports.loginSchema =
-  exports.registerSchema =
-    void 0;
+exports.changePasswordSchema = exports.loginSchema = exports.registerSchema = void 0;
 const zod_1 = require('zod');
 exports.registerSchema = zod_1.z
   .object({

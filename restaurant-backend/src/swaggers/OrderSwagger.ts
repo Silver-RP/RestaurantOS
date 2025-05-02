@@ -14,13 +14,11 @@ registerSwaggerRoute({
           properties: {
             address_id: {
               type: 'string',
-              description:
-                'ID of the saved address. Required if `address` is not provided.',
+              description: 'ID of the saved address. Required if `address` is not provided.',
             },
             address: {
               type: 'string',
-              description:
-                'Raw delivery address. Required if `address_id` is not provided.',
+              description: 'Raw delivery address. Required if `address_id` is not provided.',
             },
             payment_method: {
               type: 'string',
@@ -147,8 +145,7 @@ registerSwaggerRoute({
     {
       name: 'sortOrder',
       in: 'query',
-      description:
-        'Order of sorting: `asc` for ascending or `desc` for descending.',
+      description: 'Order of sorting: `asc` for ascending or `desc` for descending.',
       required: false,
       schema: {
         type: 'string',
@@ -280,8 +277,7 @@ registerSwaggerRoute({
   path: '/order/user-orders',
   method: 'get',
   summary: 'Get user orders',
-  description:
-    'Retrieve all orders of the currently authenticated user. Requires authentication.',
+  description: 'Retrieve all orders of the currently authenticated user. Requires authentication.',
   responses: {
     '200': {
       description: 'Orders retrieved successfully',

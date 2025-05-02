@@ -1,11 +1,8 @@
 import ReservationDetailContact from '../models/ReservationDetailContactModel';
 import { IReservationDetailContact } from '../models/ReservationDetailContactModel';
 class ReservationDetailContactService {
-  async createReservationDetailContact(
-    input: IReservationDetailContact,
-  ): Promise<any> {
-    const reservationDetailContact =
-      await ReservationDetailContact.create(input);
+  async createReservationDetailContact(input: IReservationDetailContact): Promise<any> {
+    const reservationDetailContact = await ReservationDetailContact.create(input);
     await reservationDetailContact.save();
     return reservationDetailContact;
   }
@@ -26,19 +23,14 @@ class ReservationDetailContactService {
     return reservationDetailContact;
   }
 
-  async updateReservationDetailContact(
-    id: string,
-    input: IReservationDetailContact,
-  ): Promise<any> {
-    const reservationDetailContact =
-      await ReservationDetailContact.findByIdAndUpdate(id, input, {
-        new: true,
-      });
+  async updateReservationDetailContact(id: string, input: IReservationDetailContact): Promise<any> {
+    const reservationDetailContact = await ReservationDetailContact.findByIdAndUpdate(id, input, {
+      new: true,
+    });
     return reservationDetailContact;
   }
   async deleteReservationDetailContact(id: string): Promise<any> {
-    const reservationDetailContact =
-      await ReservationDetailContact.findById(id);
+    const reservationDetailContact = await ReservationDetailContact.findById(id);
 
     // Kiểm tra xem đơn hàng có món ăn đã chọn hay không nếu lớn 0 thì không thể xóa
     if (
@@ -58,8 +50,7 @@ class ReservationDetailContactService {
     }
 
     // Nếu không có vấn đề gì, thực hiện xóa
-    const deletedReservationDetailContact =
-      await ReservationDetailContact.findByIdAndDelete(id);
+    const deletedReservationDetailContact = await ReservationDetailContact.findByIdAndDelete(id);
     return deletedReservationDetailContact;
   }
 }

@@ -17,6 +17,7 @@ var __awaiter =
           reject(e);
         }
       }
+
       function rejected(value) {
         try {
           step(generator['throw'](value));
@@ -24,10 +25,9 @@ var __awaiter =
           reject(e);
         }
       }
+
       function step(result) {
-        result.done
-          ? resolve(result.value)
-          : adopt(result.value).then(fulfilled, rejected);
+        result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
       }
       step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
@@ -46,11 +46,7 @@ class SearchController {
         const keyword = req.query.keyword || '';
         const page = req.query.page ? parseInt(req.query.page) : 1;
         const pageSize = req.query.pageSize ? parseInt(req.query.pageSize) : 10;
-        const result = yield SearchService_1.default.searchUsers(
-          keyword,
-          page,
-          pageSize,
-        );
+        const result = yield SearchService_1.default.searchUsers(keyword, page, pageSize);
         return res.status(200).json(result);
       } catch (error) {
         return res.status(500).json({

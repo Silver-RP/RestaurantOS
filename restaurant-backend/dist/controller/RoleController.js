@@ -17,6 +17,7 @@ var __awaiter =
           reject(e);
         }
       }
+
       function rejected(value) {
         try {
           step(generator['throw'](value));
@@ -24,10 +25,9 @@ var __awaiter =
           reject(e);
         }
       }
+
       function step(result) {
-        result.done
-          ? resolve(result.value)
-          : adopt(result.value).then(fulfilled, rejected);
+        result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
       }
       step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
@@ -44,11 +44,7 @@ class RoleController {
     return __awaiter(this, void 0, void 0, function* () {
       try {
         const { name, description, permission } = req.body;
-        const role = yield RoleService_1.default.AddRole(
-          name,
-          description,
-          permission,
-        );
+        const role = yield RoleService_1.default.AddRole(name, description, permission);
         res.status(201).json({ message: 'Role added successfully', role });
       } catch (error) {
         res.status(500).json({ message: error.message });

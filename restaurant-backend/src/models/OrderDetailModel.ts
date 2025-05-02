@@ -25,7 +25,4 @@ const OrderDetailSchema = new Schema<IOrderDetail>(
   { timestamps: true },
 );
 
-export const OrderDetail = model<IOrderDetail>(
-  'OrderDetail',
-  OrderDetailSchema,
-);
+export const OrderDetail = model<IOrderDetail>('OrderDetail', OrderDetailSchema);

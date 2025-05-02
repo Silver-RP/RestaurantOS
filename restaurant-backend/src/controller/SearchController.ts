@@ -6,9 +6,7 @@ class SearchController {
     try {
       const keyword = (req.query.keyword as string) || '';
       const page = req.query.page ? parseInt(req.query.page as string) : 1;
-      const pageSize = req.query.pageSize
-        ? parseInt(req.query.pageSize as string)
-        : 10;
+      const pageSize = req.query.pageSize ? parseInt(req.query.pageSize as string) : 10;
 
       const result = await SearchService.searchUsers(keyword, page, pageSize);
       return res.status(200).json(result);

@@ -14,10 +14,7 @@ class PermissionController {
   async AddPermission(req: Request, res: Response) {
     try {
       const { name, description } = req.body;
-      const permission = await PermissionService.AddPermission(
-        name,
-        description,
-      );
+      const permission = await PermissionService.AddPermission(name, description);
       res.status(200).json(permission);
     } catch (error: any) {
       res.status(400).json({ message: error.message });

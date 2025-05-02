@@ -17,6 +17,7 @@ var __awaiter =
           reject(e);
         }
       }
+
       function rejected(value) {
         try {
           step(generator['throw'](value));
@@ -24,10 +25,9 @@ var __awaiter =
           reject(e);
         }
       }
+
       function step(result) {
-        result.done
-          ? resolve(result.value)
-          : adopt(result.value).then(fulfilled, rejected);
+        result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
       }
       step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
@@ -56,10 +56,7 @@ class ProfileController {
     return __awaiter(this, void 0, void 0, function* () {
       try {
         const userId = req.params._id;
-        const user = yield ProfileService_1.default.updateUserProfile(
-          userId,
-          req.body,
-        );
+        const user = yield ProfileService_1.default.updateUserProfile(userId, req.body);
         res.status(200).json(user);
       } catch (error) {
         res.status(400).json({ message: error.message });
@@ -70,10 +67,7 @@ class ProfileController {
     return __awaiter(this, void 0, void 0, function* () {
       try {
         const userId = req.params._id;
-        const user = yield ProfileService_1.default.changePasswordProfile(
-          userId,
-          req.body,
-        );
+        const user = yield ProfileService_1.default.changePasswordProfile(userId, req.body);
         res.status(200).json(user);
       } catch (error) {
         res.status(400).json({ message: error.message });

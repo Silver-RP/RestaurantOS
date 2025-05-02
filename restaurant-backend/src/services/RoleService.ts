@@ -16,11 +16,7 @@ class RoleService {
     }
   }
 
-  async AddRole(
-    name: string,
-    description: string,
-    permission: string[],
-  ): Promise<any> {
+  async AddRole(name: string, description: string, permission: string[]): Promise<any> {
     try {
       const existingRole = await RoleModel.findOne({ name });
       if (existingRole) {
@@ -28,9 +24,7 @@ class RoleService {
       }
 
       // Chuyển các permission id từ chuỗi thành ObjectId hợp lệ
-      const permissionIds = permission.map(
-        (id) => new mongoose.Types.ObjectId(id),
-      );
+      const permissionIds = permission.map((id) => new mongoose.Types.ObjectId(id));
       console.log('permiss', permissionIds);
 
       // Kiểm tra xem các permission đã tồn tại chưa

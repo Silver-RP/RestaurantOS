@@ -17,6 +17,7 @@ var __awaiter =
           reject(e);
         }
       }
+
       function rejected(value) {
         try {
           step(generator['throw'](value));
@@ -24,10 +25,9 @@ var __awaiter =
           reject(e);
         }
       }
+
       function step(result) {
-        result.done
-          ? resolve(result.value)
-          : adopt(result.value).then(fulfilled, rejected);
+        result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
       }
       step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
@@ -45,29 +45,20 @@ class AuthMiddleWare {
     return __awaiter(this, void 0, void 0, function* () {
       try {
         const authHeader = req.headers['authorization'];
-        const token =
-          typeof authHeader === 'string' ? authHeader.split(' ')[1] : null;
+        const token = typeof authHeader === 'string' ? authHeader.split(' ')[1] : null;
         if (!token) {
           return res.status(401).json({ message: 'Access token not provided' });
         }
-        jsonwebtoken_1.default.verify(
-          token,
-          process.env.ACCESS_TOKEN,
-          (err, user) => {
-            if (err) {
-              console.error('Token verification failed:', err);
-              return res
-                .status(403)
-                .json({ message: 'Invalid or expired token' });
-            }
-            req.user = user;
-            next();
-          },
-        );
+        jsonwebtoken_1.default.verify(token, process.env.ACCESS_TOKEN, (err, user) => {
+          if (err) {
+            console.error('Token verification failed:', err);
+            return res.status(403).json({ message: 'Invalid or expired token' });
+          }
+          req.user = user;
+          next();
+        });
       } catch (error) {
-        return res
-          .status(500)
-          .json({ message: 'Token middleware error', error: error.message });
+        return res.status(500).json({ message: 'Token middleware error', error: error.message });
       }
     });
   }
@@ -75,24 +66,14 @@ class AuthMiddleWare {
     return __awaiter(this, void 0, void 0, function* () {
       try {
         const token = req.cookies.refreshToken;
-        if (!token)
-          return res.status(401).json({ message: 'Refresh token not found' });
-        jsonwebtoken_1.default.verify(
-          token,
-          process.env.REFRESH_TOKEN,
-          (err, user) => {
-            if (err)
-              return res
-                .status(403)
-                .json({ message: 'Invalid or expired refresh token' });
-            req.user = user;
-            next();
-          },
-        );
+        if (!token) return res.status(401).json({ message: 'Refresh token not found' });
+        jsonwebtoken_1.default.verify(token, process.env.REFRESH_TOKEN, (err, user) => {
+          if (err) return res.status(403).json({ message: 'Invalid or expired refresh token' });
+          req.user = user;
+          next();
+        });
       } catch (error) {
-        return res
-          .status(500)
-          .json({ message: 'Internal server error', error: error.message });
+        return res.status(500).json({ message: 'Internal server error', error: error.message });
       }
     });
   }
@@ -123,15 +104,11 @@ class AuthMiddleWare {
           if (hasRole) {
             return next();
           } else {
-            res
-              .status(403)
-              .json({ message: 'Permission denied: Insufficient role' });
+            res.status(403).json({ message: 'Permission denied: Insufficient role' });
             return;
           }
         } catch (error) {
-          res
-            .status(500)
-            .json({ message: 'Internal server error', error: error.message });
+          res.status(500).json({ message: 'Internal server error', error: error.message });
           return;
         }
       });

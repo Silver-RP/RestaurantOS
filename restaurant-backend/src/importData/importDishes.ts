@@ -84,8 +84,7 @@ const run = async () => {
   await cloudinary.api.delete_resources_by_prefix('dishes/main_course');
   console.log('🧼 Cleaned up existing data and images!');
 
-  const getRandomFromArray = <T>(arr: T[]): T =>
-    arr[Math.floor(Math.random() * arr.length)];
+  const getRandomFromArray = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
   const getRandomInt = (min: number, max: number) =>
     Math.floor(Math.random() * (max - min + 1)) + min;
   const cateId = new mongoose.Types.ObjectId('6803416bdf9079c175db7952');
@@ -126,17 +125,9 @@ const run = async () => {
 
     const discountChance = Math.random();
     const discount_price =
-      discountChance > 0.5
-        ? Math.floor(price * (1 - getRandomInt(5, 30) / 100))
-        : null;
+      discountChance > 0.5 ? Math.floor(price * (1 - getRandomInt(5, 30) / 100)) : null;
 
-    const statusPool = [
-      'available',
-      'available',
-      'available',
-      'hidden',
-      'soldout',
-    ];
+    const statusPool = ['available', 'available', 'available', 'hidden', 'soldout'];
     const status = getRandomFromArray(statusPool);
 
     const views = getRandomInt(20, 450);
@@ -145,9 +136,10 @@ const run = async () => {
     let rating = 0;
     let average_rating = 0;
     if (rating_count > 0) {
-      rating = Array.from({ length: rating_count }, () =>
-        getRandomInt(3, 5),
-      ).reduce((a, b) => a + b, 0);
+      rating = Array.from({ length: rating_count }, () => getRandomInt(3, 5)).reduce(
+        (a, b) => a + b,
+        0,
+      );
       average_rating = parseFloat((rating / rating_count).toFixed(1));
     }
     const favorites_count = getRandomInt(0, 100);
@@ -160,25 +152,13 @@ const run = async () => {
         path.join(__dirname, 'menu_images/mon_chinh', `${baseImageName}${ext}`),
       ),
       ...imageExtensions.map((ext) =>
-        path.join(
-          __dirname,
-          'menu_images/mon_chinh',
-          `${baseImageName}_1${ext}`,
-        ),
+        path.join(__dirname, 'menu_images/mon_chinh', `${baseImageName}_1${ext}`),
       ),
       ...imageExtensions.map((ext) =>
-        path.join(
-          __dirname,
-          'menu_images/mon_chinh',
-          `${baseImageName}_2${ext}`,
-        ),
+        path.join(__dirname, 'menu_images/mon_chinh', `${baseImageName}_2${ext}`),
       ),
       ...imageExtensions.map((ext) =>
-        path.join(
-          __dirname,
-          'menu_images/mon_chinh',
-          `${baseImageName}_3${ext}`,
-        ),
+        path.join(__dirname, 'menu_images/mon_chinh', `${baseImageName}_3${ext}`),
       ),
     ];
 
@@ -223,9 +203,7 @@ const run = async () => {
         console.error(`❌ Failed to save dish "${name}":`, err);
       }
     } else {
-      console.warn(
-        `⚠️ No images uploaded for dish "${name}". Skipping creation.`,
-      );
+      console.warn(`⚠️ No images uploaded for dish "${name}". Skipping creation.`);
     }
   }
 
@@ -250,9 +228,7 @@ const deleteAllCloudinaryImagesInFolder = async (folder: string) => {
 
     if (publicIds.length > 0) {
       await cloudinary.api.delete_resources(publicIds);
-      console.log(
-        `🗑️ Deleted ${publicIds.length} images from Cloudinary folder "${folder}"`,
-      );
+      console.log(`🗑️ Deleted ${publicIds.length} images from Cloudinary folder "${folder}"`);
     } else {
       console.log(`📂 No images found in folder "${folder}"`);
     }

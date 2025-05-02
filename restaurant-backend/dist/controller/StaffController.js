@@ -17,6 +17,7 @@ var __awaiter =
           reject(e);
         }
       }
+
       function rejected(value) {
         try {
           step(generator['throw'](value));
@@ -24,10 +25,9 @@ var __awaiter =
           reject(e);
         }
       }
+
       function step(result) {
-        result.done
-          ? resolve(result.value)
-          : adopt(result.value).then(fulfilled, rejected);
+        result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
       }
       step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
@@ -45,10 +45,7 @@ class StaffController {
       try {
         const page = req.query.page ? parseInt(req.query.page) : 1;
         const pageSize = req.query.pageSize ? parseInt(req.query.pageSize) : 10;
-        const allStaff = yield StaffService_1.default.getAllStaff(
-          page,
-          pageSize,
-        );
+        const allStaff = yield StaffService_1.default.getAllStaff(page, pageSize);
         return res.status(200).json(allStaff);
       } catch (error) {
         return res.status(500).json({
@@ -129,9 +126,7 @@ class StaffController {
           emailSort: req.query.emailSort, // 'A->Z', 'Z->A'
           gender: req.query.gender, // 'male', 'female', 'other'
           status: req.query.status, // 'active', 'inactive', 'blocked'
-          startDate: req.query.startDate
-            ? new Date(req.query.startDate)
-            : undefined,
+          startDate: req.query.startDate ? new Date(req.query.startDate) : undefined,
           endDate: req.query.endDate ? new Date(req.query.endDate) : undefined,
           page: req.query.page ? parseInt(req.query.page) : 1,
           pageSize: req.query.pageSize ? parseInt(req.query.pageSize) : 10,

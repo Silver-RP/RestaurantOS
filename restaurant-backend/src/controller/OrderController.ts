@@ -12,14 +12,7 @@ class OrderController {
         return res.status(401).json({ message: 'Unauthorized' });
       }
       const userId = (req.user as IUser).id as Types.ObjectId;
-      const {
-        address_id,
-        address,
-        payment_method,
-        delivery_type,
-        items,
-        order_type,
-      } = req.body;
+      const { address_id, address, payment_method, delivery_type, items, order_type } = req.body;
 
       const order = await OrderService.placeOrder({
         userId,
@@ -43,25 +36,13 @@ class OrderController {
     }
   }
 
-  async getAllOrders(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<any> {
+  async getAllOrders(req: Request, res: Response, next: NextFunction): Promise<any> {
     try {
-      const {
-        page = 1,
-        limit = 10,
-        sortBy = 'createdAt',
-        sortOrder = 'desc',
-        filters,
-      } = req.query;
+      const { page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc', filters } = req.query;
       const parsedSortOrder: 1 | -1 = sortOrder === 'asc' ? 1 : -1;
       const parsedPage = parseInt(page as string, 10);
       const parsedLimit = parseInt(limit as string, 10);
-      const filtersObject = filters
-        ? (filters as { [key: string]: string })
-        : {};
+      const filtersObject = filters ? (filters as { [key: string]: string }) : {};
 
       console.log('Filters:', filters);
       console.log('MongoDB Query:', req.query);
@@ -89,11 +70,7 @@ class OrderController {
     }
   }
 
-  async getUserOrders(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<any> {
+  async getUserOrders(req: Request, res: Response, next: NextFunction): Promise<any> {
     try {
       if (!req.user) {
         return res.status(401).json({ message: 'Unauthorized' });
@@ -114,11 +91,7 @@ class OrderController {
     }
   }
 
-  async getOrderById(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<any> {
+  async getOrderById(req: Request, res: Response, next: NextFunction): Promise<any> {
     try {
       const orderId = new Types.ObjectId(req.params.id);
       const order = await OrderService.getOrderById(orderId);
@@ -136,19 +109,12 @@ class OrderController {
     }
   }
 
-  async updateOrderStatus(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<any> {
+  async updateOrderStatus(req: Request, res: Response, next: NextFunction): Promise<any> {
     try {
       const orderId = new Types.ObjectId(req.params.id);
       const { status } = req.body;
 
-      const updatedOrder = await OrderService.updateOrderStatus(
-        orderId,
-        status,
-      );
+      const updatedOrder = await OrderService.updateOrderStatus(orderId, status);
 
       return res.status(200).json({
         message: 'Order status updated successfully',

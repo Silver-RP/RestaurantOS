@@ -20,7 +20,4 @@ const dishIngredientSchema = new mongoose_1.default.Schema({
   quantity: { type: Number, required: true },
   unit: { type: String, required: true },
 });
-const DishIngredient = mongoose_1.default.model(
-  'DishIngredient',
-  dishIngredientSchema,
-);
+const DishIngredient = mongoose_1.default.model('DishIngredient', dishIngredientSchema);

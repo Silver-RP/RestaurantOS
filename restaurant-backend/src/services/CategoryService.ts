@@ -104,9 +104,7 @@ class CategoryService {
 
       const hasSub = await Category.findOne({ sub: id });
       if (hasSub) {
-        return res
-          .status(400)
-          .json({ message: 'Cannot delete category with subcategories!' });
+        return res.status(400).json({ message: 'Cannot delete category with subcategories!' });
       }
 
       const DeleteCategory = await Category.findByIdAndDelete(id);

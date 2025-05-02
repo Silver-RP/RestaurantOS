@@ -1,6 +1,6 @@
-import mongoose, { FilterQuery } from 'mongoose';
+import mongoose from 'mongoose';
 import Roles from '../models/RoleModel';
-import User, { IUser } from '../models/UserModel';
+import User from '../models/UserModel';
 
 interface FilterUserOptions {
   name?: string;
@@ -28,10 +28,7 @@ class UserService {
     }
   }
 
-  async getAllUserByUserRole(
-    page: number = 1,
-    pageSize: number = 10,
-  ): Promise<any> {
+  async getAllUserByUserRole(page: number = 1, pageSize: number = 10): Promise<any> {
     try {
       const allUserByUserRole = await User.find();
       const options = {
@@ -47,9 +44,9 @@ class UserService {
 
       const result = await User.paginate({}, options);
 
-      const filteredUsers = allUserByUserRole.filter(
-        (user) => user.roles && user.roles.length > 0,
-      );
+      // const filteredUsers = allUserByUserRole.filter(
+      //   (user) => user.roles && user.roles.length > 0,
+      // );
 
       return {
         status: 'OK',
@@ -169,7 +166,7 @@ class UserService {
 
       const userRole = await Roles.findOne({ name: 'user' });
       if (!userRole) {
-        throw new Error("Role 'user' not found");
+        throw new Error('Role user not found');
       }
 
       query.roles = userRole._id;

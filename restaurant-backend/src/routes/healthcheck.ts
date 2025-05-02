@@ -13,9 +13,7 @@ router.get('/db', async (req, res) => {
       name: 'Sample Data',
       description: 'This is a sample document',
     });
-    res
-      .status(201)
-      .json({ message: 'Data added successfully', data: sampleData });
+    res.status(201).json({ message: 'Data added successfully', data: sampleData });
   } catch (error) {
     res.status(500).json({ message: 'Error adding data', error });
   }

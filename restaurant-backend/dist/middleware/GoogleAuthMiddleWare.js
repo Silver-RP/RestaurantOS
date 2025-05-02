@@ -17,6 +17,7 @@ var __awaiter =
           reject(e);
         }
       }
+
       function rejected(value) {
         try {
           step(generator['throw'](value));
@@ -24,10 +25,9 @@ var __awaiter =
           reject(e);
         }
       }
+
       function step(result) {
-        result.done
-          ? resolve(result.value)
-          : adopt(result.value).then(fulfilled, rejected);
+        result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
       }
       step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
@@ -42,9 +42,7 @@ class GoogleAuthMiddleWare {
       try {
         const token = req.body.token; // Lấy token từ body của request
         if (!token) {
-          return res
-            .status(401)
-            .json({ message: 'Access Denied - No token provided' });
+          return res.status(401).json({ message: 'Access Denied - No token provided' });
         }
         // Xác thực token qua Google OAuth2Client
         try {
@@ -64,24 +62,15 @@ class GoogleAuthMiddleWare {
             };
             return next(); // Tiếp tục với controller hoặc middleware tiếp theo
           } else {
-            return res
-              .status(401)
-              .json({ message: 'Invalid Google token payload' });
+            return res.status(401).json({ message: 'Invalid Google token payload' });
           }
         } catch (error) {
-          console.error(
-            'Error verifying token with Google OAuth2Client:',
-            error,
-          );
-          return res
-            .status(401)
-            .json({ message: 'Access Denied - Invalid Google token' });
+          console.error('Error verifying token with Google OAuth2Client:', error);
+          return res.status(401).json({ message: 'Access Denied - Invalid Google token' });
         }
       } catch (error) {
         console.error('Error verifying Google token:', error);
-        return res
-          .status(401)
-          .json({ message: 'Access Denied - Error verifying token' });
+        return res.status(401).json({ message: 'Access Denied - Error verifying token' });
       }
     });
   }

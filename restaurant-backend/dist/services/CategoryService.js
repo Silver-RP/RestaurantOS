@@ -17,6 +17,7 @@ var __awaiter =
           reject(e);
         }
       }
+
       function rejected(value) {
         try {
           step(generator['throw'](value));
@@ -24,10 +25,9 @@ var __awaiter =
           reject(e);
         }
       }
+
       function step(result) {
-        result.done
-          ? resolve(result.value)
-          : adopt(result.value).then(fulfilled, rejected);
+        result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
       }
       step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
@@ -60,10 +60,7 @@ class CategoryService {
         const limitNumber = parseInt(limit, 10);
         const skip = (pageNumber - 1) * limitNumber;
         const totalCategories = yield CategoryModel_1.default.countDocuments();
-        const categories = yield CategoryModel_1.default
-          .find()
-          .skip(skip)
-          .limit(limitNumber);
+        const categories = yield CategoryModel_1.default.find().skip(skip).limit(limitNumber);
         if (categories.length === 0) {
           return res.status(404).json({ message: 'No categories found!' });
         }
@@ -154,12 +151,9 @@ class CategoryService {
         const { id } = req.params;
         const hasSub = yield CategoryModel_1.default.findOne({ sub: id });
         if (hasSub) {
-          return res
-            .status(400)
-            .json({ message: 'Cannot delete category with subcategories!' });
+          return res.status(400).json({ message: 'Cannot delete category with subcategories!' });
         }
-        const DeleteCategory =
-          yield CategoryModel_1.default.findByIdAndDelete(id);
+        const DeleteCategory = yield CategoryModel_1.default.findByIdAndDelete(id);
         if (!DeleteCategory) {
           return res.status(404).json({ message: 'Category not found!' });
         }
@@ -170,16 +164,11 @@ class CategoryService {
     });
   }
   sortData(model_1, fieldName_1) {
-    return __awaiter(
-      this,
-      arguments,
-      void 0,
-      function* (model, fieldName, order = 'asc') {
-        const sortOrder = order === 'asc' ? 1 : -1;
-        const data = yield model.find().sort({ [fieldName]: sortOrder });
-        return data;
-      },
-    );
+    return __awaiter(this, arguments, void 0, function* (model, fieldName, order = 'asc') {
+      const sortOrder = order === 'asc' ? 1 : -1;
+      const data = yield model.find().sort({ [fieldName]: sortOrder });
+      return data;
+    });
   }
 }
 exports.default = new CategoryService();

@@ -14,15 +14,7 @@ interface QueryParams {
 class FoodController {
   async createFood(req: Request, res: Response): Promise<any> {
     try {
-      const {
-        name,
-        price,
-        description,
-        categories,
-        countInStock,
-        rating,
-        favorites,
-      } = req.body;
+      const { name, price, description, categories, countInStock, rating, favorites } = req.body;
       if (
         !name ||
         !price ||
@@ -45,10 +37,7 @@ class FoodController {
       const imageFile = req.file;
 
       console.log('Image file received:', imageFile);
-      if (
-        imageFile.mimetype !== 'image/jpeg' &&
-        imageFile.mimetype !== 'image/png'
-      ) {
+      if (imageFile.mimetype !== 'image/jpeg' && imageFile.mimetype !== 'image/png') {
         return res.status(400).json({ message: 'Invalid file type' });
       }
       const imageUrl = await UploadImage(req.file, 'food');
@@ -63,9 +52,7 @@ class FoodController {
         favorites: req.body.favorites,
       };
       const newFood = await FoodService.createFood(food);
-      return res
-        .status(201)
-        .json({ message: 'Food created successfully', data: newFood });
+      return res.status(201).json({ message: 'Food created successfully', data: newFood });
     } catch (error) {
       console.error('Error creating food:', error);
       return res.status(500).json({ message: 'Internal server error' });
@@ -242,9 +229,7 @@ class FoodController {
       if (favorites) {
         const favoritesNumber = Number(favorites);
         if (isNaN(favoritesNumber)) {
-          return res
-            .status(400)
-            .json({ success: false, message: 'Favorites must be a number' });
+          return res.status(400).json({ success: false, message: 'Favorites must be a number' });
         }
         dishes = await FoodService.getFoodByFavorites(favoritesNumber, type);
       } else {
@@ -266,9 +251,7 @@ class FoodController {
       });
     } catch (error) {
       console.error('Error in getFoodByFavorites:', error);
-      return res
-        .status(500)
-        .json({ success: false, message: 'Internal server error' });
+      return res.status(500).json({ success: false, message: 'Internal server error' });
     }
   }
 

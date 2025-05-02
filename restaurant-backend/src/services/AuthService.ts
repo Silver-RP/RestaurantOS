@@ -21,28 +21,22 @@ class AuthService {
       const clientId = process.env.GG_CLIENT_ID || '';
       const clientSecret = process.env.GG_CLIENT_SECRET || '';
       const redirectUri = process.env.GOOGLE_REDIRECT_URI || '';
-      const tokenResponse = await axios.post(
-        'https://oauth2.googleapis.com/token',
-        {
-          code,
-          client_id: clientId,
-          client_secret: clientSecret,
-          redirect_uri: redirectUri,
-          grant_type: 'authorization_code',
-        },
-      );
+      const tokenResponse = await axios.post('https://oauth2.googleapis.com/token', {
+        code,
+        client_id: clientId,
+        client_secret: clientSecret,
+        redirect_uri: redirectUri,
+        grant_type: 'authorization_code',
+      });
       const { access_token, id_token } = tokenResponse.data as {
         access_token: string;
         id_token: string;
       };
-      const userProfileResponse = await axios.get(
-        'https://www.googleapis.com/oauth2/v2/userinfo',
-        {
-          headers: {
-            Authorization: `Bearer ${access_token}`,
-          },
+      const userProfileResponse = await axios.get('https://www.googleapis.com/oauth2/v2/userinfo', {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
         },
-      );
+      });
       const user = userProfileResponse.data;
       let existingUser = await User.findOne({ email: user.email });
       if (!existingUser) {
@@ -64,11 +58,7 @@ class AuthService {
     }
   }
 
-  async register(userData: {
-    username: string;
-    email: string;
-    password: string;
-  }) {
+  async register(userData: { username: string; email: string; password: string }) {
     const { username, email, password } = userData;
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -91,10 +81,7 @@ class AuthService {
 
     await newUser.save();
 
-    const populatedUser = await User.findById(newUser._id).populate(
-      'roles',
-      'name',
-    );
+    const populatedUser = await User.findById(newUser._id).populate('roles', 'name');
 
     return populatedUser;
   }
@@ -130,19 +117,12 @@ class AuthService {
       if (!refreshTokenFromClient) {
         throw new Error('No refresh token provided');
       }
-      const decode: any = jwt.verify(
-        refreshTokenFromClient,
-        process.env.REFRESH_TOKEN || '',
-      );
+      const decode: any = jwt.verify(refreshTokenFromClient, process.env.REFRESH_TOKEN || '');
       const user = await User.findById(decode.id);
       if (!user) {
         throw new Error('User not found');
       }
-      const newAccessToken = accessToken(
-        { id: user._id },
-        process.env.ACCESS_TOKEN || '',
-        60,
-      );
+      const newAccessToken = accessToken({ id: user._id }, process.env.ACCESS_TOKEN || '', 60);
       return { newAccessToken };
     } catch (error: any) {
       throw new Error(error.message);
@@ -162,20 +142,12 @@ class AuthService {
         });
         await user.save();
       }
-      const accessToken = jwt.sign(
-        { id: user._id },
-        process.env.ACCESS_TOKEN || '',
-        {
-          expiresIn: 7200,
-        },
-      );
-      const refreshToken = jwt.sign(
-        { id: user._id },
-        process.env.REFRESH_TOKEN || '',
-        {
-          expiresIn: 365 * 24 * 60 * 60,
-        },
-      );
+      const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN || '', {
+        expiresIn: 7200,
+      });
+      const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN || '', {
+        expiresIn: 365 * 24 * 60 * 60,
+      });
       return {
         user,
         accessToken,
@@ -188,10 +160,7 @@ class AuthService {
 
   async logout(refreshToken: string) {
     try {
-      const decode: any = jwt.verify(
-        refreshToken,
-        process.env.REFRESH_TOKEN || '',
-      );
+      const decode: any = jwt.verify(refreshToken, process.env.REFRESH_TOKEN || '');
       const user = await User.findById(decode.id);
       if (!user) {
         throw new Error('User not found');
@@ -228,10 +197,7 @@ class AuthService {
     if (user.changePasswordOtp?.trim() !== otp.trim()) {
       throw new Error('Invalid OTP');
     }
-    if (
-      !user.changePasswordOtpExpiry ||
-      user.changePasswordOtpExpiry < new Date()
-    ) {
+    if (!user.changePasswordOtpExpiry || user.changePasswordOtpExpiry < new Date()) {
       throw new Error('OTP expired');
     }
 
@@ -274,9 +240,7 @@ class AuthService {
         const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
 
         if (user.otpSentCount >= 5 && user.lastOtpSentAt > oneHourAgo) {
-          throw new Error(
-            'Bạn đã vượt quá số lần gửi OTP. Vui lòng thử lại sau',
-          );
+          throw new Error('Bạn đã vượt quá số lần gửi OTP. Vui lòng thử lại sau');
         }
 
         user.changePasswordOtp = otp;
@@ -327,9 +291,7 @@ class AuthService {
     const now = new Date();
     const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
     if (user.otpSentCount >= 5 && user.lastOtpSentAt > oneHourAgo) {
-      throw new Error(
-        'You have exceeded the OTP request limit. Please try again later.',
-      );
+      throw new Error('You have exceeded the OTP request limit. Please try again later.');
     }
 
     user.emailVerificationOtp = otp;
@@ -358,10 +320,7 @@ class AuthService {
     await transporter.sendMail(mailOptions);
     return 'Verification email sent successfully';
   }
-  async verifyEmailVerificationOtp(
-    email: string,
-    otp: string,
-  ): Promise<string> {
+  async verifyEmailVerificationOtp(email: string, otp: string): Promise<string> {
     const user = await User.findOne({ email });
     if (!user) throw new Error('Không tìm thấy người dùng');
 
@@ -373,10 +332,7 @@ class AuthService {
       throw new Error('Mã OTP không đúng');
     }
 
-    if (
-      !user.emailVerificationOtpExpiry ||
-      user.emailVerificationOtpExpiry < new Date()
-    ) {
+    if (!user.emailVerificationOtpExpiry || user.emailVerificationOtpExpiry < new Date()) {
       throw new Error('OTP đã hết hạn');
     }
 

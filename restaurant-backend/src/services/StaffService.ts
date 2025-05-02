@@ -1,4 +1,3 @@
-import mongoose, { FilterQuery } from 'mongoose';
 import Roles from '../models/RoleModel';
 import User, { IUser } from '../models/UserModel';
 

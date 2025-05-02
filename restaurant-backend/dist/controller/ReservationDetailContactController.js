@@ -17,6 +17,7 @@ var __awaiter =
           reject(e);
         }
       }
+
       function rejected(value) {
         try {
           step(generator['throw'](value));
@@ -24,10 +25,9 @@ var __awaiter =
           reject(e);
         }
       }
+
       function step(result) {
-        result.done
-          ? resolve(result.value)
-          : adopt(result.value).then(fulfilled, rejected);
+        result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
       }
       step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
@@ -45,19 +45,10 @@ class ReservationDetailContactController {
   createReservationDetailContact(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
       try {
-        const {
-          reservation,
-          reservationDate,
-          guestCount,
-          timeReservation,
-          status,
-          user,
-          notes,
-        } = req.body;
+        const { reservation, reservationDate, guestCount, timeReservation, status, user, notes } =
+          req.body;
         const reservationDetailContact =
-          yield ReservationDetailContactService_1.default.createReservationDetailContact(
-            req.body,
-          );
+          yield ReservationDetailContactService_1.default.createReservationDetailContact(req.body);
         res.status(200).json(reservationDetailContact);
       } catch (error) {
         res.status(400).json({ message: error.message });
@@ -80,9 +71,7 @@ class ReservationDetailContactController {
       try {
         const { id } = req.params;
         const reservationDetailContact =
-          yield ReservationDetailContactService_1.default.getReservationDetailContactById(
-            id,
-          );
+          yield ReservationDetailContactService_1.default.getReservationDetailContactById(id);
         res.status(200).json(reservationDetailContact);
       } catch (error) {
         res.status(400).json({ message: error.message });
@@ -109,9 +98,7 @@ class ReservationDetailContactController {
       try {
         const { id } = req.params;
         const reservationDetailContact =
-          yield ReservationDetailContactService_1.default.deleteReservationDetailContact(
-            id,
-          );
+          yield ReservationDetailContactService_1.default.deleteReservationDetailContact(id);
         res.status(200).json(reservationDetailContact);
       } catch (error) {
         res.status(400).json({ message: error.message });

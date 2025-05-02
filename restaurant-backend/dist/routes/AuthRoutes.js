@@ -6,17 +6,11 @@ var __importDefault =
   };
 Object.defineProperty(exports, '__esModule', { value: true });
 const express_1 = require('express');
-const AuthController_1 = __importDefault(
-  require('../controller/AuthController'),
-);
-const GoogleAuthMiddleWare_1 = __importDefault(
-  require('../middleware/GoogleAuthMiddleWare'),
-);
+const AuthController_1 = __importDefault(require('../controller/AuthController'));
+const GoogleAuthMiddleWare_1 = __importDefault(require('../middleware/GoogleAuthMiddleWare'));
 const auth_schema_1 = require('../schemas/auth.schema');
 const ValidateRequest_1 = require('../middleware/ValidateRequest');
-const AuthMiddleWare_1 = __importDefault(
-  require('../middleware/AuthMiddleWare'),
-);
+const AuthMiddleWare_1 = __importDefault(require('../middleware/AuthMiddleWare'));
 const router = (0, express_1.Router)();
 router.post(
   '/register',
@@ -43,12 +37,6 @@ router.post('/logout', AuthController_1.default.Logout);
 router.post('/verify-otpEmail', AuthController_1.default.verifyOtpEmail);
 router.post('/forgot-password', AuthController_1.default.forgotPasswordHandler);
 router.post('/change-password', AuthController_1.default.changePassword);
-router.post(
-  '/resend-verification',
-  AuthController_1.default.resendVerificationEmail,
-);
-router.post(
-  '/verify-resend-otpEmail',
-  AuthController_1.default.verifyResendOtpEmail,
-);
+router.post('/resend-verification', AuthController_1.default.resendVerificationEmail);
+router.post('/verify-resend-otpEmail', AuthController_1.default.verifyResendOtpEmail);
 exports.default = router;

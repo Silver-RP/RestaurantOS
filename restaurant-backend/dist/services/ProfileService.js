@@ -17,6 +17,7 @@ var __awaiter =
           reject(e);
         }
       }
+
       function rejected(value) {
         try {
           step(generator['throw'](value));
@@ -24,10 +25,9 @@ var __awaiter =
           reject(e);
         }
       }
+
       function step(result) {
-        result.done
-          ? resolve(result.value)
-          : adopt(result.value).then(fulfilled, rejected);
+        result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
       }
       step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
@@ -67,9 +67,7 @@ class ProfileService {
   changePasswordProfile(userId, data) {
     return __awaiter(this, void 0, void 0, function* () {
       try {
-        const user = yield UserModel_1.default
-          .findById(userId)
-          .select('+password');
+        const user = yield UserModel_1.default.findById(userId).select('+password');
         if (!user) {
           throw new Error('User not found');
         }

@@ -22,10 +22,12 @@ function registerSwaggerRoute(options) {
   };
   swaggerRoutes.push(routeMetadata);
 }
+
 // Hàm để lấy tất cả metadata đã đăng ký
 function getSwaggerRoutes() {
   return swaggerRoutes;
 }
+
 // Hàm để tạo Swagger specification từ metadata
 function generateSwaggerSpec(routes, swaggerConfig) {
   const paths = {};

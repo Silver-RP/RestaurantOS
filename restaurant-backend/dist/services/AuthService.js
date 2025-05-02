@@ -17,6 +17,7 @@ var __awaiter =
           reject(e);
         }
       }
+
       function rejected(value) {
         try {
           step(generator['throw'](value));
@@ -24,10 +25,9 @@ var __awaiter =
           reject(e);
         }
       }
+
       function step(result) {
-        result.done
-          ? resolve(result.value)
-          : adopt(result.value).then(fulfilled, rejected);
+        result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
       }
       step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
@@ -56,16 +56,13 @@ class AuthService {
         const clientId = process.env.GG_CLIENT_ID || '';
         const clientSecret = process.env.GG_CLIENT_SECRET || '';
         const redirectUri = process.env.GOOGLE_REDIRECT_URI || '';
-        const tokenResponse = yield axios_1.default.post(
-          'https://oauth2.googleapis.com/token',
-          {
-            code,
-            client_id: clientId,
-            client_secret: clientSecret,
-            redirect_uri: redirectUri,
-            grant_type: 'authorization_code',
-          },
-        );
+        const tokenResponse = yield axios_1.default.post('https://oauth2.googleapis.com/token', {
+          code,
+          client_id: clientId,
+          client_secret: clientSecret,
+          redirect_uri: redirectUri,
+          grant_type: 'authorization_code',
+        });
         const { access_token, id_token } = tokenResponse.data;
         const userProfileResponse = yield axios_1.default.get(
           'https://www.googleapis.com/oauth2/v2/userinfo',
@@ -116,9 +113,7 @@ class AuthService {
         password: hashedPassword,
         roles: [defaultRole._id],
         isVerified: false,
-        emailVerificationToken: crypto_1.default
-          .randomBytes(32)
-          .toString('hex'),
+        emailVerificationToken: crypto_1.default.randomBytes(32).toString('hex'),
         emailVerificationExpires: new Date(Date.now() + 3600000), // 1h
       });
       yield newUser.save();
@@ -131,16 +126,11 @@ class AuthService {
   login(loginUser) {
     return __awaiter(this, void 0, void 0, function* () {
       const { email, password } = loginUser;
-      const user = yield UserModel_1.default
-        .findOne({ email })
-        .populate('roles', 'name');
+      const user = yield UserModel_1.default.findOne({ email }).populate('roles', 'name');
       if (!user) {
         throw new Error('Email not registered');
       }
-      const isMatch = yield bcrypt_1.default.compare(
-        password,
-        user.password || '',
-      );
+      const isMatch = yield bcrypt_1.default.compare(password, user.password || '');
       if (!isMatch) {
         throw new Error('Password is incorrect');
       }
@@ -223,10 +213,7 @@ class AuthService {
   logout(refreshToken) {
     return __awaiter(this, void 0, void 0, function* () {
       try {
-        const decode = jsonwebtoken_1.default.verify(
-          refreshToken,
-          process.env.REFRESH_TOKEN || '',
-        );
+        const decode = jsonwebtoken_1.default.verify(refreshToken, process.env.REFRESH_TOKEN || '');
         const user = yield UserModel_1.default.findById(decode.id);
         if (!user) {
           throw new Error('User not found');
@@ -260,16 +247,12 @@ class AuthService {
       const user = yield UserModel_1.default.findOne({ email });
       if (!user) throw new Error('User not found');
       if (
-        ((_a = user.changePasswordOtp) === null || _a === void 0
-          ? void 0
-          : _a.trim()) !== otp.trim()
+        ((_a = user.changePasswordOtp) === null || _a === void 0 ? void 0 : _a.trim()) !==
+        otp.trim()
       ) {
         throw new Error('Invalid OTP');
       }
-      if (
-        !user.changePasswordOtpExpiry ||
-        user.changePasswordOtpExpiry < new Date()
-      ) {
+      if (!user.changePasswordOtpExpiry || user.changePasswordOtpExpiry < new Date()) {
         throw new Error('OTP expired');
       }
       user.changePasswordOtp = null;
@@ -306,9 +289,7 @@ class AuthService {
           const now = new Date();
           const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
           if (user.otpSentCount >= 5 && user.lastOtpSentAt > oneHourAgo) {
-            throw new Error(
-              'Bạn đã vượt quá số lần gửi OTP. Vui lòng thử lại sau',
-            );
+            throw new Error('Bạn đã vượt quá số lần gửi OTP. Vui lòng thử lại sau');
           }
           user.changePasswordOtp = otp;
           user.changePasswordOtpExpiry = expireAt;
@@ -354,9 +335,7 @@ class AuthService {
       const now = new Date();
       const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
       if (user.otpSentCount >= 5 && user.lastOtpSentAt > oneHourAgo) {
-        throw new Error(
-          'You have exceeded the OTP request limit. Please try again later.',
-        );
+        throw new Error('You have exceeded the OTP request limit. Please try again later.');
       }
       user.emailVerificationOtp = otp;
       user.emailVerificationOtpExpiry = otpExpiry;
@@ -392,10 +371,7 @@ class AuthService {
       if (user.emailVerificationOtp !== otp) {
         throw new Error('Mã OTP không đúng');
       }
-      if (
-        !user.emailVerificationOtpExpiry ||
-        user.emailVerificationOtpExpiry < new Date()
-      ) {
+      if (!user.emailVerificationOtpExpiry || user.emailVerificationOtpExpiry < new Date()) {
         throw new Error('OTP đã hết hạn');
       }
       user.isEmailVerified = true;

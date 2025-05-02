@@ -4,8 +4,7 @@ registerSwaggerRoute({
   path: '/auth/register',
   method: 'post',
   summary: 'User registration',
-  description:
-    'Register a new user with username, email, password, phone, and optional roles',
+  description: 'Register a new user with username, email, password, phone, and optional roles',
   requestBody: {
     content: {
       'application/json': {
@@ -23,13 +22,7 @@ registerSwaggerRoute({
               example: ['507f1f77bcf86cd799439011'],
             },
           },
-          required: [
-            'username',
-            'email',
-            'password',
-            'confirmPassword',
-            'phone',
-          ],
+          required: ['username', 'email', 'password', 'confirmPassword', 'phone'],
         },
       },
     },

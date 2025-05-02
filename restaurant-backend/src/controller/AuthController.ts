@@ -53,8 +53,7 @@ class AuthController {
   async refreshAccessToken(req: Request, res: Response): Promise<any> {
     try {
       const { refreshToken } = req.cookies;
-      const { newAccessToken } =
-        await AuthService.refreshAccessToken(refreshToken);
+      const { newAccessToken } = await AuthService.refreshAccessToken(refreshToken);
       res.cookie('accessToken', newAccessToken, {
         httpOnly: false,
         secure: process.env.NODE_ENV === 'production',
@@ -75,15 +74,13 @@ class AuthController {
         return res.status(400).json({ message: 'Google user data is missing' });
       }
       const { email, name, avatar, sub } = googleUser;
-      const { user, accessToken, refreshToken } = await AuthService.googleLogin(
-        {
-          id: sub,
-          email,
-          googleId: sub,
-          username: name,
-          avatar,
-        },
-      );
+      const { user, accessToken, refreshToken } = await AuthService.googleLogin({
+        id: sub,
+        email,
+        googleId: sub,
+        username: name,
+        avatar,
+      });
       res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
@@ -97,17 +94,11 @@ class AuthController {
         accessToken,
       });
     } catch (error: any) {
-      return res
-        .status(400)
-        .json({ message: 'Error during Google login', error: error.message });
+      return res.status(400).json({ message: 'Error during Google login', error: error.message });
     }
   }
 
-  async googleCallback(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<any> {
+  async googleCallback(req: Request, res: Response, next: NextFunction): Promise<any> {
     try {
       const { code } = req.query;
       if (!code) {
@@ -148,25 +139,20 @@ class AuthController {
     const { phone, email } = req.body;
 
     if (!phone && !email) {
-      return res
-        .status(400)
-        .json({ message: 'Vui lòng nhập số điện thoại hoặc email' });
+      return res.status(400).json({ message: 'Vui lòng nhập số điện thoại hoặc email' });
     }
 
     let identifier = '';
 
     if (phone && email) {
       return res.status(400).json({
-        message:
-          'Vui lòng chỉ nhập số điện thoại HOẶC email, không nhập cả hai',
+        message: 'Vui lòng chỉ nhập số điện thoại HOẶC email, không nhập cả hai',
       });
     }
     if (phone) {
       const phoneRegex = /^(?:\+84|0)(3|5|7|8|9)\d{8}$/;
       if (!phoneRegex.test(phone)) {
-        return res
-          .status(400)
-          .json({ message: 'Định dạng số điện thoại không hợp lệ' });
+        return res.status(400).json({ message: 'Định dạng số điện thoại không hợp lệ' });
       }
       identifier = phone;
     }
@@ -174,9 +160,7 @@ class AuthController {
       const emailRegex =
         /^[a-zA-Z0-9](\.?[a-zA-Z0-9_-])*[a-zA-Z0-9]@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
       if (!emailRegex.test(email)) {
-        return res
-          .status(400)
-          .json({ message: 'Định dạng email không hợp lệ' });
+        return res.status(400).json({ message: 'Định dạng email không hợp lệ' });
       }
       identifier = email;
     }
@@ -210,10 +194,7 @@ class AuthController {
         return res.status(400).json({ message: 'Passwords do not match' });
       }
 
-      const result = await AuthService.changePasswordByEmail(
-        email,
-        newPassword,
-      );
+      const result = await AuthService.changePasswordByEmail(email, newPassword);
       return res.status(200).json(result); // { message: "..."}
     } catch (error: any) {
       return res.status(400).json({ message: error.message });
@@ -235,9 +216,7 @@ class AuthController {
       }
 
       if (!/^\d{6}$/.test(otp)) {
-        return res
-          .status(400)
-          .json({ message: 'OTP must be a 6-digit number' });
+        return res.status(400).json({ message: 'OTP must be a 6-digit number' });
       }
 
       const message = await AuthService.verifyForgotPasswordOtp(email, otp);
@@ -254,9 +233,7 @@ class AuthController {
         const emailRegex =
           /^[a-zA-Z0-9](\.?[a-zA-Z0-9_-])*[a-zA-Z0-9]@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
         if (!emailRegex.test(email)) {
-          return res
-            .status(400)
-            .json({ message: 'Định dạng email không hợp lệ' });
+          return res.status(400).json({ message: 'Định dạng email không hợp lệ' });
         }
       }
 
@@ -278,9 +255,7 @@ class AuthController {
       const emailRegex =
         /^[a-zA-Z0-9](\.?[a-zA-Z0-9_-])*[a-zA-Z0-9]@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
       if (!emailRegex.test(email)) {
-        return res
-          .status(400)
-          .json({ message: 'Định dạng email không hợp lệ' });
+        return res.status(400).json({ message: 'Định dạng email không hợp lệ' });
       }
 
       if (!/^\d{6}$/.test(otp)) {

@@ -17,6 +17,7 @@ var __awaiter =
           reject(e);
         }
       }
+
       function rejected(value) {
         try {
           step(generator['throw'](value));
@@ -24,10 +25,9 @@ var __awaiter =
           reject(e);
         }
       }
+
       function step(result) {
-        result.done
-          ? resolve(result.value)
-          : adopt(result.value).then(fulfilled, rejected);
+        result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
       }
       step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
@@ -38,15 +38,12 @@ var __importDefault =
     return mod && mod.__esModule ? mod : { default: mod };
   };
 Object.defineProperty(exports, '__esModule', { value: true });
-const PermissionService_1 = __importDefault(
-  require('../services/PermissionService'),
-);
+const PermissionService_1 = __importDefault(require('../services/PermissionService'));
 class PermissionController {
   GetAllPermission(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
       try {
-        const permissions =
-          yield PermissionService_1.default.GetALlPermission();
+        const permissions = yield PermissionService_1.default.GetALlPermission();
         res.status(200).json(permissions);
       } catch (error) {
         res.status(400).json({ message: error.message });
@@ -57,10 +54,7 @@ class PermissionController {
     return __awaiter(this, void 0, void 0, function* () {
       try {
         const { name, description } = req.body;
-        const permission = yield PermissionService_1.default.AddPermission(
-          name,
-          description,
-        );
+        const permission = yield PermissionService_1.default.AddPermission(name, description);
         res.status(200).json(permission);
       } catch (error) {
         res.status(400).json({ message: error.message });
@@ -71,8 +65,7 @@ class PermissionController {
     return __awaiter(this, void 0, void 0, function* () {
       try {
         const id = req.params.id;
-        const permission =
-          yield PermissionService_1.default.GetPermissionById(id);
+        const permission = yield PermissionService_1.default.GetPermissionById(id);
         res.status(200).json(permission);
       } catch (error) {
         res.status(400).json({ message: error.message });
@@ -83,10 +76,7 @@ class PermissionController {
     return __awaiter(this, void 0, void 0, function* () {
       try {
         const id = req.params.id;
-        const permission = yield PermissionService_1.default.UpdatePermission(
-          id,
-          req.body,
-        );
+        const permission = yield PermissionService_1.default.UpdatePermission(id, req.body);
         res.status(200).json(permission);
       } catch (error) {
         res.status(400).json({ message: error.message });
@@ -97,8 +87,7 @@ class PermissionController {
     return __awaiter(this, void 0, void 0, function* () {
       try {
         const id = req.params.id;
-        const permission =
-          yield PermissionService_1.default.DeletePermission(id);
+        const permission = yield PermissionService_1.default.DeletePermission(id);
         res.status(200).json(permission);
       } catch (error) {
         res.status(400).json({ message: error.message });

@@ -17,6 +17,7 @@ var __awaiter =
           reject(e);
         }
       }
+
       function rejected(value) {
         try {
           step(generator['throw'](value));
@@ -24,10 +25,9 @@ var __awaiter =
           reject(e);
         }
       }
+
       function step(result) {
-        result.done
-          ? resolve(result.value)
-          : adopt(result.value).then(fulfilled, rejected);
+        result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
       }
       step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
@@ -39,9 +39,7 @@ var __importDefault =
   };
 Object.defineProperty(exports, '__esModule', { value: true });
 const express_1 = require('express');
-const SearchController_1 = __importDefault(
-  require('../controller/SearchController'),
-);
+const SearchController_1 = __importDefault(require('../controller/SearchController'));
 const router = (0, express_1.Router)();
 // router.get("/searchUsers",  SearchController.searchUsers);
 router.get('/searchUser', (req, res) =>

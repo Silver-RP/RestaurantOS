@@ -17,6 +17,7 @@ var __awaiter =
           reject(e);
         }
       }
+
       function rejected(value) {
         try {
           step(generator['throw'](value));
@@ -24,10 +25,9 @@ var __awaiter =
           reject(e);
         }
       }
+
       function step(result) {
-        result.done
-          ? resolve(result.value)
-          : adopt(result.value).then(fulfilled, rejected);
+        result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
       }
       step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
@@ -44,49 +44,41 @@ const ReservationDetailContactModel_1 = __importDefault(
 class ReservationDetailContactService {
   createReservationDetailContact(input) {
     return __awaiter(this, void 0, void 0, function* () {
-      const reservationDetailContact =
-        yield ReservationDetailContactModel_1.default.create(input);
+      const reservationDetailContact = yield ReservationDetailContactModel_1.default.create(input);
       yield reservationDetailContact.save();
       return reservationDetailContact;
     });
   }
   getAllReservationDetailContact() {
     return __awaiter(this, void 0, void 0, function* () {
-      const reservationDetailContact =
-        yield ReservationDetailContactModel_1.default
-          .find({})
-          .populate('reservation', 'tableType')
-          .populate('users', 'userName phone')
-          .populate('foods', 'name price countInStock');
+      const reservationDetailContact = yield ReservationDetailContactModel_1.default
+        .find({})
+        .populate('reservation', 'tableType')
+        .populate('users', 'userName phone')
+        .populate('foods', 'name price countInStock');
       return reservationDetailContact;
     });
   }
   getReservationDetailContactById(id) {
     return __awaiter(this, void 0, void 0, function* () {
-      const reservationDetailContact =
-        yield ReservationDetailContactModel_1.default
-          .findById(id)
-          .populate('reservation', 'tableType')
-          .populate('users', 'userName phone')
-          .populate('foods', 'name price countInStock');
+      const reservationDetailContact = yield ReservationDetailContactModel_1.default
+        .findById(id)
+        .populate('reservation', 'tableType')
+        .populate('users', 'userName phone')
+        .populate('foods', 'name price countInStock');
       return reservationDetailContact;
     });
   }
   updateReservationDetailContact(id, input) {
     return __awaiter(this, void 0, void 0, function* () {
       const reservationDetailContact =
-        yield ReservationDetailContactModel_1.default.findByIdAndUpdate(
-          id,
-          input,
-          { new: true },
-        );
+        yield ReservationDetailContactModel_1.default.findByIdAndUpdate(id, input, { new: true });
       return reservationDetailContact;
     });
   }
   deleteReservationDetailContact(id) {
     return __awaiter(this, void 0, void 0, function* () {
-      const reservationDetailContact =
-        yield ReservationDetailContactModel_1.default.findById(id);
+      const reservationDetailContact = yield ReservationDetailContactModel_1.default.findById(id);
       // Kiểm tra xem đơn hàng có món ăn đã chọn hay không nếu lớn 0 thì không thể xóa
       if (
         reservationDetailContact &&

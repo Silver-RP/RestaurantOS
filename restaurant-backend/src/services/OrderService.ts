@@ -26,15 +26,7 @@ enum OrderStatus {
 
 class OrderService {
   async placeOrder(input: any) {
-    const {
-      userId,
-      address_id,
-      address,
-      payment_method,
-      delivery_type,
-      items,
-      order_type,
-    } = input;
+    const { userId, address_id, address, payment_method, delivery_type, items, order_type } = input;
 
     const session = await mongoose.startSession();
     session.startTransaction();
@@ -136,12 +128,7 @@ class OrderService {
     ];
     const sortField = allowedSortBy.includes(sortBy) ? sortBy : 'createdAt';
 
-    const allowedFilters = [
-      'status',
-      'payment_method',
-      'delivery_type',
-      'order_type',
-    ];
+    const allowedFilters = ['status', 'payment_method', 'delivery_type', 'order_type'];
     const query: any = {};
 
     allowedFilters.forEach((key) => {
@@ -214,9 +201,7 @@ class OrderService {
       if (!order) {
         throw { statusCode: 404, message: 'Order not found' };
       }
-      const orderItems = await OrderDetail.find({ order_id: orderId })
-        .populate('dish_id')
-        .lean();
+      const orderItems = await OrderDetail.find({ order_id: orderId }).populate('dish_id').lean();
 
       return {
         ...order,

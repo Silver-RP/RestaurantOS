@@ -17,6 +17,7 @@ var __awaiter =
           reject(e);
         }
       }
+
       function rejected(value) {
         try {
           step(generator['throw'](value));
@@ -24,10 +25,9 @@ var __awaiter =
           reject(e);
         }
       }
+
       function step(result) {
-        result.done
-          ? resolve(result.value)
-          : adopt(result.value).then(fulfilled, rejected);
+        result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
       }
       step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
@@ -47,15 +47,7 @@ class FoodController {
   createFood(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
       try {
-        const {
-          name,
-          price,
-          description,
-          categories,
-          countInStock,
-          rating,
-          favorites,
-        } = req.body;
+        const { name, price, description, categories, countInStock, rating, favorites } = req.body;
         if (
           !name ||
           !price ||
@@ -71,18 +63,13 @@ class FoodController {
         if (!mongoose_1.default.Types.ObjectId.isValid(categoryId)) {
           return res.status(400).json({ message: 'Invalid category ID' });
         }
-        const categoryObjectId = new mongoose_1.default.Types.ObjectId(
-          categoryId,
-        );
+        const categoryObjectId = new mongoose_1.default.Types.ObjectId(categoryId);
         if (!req.file) {
           return res.status(400).json({ message: 'Image is required' });
         }
         const imageFile = req.file;
         console.log('Image file received:', imageFile);
-        if (
-          imageFile.mimetype !== 'image/jpeg' &&
-          imageFile.mimetype !== 'image/png'
-        ) {
+        if (imageFile.mimetype !== 'image/jpeg' && imageFile.mimetype !== 'image/png') {
           return res.status(400).json({ message: 'Invalid file type' });
         }
         const imageUrl = yield (0, UploadImage_1.default)(req.file, 'food');
@@ -97,9 +84,7 @@ class FoodController {
           favorites: req.body.favorites,
         };
         const newFood = yield FoodService_1.default.createFood(food);
-        return res
-          .status(201)
-          .json({ message: 'Food created successfully', data: newFood });
+        return res.status(201).json({ message: 'Food created successfully', data: newFood });
       } catch (error) {
         console.error('Error creating food:', error);
         return res.status(500).json({ message: 'Internal server error' });
@@ -109,8 +94,7 @@ class FoodController {
   getTopFavoriteFood(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
       try {
-        const foodFavoriteTop =
-          yield FoodService_1.default.getTopFavoriteFood();
+        const foodFavoriteTop = yield FoodService_1.default.getTopFavoriteFood();
         res.status(200).json({
           success: true,
           data: foodFavoriteTop,
@@ -206,10 +190,7 @@ class FoodController {
     return __awaiter(this, void 0, void 0, function* () {
       try {
         const { id } = req.params;
-        const updatedFood = yield FoodService_1.default.updateFood(
-          id,
-          req.body,
-        );
+        const updatedFood = yield FoodService_1.default.updateFood(id, req.body);
         res.status(200).json(updatedFood);
       } catch (error) {
         throw new Error('Error updating food');
@@ -231,15 +212,11 @@ class FoodController {
     return __awaiter(this, void 0, void 0, function* () {
       try {
         const { Cate_type } = req.query;
-        const food = yield FoodService_1.default.getFoodByCategoryType(
-          String(Cate_type),
-        );
+        const food = yield FoodService_1.default.getFoodByCategoryType(String(Cate_type));
         res.status(200).json(food);
       } catch (error) {
         console.error(error);
-        res
-          .status(500)
-          .json({ message: 'Error getting food by category type' });
+        res.status(500).json({ message: 'Error getting food by category type' });
       }
     });
   }
@@ -247,9 +224,7 @@ class FoodController {
     return __awaiter(this, void 0, void 0, function* () {
       try {
         const { search } = req.query;
-        const food = yield FoodService_1.default.getFoodBySearch(
-          String(search),
-        );
+        const food = yield FoodService_1.default.getFoodBySearch(String(search));
         res.status(200).json(food);
       } catch (error) {
         throw new Error('Error getting food by search');
@@ -260,10 +235,7 @@ class FoodController {
     return __awaiter(this, void 0, void 0, function* () {
       try {
         const { min, max } = req.query;
-        const food = yield FoodService_1.default.getFoodByPrice(
-          Number(min),
-          Number(max),
-        );
+        const food = yield FoodService_1.default.getFoodByPrice(Number(min), Number(max));
         res.status(200).json(food);
       } catch (error) {
         throw new Error('Error getting food by price');
@@ -274,9 +246,7 @@ class FoodController {
     return __awaiter(this, void 0, void 0, function* () {
       try {
         const { rating } = req.query;
-        const food = yield FoodService_1.default.getFoodByRating(
-          Number(rating),
-        );
+        const food = yield FoodService_1.default.getFoodByRating(Number(rating));
         res.status(200).json(food);
       } catch (error) {
         throw new Error('Error getting food by rating');
@@ -297,14 +267,9 @@ class FoodController {
         if (favorites) {
           const favoritesNumber = Number(favorites);
           if (isNaN(favoritesNumber)) {
-            return res
-              .status(400)
-              .json({ success: false, message: 'Favorites must be a number' });
+            return res.status(400).json({ success: false, message: 'Favorites must be a number' });
           }
-          dishes = yield FoodService_1.default.getFoodByFavorites(
-            favoritesNumber,
-            type,
-          );
+          dishes = yield FoodService_1.default.getFoodByFavorites(favoritesNumber, type);
         } else {
           dishes = yield FoodService_1.default.getTopFavoriteFoods(type);
         }
@@ -322,20 +287,14 @@ class FoodController {
         });
       } catch (error) {
         console.error('Error in getFoodByFavorites:', error);
-        return res
-          .status(500)
-          .json({ success: false, message: 'Internal server error' });
+        return res.status(500).json({ success: false, message: 'Internal server error' });
       }
     });
   }
   SearchFood(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
       try {
-        const result = yield SearchService_1.default.search(
-          DishModel_1.Dish,
-          req.query,
-          ['name'],
-        );
+        const result = yield SearchService_1.default.search(DishModel_1.Dish, req.query, ['name']);
         return res.status(200).json(result);
       } catch (error) {
         return res.status(500).json({ message: 'An error occurred', error });

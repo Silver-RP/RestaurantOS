@@ -17,6 +17,7 @@ var __awaiter =
           reject(e);
         }
       }
+
       function rejected(value) {
         try {
           step(generator['throw'](value));
@@ -24,10 +25,9 @@ var __awaiter =
           reject(e);
         }
       }
+
       function step(result) {
-        result.done
-          ? resolve(result.value)
-          : adopt(result.value).then(fulfilled, rejected);
+        result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
       }
       step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
@@ -49,9 +49,7 @@ class ReservationContactController {
         const { tableType, activeHours, tableCount, location } = req.body;
         // Gọi phương thức createReservationContact từ đối tượng này
         const reservationcontact =
-          yield ReservationContactService_1.default.createReservationContact(
-            req.body,
-          );
+          yield ReservationContactService_1.default.createReservationContact(req.body);
         res.status(200).json(reservationcontact);
       } catch (error) {
         res.status(400).json({ message: error.message });
@@ -75,9 +73,7 @@ class ReservationContactController {
       try {
         const { id } = req.params;
         const reservationcontact =
-          yield ReservationContactService_1.default.getReservationContactById(
-            id,
-          );
+          yield ReservationContactService_1.default.getReservationContactById(id);
         res.status(200).json(reservationcontact);
       } catch (error) {
         res.status(400).json({ message: error.message });
@@ -90,10 +86,7 @@ class ReservationContactController {
         const { id } = req.params;
         const { tableType, activeHours, tableCount, location } = req.body;
         const reservationcontact =
-          yield ReservationContactService_1.default.updateReservationContact(
-            id,
-            req.body,
-          );
+          yield ReservationContactService_1.default.updateReservationContact(id, req.body);
         res.status(200).json(reservationcontact);
       } catch (error) {
         res.status(400).json({ message: error.message });

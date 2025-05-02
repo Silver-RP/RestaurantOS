@@ -3,11 +3,7 @@ import Roles from '../models/RoleModel';
 import User, { IUser } from '../models/UserModel';
 
 class SearchService {
-  async search(
-    model: Model<any>,
-    query: any,
-    searchFields: string[],
-  ): Promise<any> {
+  async search(model: Model<any>, query: any, searchFields: string[]): Promise<any> {
     const { search = '', minPrice, maxPrice } = query;
 
     const searchQuery: any = {};
@@ -49,11 +45,7 @@ class SearchService {
       const skip = (page - 1) * pageSize;
 
       const [users, totalDocuments] = await Promise.all([
-        User.find(query)
-          .select('-password')
-          .sort({ userName: 1 })
-          .skip(skip)
-          .limit(pageSize),
+        User.find(query).select('-password').sort({ userName: 1 }).skip(skip).limit(pageSize),
         User.countDocuments(query),
       ]);
 

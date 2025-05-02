@@ -6,12 +6,8 @@ var __importDefault =
   };
 Object.defineProperty(exports, '__esModule', { value: true });
 const express_1 = require('express');
-const ProfileController_1 = __importDefault(
-  require('../controller/ProfileController'),
-);
-const AuthMiddleWare_1 = __importDefault(
-  require('../middleware/AuthMiddleWare'),
-);
+const ProfileController_1 = __importDefault(require('../controller/ProfileController'));
+const AuthMiddleWare_1 = __importDefault(require('../middleware/AuthMiddleWare'));
 const router = (0, express_1.Router)();
 router.get(
   '/getProfile/:_id',
