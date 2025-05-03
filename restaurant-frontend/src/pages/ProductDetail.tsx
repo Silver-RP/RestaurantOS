@@ -144,7 +144,7 @@ const ProductDetail: React.FC = () => {
 
           <ProductTabs tabs={tabs} />
 
-          <RelatedProductList products={sampleRelatedProducts} />
+          <RelatedProductList products={sampleRelatedProducts.map(product => ({ ...product, slug: product.id }))} />
         </div>
       </section>
     </>

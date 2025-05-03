@@ -28,6 +28,8 @@ const MenuPage: React.FC = () => {
         id: food._id,
         name: food.name,
         slug: food.slug,
+        views: food.views,
+        ordered_count: food.ordered_count,
         price: food.discount_price || food.price,
         originalPrice: food.price,
         discount: food.discount_price

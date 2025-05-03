@@ -10,7 +10,6 @@ export interface ProductCardProps {
   description: string;      
   cate?: string;             
   isNew?: boolean;
-
   views?: number;
   ordered_count?: number;
   rating?: number;
