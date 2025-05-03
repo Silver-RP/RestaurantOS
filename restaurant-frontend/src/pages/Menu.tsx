@@ -28,6 +28,8 @@ const MenuPage: React.FC = () => {
         id: food._id,
         name: food.name,
         slug: food.slug,
+        views: food.views,
+        ordered_count: food.ordered_count,
         price: food.discount_price || food.price,
         originalPrice: food.price,
         discount: food.discount_price
@@ -45,7 +47,7 @@ const MenuPage: React.FC = () => {
   setSearchParams((prevParams) => {
     const newParams = new URLSearchParams(prevParams);
     newParams.set('sort', sortValue);
-    newParams.set('page', '1'); // Reset về trang 1
+    newParams.set('page', '1'); 
     return newParams;
   });
 };
@@ -172,9 +174,11 @@ const MenuPage: React.FC = () => {
                 newPage >= 1 &&
                 newPage <= pagination.totalPages
               ) {
-                setSearchParams({
-                  page: newPage.toString(),
-                  sort: searchParams.get('sort') || 'default',
+                setSearchParams((prevParams) => {
+                  const newParams = new URLSearchParams(prevParams);
+                  newParams.set('page', newPage.toString());
+                  newParams.set('sort', newParams.get('sort') || 'default');
+                  return newParams;
                 });
                 setPagination((prev) => ({
                   ...prev,
@@ -183,6 +187,15 @@ const MenuPage: React.FC = () => {
                   nextPage: Math.min(newPage + 1, pagination.totalPages),
                 }));
               }
+            }}
+            limit={Number(searchParams.get('limit') || 10)}
+            onLimitChange={(newLimit) => {
+              setSearchParams((prev) => {
+                const newParams = new URLSearchParams(prev);
+                newParams.set('limit', newLimit.toString());
+                newParams.delete('page'); 
+                return newParams;
+              });
             }}
           />
         </main>

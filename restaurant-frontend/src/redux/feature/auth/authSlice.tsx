@@ -58,7 +58,7 @@ const authSlice = createSlice({
           state.loading = false;
           state.userInfo = user;
           state.token = token;
-          state.isAuthenticated = Boolean(token); // If token is null, set isAuthenticated to false
+          state.isAuthenticated = Boolean(token); // Nếu token là null, set isAuthenticated = false
           state.message = message;
         }
       )

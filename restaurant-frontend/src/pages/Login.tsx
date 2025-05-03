@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import InputComponent from '../components/pages/Login/InputComponents';
-import ButtonComponent from '../components/pages/Login/ButtonComponents';
+import InputComponent from '../components/pages/login/InputComponents';
+import ButtonComponent from '../components/pages/login/ButtonComponents';
 import { FaFacebook } from 'react-icons/fa';
 import { FcGoogle } from 'react-icons/fc';
 import CheckboxComponent from '../components/common/CheckboxComponents';
@@ -11,7 +11,7 @@ import { LoginUser } from '../redux/feature/auth/authActions';
 import { toast } from 'react-toastify';
 import { clearStatus } from '../redux/feature/auth/authSlice';
 import { AxiosError } from 'axios';
-import Cookies from 'js-cookie';
+// import Cookies from 'js-cookie';
 
 const Login = () => {
   const emailRef = useRef<HTMLInputElement>(null);
@@ -26,6 +26,16 @@ const Login = () => {
 
   useEffect(() => {
     emailRef.current?.focus();
+  }, []);
+
+  // Load email/password từ localStorage nếu có
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('email') || '';
+    const savedPassword = localStorage.getItem('password') || '';
+    if (savedEmail && savedPassword) {
+      setFormData({ email: savedEmail, password: savedPassword });
+      setRememberMe(true);
+    }
   }, []);
 
   useEffect(() => {
@@ -84,15 +94,19 @@ const Login = () => {
 
     setIsSubmitting(true);
     try {
-      const res = await dispatch(LoginUser({ email, password, rememberMe })).unwrap();
-      const { token, refreshToken } = res;
-      if (rememberMe) {
-        Cookies.set('accessToken', token, { expires: 7 });
-        Cookies.set('refreshToken', refreshToken, { expires: 7 });
-      }
-
-      toast.success('Đăng nhập thành công!');
-      navigate('/');
+      await dispatch(LoginUser({ email, password, rememberMe }))
+        .unwrap()
+        .then(() => {
+          if (rememberMe) {
+            localStorage.setItem('email', email);
+            localStorage.setItem('password', password);
+          } else {
+            localStorage.removeItem('email');
+            localStorage.removeItem('password');
+          }
+          toast.success('Đăng nhập thành công!');
+          navigate('/');
+        });
     } catch (error) {
       if (error instanceof AxiosError && error?.response?.data?.message) {
         toast.error(error.response.data.message);

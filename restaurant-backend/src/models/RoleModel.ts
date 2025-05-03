@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import Permissions from './PermissionModel';  // Đảm bảo import đúng model Permissions
+import Permissions from './PermissionModel'; // Đảm bảo import đúng model Permissions
 
 interface IRoles extends mongoose.Document {
   name: string;
@@ -10,10 +10,10 @@ interface IRoles extends mongoose.Document {
 
 const RoleSchema = new mongoose.Schema({
   name: { type: String, required: true, unique: true },
-  description: { type: String},
+  description: { type: String },
   permissions: [{ type: mongoose.Schema.Types.ObjectId, ref: Permissions }],
-  users: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  users: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
 });
 
-const Roles = mongoose.model<IRoles>("Roles", RoleSchema);
-export default Roles;  
+const Roles = mongoose.model<IRoles>('Roles', RoleSchema);
+export default Roles;

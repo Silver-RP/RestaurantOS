@@ -1,50 +1,39 @@
-import mongoose from "mongoose";
-import Category from "../models/CategoryModel";
-import { Request, Response } from "express";
-import { Model } from "mongoose";
-import { Dish } from "../models/DishModel";
+import mongoose from 'mongoose';
+import Category from '../models/CategoryModel';
+import { Request, Response } from 'express';
+import { Model } from 'mongoose';
+import { Dish } from '../models/DishModel';
 
 class CategoryService {
-  // async GetAllCategory(req: Request, res: Response): Promise<any> {
-  //   try {
-  //     const categories = await Category.find();
-  //     if (categories.length === 0) {
-  //       return res.status(404).json({ message: "No categories found!" });
-  //     }
-
-  //     return res.status(200).json(categories);
-  //   } catch (error) {
-  //     return res.status(500).json(error);
-  //   }
-  // }
-
   async GetAllCategory(req: Request, res: Response): Promise<any> {
     try {
       const { page = 1, limit = 10 } = req.query;
-  
+
       const pageNumber = parseInt(page as string, 10);
       const limitNumber = parseInt(limit as string, 10);
-  
+
       const skip = (pageNumber - 1) * limitNumber;
-  
+
       const totalCategories = await Category.countDocuments();
-  
+
       const categories = await Category.find().skip(skip).limit(limitNumber);
-  
+
       if (categories.length === 0) {
         return res.status(404).json({ message: 'No categories found!' });
       }
-  
+
       const categoriesWithCount = await Promise.all(
         categories.map(async (category) => {
-          const foodCount = await Dish.countDocuments({ categories: category._id });
+          const foodCount = await Dish.countDocuments({
+            categories: category._id,
+          });
           return {
             ...category.toObject(),
             foodCount,
           };
-        })
+        }),
       );
-  
+
       return res.status(200).json({
         total: totalCategories,
         page: pageNumber,
@@ -115,9 +104,7 @@ class CategoryService {
 
       const hasSub = await Category.findOne({ sub: id });
       if (hasSub) {
-        return res
-          .status(400)
-          .json({ message: 'Cannot delete category with subcategories!' });
+        return res.status(400).json({ message: 'Cannot delete category with subcategories!' });
       }
 
       const DeleteCategory = await Category.findByIdAndDelete(id);
@@ -131,15 +118,15 @@ class CategoryService {
   }
 
   async sortData(
-  model: Model<any>,
-  fieldName: string,
-  order: 'asc' | 'desc' = 'asc',
-): Promise<any> {
-  const sortOrder = order === 'asc' ? 1 : -1; 
-  const data = await model.find().sort({ [fieldName]: sortOrder });
+    model: Model<any>,
+    fieldName: string,
+    order: 'asc' | 'desc' = 'asc',
+  ): Promise<any> {
+    const sortOrder = order === 'asc' ? 1 : -1;
+    const data = await model.find().sort({ [fieldName]: sortOrder });
 
-  return data;
-}
+    return data;
+  }
 }
 
 export default new CategoryService();

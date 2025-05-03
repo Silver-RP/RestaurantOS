@@ -1,29 +1,24 @@
 import * as jwt from 'jsonwebtoken';
 
 export const accessToken = (
-    payload: object,
-    secretKey: string,
-    // 30 giây
-    expires: number = 30 * 60 
+  payload: object,
+  secretKey: string,
+  // 30 giây
+  expires: number = 30 * 60,
 ): string => {
-    try {
-        return jwt.sign(payload, secretKey, { expiresIn: expires });
-    } catch (error) {
-        console.error('Error creating access token:', error);
-        throw new Error('Token creation failed');
-    }
+  try {
+    return jwt.sign(payload, secretKey, { expiresIn: expires });
+  } catch (error) {
+    console.error('Error creating access token:', error);
+    throw new Error('Token creation failed');
+  }
 };
 
-
-export const refreshToken = (
-    payload: object,
-    secretKey: string,
-    expires: number
-): string => {
-    try {
-        return jwt.sign(payload, secretKey, { expiresIn: expires });
-    } catch (error) {
-        console.error('Error creating refresh token:', error);
-        throw new Error('Token creation failed');
-    }
+export const refreshToken = (payload: object, secretKey: string, expires: number): string => {
+  try {
+    return jwt.sign(payload, secretKey, { expiresIn: expires });
+  } catch (error) {
+    console.error('Error creating refresh token:', error);
+    throw new Error('Token creation failed');
+  }
 };

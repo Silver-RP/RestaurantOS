@@ -29,6 +29,8 @@ export const useFoods = () => {
       const priceMax = searchParams.get("priceMax");
       const category = searchParams.get("category");
       const keyword = searchParams.get("keyword");
+      const limit = Number(searchParams.get('limit')) || 12;
+
 
       setLoading(true);
       setError(null);
@@ -41,6 +43,7 @@ export const useFoods = () => {
           priceMax: priceMax ? Number(priceMax) : undefined,
           category: category || undefined,
           keyword: keyword || undefined,
+          limit,
         };
 
         const data = await fetchAllFoods(params);

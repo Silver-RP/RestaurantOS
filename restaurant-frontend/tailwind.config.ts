@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 import defaultTheme from 'tailwindcss/defaultTheme';
+import lineClamp from '@tailwindcss/line-clamp';
 
 export default {
   important: true,
@@ -47,5 +48,5 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [lineClamp],
 }

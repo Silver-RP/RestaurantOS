@@ -1,6 +1,22 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import axios from 'axios'; // <-- Missing import
 import { RegisterPayload, LoginPayload } from './authTypes';
+
+const BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
+// Helper function for handling API requests
+const apiRequest = async (url: string, payload: object, method: 'POST' | 'GET') => {
+  try {
+    const response = await axios({ method, url, data: payload, headers: { 'Content-Type': 'application/json' } });
+    return response.data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      const msg = error.response?.data?.message || 'An error occurred';
+      throw new Error(msg);
+    }
+    throw new Error('An unexpected error occurred');
+  }
+};
 import { setAccessToken, setRefreshToken } from '@/utils/tokenHelpers';
 import axiosInstance from '@/api/axiosInstance';
 const BASE_URL_REGISTER = import.meta.env.VITE_BACKEND_URL;
@@ -11,16 +27,10 @@ export const RegisterUser = createAsyncThunk(
   'auth/register',
   async (payload: RegisterPayload, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`${BASE_URL_REGISTER}/auth/register`, payload, {
-        headers: { 'Content-Type': 'application/json' },
-      });
-      return response.data;
-    } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        const msg = error.response?.data?.message || 'Đăng ký thất bại';
-        return rejectWithValue(msg);
-      }
-      return rejectWithValue('Đã xảy ra lỗi không xác định');
+      const data = await apiRequest(`${BASE_URL}/auth/register`, payload, 'POST');
+      return data;
+    } catch (error: any) {
+      return rejectWithValue(error.message);
     }
   }
 );
@@ -30,27 +40,22 @@ export const LoginUser = createAsyncThunk(
   'auth/login',
   async (payload: LoginPayload, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.post(`${BASE_URL_LOGIN}/auth/login`, payload, {
-        headers: { 'Content-Type': 'application/json' },
-        withCredentials: true, 
-      });
-
-      console.log('RESPONSE FROM LOGIN API:', response.data);
-
-      const { accessToken: token, refreshToken, user, message } = response.data;
+      const data = await apiRequest(`${BASE_URL}/auth/login`, payload, 'POST');
+      const { token, user, message } = data;
 
       if (!token) {
-        console.warn('Token is missing in API response:', response.data);
+        console.warn('⚠️ Token is missing in API response');
       }
       setAccessToken(token, payload.rememberMe);
       // setRefreshToken(refreshToken, payload.rememberMe);
 
-      return { token, refreshToken, user, message };
+      const storage = payload.rememberMe ? localStorage : sessionStorage;
+      storage.setItem('accessToken', token || '');
+      storage.setItem('userInfo', JSON.stringify(user || {}));
+
+      return { token, user, message };
     } catch (error: unknown) {
-      if (axios.isAxiosError(error) && error.response) {
-        return rejectWithValue(error.response.data.message);
-      }
-      return rejectWithValue('Đã xảy ra lỗi không xác định');
+      return rejectWithValue((error as { message: string })?.message || 'An unexpected error occurred');
     }
   }
 );
@@ -60,17 +65,10 @@ export const LogoutUser = createAsyncThunk(
   'auth/logout',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`${BASE_URL_LOGIN}/logout`, {}, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      return response.data;
-    } catch (error: unknown) {
-      if (axios.isAxiosError(error) && error.response) {
-        return rejectWithValue(error.response.data.message);
-      }
-      return rejectWithValue('An unexpected error occurred');
+      const data = await apiRequest(`${BASE_URL}/auth/logout`, {}, 'POST');
+      return data;
+    } catch (error: any) {
+      return rejectWithValue(error.message);
     }
   }
 );

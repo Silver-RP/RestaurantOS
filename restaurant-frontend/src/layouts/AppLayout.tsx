@@ -25,9 +25,6 @@ const LayoutContent: React.FC = () => {
     toggleMobileSidebar,
   } = useSidebar();
  
-
-  console.log('width: ', window.innerWidth);
-  console.log('height: ', window.innerHeight);
   const height = window.innerHeight;
 
   return (

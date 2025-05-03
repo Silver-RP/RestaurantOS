@@ -8,7 +8,6 @@ import { openQuickView } from '../../redux/feature/quickView/quickViewSlice';
 const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-
   const handleNavigateToDetail = () => {
     navigate(`/product/${rest.slug}`);
   };
@@ -32,17 +31,23 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
           />
         </div>
 
-        <div className="absolute top-2 left-2 flex flex-col gap-1">
+        <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
           {rest.discount && (
-            <span className="bg-secondaryColor text-black text-[10px] sm:text-xs font-semibold px-2 py-1 rounded-sm">
+            <span className="bg-secondaryColor text-black text-[10px] font-semibold px-2 py-1 rounded-sm">
               {rest.discount}
             </span>
           )}
           {rest.isNew && (
-            <span className="bg-secondaryColor text-black text-[10px] sm:text-xs font-semibold px-2 py-1 rounded-sm">
+            <span className="bg-secondaryColor text-black text-[10px] font-semibold px-2 py-1 rounded-sm">
               NEW
             </span>
           )}
+          <span className="bg-black bg-opacity-50 text-white text-[10px] flex items-center gap-1 px-2 py-0.5 rounded-sm">
+            <FiEye className="w-3 h-3" /> {rest.views ?? 0}
+          </span>
+          <span className="bg-black bg-opacity-50 text-white text-[10px] flex items-center gap-1 px-2 py-0.5 rounded-sm">
+            <FiShoppingCart className="w-3 h-3" /> {rest.ordered_count ?? 0}
+          </span>
         </div>
 
         <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 flex gap-2 transition-all duration-500 ease-in-out">
@@ -50,26 +55,30 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
             <FiShoppingCart size={18} />
           </button>
           <button
-           onClick={() => dispatch(openQuickView({
-            _id: rest.id,
-            name: rest.name,
-            slug: rest.slug,
-            price: rest.price,
-            discount_price: rest.originalPrice ?? rest.price,
-            description: rest.description,
-            shortDescription: rest.description,
-            ingredientsl: '',
-            status: 'available',
-            views: rest.views ?? 0,
-            ordered_count: rest.ordered_count ?? 0,
-            average_rating: rest.rating ?? 4,
-            rating_count: 10,
-            favorites_count: 0,
-            rating: rest.rating ?? 4,
-            categories: [],
-            countInStock: 10,
-            images: [rest.imageUrl],
-          }))}
+            onClick={() =>
+              dispatch(
+                openQuickView({
+                  _id: rest.id,
+                  name: rest.name,
+                  slug: rest.slug,
+                  price: rest.price,
+                  discount_price: rest.originalPrice ?? rest.price,
+                  description: rest.description,
+                  shortDescription: rest.description,
+                  ingredientsl: '',
+                  status: 'available',
+                  views: rest.views ?? 0,
+                  ordered_count: rest.ordered_count ?? 0,
+                  average_rating: rest.rating ?? 4,
+                  rating_count: 10,
+                  favorites_count: 0,
+                  rating: rest.rating ?? 4,
+                  categories: [],
+                  countInStock: 10,
+                  images: [rest.imageUrl],
+                }),
+              )
+            }
             className="p-1.5 sm:p-2 bg-white text-[#002B40] rounded-full shadow-md hover:bg-secondaryColor hover:text-white hover:-translate-y-1 transition-all duration-300"
           >
             <FiEye size={18} />
@@ -99,7 +108,8 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
         <div className="text-xs sm:text-sm text-secondaryColor mb-1">
           {rest.rating ? (
             <>
-              {'★'.repeat(Math.round(rest.rating))}{'☆'.repeat(5 - Math.round(rest.rating))}
+              {'★'.repeat(Math.round(rest.rating))}
+              {'☆'.repeat(5 - Math.round(rest.rating))}
             </>
           ) : (
             '★★★★☆'
@@ -116,11 +126,6 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
             {rest.price?.toLocaleString() || '0'} VND
           </div>
         </div>
-
-        <div className="flex items-center justify-center gap-4 mt-2 text-gray-400 text-xs">
-  <div>👁 {rest.views ?? 0} lượt xem</div>
-  <div>🛒 {rest.ordered_count ?? 0} lượt mua</div>
-</div>
       </div>
     </div>
   );
