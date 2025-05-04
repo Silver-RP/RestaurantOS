@@ -7,7 +7,7 @@ import ButtonComponent from '../components/pages/login/ButtonComponents';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { SlActionUndo } from 'react-icons/sl';
 import { toast } from 'react-toastify';
-import { useVerifyOtp } from '../api/AuthApi';
+import { useVerifyOtp } from '../hooks/useAuth';
 
 const EnterOTP = () => {
   const location = useLocation();

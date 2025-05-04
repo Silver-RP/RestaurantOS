@@ -10,7 +10,7 @@ import ButtonComponent from '../components/pages/login/ButtonComponents';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { SlActionUndo } from 'react-icons/sl';
 import { toast } from 'react-toastify';
-import { useChangePassword } from '../api/AuthApi';
+import { useChangePassword } from '../hooks/useAuth';
 
 const ResetPassword = () => {
   const navigate = useNavigate();
