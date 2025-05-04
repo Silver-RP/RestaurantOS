@@ -8,7 +8,6 @@ import { openQuickView } from '../../redux/feature/quickView/quickViewSlice';
 const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-
   const handleNavigateToDetail = () => {
     navigate(`/product/${rest.slug}`);
   };
@@ -77,7 +76,6 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
                   categories: [],
                   countInStock: 10,
                   images: [rest.imageUrl],
-                  isNew: rest.createdAt ?? new Date().toISOString(),
                 }),
               )
             }
@@ -111,7 +109,6 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
             <>
               {'★'.repeat(Math.round(rest.rating))}
               {'☆'.repeat(5 - Math.round(rest.rating))}
-              <span className="text-[10px] text-white">({rest.rating_count ?? 0})</span>
             </>
           ) : (
             '★★★★☆'

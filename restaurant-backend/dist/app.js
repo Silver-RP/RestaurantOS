@@ -9,7 +9,6 @@ const express_1 = __importDefault(require('express'));
 const swagger_ui_express_1 = __importDefault(require('swagger-ui-express'));
 // import swaggerJsdoc from 'swagger-jsdoc';
 const swaggerOptions_1 = require('./utils/swaggerOptions');
-const HealthChecks_1 = __importDefault(require('./routes/HealthChecks'));
 const AuthRoutes_1 = __importDefault(require('./routes/AuthRoutes'));
 const UserRoutes_1 = __importDefault(require('./routes/UserRoutes'));
 const RoleRouter_1 = __importDefault(require('./routes/RoleRouter'));
@@ -96,7 +95,6 @@ app.use('/api/reservationdetailcontact', ReservationDetailContactRoutes_1.defaul
 app.use('/api/search', SearchRoutes_1.default);
 app.use('/api/staff', StaffRoutes_1.default);
 app.use('/api/food', FoodRoutes_1.default);
-app.use('/api', HealthChecks_1.default);
 app.use('/api/cart', CartRoutes_1.default);
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);

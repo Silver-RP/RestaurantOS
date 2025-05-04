@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import FoodController from '../controller/FoodController';
 import multer from 'multer';
+import AuthMiddleWare from '../middleware/AuthMiddleWare';
 
 // Sử dụng bộ nhớ tạm để upload ảnh
 const storage = multer.memoryStorage();
@@ -24,5 +25,7 @@ router.get('/getFoodByPrice', FoodController.getFoodByPrice);
 router.get('/getFoodByRating', FoodController.getFoodByRating);
 router.get('/getFoodByFavorites', FoodController.getFoodByFavorites);
 router.get('/searchfood', FoodController.SearchFood);
+router.post('/favorite', AuthMiddleWare.verifyToken, FoodController.toggleFavorite);
+router.get('/getFavoriteFoods', AuthMiddleWare.verifyToken, FoodController.getFavoriteFoods);
 
 export default router;

@@ -49,6 +49,7 @@ registerSwaggerRoute({
     500: { description: 'Internal server error' },
   },
   tags: ['Cart'],
+  security: [{ bearerAuth: [] }],
 });
 registerSwaggerRoute({
   path: '/cart/{cartId}/item/{dishId}',
@@ -78,6 +79,7 @@ registerSwaggerRoute({
     500: { description: 'Internal server error' },
   },
   tags: ['Cart'],
+  security: [{ bearerAuth: [] }],
 });
 registerSwaggerRoute({
   path: '/cart/delete-all/{cartId}',
@@ -100,4 +102,5 @@ registerSwaggerRoute({
     500: { description: 'Internal server error' },
   },
   tags: ['Cart'],
+  security: [{ bearerAuth: [] }],
 });

@@ -40,28 +40,34 @@ class AuthMiddleWare {
   }
 
   verifyRole(roles: string[]) {
-    return async (req: Request, res: Response, next: NextFunction) => {
+    return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
       try {
         if (!req.user) {
-          return res.status(401).json({ message: 'User not authenticated' });
+          res.status(401).json({ message: 'User not authenticated' });
+          return;
         }
+  
         const user = req.user as IUser;
         if (!user.roles || user.roles.length === 0) {
-          return res.status(401).json({ message: 'User role not found' });
+          res.status(401).json({ message: 'User role not found' });
+          return;
         }
+  
         const userRoles = await Roles.find({ _id: { $in: user.roles } }).lean();
         const roleNames = userRoles.map((role: any) => role.name);
         const hasRole = roles.some((role) => roleNames.includes(role));
+        
         if (hasRole) {
-          return next();
+          next();
         } else {
-          return res.status(403).json({ message: 'Permission denied: Insufficient role' });
+          res.status(403).json({ message: 'Permission denied: Insufficient role' });
         }
       } catch (err: any) {
-        return res.status(500).json({ message: 'Internal server error', error: err.message });
+        res.status(500).json({ message: 'Internal server error', error: err.message });
       }
     };
   }
+  
 }
 
 export default new AuthMiddleWare();
