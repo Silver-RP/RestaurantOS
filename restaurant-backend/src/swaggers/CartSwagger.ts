@@ -1,6 +1,55 @@
 import { registerSwaggerRoute } from '../utils/swaggerOptions';
 
 registerSwaggerRoute({
+  path: '/cart/getCart',
+  method: 'get',
+  responses: {
+    200: {
+      description: 'Cart items retrieved successfully',
+    },
+    401: { description: 'User not authenticated' },
+    404: { description: 'Cart not found' },
+    500: { description: 'Internal server error' },
+  },
+  tags: ['Cart'],
+  security: [{ bearerAuth: [] }],
+});
+registerSwaggerRoute({
+  path: '/cart/add',
+  method: 'post',
+  requestBody: {
+    required: true,
+    content: {
+      'application/json': {
+        schema: {
+          type: 'object',
+          properties: {
+            dishId: {
+              type: 'string',
+              description: 'Dish ID to add to cart',
+            },
+            quantity: {
+              type: 'integer',
+              description: 'Quantity to add (must be greater than 0)',
+            },
+          },
+          required: ['dishId', 'quantity'],
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: 'Item added to cart successfully',
+    },
+    400: { description: 'Invalid input or quantity' },
+    404: { description: 'Dish not found or unavailable' },
+    500: { description: 'Internal server error' },
+  },
+  tags: ['Cart'],
+  security: [{ bearerAuth: [] }],
+});
+registerSwaggerRoute({
   path: '/cart/update/{id}',
   method: 'put',
   summary: 'Update cart (add, increase, decrease, or remove dish)',
