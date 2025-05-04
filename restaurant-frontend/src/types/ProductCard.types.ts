@@ -13,4 +13,6 @@ export interface ProductCardProps {
   views?: number;
   ordered_count?: number;
   rating?: number;
+  rating_count?: number;
+  createdAt?: string;
 }

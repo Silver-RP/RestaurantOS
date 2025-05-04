@@ -30,11 +30,6 @@ const cartSchema = new mongoose.Schema<ICart>(
       },
     ],
     totalPrice: { type: Number, default: 0 },
-    status: {
-      type: String,
-      enum: ['pending', 'checked_out', 'cancelled'],
-      default: 'pending',
-    },
   },
   {
     timestamps: true,

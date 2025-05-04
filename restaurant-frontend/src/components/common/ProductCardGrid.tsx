@@ -104,7 +104,6 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
           {rest.name || 'Tên sản phẩm'}
         </h3>
 
-        {/* ★★★★☆ */}
         <div className="text-xs sm:text-sm text-secondaryColor mb-1">
           {rest.rating ? (
             <>

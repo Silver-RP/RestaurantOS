@@ -13,6 +13,7 @@ export interface FoodType {
 }
 
 export interface FoodDetail {
+  createdAt: boolean;
   _id: string;
   name: string;
   slug: string;

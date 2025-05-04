@@ -85,10 +85,7 @@ class CartService {
     if (!cart) {
       throw new Error('Cart not found');
     }
-    if (cart.status !== 'pending') {
-      throw new Error('Cannot update a checked out cart');
-    }
-
+ 
     const dish = await Dish.findById(dishId);
     if (!dish) {
       throw new Error('Dish does not exist');
@@ -137,9 +134,6 @@ class CartService {
     if (!cart) {
       throw new Error('Cart not found');
     }
-    if (cart.status !== 'pending') {
-      throw new Error('Cannot delete item from a non-pending cart');
-    }
     if (cart.items.length === 0) {
       throw new Error('Cart is already empty');
     }
@@ -160,9 +154,6 @@ class CartService {
     const cart = await Cart.findById(cartId);
     if (!cart) {
       throw new Error('Cart not found');
-    }
-    if (cart.status !== 'pending') {
-      throw new Error('Cannot delete from a checked out cart');
     }
     cart.items = [];
     cart.totalPrice = 0;
