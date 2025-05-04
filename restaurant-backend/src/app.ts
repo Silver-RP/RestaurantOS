@@ -30,6 +30,7 @@ import './swaggers/FoodSwagger';
 import './swaggers/CartSwagger';
 import './swaggers/StaffSwagger';
 import './swaggers/UserSwagger';
+import './swaggers/CategorySwagger';
 
 
 dotenv.config();
