@@ -13,7 +13,7 @@ body {
   background-color: #012b40;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1, h2, h3, h4, h5, h6 th {
   @apply font-restora;
   font-weight: 400
 }

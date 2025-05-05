@@ -23,10 +23,8 @@ interface SidebarProps {
 }
 
 const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
-  // Tạo state để lưu chiều cao cửa sổ
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
 
-  // Hook dùng để cập nhật chiều cao cửa sổ khi thay đổi kích thước
   useEffect(() => {
     const handleResize = () => {
       setWindowHeight(window.innerHeight);
@@ -34,7 +32,6 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
 
     window.addEventListener('resize', handleResize);
 
-    // Clean up listener khi component unmount
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
@@ -91,10 +88,12 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
                 </span>
               </div>
               <div className="relative">
-                <FiShoppingCart
-                  className={`text-white hover:text-secondaryColor ${iconSize}`}
-                  aria-label="Shopping Cart"
-                />
+                <Link to="/cart" aria-label="cart">
+                  <FiShoppingCart
+                    className={`text-white hover:text-secondaryColor ${iconSize}`}
+                    aria-label="Shopping Cart"
+                  />
+                </Link>
                 <span className="absolute -top-1 -right-2 bg-secondaryColor text-black text-xs rounded-full px-1">
                   0
                 </span>

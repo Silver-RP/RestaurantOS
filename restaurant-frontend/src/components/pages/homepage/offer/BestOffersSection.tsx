@@ -35,13 +35,14 @@ const BestOffersSection: React.FC = () => {
         ) : (
           <div className="text-center text-gray-400 mt-8">Không có món ăn trong danh mục này</div>
         )}
+        <hr className="mt-2 border-t border-white/10 w-full" />
 
         <div className="mt-12 text-center">
           <p className="text-sm md:text-base text-gray-300 mb-4">
-            Phục vụ hàng ngày từ <span className="text-secondaryColor font-semibold">8:30 am</span> đến{" "}
-            <span className="text-secondaryColor font-semibold">11:00 pm</span>
+            Phục vụ hàng ngày từ <span className="text-secondaryColor ">8:30 am</span> đến{" "}
+            <span className="text-secondaryColor ">11:00 pm</span>
           </p>
-          <button className="mt-4 px-8 py-3 text-sm md:text-base font-semibold text-secondaryColor border border-secondaryColor hover:bg-secondaryColor hover:text-black transition-all duration-300">
+          <button className="mt-4 px-8 py-3 text-sm md:text-base text-secondaryColor border border-secondaryColor hover:bg-secondaryColor hover:text-black transition-all duration-300">
             XEM THỰC ĐƠN
           </button>
         </div>

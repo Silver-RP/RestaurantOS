@@ -13,7 +13,7 @@ export interface FoodType {
 }
 
 export interface FoodDetail {
-  createdAt: boolean;
+  createdAt: string; 
   _id: string;
   name: string;
   slug: string;

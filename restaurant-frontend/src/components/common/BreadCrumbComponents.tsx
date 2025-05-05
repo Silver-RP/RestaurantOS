@@ -33,7 +33,7 @@ const BreadcrumbComponent = () => {
                 <MdOutlineNavigateNext className="text-secondaryColor text-xl mx-1" />
               )}
               {index === breadcrumbList.length - 1 ? (
-                <span className="text-white text-xl font-semibold">{item.label}</span>
+                <span className="text-white text-xl">{item.label}</span>
               ) : (
                 <Link
                   to={item.path}
