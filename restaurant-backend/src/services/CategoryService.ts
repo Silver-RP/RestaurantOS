@@ -41,7 +41,7 @@ class CategoryService {
         totalPages: Math.ceil(totalCategories / limitNumber),
         data: categoriesWithCount, // dùng data mới
       });
-    } catch (error) {
+    } catch (error) { 
       console.error(error);
       return res.status(500).json({ message: 'An error occurred', error });
     }

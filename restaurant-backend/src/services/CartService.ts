@@ -3,6 +3,79 @@ import { Dish } from '../models/DishModel';
 import Cart from '../models/CartModel';
 
 class CartService {
+  static async getCartItems(userId: string) {
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      throw new Error('Invalid userId');
+    }
+
+    const cart = await Cart.findOne({ userId, status: 'pending' }).populate('items.dishId');
+
+    if (!cart) {
+      throw new Error('Cart not found');
+    }
+
+    return cart;
+  }
+
+  static async AddItemToCart(userId: string, dishId: string, quantity: number) {
+    if (!mongoose.Types.ObjectId.isValid(dishId)) {
+      throw new Error('Invalid dishId');
+    }
+
+    if (quantity <= 0) {
+      throw new Error('Quantity must be greater than 0');
+    }
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+      let cart = await Cart.findOne({ userId, status: 'pending' }).session(session);
+      if (!cart) {
+        cart = new Cart({
+          userId: new mongoose.Types.ObjectId(userId),
+          items: [],
+          totalPrice: 0,
+          status: 'pending',
+        });
+      }
+      const dish = await Dish.findById(dishId).session(session);
+      if (!dish) {
+        throw new Error('Dish does not exist');
+      }
+
+      const existingItem = cart.items.find((item) => item.dishId.toString() === dishId);
+      const newQuantity = existingItem ? existingItem.quantity + quantity : quantity;
+
+      if (newQuantity > dish.countInStock) {
+        throw new Error(
+          `Requested quantity (${newQuantity}) exceeds available stock (${dish.countInStock})`,
+        );
+      }
+
+      if (existingItem) {
+        existingItem.quantity = newQuantity;
+      } else {
+        cart.items.push({
+          dishId: new mongoose.Types.ObjectId(dishId),
+          quantity,
+          price: dish.discount_price == null ? dish.price : dish.discount_price,
+        });
+      }
+
+      await cart.save({ session });
+      await session.commitTransaction();
+
+      const populatedCart = await Cart.findById(cart._id).populate('items.dishId').exec();
+      return populatedCart;
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
+  }
+
   static async UpdateCart(id: string, dishId: string, quantity: number) {
     if (!mongoose.Types.ObjectId.isValid(id) || !mongoose.Types.ObjectId.isValid(dishId)) {
       throw new Error('Invalid cartId or dishId');

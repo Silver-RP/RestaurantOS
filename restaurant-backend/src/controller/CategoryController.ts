@@ -26,10 +26,10 @@ class CategoryController {
 
   async SearchCategory(req: Request, res: Response): Promise<any> {
     try {
-      const result = await SearchService.search(Category, req.query, ['name']);
+      const result = await SearchService.search(Category, req.query, ['Cate_name']); 
       return res.status(200).json(result);
-    } catch (error) {
-      return res.status(500).json({ message: 'An error occurred', error });
+    } catch (error: any) {
+      return res.status(400).json({ message: error.message || 'An error occurred' });
     }
   }
 
