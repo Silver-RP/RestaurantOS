@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { AddressInput } from './AddressInput';
+import { AddAddressModal } from './AddAddressModal';
 
 interface Address {
   name: string;
@@ -17,9 +19,15 @@ const AddressBook: React.FC<AddressBookProps> = ({
 }) => {
   const [isEditingDefault, setIsEditingDefault] = useState(false);
   const [defaultForm, setDefaultForm] = useState(defaultAddress);
-
   const [editingOtherIndex, setEditingOtherIndex] = useState<number | null>(null);
   const [otherForms, setOtherForms] = useState(otherAddresses);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newAddressForm, setNewAddressForm] = useState<Address>({
+    name: '',
+    phone: '',
+    address: '',
+  });
 
   const handleDefaultChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDefaultForm({ ...defaultForm, [e.target.name]: e.target.value });
@@ -37,6 +45,28 @@ const AddressBook: React.FC<AddressBookProps> = ({
     setOtherForms(newAddresses);
   };
 
+  const handleNewAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewAddressForm({ ...newAddressForm, [e.target.name]: e.target.value });
+  };
+
+  const handleAddNewAddress = () => {
+    setOtherForms([...otherForms, newAddressForm]);
+    setIsModalOpen(false);
+  };
+
+  const cancelDefaultEdit = () => {
+    setDefaultForm(defaultAddress); // Reset to initial default address
+    setIsEditingDefault(false);
+  };
+
+  const cancelOtherEdit = (index: number) => {
+    const originalAddress = otherAddresses[index];
+    const updatedAddresses = [...otherForms];
+    updatedAddresses[index] = originalAddress; // Reset to original address
+    setOtherForms(updatedAddresses);
+    setEditingOtherIndex(null); // Stop editing
+  };
+
   return (
     <div className="flex-1 bg-bodyBackground p-4 md:p-10 border border-[#FFE0A0] text-white font-sans">
       <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-8 gap-4">
@@ -44,12 +74,14 @@ const AddressBook: React.FC<AddressBookProps> = ({
           Sổ địa chỉ
         </h2>
         <button
+          onClick={() => setIsModalOpen(true)} // Mở modal khi click
           className="w-7/12 px-1 py-2 lg:w-auto lg:px-8 md:px-2 border border-secondaryColor hover:text-secondaryColor bg-secondaryColor hover:bg-bodyBackground text-headerBackground transition uppercase text-sm md:text-base"
         >
           Thêm địa chỉ mới
         </button>
       </div>
 
+      {/* Địa chỉ mặc định */}
       <div className="space-y-6 mb-10">
         <h3 className="text-lg md:text-xl font-semibold mb-4">Địa chỉ mặc định</h3>
 
@@ -80,28 +112,48 @@ const AddressBook: React.FC<AddressBookProps> = ({
 
           <p className="text-gray-400">Địa chỉ</p>
           {isEditingDefault ? (
-            <input
-              name="address"
+            <AddressInput
               value={defaultForm.address}
-              onChange={handleDefaultChange}
-              className="w-full bg-transparent border-b border-gray-500 text-white placeholder-gray-500 focus:outline-none focus:border-secondaryColor py-2"
+              onChange={(e) => {
+                setDefaultForm({ ...defaultForm, address: e.target.value });
+              }}
+              onSelectLocation={(lat, lon, address) => {
+                setDefaultForm({ ...defaultForm, address });
+              }}
             />
           ) : (
             <p className="font-medium">{defaultForm.address}</p>
           )}
         </div>
 
-        <button
-          onClick={() => setIsEditingDefault(!isEditingDefault)}
-          className="px-6 py-2 md:px-10 border border-secondaryColor hover:text-secondaryColor bg-secondaryColor hover:bg-bodyBackground text-headerBackground transition uppercase text-sm md:text-base"
-        >
-          {isEditingDefault ? 'Lưu' : 'Cập nhật'}
-        </button>
+        <div className="flex gap-4">
+          <button
+            onClick={() => {
+              if (isEditingDefault) {
+                // Gọi API lưu nếu cần
+                console.log('Lưu địa chỉ mặc định:', defaultForm);
+              }
+              setIsEditingDefault(!isEditingDefault);
+            }}
+            className="px-6 py-2 md:px-10 border border-secondaryColor hover:text-secondaryColor bg-secondaryColor hover:bg-bodyBackground text-headerBackground transition uppercase text-sm md:text-base"
+          >
+            {isEditingDefault ? 'Lưu' : 'Cập nhật'}
+          </button>
+
+          {isEditingDefault && (
+            <button
+              onClick={cancelDefaultEdit}
+              className="px-6 py-2 md:px-10 border border-secondaryColor hover:text-secondaryColor hover:bg-bodyBackground text-white transition uppercase text-sm md:text-base"
+            >
+              Hủy
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="border-t border-gray-600 mb-10"></div>
 
-
+      {/* Địa chỉ khác */}
       <div className="space-y-6">
         <h3 className="text-lg md:text-xl font-semibold mb-4">Các địa chỉ khác</h3>
 
@@ -134,25 +186,51 @@ const AddressBook: React.FC<AddressBookProps> = ({
 
               <p className="text-gray-400">Địa chỉ</p>
               {editingOtherIndex === index ? (
-                <input
-                  name="address"
+                <AddressInput
                   value={addr.address}
-                  onChange={(e) => handleOtherChange(index, e)}
-                  className="w-full bg-transparent border-b border-gray-500 text-white placeholder-gray-500 focus:outline-none focus:border-secondaryColor py-2"
+                  onChange={(e) => {
+                    const newAddresses = [...otherForms];
+                    newAddresses[index] = { ...newAddresses[index], address: e.target.value };
+                    setOtherForms(newAddresses);
+                  }}
+                  onSelectLocation={(lat, lon, address) => {
+                    const newAddresses = [...otherForms];
+                    newAddresses[index] = { ...newAddresses[index], address };
+                    setOtherForms(newAddresses);
+                  }}
                 />
               ) : (
                 <p className="font-medium">{addr.address}</p>
               )}
             </div>
 
-            <button
-              onClick={() =>
-                setEditingOtherIndex(editingOtherIndex === index ? null : index)
-              }
-              className="px-6 py-2 md:px-10 border border-secondaryColor hover:text-secondaryColor bg-secondaryColor hover:bg-bodyBackground text-headerBackground transition uppercase text-sm md:text-base"
-            >
-              {editingOtherIndex === index ? 'Lưu' : 'Cập nhật'}
-            </button>
+            <div className="flex gap-4">
+              <button
+                onClick={() => {
+                  if (editingOtherIndex === index) {
+                    console.log('Lưu địa chỉ khác:', otherForms[index]);
+                    setEditingOtherIndex(null);
+                  } else {
+                    setEditingOtherIndex(index);
+                  }
+                }}
+                className={`px-6 py-2 md:px-10 border border-secondaryColor hover:text-secondaryColor bg-secondaryColor hover:bg-bodyBackground text-headerBackground transition uppercase text-sm md:text-base ${
+                  editingOtherIndex !== null && editingOtherIndex !== index ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+                disabled={editingOtherIndex !== null && editingOtherIndex !== index} // Disable button if another address is being edited
+              >
+                {editingOtherIndex === index ? 'Lưu' : 'Cập nhật'}
+              </button>
+
+              {editingOtherIndex === index && (
+                <button
+                  onClick={() => cancelOtherEdit(index)}
+                  className="px-6 py-2 md:px-10 border border-secondaryColor hover:text-secondaryColor hover:bg-bodyBackground text-white transition uppercase text-sm md:text-base"
+                >
+                  Hủy
+                </button>
+              )}
+            </div>
 
             {index < otherForms.length - 1 && (
               <div className="border-t border-gray-600 my-10"></div>
@@ -160,6 +238,13 @@ const AddressBook: React.FC<AddressBookProps> = ({
           </div>
         ))}
       </div>
+
+      {/* Modal Thêm địa chỉ mới */}
+      <AddAddressModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleAddNewAddress}
+      />
     </div>
   );
 };

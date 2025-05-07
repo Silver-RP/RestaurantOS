@@ -12,6 +12,8 @@
     "format": "prettier --write ."
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.2",
+    "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^5.0.1",
     "@react-oauth/google": "^0.12.1",
     "@reduxjs/toolkit": "^2.7.0",
@@ -27,11 +29,13 @@
     "rc-input-number": "^9.5.0",
     "rc-menu": "^9.16.1",
     "rc-pagination": "^5.1.0",
+    "leaflet": "^1.9.4",
     "rc-slider": "^11.1.8",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-hook-form": "^7.56.0",
     "react-icons": "^5.4.0",
+    "react-leaflet": "^5.0.0",
     "react-redux": "^9.2.0",
     "react-responsive": "^10.0.0",
     "react-router-dom": "^7.1.1",
