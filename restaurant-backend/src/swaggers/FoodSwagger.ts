@@ -1,6 +1,18 @@
 import { registerSwaggerRoute } from '../utils/swaggerOptions';
 
 registerSwaggerRoute({
+  path: '/food/getFoodNewest',
+  method: 'get',
+  tags: ['Food'],
+});
+
+registerSwaggerRoute({
+  path: '/food/getFoodBest4',
+  method: 'get',
+  tags: ['Food'],
+});
+
+registerSwaggerRoute({
   path: '/food/favorite',
   method: 'post',
   summary: 'Toggle favorite food',
