@@ -22,7 +22,6 @@ const MenuPage: React.FC = () => {
     setSearchParams,
     setPagination,
   } = useFoods();
-
   const mappedFoods: ProductCardProps[] = Array.isArray(foods?.docs)
     ? foods.docs.map((food) => ({
         id: food._id,
@@ -30,6 +29,8 @@ const MenuPage: React.FC = () => {
         slug: food.slug,
         views: food.views,
         ordered_count: food.ordered_count,
+        rating: food.average_rating ?? 0,
+        rating_count: food.rating_count ?? 0, 
         price: food.discount_price || food.price,
         originalPrice: food.price,
         discount: food.discount_price
@@ -74,7 +75,7 @@ const MenuPage: React.FC = () => {
           } transition-transform duration-300 ease-in-out`}
         >
           <div className="p-6 overflow-y-auto h-full">
-            <FilterSidebar />
+          <FilterSidebar onClose={() => setIsFilterOpen(false)} />
           </div>
         </div>
         <main className="flex-1 space-y-8">
@@ -108,7 +109,7 @@ const MenuPage: React.FC = () => {
                   onChange={handleSortChange}
                   className="appearance-none bg-bodyBackground border border-gray-500 text-white rounded px-3 py-2 text-sm pr-10 focus:outline-none focus:ring-2 focus:ring-secondaryColor"
                 >
-                  <option value="relevance">Sắp xếp theo</option>
+                  <option value="relevance">Mặc định</option>
                   <option value="priceLow">Giá thấp đến cao</option>
                   <option value="priceHigh">Giá cao đến thấp</option>
                   <option value="newest">Mới nhất</option>

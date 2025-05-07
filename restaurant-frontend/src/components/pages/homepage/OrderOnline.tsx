@@ -191,7 +191,7 @@ const OrderOnlineSection: React.FC = () => {
                   originalPrice={product.originalPrice}
                   discount={product.discount}
                   isNew={product.isNew}
-                  cate={product.cate} description={''}                />
+                  cate={product.cate} description={''}/>
               </div>
             ))}
           </div>

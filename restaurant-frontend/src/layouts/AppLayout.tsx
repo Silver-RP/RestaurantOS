@@ -1,21 +1,20 @@
 import React from 'react';
-import { useLocation } from 'react-router-dom';
-import AppRoutes from '../routers';
+import { useLocation, Outlet } from 'react-router-dom';
 import Footer from '../components/layout/footer/Footer';
 import ExtendSidebar from '../components/layout/sidebar/ExtendSidebar';
 import PrimarySidebar from '../components/layout/sidebar/PrimarySidebar';
 import MobileSidebar from '../components/layout/sidebar/MobileSidebar';
 import { SidebarProvider, useSidebar } from '../contexts/SidebarContext';
-
 const LayoutContent: React.FC = () => {
   const location = useLocation();
+
   const hideSidebarFooter = [
     '/login',
     '/register',
     '/reset-password',
     '/verify-otp',
     '/forgot-password',
-  ].includes(location.pathname);
+  ].some((path) => location.pathname.startsWith(path)) || location.pathname.startsWith('/admin');
 
   const {
     isSidebarOpen,
@@ -24,45 +23,33 @@ const LayoutContent: React.FC = () => {
     toggleSidebarExtend,
     toggleMobileSidebar,
   } = useSidebar();
- 
+
   const height = window.innerHeight;
 
   return (
-   
     <div className="flex overflow-hidden min-h-screen relative">
       {!hideSidebarFooter && (
         <>
-          {/* Sidebar cho desktop */}
+          {/* Desktop Sidebars */}
           <div className="hidden xl:block">
-            {/* Sidebar nhỏ */}
             <div
               className={`fixed top-0 left-0 z-60 h-full w-16 transition-transform duration-300 ${
-                isSidebarOpen && !isExtended
-                  ? 'translate-x-0'
-                  : '-translate-x-16'
+                isSidebarOpen && !isExtended ? 'translate-x-0' : '-translate-x-16'
               }`}
             >
               <PrimarySidebar toggleSidebar={toggleSidebarExtend} />
             </div>
 
-            {/* Sidebar mở rộng */}
             <div
               className={`fixed top-0 left-0 z-60 h-full transition-transform duration-300 ${
-                isSidebarOpen && isExtended
-                  ? 'translate-x-0'
-                  : '-translate-x-72'
-              } 
-              ${window.innerHeight >= 600 ? 'w-72' : 'w-64'}`} 
+                isSidebarOpen && isExtended ? 'translate-x-0' : '-translate-x-72'
+              } ${height >= 600 ? 'w-72' : 'w-64'}`}
             >
-              <div>{height}</div>
-              <ExtendSidebar
-                isOpen={isExtended}
-                toggleSidebar={toggleSidebarExtend}
-              />
+              <ExtendSidebar isOpen={isExtended} toggleSidebar={toggleSidebarExtend} />
             </div>
           </div>
 
-          {/* Sidebar mobile */}
+          {/* Mobile Sidebar */}
           {isMobileSidebarOpen && (
             <>
               <MobileSidebar
@@ -76,7 +63,7 @@ const LayoutContent: React.FC = () => {
             </>
           )}
 
-          {/* Nút toggle sidebar mobile */}
+          {/* Toggle Button for Mobile */}
           {!isSidebarOpen && (
             <button
               className="xl:hidden fixed top-5 left-5 z-50 w-10 h-10 bg-secondaryColor p-2 rounded-md flex flex-col justify-center items-center space-y-1"
@@ -89,52 +76,30 @@ const LayoutContent: React.FC = () => {
                   <span className="block w-6 h-0.5 bg-black"></span>
                 </>
               ) : (
-                <svg
-                  className="h-6 w-6 text-black"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
+                <svg className="h-6 w-6 text-black" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               )}
             </button>
           )}
         </>
       )}
-      {/* <div
-        className={`flex-1 min-h-screen bg-white transition-all duration-300 overflow-y-auto 
-      ${
-        !hideSidebarFooter
-          ? isSidebarOpen
-            ? isExtended
-              ? 'xl:ml-64'
-              : 'xl:ml-16'
-            : 'ml-0'
-          : ''
-      }
-    `}
-      > */}
+
+      {/* Main Content */}
       <div
-        className={`flex-1 min-h-screen bg-white transition-all duration-300 overflow-y-auto 
-      ${
-        !hideSidebarFooter
-          ? isSidebarOpen
-            ? isExtended
-              ? window.innerHeight >= 600
-                ? 'xl:ml-72'
-                : 'xl:ml-64'
-              : 'xl:ml-16'
-            : 'ml-0'
-          : ''
-      }
-    `}
+        className={`flex-1 min-h-screen bg-white transition-all duration-300 overflow-y-auto ${
+          !hideSidebarFooter
+            ? isSidebarOpen
+              ? isExtended
+                ? height >= 600
+                  ? 'xl:ml-72'
+                  : 'xl:ml-64'
+                : 'xl:ml-16'
+              : 'ml-0'
+            : ''
+        }`}
       >
-        <AppRoutes />
+        <Outlet />
         {!hideSidebarFooter && <Footer />}
       </div>
     </div>

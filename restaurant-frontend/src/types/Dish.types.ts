@@ -13,6 +13,7 @@ export interface FoodType {
 }
 
 export interface FoodDetail {
+  createdAt: string; 
   _id: string;
   name: string;
   slug: string;
@@ -20,7 +21,7 @@ export interface FoodDetail {
   discount_price?: number;
   description: string;
   shortDescription?: string;
-  ingredientsl?: string;
+  ingredients?: string;
   status: 'hidden' | 'available' | 'soldout';
   views: number;
   ordered_count: number;

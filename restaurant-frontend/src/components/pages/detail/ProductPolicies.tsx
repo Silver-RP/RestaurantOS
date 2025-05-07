@@ -30,7 +30,7 @@ const ProductPolicies: React.FC = () => {
         >
           {policy.icon}
           <div>
-            <h4 className="font-bold text-white mb-1">{policy.title}</h4>
+            <h4 className="text-white mb-1">{policy.title}</h4>
             <p className="text-sm text-gray-400">{policy.description}</p>
           </div>
         </div>

@@ -1,7 +1,57 @@
 import { Request, Response } from 'express';
 import cartService from '../services/CartService';
+import { IUser } from '../models/UserModel';
 
 class CartController {
+
+  static async getCartItems(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = (req.user as any).id?.toString();
+
+      const cart = await cartService.getCartItems(userId);
+
+      res.status(200).json({
+        success: true,
+        message: 'Cart items retrieved successfully',
+        data: cart,
+      });
+    } catch (error: any) {
+      console.error('Error retrieving cart items:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
+
+  static async AddItemToCart(req: Request, res: Response): Promise<void> {
+    try {
+      const { dishId, quantity } = req.body;
+      const userId = (req.user as IUser).id?.toString();
+
+      if (!dishId || typeof quantity !== 'number' || quantity <= 0) {
+        res.status(400).json({
+          success: false,
+          message: 'Missing or invalid input fields. Quantity must be greater than 0',
+        });
+        return;
+      }
+
+      const addCart = await cartService.AddItemToCart(userId, dishId, quantity);
+
+      res.status(200).json({
+        success: true,
+        message: 'Item added to cart successfully',
+      });
+    } catch (error: any) {
+      console.error('Error adding item to cart:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
+
   static async UpdateCart(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;

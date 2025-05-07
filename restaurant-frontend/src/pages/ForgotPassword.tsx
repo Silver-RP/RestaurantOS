@@ -10,7 +10,7 @@ import ButtonComponent from '../components/pages/Login/ButtonComponents';
 import { Link } from 'react-router-dom';
 import { SlActionUndo } from 'react-icons/sl';
 import { toast } from 'react-toastify';
-import { useSendOtpEmail } from '../api/AuthApi';
+import { useSendOtpEmail } from '../hooks/useAuth';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 

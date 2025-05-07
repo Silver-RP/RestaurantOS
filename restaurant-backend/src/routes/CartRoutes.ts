@@ -3,6 +3,8 @@ import CartController from '../controller/CartController';
 import AuthMiddleWare from '../middleware/AuthMiddleWare';
 const router = Router();
 
+router.get('/getCart', AuthMiddleWare.verifyToken, CartController.getCartItems);
+router.post('/add', AuthMiddleWare.verifyToken, CartController.AddItemToCart);
 router.put('/update/:id', AuthMiddleWare.verifyToken, CartController.UpdateCart); 
 router.delete('/:cartId/item/:dishId', AuthMiddleWare.verifyToken, CartController.DeleteCartItem);
 router.delete('/delete-all/:cartId', AuthMiddleWare.verifyToken, CartController.DeleteAllCart);
