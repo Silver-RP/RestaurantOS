@@ -107,7 +107,7 @@ class AuthService {
     const refresh_token = refreshToken(
       { id: user._id, roles: user.roles },
       process.env.REFRESH_TOKEN || '',
-      365 * 24 * 60 * 60,
+      21 * 24 * 60 * 60,
     );
     return { token, refresh_token, user };
   }
@@ -146,7 +146,7 @@ class AuthService {
         expiresIn: 7200,
       });
       const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN || '', {
-        expiresIn: 365 * 24 * 60 * 60,
+        expiresIn: 21 * 24 * 60 * 60,
       });
       return {
         user,
