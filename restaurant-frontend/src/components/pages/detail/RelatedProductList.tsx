@@ -1,16 +1,29 @@
-
-import ProductCardGrid from '../../common/ProductCardGrid';
 import React, { useEffect, useState } from 'react';
+import ProductCardGrid from '../../common/ProductCardGrid';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
-import { ProductCardProps } from '../../../types/ProductCard.types';
+import { useFoodBest4 } from '@hooks/useFoods';
 
-interface RelatedProductListProps {
-  products: ProductCardProps[];
-}
-
-const RelatedProductList: React.FC<RelatedProductListProps> = ({ products }) => {
+const RelatedProductList: React.FC = () => {
   const [slideIndex, setSlideIndex] = useState(0);
   const [itemsPerSlide, setItemsPerSlide] = useState(1);
+  const { data: foods, isLoading, error } = useFoodBest4();
+
+  // Format dữ liệu trả về từ API
+  const products =
+    foods?.map((food) => ({
+      id: food._id,
+      name: food.name,
+      price: food.discount_price || food.price,
+      originalPrice: food.discount_price ? food.price : undefined,
+      imageUrl: food.images[0] || '',
+      hoverImage: food.images[1] || '',
+      isNew: true,
+      discount: food.discount_price
+        ? `${Math.round(((food.price - food.discount_price) / food.price) * 100)}% OFF`
+        : undefined,
+      cate: food.categories[0]?.Cate_name || 'Unknown',
+      slug: food.slug,
+    })) || [];
 
   useEffect(() => {
     const updateItemsPerSlide = () => {
@@ -27,18 +40,13 @@ const RelatedProductList: React.FC<RelatedProductListProps> = ({ products }) => 
 
   const maxSlideIndex = Math.ceil(products.length / itemsPerSlide) - 1;
 
-  const handlePrev = () => {
-    setSlideIndex((prev) => Math.max(prev - 1, 0));
-  };
-
-  const handleNext = () => {
+  const handlePrev = () => setSlideIndex((prev) => Math.max(prev - 1, 0));
+  const handleNext = () =>
     setSlideIndex((prev) => Math.min(prev + 1, maxSlideIndex));
-  };
 
-  const visibleProducts = products.slice(
-    slideIndex * itemsPerSlide,
-    slideIndex * itemsPerSlide + itemsPerSlide
-  );
+  // Loading và lỗi
+  if (isLoading) return <p>Loading...</p>;
+  if (error) return <p>Error loading products.</p>;
 
   return (
     <div className="py-10 relative">
@@ -60,9 +68,14 @@ const RelatedProductList: React.FC<RelatedProductListProps> = ({ products }) => 
         {/* Product List */}
         <div className="w-full">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 transition-all duration-300">
-            {visibleProducts.map((product) => (
-              <ProductCardGrid key={product.id} {...product} />
-            ))}
+            {products
+              .slice(
+                slideIndex * itemsPerSlide,
+                slideIndex * itemsPerSlide + itemsPerSlide,
+              )
+              .map((product) => (
+                <ProductCardGrid key={product.id} {...product} />
+              ))}
           </div>
         </div>
 

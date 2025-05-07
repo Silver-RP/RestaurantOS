@@ -20,6 +20,8 @@ router.get('/getfoodbyslug/:slug', FoodController.getFoodBySlug);
 router.put('/updatefood/:id', FoodController.updateFood);
 router.delete('/deletefood/:id', FoodController.deleteFood);
 router.get('/getFoodByCategory', FoodController.getFoodByCategory);
+router.get('/getFoodNewest', FoodController.getFoodByNewest);
+router.get('/getFoodBest4', FoodController.getFoodBest4);
 router.get('/getFoodBySearch', FoodController.getFoodBySearch);
 router.get('/getFoodByPrice', FoodController.getFoodByPrice);
 router.get('/getFoodByRating', FoodController.getFoodByRating);

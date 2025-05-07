@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams } from "react-router-dom";
-import { fetchAllFoods, fetchFoodByFavorite, fetchFoodBySlug, FetchFoodsParams } from '../api/FoodApi';
+import { useSearchParams } from 'react-router-dom';
+import {
+  fetchAllFoods,
+  fetchFoodByFavorite,
+  fetchFoodBySlug,
+  fetchFoodNewest,
+  fetchFoodBest4,
+  FetchFoodsParams,
+} from '../api/FoodApi';
 import { FoodResponse, FoodDetail } from '../types/Dish.types';
 import { useQuery } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
@@ -23,14 +30,13 @@ export const useFoods = () => {
 
   useEffect(() => {
     const loadFoods = async () => {
-      const page = parseInt(searchParams.get("page") || "1", 10);
-      const sort = searchParams.get("sort") || "default";
-      const priceMin = searchParams.get("priceMin");
-      const priceMax = searchParams.get("priceMax");
-      const category = searchParams.get("category");
-      const keyword = searchParams.get("keyword");
+      const page = parseInt(searchParams.get('page') || '1', 10);
+      const sort = searchParams.get('sort') || 'default';
+      const priceMin = searchParams.get('priceMin');
+      const priceMax = searchParams.get('priceMax');
+      const category = searchParams.get('category');
+      const keyword = searchParams.get('keyword');
       const limit = Number(searchParams.get('limit')) || 12;
-
 
       setLoading(true);
       setError(null);
@@ -68,7 +74,15 @@ export const useFoods = () => {
     loadFoods();
   }, [searchParams]);
 
-  return { foods, loading, error, pagination, setPagination, searchParams, setSearchParams };
+  return {
+    foods,
+    loading,
+    error,
+    pagination,
+    setPagination,
+    searchParams,
+    setSearchParams,
+  };
 };
 
 export const useFoodDetail = (slug: string) => {
@@ -102,9 +116,25 @@ export const useFoodDetail = (slug: string) => {
 
 export const useDishByFavoriteCategory = (cateType: string) => {
   return useQuery<FoodDetail[]>({
-    queryKey: ["dishByFavoriteCategory", cateType],
+    queryKey: ['dishByFavoriteCategory', cateType],
     queryFn: () => fetchFoodByFavorite(cateType),
     enabled: !!cateType,
+    refetchOnWindowFocus: false,
+  });
+};
+
+export const useFoodNewest = () => {
+  return useQuery<FoodResponse>({
+    queryKey: ['foodNewest'],
+    queryFn: () => fetchFoodNewest(),
+    refetchOnWindowFocus: false,
+  });
+};
+
+export const useFoodBest4 = () => {
+  return useQuery<FoodResponse>({
+    queryKey: ['foodBest4'],
+    queryFn: () => fetchFoodBest4(),
     refetchOnWindowFocus: false,
   });
 };
