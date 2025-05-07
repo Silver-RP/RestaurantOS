@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { AuthState, User } from './authTypes';
 import { RegisterUser, LoginUser, LogoutUser, LoginWithGoogle } from './authActions';
-
+import Cookies from 'js-cookie';
 const initialState: AuthState = {
   userInfo: null,
   isAuthenticated: false,
@@ -109,10 +109,9 @@ const authSlice = createSlice({
         state.userInfo = null;
         state.token = null;
         state.isAuthenticated = false;
-        localStorage.removeItem('userInfo');
-        localStorage.removeItem('accessToken');
-        sessionStorage.removeItem('userInfo');
-        sessionStorage.removeItem('accessToken');
+        Cookies.remove('accessToken');
+        Cookies.remove('refreshToken');
+        Cookies.remove('userInfo');
       });
   },
 });

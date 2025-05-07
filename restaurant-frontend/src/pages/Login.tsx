@@ -95,18 +95,25 @@ const Login = () => {
     setIsSubmitting(true);
     try {
       await dispatch(LoginUser({ email, password, rememberMe }))
-        .unwrap()
-        .then(() => {
-          if (rememberMe) {
-            localStorage.setItem('email', email);
-            localStorage.setItem('password', password);
-          } else {
-            localStorage.removeItem('email');
-            localStorage.removeItem('password');
-          }
-          toast.success('Đăng nhập thành công!');
-          navigate('/');
-        });
+      .unwrap()
+      .then((result) => {
+        
+        if (rememberMe) {
+          localStorage.setItem('email', email);
+          localStorage.setItem('password', password);
+        } else {
+          localStorage.removeItem('email');
+          localStorage.removeItem('password');
+        }
+
+        Cookies.set('accessToken', result.token, { expires: rememberMe ? 7 : 1 });
+        Cookies.set('userInfo', JSON.stringify(result.user), { expires: rememberMe ? 7 : 1 });
+        console.log("result.token", result.token);
+        
+        toast.success('Đăng nhập thành công!');
+        navigate('/');
+      });
+
     } catch (error) {
       if (error instanceof AxiosError && error?.response?.data?.message) {
         toast.error(error.response.data.message);
@@ -140,8 +147,12 @@ const Login = () => {
       
       toast.success('Đăng nhập Google thành công!');
       navigate('/');
-    } catch (error: any) {
-      toast.error(error.message || 'Lỗi đăng nhập Google');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message || 'Lỗi đăng nhập Google');
+      } else {
+        toast.error('Lỗi đăng nhập Google');
+      }
     }
   };
   return (
