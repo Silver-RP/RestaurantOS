@@ -30,6 +30,16 @@ export const fetchFoodBySlug = async (slug: string): Promise<FoodDetail> => {
   return res.data.data;
 };
 
+export const fetchFoodNewest = async (): Promise<FoodResponse> => {
+  const res = await api.get<{ data: FoodResponse }>('/food/getFoodNewest');
+  return res.data.data;
+};
+
+export const fetchFoodBest4 = async (): Promise<FoodResponse> => {
+  const res = await api.get<{ data: FoodResponse }>('/food/getFoodBest4');
+  return res.data.data;
+};
+
 export const fetchFoodByFavorite = async (type: string): Promise<FoodDetail[]> => {
   try {
     const res = await api.get<{ data: FoodDetail[] }>('/food/getFoodByFavorites', {
