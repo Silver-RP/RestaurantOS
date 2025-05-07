@@ -16,7 +16,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ name, price, description, image, ho
     navigate(`/product/${slug}`);
   };
   return (
-    <div className="relative flex items-center space-x-4 py-4 group cursor-pointer" onClick={handleNavigateToDetail}>
+    <div className="relative flex items-center space-x-4 py-4 group cursor-pointer h-[140px]" onClick={handleNavigateToDetail}>
       <div className="relative w-20 h-20">
         <img
           src={image}

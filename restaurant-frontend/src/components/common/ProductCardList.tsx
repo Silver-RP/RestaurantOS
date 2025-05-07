@@ -54,7 +54,7 @@ const ProductCardList: React.FC<ProductCardProps> = ({
         discount_price: originalPrice ?? price,
         description,
         shortDescription: description,
-        ingredientsl: '',
+        ingredients: '',
         status: 'available',
         views: views ?? 0,
         ordered_count: ordered_count ?? 0,

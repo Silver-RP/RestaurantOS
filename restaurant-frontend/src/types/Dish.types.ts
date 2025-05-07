@@ -21,7 +21,7 @@ export interface FoodDetail {
   discount_price?: number;
   description: string;
   shortDescription?: string;
-  ingredientsl?: string;
+  ingredients?: string;
   status: 'hidden' | 'available' | 'soldout';
   views: number;
   ordered_count: number;

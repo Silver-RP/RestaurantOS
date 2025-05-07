@@ -90,7 +90,7 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
                     discount_price: rest.originalPrice ?? rest.price,
                     description: rest.description,
                     shortDescription: rest.description,
-                    ingredientsl: '',
+                    ingredients: '',
                     status: 'available',
                     views: rest.views ?? 0,
                     ordered_count: rest.ordered_count ?? 0,

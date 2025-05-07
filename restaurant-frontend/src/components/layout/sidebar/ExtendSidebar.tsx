@@ -16,7 +16,8 @@ import {
 import { Link } from 'react-router-dom';
 import ButtonComponents from '../../common/ButtonComponents';
 import NavExtend from './NavExtend';
-
+import { useDispatch } from 'react-redux';
+import { openSearchModal } from '../../../redux/feature/searchModal/searchModalSlice';
 interface SidebarProps {
   isOpen: boolean;
   toggleSidebar: () => void;
@@ -24,12 +25,11 @@ interface SidebarProps {
 
 const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
-
+  const dispatch = useDispatch();
   useEffect(() => {
     const handleResize = () => {
       setWindowHeight(window.innerHeight);
     };
-
     window.addEventListener('resize', handleResize);
 
     return () => window.removeEventListener('resize', handleResize);
@@ -99,9 +99,10 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
                 </span>
               </div>
               <FiSearch
-                className={`text-white hover:text-secondaryColor ${iconSize}`}
-                aria-label="Search"
-              />
+  onClick={() => dispatch(openSearchModal())}
+  className={`text-white hover:text-secondaryColor ${iconSize} cursor-pointer`}
+  aria-label="Search"
+/>
             </div>
             <Link
               to="/booking"
