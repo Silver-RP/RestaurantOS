@@ -15,6 +15,7 @@ import PermissionRoutes from './routes/PermissionRoutes';
 import OrderRoutes from './routes/OrderRoutes';
 import AuthMiddleWare from './middleware/AuthMiddleWare';
 import CartRouter from './routes/CartRoutes';
+import AddressRouter from './routes/AddressRoutes';
 import dotenv from 'dotenv';
 import connectDB from './config/db';
 import cookieParser from 'cookie-parser';
@@ -108,7 +109,7 @@ app.use(
 app.use('/api/food', FoodRoutes);
 app.use('/api/order', AuthMiddleWare.verifyToken, OrderRoutes);
 app.use('/api/cart', CartRouter);
-
+app.use('/api/address', AuthMiddleWare.verifyToken, AddressRouter);
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
   console.log('Mongo URI:', process.env.MONGO_URI);

@@ -1,7 +1,8 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios'; // <-- Missing import
 import { RegisterPayload, LoginPayload } from './authTypes';
-
+import Cookies from 'js-cookie';
+import { setAccessToken, setRefreshToken } from '@/utils/tokenHelpers';
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 // Helper function for handling API requests
@@ -17,10 +18,6 @@ const apiRequest = async (url: string, payload: object, method: 'POST' | 'GET') 
     throw new Error('An unexpected error occurred');
   }
 };
-import { setAccessToken, setRefreshToken } from '@/utils/tokenHelpers';
-import axiosInstance from '@/api/axiosInstance';
-const BASE_URL_REGISTER = import.meta.env.VITE_BACKEND_URL;
-const BASE_URL_LOGIN = import.meta.env.VITE_BACKEND_URL;
 
 // Register
 export const RegisterUser = createAsyncThunk(
@@ -41,24 +38,26 @@ export const LoginUser = createAsyncThunk(
   async (payload: LoginPayload, { rejectWithValue }) => {
     try {
       const data = await apiRequest(`${BASE_URL}/auth/login`, payload, 'POST');
-      const { token, user, message } = data;
-
-      if (!token) {
-        console.warn('⚠️ Token is missing in API response');
+      const { accessToken, refreshToken, user, message } = data;
+      if (!accessToken) {
+        console.warn('⚠️ accessToken is missing in API response');
       }
-      setAccessToken(token, payload.rememberMe);
-      // setRefreshToken(refreshToken, payload.rememberMe);
+      setAccessToken(accessToken, payload.rememberMe);
+      setRefreshToken(refreshToken, payload.rememberMe);
+      Cookies.set('userInfo', JSON.stringify(user), {
+        expires: payload.rememberMe ? 7 : 1,
+        sameSite: import.meta.env.PROD ? 'None' : 'Lax',
+        secure: import.meta.env.PROD,
+      });
 
-      const storage = payload.rememberMe ? localStorage : sessionStorage;
-      storage.setItem('accessToken', token || '');
-      storage.setItem('userInfo', JSON.stringify(user || {}));
-
-      return { token, user, message };
+      return { token: accessToken, user, message }; 
     } catch (error: unknown) {
       return rejectWithValue((error as { message: string })?.message || 'An unexpected error occurred');
     }
   }
 );
+
+
 
 // Logout
 export const LogoutUser = createAsyncThunk(
@@ -69,6 +68,27 @@ export const LogoutUser = createAsyncThunk(
       return data;
     } catch (error: any) {
       return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const LoginWithGoogle = createAsyncThunk(
+  'auth/loginGoogle',
+  async (googleUser: any, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/auth/google-login`,
+        { token: googleUser.credential }, 
+        { withCredentials: true } 
+      );
+      const { accessToken, refreshToken, user } = response.data;
+
+      setAccessToken(accessToken);
+      setRefreshToken(refreshToken);
+
+      return { token: accessToken, user, message: 'Đăng nhập Google thành công' };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Lỗi khi đăng nhập Google');
     }
   }
 );
