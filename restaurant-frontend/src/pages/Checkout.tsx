@@ -7,7 +7,8 @@ const CheckoutPage = () => {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [paymentMethod, setPaymentMethod] = useState("cod");
-  const [shippingFee, setShippingFee] = useState<number>(5000); 
+  const [shippingFee, setShippingFee] = useState<number>(5000);
+
   const [products] = useState([
     {
       image: "/assets/images/products/SP5.jpg",
@@ -25,34 +26,57 @@ const CheckoutPage = () => {
     },
   ]);
 
-  useEffect(() => {
-    const fetchShippingFee = async () => {
-      try {
-        const res = await fetch("http://localhost:3000/shippingFee");
-        const data = await res.json();
-        setShippingFee(data.shippingFee || 5000); 
-      } catch (error) {
-        console.error("Failed to fetch shipping fee", error);
-      }
-    };
+  const mockAddresses: Address[] = [
+    {
+      id: 1,
+      name: "Lâm Gia Bảo",
+      phone: "0909123456",
+      address: "123 Đường Lê Lợi, Phường Bến Thành, Quận 1, TP. Hồ Chí Minh",
+      street: "123 Đường Lê Lợi",
+      ward: "Phường Bến Thành",
+      district: "Quận 1",
+      city: "TP. Hồ Chí Minh",
+      isDefault: true,
+    },
+    {
+      id: 2,
+      name: "Nguyễn Văn A",
+      phone: "0911222333",
+      address: "45 Nguyễn Trãi, Phường 7, Quận 5, TP. Hồ Chí Minh",
+      street: "45 Nguyễn Trãi",
+      ward: "Phường 7",
+      district: "Quận 5",
+      city: "TP. Hồ Chí Minh",
+      isDefault: false,
+    },
+  ];
 
-    fetchShippingFee();
+  useEffect(() => {
+    setAddresses(mockAddresses);
+    setSelectedId(mockAddresses[0].id);
   }, []);
 
   const handleAddAddress = async (newAddr: Omit<Address, "id">) => {
-    try {
-      const res = await fetch("http://localhost:3000/addresses", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newAddr),
-      });
-
-      const created = await res.json();
-      setAddresses((prev) => [...prev, created]);
-      setSelectedId(created.id);
-    } catch (error) {
-      console.error("Failed to add address", error);
-    }
+    // Create a new address with an ID
+    const newAddress: Address = {
+      ...newAddr,
+      id: addresses.length ? Math.max(...addresses.map(addr => addr.id)) + 1 : 1,
+    };
+    
+    // Update addresses state
+    setAddresses(prevAddresses => {
+      // If this is marked as default, unmark others
+      if (newAddr.isDefault) {
+        return [
+          ...prevAddresses.map(addr => ({ ...addr, isDefault: false })),
+          newAddress
+        ];
+      }
+      return [...prevAddresses, newAddress];
+    });
+    
+    // Select the new address
+    setSelectedId(newAddress.id);
   };
 
   return (
@@ -67,7 +91,7 @@ const CheckoutPage = () => {
         <ProductInfoSection
           products={products}
           note="Ít cay, không hành nha!"
-          shippingFee={shippingFee} 
+          shippingFee={shippingFee}
           paymentMethod={paymentMethod}
           onPaymentMethodChange={setPaymentMethod}
         />
