@@ -37,12 +37,12 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
         className="relative flex-1 h-[300px] sm:h-[350px] md:h-[400px] lg:h-[500px] 2xl:h-[700px] flex justify-center items-center overflow-hidden rounded-lg shadow-md bg-white"
       >
         {discount > 0 && (
-          <span className="absolute top-4 left-4 bg-secondaryColor text-black text-xs font-semibold px-2 py-1 rounded">
+          <span className="absolute top-4 left-4 bg-secondaryColor text-black text-xs px-2 py-1">
             -{discount}%
           </span>
         )}
         {isNew && (
-          <span className="absolute top-14 left-4 bg-secondaryColor text-black text-xs font-semibold px-2 py-1 rounded">
+          <span className="absolute top-14 left-4 bg-secondaryColor text-black text-xs font-semibold px-2 py-1">
             NEW
           </span>
         )}

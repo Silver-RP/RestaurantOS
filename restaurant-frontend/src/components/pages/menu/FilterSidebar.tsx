@@ -4,7 +4,11 @@ import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { useSearchParams } from 'react-router-dom';
 
-const FilterSidebar: React.FC = () => {
+interface FilterSidebarProps {
+  onClose: () => void;
+}
+
+const FilterSidebar: React.FC<FilterSidebarProps> = ({ onClose }) => {
   const { categories, loading, error } = useCategories();
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000]);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -20,37 +24,33 @@ const FilterSidebar: React.FC = () => {
     const currentSort = searchParams.get('sort') || 'default';
 
     const newParams = new URLSearchParams();
-    newParams.set('page', '1'); // Reset về page 1
+    newParams.set('page', '1'); 
     newParams.set('sort', currentSort);
     if (currentCategory) newParams.set('category', currentCategory);
     newParams.set('priceMin', priceRange[0].toString());
     newParams.set('priceMax', priceRange[1].toString());
 
     setSearchParams(newParams);
+    onClose();
   };
 
   const handleCategoryFilter = (categorySlug: string) => {
     const currentSort = searchParams.get('sort') || 'default';
-
+  
     const newParams = new URLSearchParams();
     newParams.set('page', '1');
     newParams.set('sort', currentSort);
     newParams.set('category', categorySlug);
-
-    // Giữ giá nếu có lọc giá
-    if (searchParams.get('priceMin')) {
-      newParams.set('priceMin', searchParams.get('priceMin')!);
-    }
-    if (searchParams.get('priceMax')) {
-      newParams.set('priceMax', searchParams.get('priceMax')!);
-    }
-
+  
+    newParams.set('priceMin', priceRange[0].toString());
+    newParams.set('priceMax', priceRange[1].toString());
+  
     setSearchParams(newParams);
+    onClose();
   };
 
   return (
     <div className="space-y-10">
-      {/* Category Filter */}
       <div>
         <h3 className="text-xl font-light mb-6 border-b border-gray-600 pb-2">
           Mua sắm theo danh mục
@@ -64,11 +64,13 @@ const FilterSidebar: React.FC = () => {
             <li
               className="flex justify-between hover:text-secondaryColor cursor-pointer capitalize"
               onClick={() => {
-                // Xóa category lọc về tất cả
                 const newParams = new URLSearchParams(searchParams.toString());
                 newParams.delete('category');
                 newParams.set('page', '1');
+                newParams.set('priceMin', priceRange[0].toString());
+                newParams.set('priceMax', priceRange[1].toString());
                 setSearchParams(newParams);
+                onClose();
               }}
             >
               <span>Tất Cả</span>
@@ -90,7 +92,6 @@ const FilterSidebar: React.FC = () => {
         )}
       </div>
 
-      {/* Price Filter */}
       <div>
         <h4 className="text-lg font-light mb-4 border-b-2 border-secondaryColor inline-block pb-1">
           Giá
@@ -100,7 +101,7 @@ const FilterSidebar: React.FC = () => {
           <Slider
             range
             min={0}
-            max={1000000}
+            max={2000000}
             step={10000}
             value={priceRange}
             onChange={handlePriceChange}
@@ -125,7 +126,6 @@ const FilterSidebar: React.FC = () => {
         </div>
       </div>
 
-      {/* Banner */}
       <div className="relative w-full h-[500px] rounded bg-black bg-opacity-40 overflow-hidden mt-10">
         <img
           src="/assets/images/banner/banner-sidebar.jpg"

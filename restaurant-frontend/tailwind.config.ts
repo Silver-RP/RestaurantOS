@@ -21,8 +21,17 @@ export default {
         secondaryColor: '#FFDEA0',
         hr: '#03486B',
         grayText: '#BBBBBB',
+        adminbg: '#F9FAFB',        
+        admincard: '#FFFFFF',    
+        admintext: '#1F2937',    
+        adminprimary: '#3B82F6', 
+        adminborder: '#E5E7EB', 
+        adminhover: '#F3F4F6',   
+        adminsubtle: '#6B7280',  
+        admingreen: '#10B981',  
+        adminyellow: '#F59E0B',  
+        adminred: '#EF4444',     
       },
-      
       width: {
         mainContainer: '80%',
         container95: '95%',

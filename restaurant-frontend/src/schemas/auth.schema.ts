@@ -1,5 +1,10 @@
 import { z } from 'zod';
-
+export interface GoogleDecodedToken {
+  email: string;
+  name: string;
+  picture: string;
+  sub: string;
+}
 export const forgotPasswordSchema = z.object({
   email: z
     .string({ required_error: 'Email không được để trống' })

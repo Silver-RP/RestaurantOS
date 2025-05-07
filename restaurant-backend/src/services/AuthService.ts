@@ -32,12 +32,19 @@ class AuthService {
         access_token: string;
         id_token: string;
       };
+      console.log('id_token:', id_token);
+      
       const userProfileResponse = await axios.get('https://www.googleapis.com/oauth2/v2/userinfo', {
         headers: {
           Authorization: `Bearer ${access_token}`,
         },
       });
-      const user = userProfileResponse.data;
+      const user = userProfileResponse.data as {
+        id: string;
+        email: string;
+        name: string;
+        picture: string;
+      };
       let existingUser = await User.findOne({ email: user.email });
       if (!existingUser) {
         existingUser = new User({
@@ -107,7 +114,7 @@ class AuthService {
     const refresh_token = refreshToken(
       { id: user._id, roles: user.roles },
       process.env.REFRESH_TOKEN || '',
-      365 * 24 * 60 * 60,
+      21 * 24 * 60 * 60,
     );
     return { token, refresh_token, user };
   }
@@ -146,7 +153,7 @@ class AuthService {
         expiresIn: 7200,
       });
       const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN || '', {
-        expiresIn: 365 * 24 * 60 * 60,
+        expiresIn: 21 * 24 * 60 * 60,
       });
       return {
         user,

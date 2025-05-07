@@ -1,3 +1,5 @@
+import { Category } from "./Category.type";
+
 export interface ProductCardProps {
   id: string;
   name: string;
@@ -15,4 +17,5 @@ export interface ProductCardProps {
   rating?: number;
   rating_count?: number;
   createdAt?: string;
+  categories?: Category[];
 }

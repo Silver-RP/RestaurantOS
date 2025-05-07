@@ -28,7 +28,7 @@ const ContactCard = () => {
             <p className="text-sm font-restora md:text-lg mb-2">Đặt bàn</p>
             <a
               href="tel:+39055123456"
-              className="text-[18px] md:text-4xl font-restora font-thin text-secondaryColor"
+              className="text-[18px] md:text-4xl font-roboto font-thin text-secondaryColor"
             >
               +39-055-123456
             </a>
