@@ -171,9 +171,7 @@ const CartPage = () => {
                     <th className="py-3 text-left text-lg font-light">
                       Sản phẩm
                     </th>
-                    <th className="py-3 text-left text-lg font-light">
-                      Giá
-                    </th>
+                    <th className="py-3 text-left text-lg font-light">Giá</th>
                     <th className="py-3 text-left text-lg font-light">
                       Số lượng
                     </th>
@@ -205,21 +203,22 @@ const CartPage = () => {
                         <span className="font-medium">{item.name}</span>
                       </td>
                       <td className="align-middle whitespace-nowrap">
-  {item.discountedPrice && item.discountedPrice !== item.price ? (
-    <div className="flex flex-col">
-      <span className="text-sm text-gray-400 line-through">
-        {item.price.toLocaleString()} VND
-      </span>
-      <span className="text-base text-secondaryColor font-semibold">
-        {item.discountedPrice.toLocaleString()} VND
-      </span>
-    </div>
-  ) : (
-    <span className="text-base text-white font-medium">
-      {item.price.toLocaleString()} VND
-    </span>
-  )}
-</td>
+                        {item.discountedPrice &&
+                        item.discountedPrice !== item.price ? (
+                          <div className="flex flex-col">
+                            <span className="text-sm text-gray-400 line-through">
+                              {item.price.toLocaleString()} VND
+                            </span>
+                            <span className="text-base text-secondaryColor font-semibold">
+                              {item.discountedPrice.toLocaleString()} VND
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-base text-white font-medium">
+                            {item.price.toLocaleString()} VND
+                          </span>
+                        )}
+                      </td>
                       <td className="align-middle">
                         <div className="flex items-center border border-gray-600 w-fit rounded overflow-hidden">
                           <button className="px-2 py-1 hover:bg-secondaryColor hover:text-black transition">
