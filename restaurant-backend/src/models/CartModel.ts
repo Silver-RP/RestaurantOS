@@ -7,7 +7,6 @@ export interface ICart extends Document {
     price: number;
   }[];
   totalPrice: number;
-  status: 'pending' | 'checked_out' | 'cancelled';
   createdAt: Date;
   updatedAt: Date;
 }

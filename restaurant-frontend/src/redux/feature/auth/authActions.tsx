@@ -1,6 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios'; // <-- Missing import
 import { RegisterPayload, LoginPayload } from './authTypes';
+import { setAccessToken, setRefreshToken } from '@/utils/tokenHelpers';
 
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -17,10 +18,7 @@ const apiRequest = async (url: string, payload: object, method: 'POST' | 'GET') 
     throw new Error('An unexpected error occurred');
   }
 };
-import { setAccessToken, setRefreshToken } from '@/utils/tokenHelpers';
-import axiosInstance from '@/api/axiosInstance';
-const BASE_URL_REGISTER = import.meta.env.VITE_BACKEND_URL;
-const BASE_URL_LOGIN = import.meta.env.VITE_BACKEND_URL;
+
 
 // Register
 export const RegisterUser = createAsyncThunk(
@@ -47,7 +45,7 @@ export const LoginUser = createAsyncThunk(
         console.warn('⚠️ Token is missing in API response');
       }
       setAccessToken(token, payload.rememberMe);
-      // setRefreshToken(refreshToken, payload.rememberMe);
+      setRefreshToken(data.refreshToken, payload.rememberMe);
 
       const storage = payload.rememberMe ? localStorage : sessionStorage;
       storage.setItem('accessToken', token || '');
@@ -69,6 +67,27 @@ export const LogoutUser = createAsyncThunk(
       return data;
     } catch (error: any) {
       return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const LoginWithGoogle = createAsyncThunk(
+  'auth/loginGoogle',
+  async (googleUser: any, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/auth/google-login`,
+        { token: googleUser.credential }, 
+        { withCredentials: true } 
+      );
+      const { accessToken, refreshToken, user } = response.data;
+
+      setAccessToken(accessToken);
+      setRefreshToken(refreshToken);
+
+      return { token: accessToken, user, message: 'Đăng nhập Google thành công' };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Lỗi khi đăng nhập Google');
     }
   }
 );

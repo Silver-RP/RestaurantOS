@@ -14,6 +14,7 @@ interface ChangePasswordResponse {
 interface RefreshTokenResponse {
   accessToken: string;
 }
+
 export const useSendOtpEmail = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);

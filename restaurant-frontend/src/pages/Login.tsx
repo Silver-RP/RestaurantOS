@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import InputComponent from '../components/pages/login/InputComponents';
 import ButtonComponent from '../components/pages/login/ButtonComponents';
-import { FaFacebook } from 'react-icons/fa';
-import { FcGoogle } from 'react-icons/fc';
+
 import CheckboxComponent from '../components/common/CheckboxComponents';
 import { Link, useNavigate } from 'react-router-dom';
 import { SlActionUndo } from 'react-icons/sl';
@@ -11,7 +10,9 @@ import { LoginUser } from '../redux/feature/auth/authActions';
 import { toast } from 'react-toastify';
 import { clearStatus } from '../redux/feature/auth/authSlice';
 import { AxiosError } from 'axios';
-// import Cookies from 'js-cookie';
+import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
+import { LoginWithGoogle } from '../redux/feature/auth/authActions';
+import Cookies from 'js-cookie';
 
 const Login = () => {
   const emailRef = useRef<HTMLInputElement>(null);
@@ -28,7 +29,6 @@ const Login = () => {
     emailRef.current?.focus();
   }, []);
 
-  // Load email/password từ localStorage nếu có
   useEffect(() => {
     const savedEmail = localStorage.getItem('email') || '';
     const savedPassword = localStorage.getItem('password') || '';
@@ -125,7 +125,25 @@ const Login = () => {
       nextRef.current.focus();
     }
   };
-
+  
+  const handleGoogleLoginSuccess = async (response: CredentialResponse) => {
+    try {
+      if (!response.credential) {
+        toast.error('Google credential không tồn tại');
+        return;
+      }
+      const result = await dispatch(LoginWithGoogle({ credential: response.credential })).unwrap();
+  
+     
+      Cookies.set('accessToken', result.token, { expires: 1 }); // 1 ngày
+      Cookies.set('userInfo', JSON.stringify(result.user), { expires: 1 });
+      
+      toast.success('Đăng nhập Google thành công!');
+      navigate('/');
+    } catch (error: any) {
+      toast.error(error.message || 'Lỗi đăng nhập Google');
+    }
+  };
   return (
     <div className="flex justify-center items-center bg-[url('/assets/images/register/background.jpg')] bg-cover bg-center w-full h-screen">
       <div className="px-10 py-8 text-center bg-black bg-opacity-70 rounded-lg shadow-lg w-full sm:w-9/12 md:w-8/12 lg:w-6/12 xl:w-4/12 h-auto max-w-lg">
@@ -183,8 +201,10 @@ const Login = () => {
         </div>
 
         <div className="flex justify-center gap-8 mt-4">
-          <FaFacebook className="text-facebook text-3xl cursor-pointer" />
-          <FcGoogle className="text-3xl cursor-pointer" />
+        <GoogleLogin
+            onSuccess={handleGoogleLoginSuccess}
+            onError={() => toast.error('Đăng nhập Google thất bại')}
+          />
         </div>
 
         <div className="mt-6 text-sm text-white">

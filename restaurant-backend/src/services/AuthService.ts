@@ -32,12 +32,19 @@ class AuthService {
         access_token: string;
         id_token: string;
       };
+      console.log('id_token:', id_token);
+      
       const userProfileResponse = await axios.get('https://www.googleapis.com/oauth2/v2/userinfo', {
         headers: {
           Authorization: `Bearer ${access_token}`,
         },
       });
-      const user = userProfileResponse.data;
+      const user = userProfileResponse.data as {
+        id: string;
+        email: string;
+        name: string;
+        picture: string;
+      };
       let existingUser = await User.findOne({ email: user.email });
       if (!existingUser) {
         existingUser = new User({

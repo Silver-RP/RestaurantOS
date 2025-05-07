@@ -3,7 +3,7 @@ import * as jwt from 'jsonwebtoken';
 export const accessToken = (
   payload: object,
   secretKey: string,
-  // 30 giây
+ 
   expires: number = 30 * 60,
 ): string => {
   try {
