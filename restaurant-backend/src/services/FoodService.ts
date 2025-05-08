@@ -2,6 +2,7 @@ import { Dish } from '../models/DishModel';
 import Category from '../models/CategoryModel';
 import { Favorite } from '../models/FavoriteModel';
 import { Types } from 'mongoose';
+
 class FoodService {
   async createFood(food: any) {
     const newfood = new Dish(food);

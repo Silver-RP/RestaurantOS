@@ -2,6 +2,7 @@ import RoleModel from '../models/RoleModel';
 import User from '../models/UserModel';
 import Permission from '../models/PermissionModel';
 import mongoose from 'mongoose';
+
 class RoleService {
   async GetAllRole(): Promise<any> {
     try {

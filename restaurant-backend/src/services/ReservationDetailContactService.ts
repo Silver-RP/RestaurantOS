@@ -1,5 +1,6 @@
 import ReservationDetailContact from '../models/ReservationDetailContactModel';
 import { IReservationDetailContact } from '../models/ReservationDetailContactModel';
+
 class ReservationDetailContactService {
   async createReservationDetailContact(input: IReservationDetailContact): Promise<any> {
     const reservationDetailContact = await ReservationDetailContact.create(input);
