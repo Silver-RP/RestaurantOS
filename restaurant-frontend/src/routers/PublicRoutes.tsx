@@ -19,6 +19,7 @@ import FAQsCompoent from "../pages/FaqPage";
 import PostPage from "../pages/PostPage";
 import OrderPage from "../pages/OrderPage";
 import CartPage from "../pages/CartPage";
+import CheckoutPage from "../pages/Checkout";
 
 const PublicRoutes = [
   {
@@ -42,6 +43,7 @@ const PublicRoutes = [
       { path: "posts", element: <PostPage /> },
       { path: "order", element: <OrderPage /> },
       { path: "cart", element: <CartPage /> },
+      { path: "checkout", element: <CheckoutPage /> },
       { path: "*", element: <Navigate to="/" /> },
     ],
   },

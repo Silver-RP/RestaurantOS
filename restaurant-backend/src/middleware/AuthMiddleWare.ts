@@ -1,10 +1,10 @@
 import { accessToken, refreshToken } from '../services/GenerateToken';
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { User } from '../@types/express';
-import { IUser } from '../models/UserModel';
+import User, { IUser } from '../models/UserModel';
 import Roles from '../models/RoleModel';
 import mongoose from 'mongoose';
+import RefreshToken from '../models/RefreshToken'; 
 
 class AuthMiddleWare {
   async verifyToken(req: Request, res: Response, next: NextFunction) {
@@ -31,10 +31,30 @@ class AuthMiddleWare {
       if (!token) {
         return res.status(401).json({ message: 'Refresh token not found' });
       }
-      const user = (await jwt.verify(token, process.env.REFRESH_TOKEN as string)) as IUser;
-      req.user = user;
+  
+      const decoded = jwt.verify(token, process.env.REFRESH_TOKEN as string) as any;
+      const storedToken = await RefreshToken.findOne({ token });
+      if (!storedToken) {
+        return res.status(403).json({ message: 'Refresh token not found in database' });
+      }
+  
+      if (storedToken.isRevoked) {
+        return res.status(403).json({ message: 'Refresh token has been revoked' });
+      }
+  
+      const requestIP = req.ip;
+      const requestUA = req.get('User-Agent');
+  
+      if (storedToken.ipAddress !== requestIP || storedToken.userAgent !== requestUA) {
+        return res.status(403).json({ message: 'New device detected. Verification required.' });
+      }
+  
+      const user: IUser = new User(decoded.id, decoded.roles);
+      req.user = user; 
+      (req as any).refreshToken = storedToken; 
+  
       next();
-    } catch (err) {
+    } catch (err: any) {
       return res.status(403).json({ message: 'Invalid or expired refresh token' });
     }
   }

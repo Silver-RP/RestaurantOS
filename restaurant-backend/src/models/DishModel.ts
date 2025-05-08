@@ -18,6 +18,10 @@ export interface IDish extends mongoose.Document {
   rating: number;
   categories: mongoose.Schema.Types.ObjectId[];
   countInStock: number;
+  isNew: boolean;
+  newUntil?: Date;
+  totalSoldQuantity?: number;
+  discountUntil?: Date;
 }
 
 const dishSchema = new mongoose.Schema(
@@ -49,6 +53,10 @@ const dishSchema = new mongoose.Schema(
       },
     ],
     countInStock: { type: Number, default: 0, min: 0 },
+    isNew: { type: Boolean, default: false },
+    newUntil: { type: Date },
+    totalSoldQuantity: { type: Number, default: 0 },
+    discountUntil: { type: Date },
   },
   {
     timestamps: true,

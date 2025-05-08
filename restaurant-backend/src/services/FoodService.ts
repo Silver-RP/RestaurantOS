@@ -129,6 +129,15 @@ class FoodService {
     return food;
   }
 
+  async getFoodByNewest() {
+    try {
+      const foodNewest = await Dish.find().sort({ createdAt: -1 }).limit(10).populate('categories');
+      return foodNewest;
+    } catch (error) {
+      console.error('Error in getFoodByNewest:', error);
+    }
+  }
+
   async getFoodById(id: string) {
     try {
       const food = await Dish.findById(id).populate('categories');
@@ -136,7 +145,7 @@ class FoodService {
     } catch (error) {
       throw new Error('Error getting food by id');
     }
-  } 
+  }
 
   async updateFood(id: string, food: any) {
     try {
@@ -192,6 +201,18 @@ class FoodService {
       return await Dish.find({ rating: rating });
     } catch (error) {
       throw new Error('Error getting food by rating');
+    }
+  }
+
+  async getFoodBest4() {
+    try {
+      const foodNewest = await Dish.find()
+        .sort({ favorites_count: -1 })
+        .limit(4)
+        .populate('categories');
+      return foodNewest;
+    } catch (error) {
+      console.error('Error in getFoodBest4:', error);
     }
   }
 
@@ -283,28 +304,28 @@ class FoodService {
         throw new Error('Food not found');
       }
       const existingFavorite = await Favorite.findOne({ userId, dishId });
-      
+
       if (existingFavorite) {
         await Favorite.deleteOne({ userId, dishId });
-        return { 
+        return {
           message: 'Favorite removed successfully',
           isFavortite: false,
-       };
+        };
       } else {
         const newFavorite = new Favorite({
           userId,
-          dishId, 
+          dishId,
         });
-  
+
         if (!newFavorite.dishId) {
           throw new Error('dishId is required');
         }
-  
+
         await newFavorite.save();
-        return { 
+        return {
           message: 'Favorite added successfully',
           isFavortite: true,
-         };
+        };
       }
     } catch (error) {
       console.error('Error toggling favorite:', error);
@@ -314,24 +335,21 @@ class FoodService {
 
   async getFavoriteFoods(userId: Types.ObjectId) {
     try {
-      const favorites = await Favorite.find({ userId })
-        .populate('dishId')
-        .lean();
-  
+      const favorites = await Favorite.find({ userId }).populate('dishId').lean();
+
       if (!favorites || favorites.length === 0) {
         return {
           message: 'No favorite foods found',
           data: [],
         };
       }
-  
+
       return favorites.map((fav) => fav.dishId);
     } catch (error) {
       console.error('Error getting favorite foods:', error);
       throw new Error('Error getting favorite foods');
     }
   }
-  
 }
 
 export default new FoodService();
