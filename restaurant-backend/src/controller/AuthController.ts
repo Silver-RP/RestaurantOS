@@ -129,12 +129,15 @@ class AuthController {
       if (!refreshToken) {
         return res.status(400).json({ message: 'No refresh token provided' });
       }
+
       await AuthService.logout(refreshToken);
+
       res.clearCookie('refreshToken', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       });
+      
       res.status(200).json({ message: 'Logout successful' });
     } catch (error: any) {
       res.status(400).json({ message: error.message });
