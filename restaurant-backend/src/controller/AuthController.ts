@@ -37,7 +37,7 @@ class AuthController {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-        maxAge: refreshTokenExpiresIn * 1000,
+        ...(rememberMe ? { maxAge: refreshTokenExpiresIn * 1000 } : {}),
       });
 
       res.status(200).json({
