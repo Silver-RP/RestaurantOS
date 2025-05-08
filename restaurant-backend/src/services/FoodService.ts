@@ -46,7 +46,7 @@ class FoodService {
     if (search) {
       query.$or = [
         { name: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } },
+        // { description: { $regex: search, $options: 'i' } },
       ];
     }
 

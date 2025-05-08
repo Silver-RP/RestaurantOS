@@ -9,6 +9,9 @@ import { AdminSidebarProvider } from "../contexts/AdminSidebarContext";
 
 import FoodCreatePage from "../components/pages/admin/food/Create";
 import FoodEditPage from "../components/pages/admin/food/Edit";
+import CategoriesPage from "@components/pages/admin/category";
+import CreateCategoryPage from "@components/pages/admin/category/Create";
+import EditCategoryPage from "@components/pages/admin/category/Edit";
 
 const adminRoutes = [
   {
@@ -23,6 +26,9 @@ const adminRoutes = [
       { path: "foods", element: <FoodList /> },
       { path: "foods/create", element: <FoodCreatePage /> },
       { path: "foods/edit/:slug", element: <FoodEditPage /> },
+      { path: 'categories', element: <CategoriesPage />},
+      { path: "categories/create", element: <CreateCategoryPage /> },
+      { path: "categories/edit/:id", element: <EditCategoryPage /> },
       { path: "*", element: <Navigate to="/admin" /> },
     ],
   },

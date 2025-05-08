@@ -199,9 +199,6 @@ const MenuTable: React.FC = () => {
                     >
                       Sửa
                     </button>
-                    <button className="text-red-500 hover:underline">
-                      Xóa
-                    </button>
                   </td>
                 </tr>
               ))}
