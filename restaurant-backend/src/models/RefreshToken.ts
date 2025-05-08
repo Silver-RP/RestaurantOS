@@ -8,6 +8,7 @@ const refreshTokenSchema = new mongoose.Schema(
     expiresAt: { type: Date, required: true },
     userAgent: String,
     ipAddress: String,
+    replacedByToken: { type: String },
   },
   { timestamps: true }
 );

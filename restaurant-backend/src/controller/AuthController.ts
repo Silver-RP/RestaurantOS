@@ -26,18 +26,18 @@ class AuthController {
 
   async login(req: Request, res: Response): Promise<any> {
     try {
-      const { email, password } = req.body;
+      const { email, password, rememberMe } = req.body;
 
-      const { token, refresh_token, user } = await AuthService.login({
-        email,
-        password
-      }, req);
+      const { token, refresh_token, user, refreshTokenExpiresIn } = await AuthService.login(
+        { email, password, rememberMe },
+        req
+      );
 
       res.cookie('refreshToken', refresh_token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-        maxAge: 21 * 24 * 60 * 60 * 1000,
+        maxAge: refreshTokenExpiresIn * 1000,
       });
 
       res.status(200).json({
@@ -53,15 +53,23 @@ class AuthController {
   async refreshAccessToken(req: Request, res: Response): Promise<any> {
     try {
       const { refreshToken } = req.cookies;
-      const { newAccessToken } = await AuthService.refreshAccessToken(refreshToken);
+      const { newAccessToken, newRefreshToken } = await AuthService.refreshAccessToken(refreshToken, req);
+  
       res.cookie('accessToken', newAccessToken, {
         httpOnly: false,
         secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-        maxAge: 60 * 1000,
+        maxAge: 60 * 60 * 1000,
       });
-
-      res.status(200).json({ accessToken: newAccessToken }); // vẫn trả ra nếu FE dùng
+  
+      res.cookie('refreshToken', newRefreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        maxAge: 21 * 24 * 60 * 60 * 1000,
+      });
+  
+      res.status(200).json({ accessToken: newAccessToken });
     } catch (error: any) {
       res.status(400).json({ message: error.message });
     }
