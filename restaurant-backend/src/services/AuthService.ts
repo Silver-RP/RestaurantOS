@@ -12,6 +12,7 @@ dotenv.config();
 import mongoose from 'mongoose';
 import User from '../models/UserModel';
 import Roles from '../models/RoleModel';
+import RefreshToken from '../models/RefreshToken';
 
 import { Register, Login, GoogleUser } from '../type/auth.types';
 
@@ -93,15 +94,19 @@ class AuthService {
     return populatedUser;
   }
 
-  async login(loginUser: { email: string; password: string }) {
+  async login(loginUser: { email: string; password: string }, req: any) {
     const { email, password } = loginUser;
 
-    const user = await User.findOne({ email }).populate('roles', 'name');
+    const user = await User.findOne({ email })
+      .populate('roles', 'name');
+
     if (!user) {
       throw new Error('Email not registered');
     }
 
     const isMatch = await bcrypt.compare(password, user.password || '');
+    console.log('Password:', password);
+    console.log('User:', user);
     if (!isMatch) {
       throw new Error('Password is incorrect');
     }
@@ -116,6 +121,16 @@ class AuthService {
       process.env.REFRESH_TOKEN || '',
       21 * 24 * 60 * 60,
     );
+
+    await RefreshToken.create({
+      token: refresh_token,
+      userId: user._id,
+      expiresAt: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000),
+      userAgent: req.get('User-Agent'),  
+      ipAddress: req.ip, 
+    });
+
+
     return { token, refresh_token, user };
   }
 
