@@ -8,7 +8,7 @@ export interface FetchFoodsParams {
   priceMin?: number;
   priceMax?: number;
   category?: string;
-  keyword?: string; 
+  search?: string; 
 }
 export const fetchAllFoods = async (params: FetchFoodsParams): Promise<FoodResponse> => {
   const queryString = new URLSearchParams();
@@ -19,9 +19,10 @@ export const fetchAllFoods = async (params: FetchFoodsParams): Promise<FoodRespo
   if (params.priceMin !== undefined) queryString.set('priceMin', params.priceMin.toString());
   if (params.priceMax !== undefined) queryString.set('priceMax', params.priceMax.toString());
   if (params.category) queryString.set('category', params.category);
-  if (params.keyword) queryString.set('keyword', params.keyword);
+  if (params.search) queryString.set('search', params.search);
 
   const res = await api.get<{ data: FoodResponse }>(`/food/getallfood?${queryString.toString()}`);
+  console.log(res.data)
   return res.data.data;
 };
 

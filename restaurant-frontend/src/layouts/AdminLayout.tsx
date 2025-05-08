@@ -72,7 +72,7 @@ const AdminLayout: React.FC = () => {
         <AdminHeader/>
 
         {/* Page content */}
-        <main className="flex-1 p-6 pt-20 transition-all duration-300">
+        <main className="flex-1 p-6 transition-all duration-300">
   <Outlet />
 </main>
       </div>
@@ -93,13 +93,13 @@ const NavItem: React.FC<NavItemProps> = ({ href, icon, label, expanded, classNam
     <Link
       to={href}
       className={classNames(
-        'flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-adminhover transition-colors',
-        className,
-        !expanded && 'justify-center'
+        'flex items-center px-4 py-2 rounded-lg hover:bg-adminhover transition-colors w-full',
+        expanded ? 'justify-start gap-3' : 'justify-center',
+        className
       )}
     >
       <span className="text-lg">{icon}</span>
-      {expanded && <span>{label}</span>}
+     {expanded && <span className="text-left w-full">{label}</span>}
     </Link>
   );
 };

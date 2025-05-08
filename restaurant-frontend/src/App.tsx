@@ -11,7 +11,7 @@ import { ToastConfig } from "@components/common/ToastConfig";
 import ScrollToTop from "@components/common/ScrollToTop";
 import QuickViewModal from "@components/pages/menu/QuickViewModal";
 import AppRoutes from "./routers/index";
-// import SearchModal from "@components/common/SearchModal";
+import SearchModal from "@components/common/SearchModal";
 
 const queryClient = new QueryClient();
 
@@ -25,9 +25,10 @@ const App = () => {
           <ToastConfig />
           <AppRoutes />
           <QuickViewModal /> 
+          <SearchModal/>
         </Router>
       </QueryClientProvider>
-      {/* <SearchModal/> */}
+     
     </Provider>
     </GoogleOAuthProvider>
   );
