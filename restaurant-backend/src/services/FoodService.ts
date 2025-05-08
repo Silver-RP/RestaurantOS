@@ -350,6 +350,21 @@ class FoodService {
       throw new Error('Error getting favorite foods');
     }
   }
+
+  async countFoodView(foodId: string) {
+    try {
+      const food = await Dish.findById(foodId);
+      if (!food) {
+        throw new Error('Food not found');
+      }
+      food.views = (food.views || 0) + 1;
+      await food.save();
+      return food;
+    } catch (error) {
+      console.error('Error counting food view:', error);
+      throw new Error('Error counting food view');
+    }
+  }
 }
 
 export default new FoodService();

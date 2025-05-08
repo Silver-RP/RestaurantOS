@@ -52,4 +52,12 @@ export const fetchFoodByFavorite = async (type: string): Promise<FoodDetail[]> =
   }
 };
 
+export const countFoodView = async (foodId: string): Promise<void> => {
+  try {
+    await api.post(`/food/countFoodView/${foodId}`);
+  } catch (error) {
+    console.error('Error counting food view:', error);
+  }
+}
+
 

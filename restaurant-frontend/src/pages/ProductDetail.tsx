@@ -1,6 +1,7 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useFoodDetail } from '../hooks/useFoods';
+import { useProductView } from '../hooks/useProductView';
 import RelatedProductList from '../components/pages/detail/RelatedProductList';
 import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
 import ProductGallery from '../components/pages/detail/ProductGallery';
@@ -11,6 +12,9 @@ import ProductTabs from '../components/pages/detail/ProductTabs';
 const ProductDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const { food, loading, error } = useFoodDetail(slug || '');
+  const productId = food?._id || '';
+
+  useProductView(productId);
 
   const sampleRelatedProducts = [
     {

@@ -340,5 +340,19 @@ class FoodController {
       return res.status(500).json({ message: 'Internal server error' });
     }
   }
+
+  async countFoodView(req: Request, res: Response): Promise<any> {
+    try {
+      const foodId = req.params.foodId;
+      const updatedFood = await FoodService.countFoodView(foodId);
+      return res.status(200).json({ data: updatedFood });
+    } catch (error) {
+      console.error('Error counting food view:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
+
+  
 }
 export default new FoodController();
