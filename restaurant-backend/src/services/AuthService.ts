@@ -221,16 +221,24 @@ class AuthService {
 
   async logout(refreshToken: string) {
     try {
-      const decode: any = jwt.verify(refreshToken, process.env.REFRESH_TOKEN || '');
-      const user = await User.findById(decode.id);
-      if (!user) {
-        throw new Error('User not found');
+      if (!refreshToken) {
+        throw new Error('No refresh token provided');
       }
+  
+      const existingToken = await RefreshToken.findOne({ token: refreshToken });
+      if (!existingToken) {
+        throw new Error('Refresh token not found');
+      }
+  
+      existingToken.isRevoked = true;
+      await existingToken.save();
+  
       return { message: 'Logout successful' };
     } catch (error: any) {
       throw new Error(error.message);
     }
   }
+  
 
   async changePasswordByEmail(email: string, newPassword: string) {
     const user = await User.findOne({ email });
