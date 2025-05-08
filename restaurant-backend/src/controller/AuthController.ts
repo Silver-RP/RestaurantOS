@@ -1,10 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import bcrypt from 'bcrypt';
-import { accessToken, refreshToken } from '../services/GenerateToken';
 import AuthService from '../services/AuthService';
-import GoogleAuthMiddleWare from '../middleware/GoogleAuthMiddleWare';
-import mongoose from 'mongoose';
-import Roles from '../models/RoleModel';
 class AuthController {
   async register(req: Request, res: Response): Promise<any> {
     try {

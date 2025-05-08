@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-
 import PermissionService from '../services/PermissionService';
+
 class PermissionController {
   async GetAllPermission(req: Request, res: Response) {
     try {
