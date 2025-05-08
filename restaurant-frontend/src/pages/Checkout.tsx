@@ -2,12 +2,14 @@ import React, { useEffect, useState } from "react";
 import ProductInfoSection from "@components/pages/checkout/ProductInfoSection";
 import ShippingAddressSection from "@components/pages/checkout/ShippingAddressSection";
 import { Address } from "@components/pages/checkout/ModalSelectAddress";
+import { Voucher } from "@components/pages/checkout/VoucherSelector";
 
 const CheckoutPage = () => {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [paymentMethod, setPaymentMethod] = useState("cod");
-  const [shippingFee, setShippingFee] = useState<number>(5000);
+  const [shippingFee, setShippingFee] = useState<number>(25000);
+  const [vouchers, setVouchers] = useState<Voucher[]>([]);
 
   const [products] = useState([
     {
@@ -52,8 +54,37 @@ const CheckoutPage = () => {
   ];
 
   useEffect(() => {
+    // Load addresses
     setAddresses(mockAddresses);
-    setSelectedId(mockAddresses[0].id);
+    setSelectedId(mockAddresses.find(addr => addr.isDefault)?.id || mockAddresses[0].id);
+    
+    // Set up vouchers
+    setVouchers([
+      {
+        voucher_id: "VOUCHER123",
+        code: "DISCOUNT10",
+        discount_value: 10,
+        start_date: "2025-01-01T00:00:00Z",
+        end_date: "2025-12-31T23:59:59Z",
+        limit: 1,
+        description: "Giảm 10% tổng giá trị đơn hàng",
+        min_total: 50000,
+        max_value: 20000,
+        type_discount: "percent",
+      },
+      {
+        voucher_id: "VOUCHER124",
+        code: "FREESHIP",
+        discount_value: 25000,
+        start_date: "2025-01-01T00:00:00Z",
+        end_date: "2025-12-31T23:59:59Z",
+        limit: 1,
+        description: "Miễn phí vận chuyển",
+        min_total: 40000,
+        max_value: 25000,
+        type_discount: "amount",
+      },
+    ]);
   }, []);
 
   const handleAddAddress = async (newAddr: Omit<Address, "id">) => {
@@ -65,7 +96,7 @@ const CheckoutPage = () => {
     
     // Update addresses state
     setAddresses(prevAddresses => {
-      // If this is marked as default, unmark others
+      // If the new address is marked as default, unmark others
       if (newAddr.isDefault) {
         return [
           ...prevAddresses.map(addr => ({ ...addr, isDefault: false })),
@@ -80,20 +111,24 @@ const CheckoutPage = () => {
   };
 
   return (
-    <div className="flex py-10 bg-bodyBackground min-h-auto text-white">
-      <div className="w-11/12 md:w-container95 lg:w-container95 xl:w-container95 2xl:w-mainContainer mx-auto space-y-6">
+    <div className="flex py-10 bg-bodyBackground min-h-screen text-white">
+      <div className="w-11/12 md:w-container95 lg:w-container90 xl:w-container85 2xl:w-mainContainer mx-auto space-y-6">
+        <h1 className="text-2xl font-bold">Thanh toán</h1>
+        
         <ShippingAddressSection
           addresses={addresses}
           selectedId={selectedId}
           onSelect={setSelectedId}
           onAdd={handleAddAddress}
         />
+        
         <ProductInfoSection
           products={products}
           note="Ít cay, không hành nha!"
           shippingFee={shippingFee}
           paymentMethod={paymentMethod}
           onPaymentMethodChange={setPaymentMethod}
+          vouchers={vouchers}
         />
       </div>
     </div>

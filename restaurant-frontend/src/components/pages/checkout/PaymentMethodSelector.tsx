@@ -1,8 +1,7 @@
+"use client";
+
+import { Listbox } from "@headlessui/react";
 import React from "react";
-import { FaCreditCard} from "react-icons/fa"; 
-import { AiFillPayCircle } from "react-icons/ai"; 
-import { BsCashCoin } from "react-icons/bs";
-import { RiBankLine } from "react-icons/ri";
 
 interface PaymentMethodSelectorProps {
   selectedMethod: string;
@@ -10,39 +9,62 @@ interface PaymentMethodSelectorProps {
 }
 
 const paymentMethods = [
-  { value: "momo", label: "Thanh toán với Momo", icon: <AiFillPayCircle /> }, 
-  { value: "vnpay", label: "Thanh toán với VNPay", icon: <AiFillPayCircle /> }, 
-  { value: "credit-card", label: "Thẻ tín dụng", icon: <FaCreditCard /> },
-  { value: "bank-transfer", label: "Chuyển khoản ngân hàng", icon: <RiBankLine /> },
-  { value: "cod", label: "Tiền mặt khi nhận hàng", icon: <BsCashCoin /> },
+  { value: "momo", label: "Thanh toán với Momo" },
+  { value: "vnpay", label: "Thanh toán với VNPay" },
+  { value: "credit-card", label: "Thẻ tín dụng" },
+  { value: "bank-transfer", label: "Chuyển khoản ngân hàng" },
+  { value: "cod", label: "Tiền mặt khi nhận hàng" },
 ];
 
 const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
   selectedMethod,
   onChange,
 }) => {
+  const selected = paymentMethods.find(m => m.value === selectedMethod) || paymentMethods[0];
+
   return (
-    <div className="mt-6">
-      <h3 className="text-sm text-white/70 mb-2">Phương thức thanh toán:</h3>
-      <div className="space-y-2">
-        {paymentMethods.map((method) => (
-          <label
-            key={method.value}
-            className="flex items-center gap-2 cursor-pointer hover:bg-gray-700 p-2 rounded-md transition duration-200"
-          >
-            <input
-              type="radio"
-              name="payment"
-              value={method.value}
-              checked={selectedMethod === method.value}
-              onChange={() => onChange(method.value)}
-              className="accent-secondaryColor focus:ring-2 focus:ring-secondaryColor"
-            />
-            {/* Icon before label */}
-            <span className="text-xl text-white">{method.icon}</span>
-            <span className="text-sm">{method.label}</span>
-          </label>
-        ))}
+    <div className="mt-4">
+      <h3 className="text-sm md:text-base text-white/70 mb-2">Phương thức thanh toán:</h3>
+      
+      <div className="relative w-full md:w-1/2 lg:w-1/3">
+        {/* Dropdown selection */}
+        <Listbox
+          value={selectedMethod}
+          onChange={(value) => onChange(value)}
+        >
+          <div className="relative">
+            <Listbox.Button
+              className="w-full p-2 border border-white/20 rounded-md flex items-center justify-between bg-transparent text-white"
+            >
+              <span className="truncate">{selected.label}</span>
+              <span className="pointer-events-none">▼</span>
+            </Listbox.Button>
+
+            <Listbox.Options
+              className="absolute w-full mt-1 bg-bodyBackground border border-white/20 rounded-md shadow-lg z-10"
+            >
+              {paymentMethods.map((method) => (
+                <Listbox.Option
+                  key={method.value}
+                  value={method.value}
+                  className={({ active }) =>
+                    `p-2 cursor-pointer rounded-md transition ${
+                      active ? "bg-white/10" : ""
+                    } ${
+                      selectedMethod === method.value
+                        ? "border-l-4 border-secondaryColor"
+                        : ""
+                    }`
+                  }
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm md:text-base">{method.label}</span>
+                  </div>
+                </Listbox.Option>
+              ))}
+            </Listbox.Options>
+          </div>
+        </Listbox>
       </div>
     </div>
   );

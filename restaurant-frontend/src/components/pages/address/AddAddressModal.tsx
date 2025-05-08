@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { AddressInput } from './AddressInput';
@@ -59,22 +61,35 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({ isOpen, onClos
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 flex justify-center items-center bg-gray-500 bg-opacity-50 z-50">
-      <div className="bg-bodyBackground p-6 rounded-lg w-4/12 border border-[#FFE0A0] max-h-[80vh] overflow-y-auto relative">
+    <div className="fixed inset-0 flex justify-center items-center bg-gray-500 bg-opacity-50 z-50 p-4">
+      <div
+        className="bg-bodyBackground p-4 sm:p-5 md:p-6 rounded-lg w-full sm:w-10/12 md:w-8/12 lg:w-6/12 xl:w-4/12 border border-[#FFE0A0] max-h-[90vh] sm:max-h-[85vh] md:max-h-[80vh] overflow-y-auto relative"
+        style={{
+          scrollbarWidth: 'none',   
+          msOverflowStyle: 'none',       
+        }}
+      >
+        <style jsx>{`
+          div::-webkit-scrollbar {
+            display: none;
+          }
+        `}</style>
+
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-2 right-2 text-white text-4xl"
+          className="absolute top-2 right-2 text-white text-2xl sm:text-3xl md:text-4xl"
+          aria-label="Đóng"
         >
           &times;
         </button>
 
-        <h2 className="text-2xl font-semibold text-white mb-4">Thêm Địa Chỉ</h2>
+        <h2 className="text-xl sm:text-xl md:text-2xl font-semibold text-white mb-3 md:mb-4">Thêm Địa Chỉ</h2>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 md:space-y-6">
           {/* Name */}
           <div>
-            <label className="text-gray-400">Họ và Tên</label>
+            <label className="text-gray-400 text-sm md:text-base">Họ và Tên</label>
             <Controller
               name="name"
               control={control}
@@ -83,61 +98,72 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({ isOpen, onClos
                 <input
                   {...field}
                   type="text"
-                  className="w-full bg-transparent border-b border-gray-500 text-white placeholder-gray-500 focus:outline-none focus:border-secondaryColor py-2"
+                  className="w-full bg-transparent border-b border-gray-500 text-white placeholder-gray-500 focus:outline-none focus:border-secondaryColor py-1 md:py-2 text-sm md:text-base"
                   placeholder="Nhập họ và tên"
                 />
               )}
             />
-            {errors.name && <span className="text-red-500 text-sm">{errors.name?.message}</span>}
+            {errors.name && <span className="text-red-500 text-xs sm:text-sm">{errors.name?.message}</span>}
           </div>
 
           {/* Phone */}
           <div>
-            <label className="text-gray-400">Số Điện Thoại</label>
+            <label className="text-gray-400 text-sm md:text-base">Số Điện Thoại</label>
             <Controller
               name="phone"
               control={control}
               rules={{
                 required: 'Số điện thoại không được để trống',
-                validate: validatePhone
+                validate: (value) => validatePhone(value) || 'Số điện thoại không hợp lệ'
               }}
               render={({ field }) => (
                 <input
                   {...field}
                   type="text"
-                  className="w-full bg-transparent border-b border-gray-500 text-white placeholder-gray-500 focus:outline-none focus:border-secondaryColor py-2"
+                  className="w-full bg-transparent border-b border-gray-500 text-white placeholder-gray-500 focus:outline-none focus:border-secondaryColor py-1 md:py-2 text-sm md:text-base"
                   placeholder="Nhập số điện thoại"
                 />
               )}
             />
-            {errors.phone && <span className="text-red-500 text-sm">{errors.phone?.message}</span>}
+            {errors.phone && <span className="text-red-500 text-xs sm:text-sm">{errors.phone?.message}</span>}
           </div>
 
           {/* Address Input */}
-          <AddressInput
-            value={getValues('address')}
-            onChange={(e) => {
-              setValue('address', e.target.value);
-              trigger('address'); // Kiểm tra lại validate mỗi khi thay đổi giá trị
-            }}
-            onSelectLocation={(lat: number, lon: number, address: string) => {
-              setLat(lat);
-              setLon(lon);
-              setValue('address', address);
-              trigger('address'); // Kiểm tra lại validate mỗi khi người dùng chọn địa chỉ
-            }}
-          />
-          {errors.address && <span className="text-red-500 text-sm">Địa chỉ không được để trống</span>}
+          <div>
+            <Controller
+              name="address"
+              control={control}
+              rules={{ required: 'Địa chỉ không được để trống' }}
+              render={({ field }) => (
+                <AddressInput
+                  value={field.value}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    trigger('address');
+                  }}
+                  onSelectLocation={(lat: number, lon: number, address: string) => {
+                    setLat(lat);
+                    setLon(lon);
+                    setValue('address', address);
+                    trigger('address');
+                  }}
+                />
+              )}
+            />
+            {errors.address && <span className="text-red-500 text-xs sm:text-sm">{errors.address?.message}</span>}
+          </div>
 
           {/* Map Display */}
           {lat !== 0 && lon !== 0 && (
-            <MapDisplay lat={lat} lon={lon} address={getValues('address')} />
+            <div className="mt-2 sm:mt-3 md:mt-4">
+              <MapDisplay lat={lat} lon={lon} address={getValues('address')} />
+            </div>
           )}
 
           {/* Address Type */}
           <div>
-            <label className="text-gray-400">Loại Địa Chỉ</label>
-            <div className="flex gap-4">
+            <label className="text-gray-400 text-sm md:text-base mb-2 block">Loại Địa Chỉ</label>
+            <div className="flex flex-wrap gap-2 sm:gap-3 md:gap-4">
               <label className="flex items-center cursor-pointer">
                 <input
                   type="radio"
@@ -148,7 +174,7 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({ isOpen, onClos
                   className="hidden"
                 />
                 <span
-                  className={`px-6 py-2 rounded-md border border-gray-500 ${addressType === 'home' ? 'bg-secondaryColor text-black' : 'bg-bodyBackground text-white'}`}
+                  className={`px-3 sm:px-4 md:px-6 py-1 md:py-2 rounded-md border border-gray-500 text-xs sm:text-sm md:text-base ${addressType === 'home' ? 'bg-secondaryColor text-black' : 'bg-bodyBackground text-white'}`}
                 >
                   Nhà riêng
                 </span>
@@ -164,7 +190,7 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({ isOpen, onClos
                   className="hidden"
                 />
                 <span
-                  className={`px-6 py-2 rounded-md border border-gray-500 ${addressType === 'office' ? 'bg-secondaryColor text-black' : 'bg-bodyBackground text-white'}`}
+                  className={`px-3 sm:px-4 md:px-6 py-1 md:py-2 rounded-md border border-gray-500 text-xs sm:text-sm md:text-base ${addressType === 'office' ? 'bg-secondaryColor text-black' : 'bg-bodyBackground text-white'}`}
                 >
                   Văn phòng
                 </span>
@@ -180,7 +206,7 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({ isOpen, onClos
                   className="hidden"
                 />
                 <span
-                  className={`px-6 py-2 rounded-md border border-gray-500 ${addressType === 'other' ? 'bg-secondaryColor text-black' : 'bg-bodyBackground text-white'}`}
+                  className={`px-3 sm:px-4 md:px-6 py-1 md:py-2 rounded-md border border-gray-500 text-xs sm:text-sm md:text-base ${addressType === 'other' ? 'bg-secondaryColor text-black' : 'bg-bodyBackground text-white'}`}
                 >
                   Khác
                 </span>
@@ -197,20 +223,20 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({ isOpen, onClos
               id="isDefault"
               className="text-secondaryColor"
             />
-            <label htmlFor="isDefault" className="text-white">Đặt làm địa chỉ mặc định</label>
+            <label htmlFor="isDefault" className="text-white text-xs sm:text-sm md:text-base">Đặt làm địa chỉ mặc định</label>
           </div>
 
-          <div className="flex justify-end gap-4">
+          <div className="flex justify-end gap-3 md:gap-4 mt-4 md:mt-6">
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2 border border-secondaryColor text-secondaryColor hover:bg-bodyBackground hover:text-white transition uppercase text-sm md:text-base"
+              className="px-3 sm:px-4 md:px-6 py-1 md:py-2 border border-secondaryColor text-secondaryColor hover:bg-bodyBackground hover:text-white transition uppercase text-xs sm:text-sm md:text-base"
             >
               Hủy
             </button>
             <button
               type="submit"
-              className="px-6 py-2 border border-secondaryColor text-headerBackground bg-secondaryColor hover:bg-bodyBackground hover:text-white transition uppercase text-sm md:text-base"
+              className="px-3 sm:px-4 md:px-6 py-1 md:py-2 border border-secondaryColor text-headerBackground bg-secondaryColor hover:bg-bodyBackground hover:text-white transition uppercase text-xs sm:text-sm md:text-base"
             >
               Lưu
             </button>
