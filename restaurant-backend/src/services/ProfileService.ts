@@ -1,8 +1,7 @@
 import User from '../models/UserModel';
-import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
+
 class ProfileService {
-  // Get user profile
   async getUserProfile(userId: string) {
     try {
       const user = await User.findById(userId);

@@ -1,5 +1,5 @@
 import ReservationContactModel from '../models/ReservationContactModel';
-import { IReservationContact } from '../models/ReservationContactModel';
+
 interface IReservationContactInputDTO {
   tableType: string;
   activeHours: Date;

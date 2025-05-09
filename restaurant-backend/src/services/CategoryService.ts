@@ -1,4 +1,3 @@
-import mongoose from 'mongoose';
 import Category from '../models/CategoryModel';
 import { Request, Response } from 'express';
 import { Model } from 'mongoose';

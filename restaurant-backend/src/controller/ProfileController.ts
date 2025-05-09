@@ -1,5 +1,6 @@
 import ProfileService from '../services/ProfileService';
 import { Request, Response } from 'express';
+
 class ProfileController {
   // Get user profile
   async getUserProfile(req: Request, res: Response) {

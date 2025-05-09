@@ -2,19 +2,16 @@ import bcrypt from 'bcrypt';
 import { accessToken, refreshToken } from './GenerateToken';
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
-import { GoogleAuthExceptionMessages } from 'google-auth-library/build/src/auth/googleauth';
 import axios from 'axios';
-import { log } from 'console';
 import crypto from 'crypto';
 import nodemailer from 'nodemailer';
 import sendOtpToPhoneNumber from '../utils/smsService';
-dotenv.config();
-import mongoose from 'mongoose';
 import User from '../models/UserModel';
 import Roles from '../models/RoleModel';
 import RefreshToken from '../models/RefreshToken';
+import { GoogleUser } from '../type/auth.types';
 
-import { Register, Login, GoogleUser } from '../type/auth.types';
+dotenv.config();
 
 class AuthService {
   async handleGoogleCallBack(code: string): Promise<any> {

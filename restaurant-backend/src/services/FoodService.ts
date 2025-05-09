@@ -2,6 +2,7 @@ import { Dish } from '../models/DishModel';
 import Category from '../models/CategoryModel';
 import { Favorite } from '../models/FavoriteModel';
 import { Types } from 'mongoose';
+
 class FoodService {
   async createFood(food: any) {
     const newfood = new Dish(food);
@@ -348,6 +349,21 @@ class FoodService {
     } catch (error) {
       console.error('Error getting favorite foods:', error);
       throw new Error('Error getting favorite foods');
+    }
+  }
+
+  async countFoodView(foodId: string) {
+    try {
+      const food = await Dish.findById(foodId);
+      if (!food) {
+        throw new Error('Food not found');
+      }
+      food.views = (food.views || 0) + 1;
+      await food.save();
+      return food;
+    } catch (error) {
+      console.error('Error counting food view:', error);
+      throw new Error('Error counting food view');
     }
   }
 }

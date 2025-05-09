@@ -2,8 +2,6 @@ import { Request, Response, NextFunction } from 'express';
 import OrderService from '../services/OrderService';
 import { IUser } from '../models/UserModel';
 import { Types } from 'mongoose';
-import QueryString from 'express';
-import { ParsedQs } from 'qs';
 
 class OrderController {
   async placeOrder(req: Request, res: Response): Promise<any> {

@@ -29,5 +29,6 @@ router.get('/getFoodByFavorites', FoodController.getFoodByFavorites);
 router.get('/searchfood', FoodController.SearchFood);
 router.post('/favorite', AuthMiddleWare.verifyToken, FoodController.toggleFavorite);
 router.get('/getFavoriteFoods', AuthMiddleWare.verifyToken, FoodController.getFavoriteFoods);
+router.post('/countFoodView/:foodId', FoodController.countFoodView);
 
 export default router;
