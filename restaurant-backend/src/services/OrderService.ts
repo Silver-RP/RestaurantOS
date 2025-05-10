@@ -4,6 +4,7 @@ import { Address } from '../models/AddressModel';
 import { Order } from '../models/OrderModel';
 import { OrderDetail } from '../models/OrderDetailModel';
 import Cart from '../models/CartModel';
+import { Dish } from '../models/DishModel';
 
 enum DeliveryStatus {
   PENDING_PICKUP = 'PENDING_PICKUP',
@@ -26,65 +27,84 @@ enum OrderStatus {
 }
 
 class OrderService {
+  
+  async handleAddress(userId: string, address_id: string | null, address: any, session: any) {
+    if (address_id) {
+      await OrderValidator.validateAddress(address_id);
+      return address_id;
+    } 
+    if (address) {
+      const newAddress = new Address({ user_id: userId, ...address });
+      const savedAddress = await newAddress.save({ session });
+      return (savedAddress._id as string).toString();
+    }
+    throw { statusCode: 400, message: 'Address is required' };
+  }
+
+  async createOrder(userId: string, finalAddressId: string, payment_method: string, delivery_type: string, totalAmount: number, order_type: string, session: any) {
+    const newOrder = new Order({
+      user_id: userId,
+      address_id: finalAddressId,
+      payment_method,
+      delivery_type,
+      total_amount: totalAmount,
+      vat_amount: totalAmount * 0.1,
+      shipping_fee: 5000,
+      delivery_status: 'PENDING_PICKUP',
+      order_type,
+    });
+  
+    return await newOrder.save({ session });
+  }
+
+  async updateDishCounts(orderItems: any[], session: any) {
+    const updateDishPromises = orderItems.map((item) => {
+      return Dish.updateOne(
+        { _id: item.dish_id },
+        {
+          $inc: {
+            ordered_count: 1,
+            totalSoldQuantity: item.quantity,
+          },
+        },
+        { session }
+      );
+    });
+  
+    await Promise.all(updateDishPromises);
+  }
+
+  async updateCart(userId: string, orderedDishIds: string[], session: any) {
+    await Cart.updateOne(
+      { userId },
+      {
+        $pull: {
+          items: {
+            dishId: { $in: orderedDishIds }
+          }
+        }
+      },
+      { session }
+    );
+  }
+
   async placeOrder(input: any) {
     const { userId, address_id, address, payment_method, delivery_type, items, order_type } = input;
-
     const session = await mongoose.startSession();
     session.startTransaction();
-
+  
     try {
-      let finalAddressId = address_id;
-
-      if (!address_id && address) {
-        const newAddress = new Address({ user_id: userId, ...address });
-        const savedAddress = await newAddress.save({ session });
-        finalAddressId = (savedAddress._id as string).toString();
-      }
-
-      if (!finalAddressId) {
-        throw { statusCode: 400, message: 'Address is required' };
-      }
-
-      if (address_id) {
-        await OrderValidator.validateAddress(finalAddressId);
-      }
-
-      let totalAmount = 0;
-      const orderItems = [];
-
-      for (const item of items) {
-        const dish = await OrderValidator.validateDish(item.dish_id);
-        const itemTotal = dish.price * item.quantity;
-        totalAmount += itemTotal;
-
-        orderItems.push({
-          dish_id: item.dish_id,
-          dish_name: dish.name,
-          unit_price: dish.price,
-          quantity: item.quantity,
-          total_amount: itemTotal,
-          note: item.note || null,
-        });
-      }
-
-      const newOrder = new Order({
-        user_id: userId,
-        address_id: finalAddressId,
-        payment_method,
-        delivery_type,
-        total_amount: totalAmount,
-        vat_amount: totalAmount * 0.1,
-        shipping_fee: 5000,
-        delivery_status: 'PENDING_PICKUP',
-        order_type,
-      });
-
-      const savedOrder = await newOrder.save({ session });
-
+      const finalAddressId = await this.handleAddress(userId, address_id, address, session);
+  
+      const { orderItems, totalAmount } = await OrderValidator.validateCartAndItems(userId, items, session);
+  
+      const savedOrder = await this.createOrder(userId, finalAddressId, payment_method, delivery_type, totalAmount, order_type, session);
+  
       if (!savedOrder) {
         throw { statusCode: 500, message: 'Order placement failed' };
       }
-
+  
+      // Save order details
       const orderDetailPromises = orderItems.map((item) => {
         const orderDetail = new OrderDetail({
           order_id: savedOrder._id,
@@ -97,18 +117,18 @@ class OrderService {
         });
         return orderDetail.save({ session });
       });
-
+  
       await Promise.all(orderDetailPromises);
-      
+  
+      // Update dish counts
+      await this.updateDishCounts(orderItems, session);
+  
       const orderedDishIds = items.map((item: { dish_id: any; }) => item.dish_id);
-      await Cart.deleteMany(
-        { user_id: userId, dish_id: { $in: orderedDishIds } },
-        { session }
-      );
-      
+      await this.updateCart(userId, orderedDishIds, session);
+  
       await session.commitTransaction();
       session.endSession();
-
+  
       return savedOrder;
     } catch (error: any) {
       await session.abortTransaction();
