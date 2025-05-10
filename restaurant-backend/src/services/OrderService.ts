@@ -3,6 +3,7 @@ import OrderValidator from '../validators/orderValidator';
 import { Address } from '../models/AddressModel';
 import { Order } from '../models/OrderModel';
 import { OrderDetail } from '../models/OrderDetailModel';
+import Cart from '../models/CartModel';
 
 enum DeliveryStatus {
   PENDING_PICKUP = 'PENDING_PICKUP',
@@ -80,6 +81,10 @@ class OrderService {
 
       const savedOrder = await newOrder.save({ session });
 
+      if (!savedOrder) {
+        throw { statusCode: 500, message: 'Order placement failed' };
+      }
+
       const orderDetailPromises = orderItems.map((item) => {
         const orderDetail = new OrderDetail({
           order_id: savedOrder._id,
@@ -94,7 +99,13 @@ class OrderService {
       });
 
       await Promise.all(orderDetailPromises);
-
+      
+      const orderedDishIds = items.map((item: { dish_id: any; }) => item.dish_id);
+      await Cart.deleteMany(
+        { user_id: userId, dish_id: { $in: orderedDishIds } },
+        { session }
+      );
+      
       await session.commitTransaction();
       session.endSession();
 

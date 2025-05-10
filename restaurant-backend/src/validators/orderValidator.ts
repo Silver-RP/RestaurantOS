@@ -17,6 +17,8 @@ class OrderValidator {
     }
     return dish;
   }
+
+
 }
 
 export default OrderValidator;

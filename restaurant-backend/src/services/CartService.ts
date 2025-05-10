@@ -8,7 +8,7 @@ class CartService {
       throw new Error('Invalid userId');
     }
 
-    const cart = await Cart.findOne({ userId, status: 'pending' }).populate('items.dishId');
+    const cart = await Cart.findOne({ userId}).populate('items.dishId');
 
     if (!cart) {
       throw new Error('Cart not found');
@@ -30,7 +30,7 @@ class CartService {
     session.startTransaction();
 
     try {
-      let cart = await Cart.findOne({ userId, status: 'pending' }).session(session);
+      let cart = await Cart.findOne({ userId}).session(session);
       if (!cart) {
         cart = new Cart({
           userId: new mongoose.Types.ObjectId(userId),
