@@ -22,7 +22,7 @@ interface Product {
 const OrderOnlineSection: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [productsPerPage, setProductsPerPage] = useState<number>(4);
-  const { data: foods, error } = useFoodNewest();
+  const { data: foods } = useFoodNewest();
   
    const products: Product[] =
      foods?.map((food) => ({
