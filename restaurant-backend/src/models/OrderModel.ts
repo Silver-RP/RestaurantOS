@@ -30,6 +30,8 @@ export interface IOrder extends Document {
   returned_at?: Date | null;
   delivered_at?: Date | null;
   order_type: 'DINE_IN' | 'ONLINE';
+  delivery_time_type: 'ASAP' | 'SCHEDULED';
+  scheduled_time?: Date | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -85,6 +87,16 @@ const OrderSchema = new Schema<IOrder>(
     returned_at: { type: Date, default: null },
     delivered_at: { type: Date, default: null },
     order_type: { type: String, enum: ['DINE_IN', 'ONLINE'], required: true },
+    delivery_time_type: {
+      type: String,
+      enum: ['ASAP', 'SCHEDULED'],
+      required: true,
+    },
+    scheduled_time: {
+      type: Date,
+      default: null,
+    },
+    
   },
   { timestamps: true },
 );

@@ -1,8 +1,47 @@
 import { Address } from '../models/AddressModel';
 import { Dish } from '../models/DishModel';
 import Cart from '../models/CartModel';
+import { Request } from 'express';
+
 
 class OrderValidator {
+
+  static validatePlaceOrder(req: Request) {
+    const { address_id, address, payment_method, delivery_type, items, order_type, delivery_time_type, scheduled_time } = req.body;
+
+    if (!address_id && !address) {
+      return { valid: false, message: 'Either address_id or address is required.' };
+    }
+
+    if (!Array.isArray(items) || items.length === 0) {
+      return { valid: false, message: 'Items are required and must be an array.' };
+    }
+    
+    for (let item of items) {
+      if (!item.dish_id || !item.quantity) {
+        return { valid: false, message: 'Each item must have a dish_id and quantity.' };
+      }
+    }
+
+    if (delivery_time_type === 'SCHEDULED' && !scheduled_time) {
+      return { valid: false, message: 'Scheduled time is required for scheduled deliveries.' };
+    }
+
+    if (!['CASH', 'BANKING', 'VNPAY', 'MOMO', 'CREDIT_CARD'].includes(payment_method)) {
+      return { valid: false, message: 'Invalid payment method.' };
+    }
+
+    if (!['DELIVERY', 'PICKUP'].includes(delivery_type)) {
+      return { valid: false, message: 'Invalid delivery type.' };
+    }
+
+    if (!['DINE_IN', 'ONLINE'].includes(order_type)) {
+      return { valid: false, message: 'Invalid order type.' };
+    }
+
+    return { valid: true };
+  }
+
   static async validateAddress(address_id: string) {
     const address = await Address.findById(address_id);
     if (!address) {
