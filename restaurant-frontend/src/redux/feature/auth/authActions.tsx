@@ -1,11 +1,10 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios'; // <-- Missing import
+import axios from 'axios'; 
 import { RegisterPayload, LoginPayload } from './authTypes';
 import Cookies from 'js-cookie';
-import { setAccessToken, setRefreshToken } from '@/utils/tokenHelpers';
+import { setAccessToken, setRefreshToken } from '../../../utils/tokenHelpers';
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
-// Helper function for handling API requests
 const apiRequest = async (url: string, payload: object, method: 'POST' | 'GET') => {
   try {
     const response = await axios({ method, url, data: payload, headers: { 'Content-Type': 'application/json' } });
@@ -37,15 +36,19 @@ export const LoginUser = createAsyncThunk(
   'auth/login',
   async (payload: LoginPayload, { rejectWithValue }) => {
     try {
+     
       const data = await apiRequest(`${BASE_URL}/auth/login`, payload, 'POST');
+      console.log('Login payload:', payload);
       const { accessToken, refreshToken, user, message } = data;
+      
       if (!accessToken) {
         console.warn('⚠️ accessToken is missing in API response');
       }
-      setAccessToken(accessToken, payload.rememberMe);
-      setRefreshToken(refreshToken, payload.rememberMe);
+
+      setAccessToken(accessToken);
+      setRefreshToken(refreshToken, payload.rememberMe); // Only test
       Cookies.set('userInfo', JSON.stringify(user), {
-        expires: payload.rememberMe ? 7 : 1,
+        expires: payload.rememberMe ? 21 : 2,
         sameSite: import.meta.env.PROD ? 'None' : 'Lax',
         secure: import.meta.env.PROD,
       });
@@ -56,8 +59,6 @@ export const LoginUser = createAsyncThunk(
     }
   }
 );
-
-
 
 // Logout
 export const LogoutUser = createAsyncThunk(
@@ -74,21 +75,28 @@ export const LogoutUser = createAsyncThunk(
 
 export const LoginWithGoogle = createAsyncThunk(
   'auth/loginGoogle',
-  async (googleUser: any, { rejectWithValue }) => {
+  async (
+    { credential, rememberMe }: { credential: string; rememberMe: boolean },
+    { rejectWithValue }
+  ) => {
     try {
       const response = await axios.post(
         `${BASE_URL}/auth/google-login`,
-        { token: googleUser.credential }, 
-        { withCredentials: true } 
+        { token: credential, rememberMe }, 
+        { withCredentials: true }
       );
+
       const { accessToken, refreshToken, user } = response.data;
 
       setAccessToken(accessToken);
-      setRefreshToken(refreshToken);
+      setRefreshToken(refreshToken, rememberMe); // Only test
 
       return { token: accessToken, user, message: 'Đăng nhập Google thành công' };
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Lỗi khi đăng nhập Google');
+      return rejectWithValue(
+        error.response?.data?.message || 'Lỗi khi đăng nhập Google'
+      );
     }
   }
 );
+

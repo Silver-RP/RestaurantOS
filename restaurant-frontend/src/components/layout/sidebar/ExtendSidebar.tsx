@@ -105,7 +105,7 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
 />
             </div>
             <Link
-              to="/booking"
+              to="/reservation"
               className="mx-auto w-full"
               aria-label="Book a Table"
             >
