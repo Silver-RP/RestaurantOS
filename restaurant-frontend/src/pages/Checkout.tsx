@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import ProductInfoSection from "@components/pages/checkout/ProductInfoSection";
 import ShippingAddressSection from "@components/pages/checkout/ShippingAddressSection";
+import DeliveryTimeSection from "@components/pages/checkout/DeliveryTimeSection";
 import { Address } from "@components/pages/checkout/ModalSelectAddress";
 import { Voucher } from "@components/pages/checkout/VoucherSelector";
+import { DeliveryTime } from "@components/pages/checkout/ModalSelectDeliveryTime";
 
 const CheckoutPage = () => {
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -10,6 +12,7 @@ const CheckoutPage = () => {
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [shippingFee, setShippingFee] = useState<number>(25000);
   const [vouchers, setVouchers] = useState<Voucher[]>([]);
+  const [deliveryTime, setDeliveryTime] = useState<DeliveryTime>({ type: "now" });
 
   const [products] = useState([
     {
@@ -28,29 +31,28 @@ const CheckoutPage = () => {
     },
   ]);
 
-  const mockAddresses: Address[] = [
-    {
-      id: 1,
-      name: "Lâm Gia Bảo",
-      phone: "0909123456",
-      address: "123 Đường Lê Lợi, Phường Bến Thành, Quận 1, TP. Hồ Chí Minh",
-      street: "123 Đường Lê Lợi",
-      ward: "Phường Bến Thành",
-      district: "Quận 1",
-      city: "TP. Hồ Chí Minh",
-      isDefault: true,
-    },
-    {
-      id: 2,
-      name: "Nguyễn Văn A",
-      phone: "0911222333",
-      address: "45 Nguyễn Trãi, Phường 7, Quận 5, TP. Hồ Chí Minh",
-      street: "45 Nguyễn Trãi",
-      ward: "Phường 7",
-      district: "Quận 5",
-      city: "TP. Hồ Chí Minh",
-      isDefault: false,
-    },
+  const mockAddresses: Address[] = [{
+    id: 1,
+    name: "Lâm Gia Bảo",
+    phone: "0909123456",
+    address: "123 Đường Lê Lợi, Phường Bến Thành, Quận 1, TP. Hồ Chí Minh",
+    street: "123 Đường Lê Lợi",
+    ward: "Phường Bến Thành",
+    district: "Quận 1",
+    city: "TP. Hồ Chí Minh",
+    isDefault: true,
+  },
+  {
+    id: 2,
+    name: "Nguyễn Văn A",
+    phone: "0911222333",
+    address: "45 Nguyễn Trãi, Phường 7, Quận 5, TP. Hồ Chí Minh",
+    street: "45 Nguyễn Trãi",
+    ward: "Phường 7",
+    district: "Quận 5",
+    city: "TP. Hồ Chí Minh",
+    isDefault: false,
+  },    
   ];
 
   useEffect(() => {
@@ -110,6 +112,15 @@ const CheckoutPage = () => {
     setSelectedId(newAddress.id);
   };
 
+  const handleDeliveryTimeChange = (time: DeliveryTime) => {
+    setDeliveryTime(time);
+    // Ở đây bạn có thể xử lý thêm logic khi thời gian giao hàng thay đổi
+    // Ví dụ: tính lại phí vận chuyển dựa trên thời gian giao hàng
+  };
+
+  // Lấy địa chỉ đã chọn để truyền xuống component con (nếu cần)
+  const selectedAddress = addresses.find(addr => addr.id === selectedId);
+
   return (
     <div className="flex py-10 bg-bodyBackground min-h-screen text-white">
       <div className="w-11/12 md:w-container95 lg:w-container90 xl:w-container85 2xl:w-mainContainer mx-auto space-y-6">
@@ -122,6 +133,12 @@ const CheckoutPage = () => {
           onAdd={handleAddAddress}
         />
         
+        {/* Thêm DeliveryTimeSection ngay dưới phần địa chỉ */}
+        <DeliveryTimeSection 
+          initialDeliveryTime={deliveryTime}
+          onDeliveryTimeChange={handleDeliveryTimeChange}
+        />
+        
         <ProductInfoSection
           products={products}
           note="Ít cay, không hành nha!"
@@ -129,6 +146,7 @@ const CheckoutPage = () => {
           paymentMethod={paymentMethod}
           onPaymentMethodChange={setPaymentMethod}
           vouchers={vouchers}
+          // selectedAddress={selectedAddress}
         />
       </div>
     </div>
