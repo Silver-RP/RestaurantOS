@@ -9,7 +9,7 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const handleNavigateToDetail = () => {
-    navigate(`/product/${rest.slug}`);
+    navigate(`/foods/${rest.slug}`);
   };
   const formatNumberShort = (num: number): string => {
     if (num >= 1_000_000)

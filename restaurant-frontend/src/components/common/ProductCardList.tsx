@@ -40,7 +40,7 @@ const ProductCardList: React.FC<ProductCardProps> = ({
   const dispatch = useAppDispatch();
 
   const handleNavigateToDetail = () => {
-    navigate(`/product/${slug}`);
+    navigate(`/foods/${slug}`);
   };
 
   const handleQuickView = (e: React.MouseEvent) => {

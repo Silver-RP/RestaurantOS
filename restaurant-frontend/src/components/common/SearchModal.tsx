@@ -1,3 +1,4 @@
+// ✅ Updated SearchModal with hover icons and view/order badges
 import React, { useEffect, useRef, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../redux/store';
@@ -5,6 +6,8 @@ import { closeSearchModal, setSearchQuery } from '../../redux/feature/searchModa
 import { fetchAllFoods } from '../../api/FoodApi';
 import { FoodDetail } from '../../types/Dish.types';
 import { useNavigate } from 'react-router-dom';
+import Pagination from './Pagination';
+import { FiEye, FiCheckSquare } from 'react-icons/fi';
 
 const SearchModal: React.FC = () => {
   const dispatch = useDispatch();
@@ -16,19 +19,16 @@ const SearchModal: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const [hasNextPage, setHasNextPage] = useState(false);
-  const [hasPrevPage, setHasPrevPage] = useState(false);
+  const [limit, setLimit] = useState(6);
 
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const debounceRef = useRef<number | null>(null);
 
   const handleFetch = async (searchQuery: string, pageNum = 1) => {
     setLoading(true);
     try {
-      const res = await fetchAllFoods({ search: searchQuery, limit: 6, page: pageNum });
+      const res = await fetchAllFoods({ search: searchQuery, limit, page: pageNum });
       setResults(res.docs);
       setTotal(res.totalDocs);
-      setHasNextPage(res.hasNextPage);
-      setHasPrevPage(res.hasPrevPage);
     } catch {
       setResults([]);
     } finally {
@@ -68,7 +68,7 @@ const SearchModal: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="w-full max-w-4xl bg-[#102f43] p-6 rounded-lg shadow-xl relative">
+      <div className="w-full max-w-4xl bg-[#102f43] p-6 rounded-lg shadow-xl relative animate-fadeIn transition-all duration-300 ease-out">
         <button
           onClick={() => dispatch(closeSearchModal())}
           className="absolute top-4 right-4 text-white text-2xl hover:text-red-400 transition"
@@ -81,7 +81,7 @@ const SearchModal: React.FC = () => {
         <input
           type="text"
           placeholder="Nhập tên món ăn..."
-          className="w-full p-3 mb-4 rounded-lg text-black outline-none focus:ring-2 focus:ring-secondaryColor transition"
+          className="w-full px-3 py-2 mb-4 text-black outline-none focus:ring-2 focus:ring-secondaryColor transition"
           value={query}
           onChange={(e) => dispatch(setSearchQuery(e.target.value))}
         />
@@ -100,46 +100,45 @@ const SearchModal: React.FC = () => {
               <div
                 key={item._id}
                 onClick={() => handleClickItem(item.slug)}
-                className="bg-[#0D3343] rounded overflow-hidden shadow hover:bg-[#1b4d5f] transition cursor-pointer"
+                className="relative bg-[#0D3343] rounded overflow-hidden shadow hover:scale-[1.02] transition-transform duration-300 cursor-pointer"
               >
-                <img
-                  src={item.images?.[0]}
-                  alt={item.name}
-                  className="w-full h-40 object-cover"
-                />
+                <div className="relative">
+                  <img src={item.images?.[0]} alt={item.name} className="w-full h-40 object-cover" />
+
+                  <div className="absolute top-2 left-2 flex flex-col gap-1">
+                    <span className="bg-secondaryColor text-black text-[10px] font-semibold px-2 py-1 rounded-sm">
+                      <FiEye className="inline-block w-3 h-3 mr-1" /> {item.views ?? 0}
+                    </span>
+                    <span className="bg-secondaryColor text-black text-[10px] font-semibold px-2 py-1 rounded-sm">
+                      <FiCheckSquare className="inline-block w-3 h-3 mr-1" /> {item.ordered_count ?? 0}
+                    </span>
+                  </div>
+                </div>
                 <div className="p-4">
-                  <h3 className="text-lg">{item.name}</h3>
+                  <h3 className="text-lg truncate text-white">{item.name}</h3>
                   <p className="text-secondaryColor mt-1">
                     {(item.discount_price || item.price).toLocaleString()} VND
                   </p>
                 </div>
               </div>
             ))
-          ) : (
-            <p className="col-span-full text-center text-gray-400">
-              Không tìm thấy món nào phù hợp.
-            </p>
-          )}
+          ) : null}
         </div>
 
-        {/* Pagination */}
         {total > 6 && (
-          <div className="flex justify-between items-center mt-6">
-            <button
-              onClick={() => handlePageChange(page - 1)}
-              disabled={!hasPrevPage}
-              className="px-4 py-2 rounded bg-gray-600 text-white disabled:opacity-50"
-            >
-              ← Trang trước
-            </button>
-            <span className="text-white">Trang {page}</span>
-            <button
-              onClick={() => handlePageChange(page + 1)}
-              disabled={!hasNextPage}
-              className="px-4 py-2 rounded bg-gray-600 text-white disabled:opacity-50"
-            >
-              Trang sau →
-            </button>
+          <div className="mt-6">
+            <Pagination
+              currentPage={page}
+              totalPages={Math.ceil(total / limit)}
+              onPageChange={handlePageChange}
+              limit={limit}
+              showLimit={false}
+              onLimitChange={(newLimit) => {
+                setLimit(newLimit);
+                setPage(1);
+                handleFetch(query, 1);
+              }}
+            />
           </div>
         )}
       </div>
