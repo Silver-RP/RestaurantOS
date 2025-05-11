@@ -40,7 +40,7 @@ const PublicRoutes = [
       { path: "menu", element: <MenuPage /> },
       { path: "foods/:slug", element: <ProductDetail /> },
       { path: "contact", element: <ContactUsPage /> },
-      { path: "faqs", element: <FAQsCompoent /> },
+      { path: "profile/faqs", element: <FAQsCompoent /> },
       { path: "posts", element: <PostPage /> },
       { path: "order", element: <OrderPage /> },
       { path: "cart", element: <CartPage /> },

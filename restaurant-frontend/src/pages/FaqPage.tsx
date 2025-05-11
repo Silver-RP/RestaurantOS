@@ -114,7 +114,7 @@ export default function FaqPage() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-bodyBackground">
       <div
         className="bg-cover bg-center h-60 flex items-center justify-center"
         style={{ backgroundImage: "url('/images/banner/FAQs-banner-1.jpg')" }}

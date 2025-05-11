@@ -1,22 +1,28 @@
-import React from 'react';
 import { FaUser, FaClipboardList, FaMapMarkerAlt, FaStar, FaQuestionCircle, FaSignOutAlt } from 'react-icons/fa';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { LogoutUser } from '../../../redux/feature/auth/authActions';
+import { useAppDispatch } from '../../../redux/hook';
+
 
 const sidebarItems = [
   { title: 'Thông tin tài khoản', icon: <FaUser />, path: '/profile' },
   { title: 'Lịch sử đơn hàng', icon: <FaClipboardList />, path: '/profile/orders' },
   { title: 'Sổ địa chỉ', icon: <FaMapMarkerAlt />, path: '/profile/address' },
   { title: 'Đánh giá và phản hồi', icon: <FaStar />, path: '/profile/reviews' },
-  { title: 'Chính sách và câu hỏi thường gặp', icon: <FaQuestionCircle />, path: '/profile/faq' },
+  { title: 'Chính sách và câu hỏi thường gặp', icon: <FaQuestionCircle />, path: '/profile/faqs' },
 ];
+
 
 const ProfileSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
-  const handleLogout = () => {
-    console.log('Logout clicked');
-    navigate('/login');
+
+  const handleLogout = async () => {
+    dispatch(LogoutUser());
+    console.log('LogoutUser called');
+    navigate('/');
   };
 
   return (
@@ -46,7 +52,7 @@ const ProfileSidebar = () => {
         className="flex items-center gap-3 px-4 py-3 rounded-md border text-white text-left transition-all hover:bg-red-500 hover:border-red-500 hover:text-white border-[#FFE0A0] text-base"
       >
         <FaSignOutAlt className="text-lg" />
-        <span>Đăng xuất</span>
+        <button type="button" onClick={handleLogout}>Đăng xuất</button>
       </button>
     </div>
   );
