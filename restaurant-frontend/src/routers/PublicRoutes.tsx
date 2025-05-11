@@ -1,3 +1,4 @@
+import React from "react";
 import { Navigate } from "react-router-dom";
 import AppLayout from "../layouts/AppLayout";
 
@@ -19,6 +20,7 @@ import PostPage from "../pages/PostPage";
 import OrderPage from "../pages/OrderPage";
 import CartPage from "../pages/CartPage";
 import CheckoutPage from "../pages/Checkout";
+import ReservationPage from "../pages/ReservationPage";
 
 const PublicRoutes = [
   {
@@ -36,13 +38,14 @@ const PublicRoutes = [
       { path: "profile", element: <ProfilePage /> },
       { path: "profile/address", element: <AddressPage /> },
       { path: "menu", element: <MenuPage /> },
-      { path: "product/:slug", element: <ProductDetail /> },
+      { path: "foods/:slug", element: <ProductDetail /> },
       { path: "contact", element: <ContactUsPage /> },
       { path: "faqs", element: <FAQsCompoent /> },
       { path: "posts", element: <PostPage /> },
       { path: "order", element: <OrderPage /> },
       { path: "cart", element: <CartPage /> },
       { path: "checkout", element: <CheckoutPage /> },
+      { path: "reservation", element: <ReservationPage /> },
       { path: "*", element: <Navigate to="/" /> },
     ],
   },

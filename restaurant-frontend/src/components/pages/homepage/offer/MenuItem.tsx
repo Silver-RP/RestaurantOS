@@ -1,43 +1,82 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { FilledStar, HalfStar, EmptyStar } from '../../../common/StarIcons';
 
 interface MenuItemProps {
   name: string;
   price: number;
   description: string;
   image: string;
-  hoverImage: string; 
-  slug: string;  
+  hoverImage: string;
+  slug: string;
+  average_rating: number;
 }
 
-const MenuItem: React.FC<MenuItemProps> = ({ name, price, description, image, hoverImage, slug  }) => {
+const MenuItem: React.FC<MenuItemProps> = ({
+  name,
+  price,
+  description,
+  image,
+  hoverImage,
+  slug,
+  average_rating,
+}) => {
   const navigate = useNavigate();
-  const handleNavigateToDetail = () => {
-    navigate(`/product/${slug}`);
+
+  const renderStars = (rating: number) => {
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+    return (
+      <div className="flex items-center gap-[2px]">
+        {Array.from({ length: fullStars }, (_, i) => (
+          <FilledStar key={`full-${i}`} />
+        ))}
+        {hasHalfStar && <HalfStar />}
+        {Array.from({ length: emptyStars }, (_, i) => (
+          <EmptyStar key={`empty-${i}`} />
+        ))}
+      </div>
+    );
   };
+
   return (
-    <div className="relative flex items-center space-x-4 py-4 group cursor-pointer h-[140px]" onClick={handleNavigateToDetail}>
-      <div className="relative w-20 h-20">
+    <div
+      onClick={() => navigate(`/foods/${slug}`)}
+      className="group flex md:flex-row items-start md:items-center gap-2 md:gap-4 p-2 sm:p-0 cursor-pointer transition duration-300"
+    >
+      <div className="relative w-20 h-20 shrink-0">
         <img
           src={image}
           alt={name}
-          className="w-full h-full object-cover rounded transition-transform duration-500 group-hover:scale-110 group-hover:opacity-0"
+          className="w-full h-full object-cover rounded transition-opacity duration-300 group-hover:opacity-0"
         />
-
         <img
           src={hoverImage}
           alt={`${name} Hover`}
-          className="absolute inset-0 w-full h-full object-cover rounded scale-50 opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-100"
+          className="absolute inset-0 w-full h-full object-cover rounded opacity-0 transition-opacity duration-300 group-hover:opacity-100"
         />
       </div>
 
-      <div className="flex-1">
-        <div className="flex items-center">
-          <h3 className="text-lg text-white">{name}</h3>
-          <div className="flex-grow border-t mt-4 border-dotted border-hr mx-4"></div>
-          <p className="text-secondaryColor">{price.toLocaleString()} VND</p>
+      <div className="flex-1 min-w-0">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-1">
+          <h3
+            className="text-white text-base sm:text-lg truncate max-w-full"
+            title={name}
+          >
+            {name}
+          </h3>
+          <p className="text-secondaryColor text-sm sm:text-base whitespace-nowrap">
+            {price.toLocaleString()} VND
+          </p>
         </div>
-        <p className="text-sm text-gray-400 mt-2">{description}</p>
+
+        <p className="text-sm text-gray-400 mt-1 line-clamp-3 hidden md:block">
+          {description}
+        </p>
+
+        <div className="md:hidden mt-1">{renderStars(average_rating)}</div>
       </div>
     </div>
   );
