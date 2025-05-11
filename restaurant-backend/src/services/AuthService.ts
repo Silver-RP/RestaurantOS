@@ -235,7 +235,6 @@ class AuthService {
       throw new Error(error.message);
     }
   }
-  
 
   async changePasswordByEmail(email: string, newPassword: string) {
     const user = await User.findOne({ email });
@@ -386,6 +385,7 @@ class AuthService {
     await transporter.sendMail(mailOptions);
     return 'Verification email sent successfully';
   }
+  
   async verifyEmailVerificationOtp(email: string, otp: string): Promise<string> {
     const user = await User.findOne({ email });
     if (!user) throw new Error('Không tìm thấy người dùng');

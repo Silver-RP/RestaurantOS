@@ -35,10 +35,13 @@ class AuthController {
         ...(rememberMe ? { maxAge: refreshTokenExpiresIn * 1000 } : {}),
       });
 
+      console.log('Login refreshTokenExpiresIn:', refreshTokenExpiresIn);
+
       res.status(200).json({
         message: 'User logged in successfully',
         user,
         accessToken: token,
+        refreshToken: refresh_token,
       });
     } catch (error: any) {
       res.status(400).json({ message: error.message });

@@ -4,7 +4,7 @@ import { refreshAccessToken } from './AuthApi';
 
 const axiosInstance = axios.create({
   baseURL: 'http://localhost:4000/api',
-  withCredentials: true, // Quan trọng để backend gửi cookies (ví dụ refreshToken)
+  withCredentials: true, 
 });
 
 let isRefreshing = false;
