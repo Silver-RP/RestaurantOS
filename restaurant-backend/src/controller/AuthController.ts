@@ -41,7 +41,7 @@ class AuthController {
         message: 'User logged in successfully',
         user,
         accessToken: token,
-        refreshToken: refresh_token,
+        refreshToken: refresh_token, // for testing
       });
     } catch (error: any) {
       res.status(400).json({ message: error.message });
@@ -76,31 +76,48 @@ class AuthController {
   async googleLogin(req: Request, res: Response): Promise<any> {
     try {
       const googleUser = req.body.googleUser;
+      const rememberMe = req.body.rememberMe;
+  
       if (!googleUser) {
         return res.status(400).json({ message: 'Google user data is missing' });
       }
+  
       const { email, name, avatar, sub } = googleUser;
-      const { user, accessToken, refreshToken } = await AuthService.googleLogin({
+  
+      const {
+        user,
+        accessToken,
+        refreshToken,
+        refreshTokenExpiresIn,
+      } = await AuthService.googleLogin({
         id: sub,
         email,
         googleId: sub,
         username: name,
         avatar,
+        rememberMe,
       });
+  
       res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'none',
-        maxAge: 24 * 60 * 60 * 1000, // 1 ngày
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        maxAge: refreshTokenExpiresIn * 1000, 
       });
-      // Trả về kết quả cho frontend
+
+      console.log('Google login refreshTokenExpiresIn:', refreshTokenExpiresIn);
+  
       return res.status(200).json({
         message: 'Google login successful',
         user,
         accessToken,
+        refreshToken, // for testing
       });
     } catch (error: any) {
-      return res.status(400).json({ message: 'Error during Google login', error: error.message });
+      return res.status(400).json({
+        message: 'Error during Google login',
+        error: error.message,
+      });
     }
   }
 

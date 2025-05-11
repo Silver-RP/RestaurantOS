@@ -187,9 +187,10 @@ class AuthService {
     }
   }
   
-  async googleLogin(googleUser: GoogleUser) {
+  async googleLogin(googleUser: GoogleUser & { rememberMe: boolean }) {
     try {
-      const { email, googleId, username, avatar } = googleUser;
+      const { email, googleId, username, avatar, rememberMe } = googleUser;
+  
       let user = await User.findOne({ email });
       if (!user) {
         user = new User({
@@ -200,16 +201,23 @@ class AuthService {
         });
         await user.save();
       }
+  
+      const accessTokenExpiresIn = rememberMe ? 60 * 60 * 2 : 60 * 60;
+      const refreshTokenExpiresIn = rememberMe ? 21 * 24 * 60 * 60 : 2 * 24 * 60 * 60;
+  
       const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN || '', {
-        expiresIn: 7200,
+        expiresIn: accessTokenExpiresIn,
       });
+  
       const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN || '', {
-        expiresIn: 21 * 24 * 60 * 60,
+        expiresIn: refreshTokenExpiresIn,
       });
+  
       return {
         user,
         accessToken,
         refreshToken,
+        refreshTokenExpiresIn,
       };
     } catch (error: any) {
       throw new Error('Error during Google login: ' + error.message);

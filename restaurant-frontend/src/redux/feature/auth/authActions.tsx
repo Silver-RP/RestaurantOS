@@ -46,7 +46,7 @@ export const LoginUser = createAsyncThunk(
       }
 
       setAccessToken(accessToken);
-      setRefreshToken(refreshToken, payload.rememberMe);
+      setRefreshToken(refreshToken, payload.rememberMe); // Only test
       Cookies.set('userInfo', JSON.stringify(user), {
         expires: payload.rememberMe ? 21 : 2,
         sameSite: import.meta.env.PROD ? 'None' : 'Lax',
@@ -75,21 +75,28 @@ export const LogoutUser = createAsyncThunk(
 
 export const LoginWithGoogle = createAsyncThunk(
   'auth/loginGoogle',
-  async (googleUser: any, { rejectWithValue }) => {
+  async (
+    { credential, rememberMe }: { credential: string; rememberMe: boolean },
+    { rejectWithValue }
+  ) => {
     try {
       const response = await axios.post(
         `${BASE_URL}/auth/google-login`,
-        { token: googleUser.credential }, 
-        { withCredentials: true } 
+        { token: credential, rememberMe }, 
+        { withCredentials: true }
       );
+
       const { accessToken, refreshToken, user } = response.data;
 
       setAccessToken(accessToken);
-      // setRefreshToken(refreshToken); 
+      setRefreshToken(refreshToken, rememberMe); // Only test
 
       return { token: accessToken, user, message: 'Đăng nhập Google thành công' };
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Lỗi khi đăng nhập Google');
+      return rejectWithValue(
+        error.response?.data?.message || 'Lỗi khi đăng nhập Google'
+      );
     }
   }
 );
+

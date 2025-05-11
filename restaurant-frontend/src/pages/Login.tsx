@@ -134,10 +134,9 @@ const Login = () => {
         return;
       }
       const result = await dispatch(
-        LoginWithGoogle({ credential: response.credential }),
+        LoginWithGoogle({ credential: response.credential, rememberMe }),
       ).unwrap();
 
-      Cookies.set('accessToken', result.token, { expires: 1 }); // 1 ngày
       Cookies.set('userInfo', JSON.stringify(result.user), { expires: 1 });
 
       toast.success('Đăng nhập Google thành công!');
