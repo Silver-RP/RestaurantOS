@@ -4,7 +4,6 @@ import { Provider } from "react-redux";
 import { store } from "./redux/store";
 import 'react-toastify/dist/ReactToastify.css';
 import { GoogleOAuthProvider } from "@react-oauth/google";
-import AppLayout from "./layouts/AppLayout";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ToastConfig } from "@components/common/ToastConfig";

@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { addToCart, getCart } from '../api/CartApi';
-import { useState } from 'react';
+import { useEffect, useState } from 'react'; 
 import Cookies from 'js-cookie'; 
 import { toast } from 'react-toastify'; 
 import { useQuery } from '@tanstack/react-query';
@@ -17,7 +17,7 @@ export const useAddToCart = () => {
     }
   };
 
-  useState(() => {
+  useEffect(() => {
     checkLoginStatus();
   }, []);
 
@@ -30,10 +30,11 @@ export const useAddToCart = () => {
 
       return addToCart(data.dishId, data.quantity); 
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error('Error adding to cart: ', error);
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
+
       toast.success('Đã thêm vào giỏ hàng thành công!');
     },
   });
@@ -46,9 +47,6 @@ export const useGetCart = () => {
     queryKey: ['cart'],
     queryFn: () => getCart(),
   });
-  console.log('Cart data:', data);
-  console.log('Cart data123:', data?.data);
-  console.log('Cart data123:', data?.items?.name);
 
   return { data, isLoading, error };
 }
