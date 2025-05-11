@@ -4,8 +4,16 @@ import { BsArrowLeftCircle, BsArrowRightCircle } from 'react-icons/bs';
 import { FaDiamond } from 'react-icons/fa6';
 import { useFoodNewest } from '@hooks/useFoods';
 
+interface Category {
+  _id: string;
+  Cate_name: string;
+  Cate_slug: string;
+  Cate_type: string;
+  Cate_img?: string;
+  parentCate?: string | null;
+}
+
 interface Product {
-  id: number;
   name: string;
   price: number;
   originalPrice?: number;
@@ -13,10 +21,18 @@ interface Product {
   hoverImage?: string;
   isNew: boolean;
   discount?: string;
-  cate?: string;  
+  cate?: string;
   slug: string;
   description?: string;
+  categories?: Category[];
+  views?: number;
+  ordered_count?: number;
+  rating_count?: number;
+  rating?: number;
+  favorites_count?: number;
+  countInStock?: number;
 }
+
 
 
 const OrderOnlineSection: React.FC = () => {
@@ -24,21 +40,28 @@ const OrderOnlineSection: React.FC = () => {
   const [productsPerPage, setProductsPerPage] = useState<number>(4);
   const { data: foods } = useFoodNewest();
   
-   const products: Product[] =
-     foods?.map((food) => ({
-       id: food._id,
-       name: food.name,
-       price: food.discount_price || food.price,
-       originalPrice: food.discount_price ? food.price : undefined,
-       imageUrl: food.images[0] || '',
-       hoverImage: food.images[1] || '',
-       isNew: true,
-       discount: food.discount_price
-         ? `${Math.round(((food.price - food.discount_price) / food.price) * 100)}% OFF`
-         : undefined,
-       cate: food.categories[0]?.Cate_name || 'Unknown',
-       slug: food.slug,
-     })) || [];
+  const products: Product[] =
+    foods?.map((food) => ({
+      id: food._id,
+      name: food.name,
+      price: food.discount_price || food.price,
+      originalPrice: food.discount_price ? food.price : undefined,
+      imageUrl: food.images[0] || '',
+      hoverImage: food.images[1] || '',
+      isNew: true,
+      discount: food.discount_price
+        ? `${Math.round(((food.price - food.discount_price) / food.price) * 100)}% OFF`
+        : undefined,
+      slug: food.slug,
+      description: food.description || '',
+      views: food.views || 0,
+      categories: food.categories || [],
+      ordered_count: food.ordered_count || 0,
+      rating_count: food.rating_count || 0,
+      rating: food.rating || 4,
+      favorites_count: food.favorites_count || 0,
+      countInStock: food.countInStock || 10,
+    })) || [];
 
   useEffect(() => {
     const updateProductsPerPage = () => {
@@ -109,8 +132,12 @@ const OrderOnlineSection: React.FC = () => {
                   discount={product.discount}
                   isNew={product.isNew}
                   cate={product.cate}
-                  description={''}
                   slug={product.slug}
+                  views={product.views}
+                  ordered_count={product.ordered_count}
+                  rating_count={product.rating_count}
+                  rating={product.rating}
+                  categories={product.categories}
                 />
               </div>
             ))}

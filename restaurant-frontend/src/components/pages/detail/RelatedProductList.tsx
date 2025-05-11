@@ -3,13 +3,19 @@ import ProductCardGrid from '../../common/ProductCardGrid';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { useFoodBest4 } from '@hooks/useFoods';
 
-const RelatedProductList: React.FC = () => {
+interface RelatedProductListProps {
+  categories: string[];
+}
+
+const RelatedProductList: React.FC<RelatedProductListProps> = ({
+  categories,
+}) => {
   const [slideIndex, setSlideIndex] = useState(0);
   const [itemsPerSlide, setItemsPerSlide] = useState(1);
-  const { data: foods, isLoading, error } = useFoodBest4();
-
+  const { data: foods, isLoading, error } = useFoodBest4(categories.join(','));
+  console.log(categories);
   // Format dữ liệu trả về từ API
-  const products =
+  const products: Product[] =
     foods?.map((food) => ({
       id: food._id,
       name: food.name,
@@ -21,8 +27,15 @@ const RelatedProductList: React.FC = () => {
       discount: food.discount_price
         ? `${Math.round(((food.price - food.discount_price) / food.price) * 100)}% OFF`
         : undefined,
-      cate: food.categories[0]?.Cate_name || 'Unknown',
       slug: food.slug,
+      description: food.description || '',
+      views: food.views || 0,
+      categories: food.categories || [],
+      ordered_count: food.ordered_count || 0,
+      rating_count: food.rating_count || 0,
+      rating: food.rating || 4,
+      favorites_count: food.favorites_count || 0,
+      countInStock: food.countInStock || 10,
     })) || [];
 
   useEffect(() => {

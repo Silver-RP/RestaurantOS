@@ -5,6 +5,8 @@ import { ProductCardProps } from '../../types/ProductCard.types';
 import { useAppDispatch } from '../../redux/hook';
 import { openQuickView } from '../../redux/feature/quickView/quickViewSlice';
 import { FilledStar, HalfStar, EmptyStar } from '../common/StarIcons';
+import { useAddToCart } from '@hooks/useCart';
+
 const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -17,6 +19,7 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
     if (num >= 1_000) return (num / 1_000).toFixed(num >= 10_000 ? 0 : 1) + 'k';
     return num.toString();
   };
+  const { mutate: addToCart } = useAddToCart();
 
   return (
     <div className="bg-primaryBackground rounded-lg overflow-hidden shadow-md w-full h-full group">
@@ -62,6 +65,13 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
         <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 flex gap-2 transition-all duration-500 ease-in-out">
           <div className="relative group/tooltip">
             <button
+              onClick = {
+                () => {
+                  addToCart({
+                    dishId: rest.id,
+                    quantity: 1,
+                  });
+              }}
               className="p-1.5 sm:p-2 bg-white text-[#002B40] rounded-full shadow-md 
                        hover:bg-secondaryColor hover:text-white hover:-translate-y-1 transition-all duration-300"
             >
