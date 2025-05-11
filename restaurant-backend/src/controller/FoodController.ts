@@ -270,7 +270,15 @@ class FoodController {
 
   async getFoodBest4(req: Request, res: Response): Promise<any> {
     try {
-      const dishes = await FoodService.getFoodBest4();
+      const { category } = req.query; 
+      if (!category || typeof category !== 'string') {
+        return res.status(400).json({
+          success: false,
+          message: 'Missing or invalid category parameter',
+        });
+      }
+
+      const dishes = await FoodService.getFoodBest4(category); 
 
       return res.status(200).json({
         success: true,
@@ -278,12 +286,10 @@ class FoodController {
         data: dishes,
       });
     } catch (error) {
-      console.error('Error in getFoodByFavorites:', error);
+      console.error('Error in getFoodBest4:', error);
       return res.status(500).json({ success: false, message: 'Internal server error' });
     }
   }
-
-
 
   async SearchFood(req: Request, res: Response): Promise<any> {
     try {
@@ -351,8 +357,5 @@ class FoodController {
       return res.status(500).json({ message: 'Internal server error' });
     }
   }
-
-
-  
 }
 export default new FoodController();
