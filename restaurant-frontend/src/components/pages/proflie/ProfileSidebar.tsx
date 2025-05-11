@@ -1,4 +1,3 @@
-import React from 'react';
 import { FaUser, FaClipboardList, FaMapMarkerAlt, FaStar, FaQuestionCircle, FaSignOutAlt } from 'react-icons/fa';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
@@ -7,7 +6,7 @@ const sidebarItems = [
   { title: 'Lịch sử đơn hàng', icon: <FaClipboardList />, path: '/profile/orders' },
   { title: 'Sổ địa chỉ', icon: <FaMapMarkerAlt />, path: '/profile/address' },
   { title: 'Đánh giá và phản hồi', icon: <FaStar />, path: '/profile/reviews' },
-  { title: 'Chính sách và câu hỏi thường gặp', icon: <FaQuestionCircle />, path: '/profile/faq' },
+  { title: 'Chính sách và câu hỏi thường gặp', icon: <FaQuestionCircle />, path: '/profile/faqs' },
 ];
 
 const ProfileSidebar = () => {
