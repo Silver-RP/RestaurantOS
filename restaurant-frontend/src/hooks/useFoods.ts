@@ -35,7 +35,7 @@ export const useFoods = () => {
       const priceMin = searchParams.get('priceMin');
       const priceMax = searchParams.get('priceMax');
       const category = searchParams.get('category');
-      const keyword = searchParams.get('keyword');
+      const search = searchParams.get('search');
       const limit = Number(searchParams.get('limit')) || 12;
 
       setLoading(true);
@@ -48,7 +48,7 @@ export const useFoods = () => {
           priceMin: priceMin ? Number(priceMin) : undefined,
           priceMax: priceMax ? Number(priceMax) : undefined,
           category: category || undefined,
-          keyword: keyword || undefined,
+          search: search || undefined,
           limit,
         };
 

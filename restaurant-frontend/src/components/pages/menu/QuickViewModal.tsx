@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { closeQuickView } from '../../../redux/feature/quickView/quickViewSlice';
 import { RootState } from 'redux/store';
@@ -12,9 +12,9 @@ const QuickViewModal = () => {
     (state: RootState) => state.quickView.selectedProduct,
   );
   const [quantity, setQuantity] = useState(1);
+  const { mutate: addToCart } = useAddToCart();
   if (!product) return null;
   const rating = Math.round((product.average_rating ?? 0) * 2) / 2;
-  const { mutate: addToCart } = useAddToCart();
 
  
   return (
