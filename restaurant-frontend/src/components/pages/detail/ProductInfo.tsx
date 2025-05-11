@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { FaHeart, FaRegHeart, FaStar, FaStarHalfAlt } from 'react-icons/fa';
 import ButtonComponents from '../../common/ButtonComponents';
+import { useAddToCart } from '@hooks/useCart';
 
 interface ProductInfoProps {
+  id: string;
   name: string;
   price: number;
   originalPrice: number;
@@ -16,6 +18,7 @@ interface ProductInfoProps {
 }
 
 const ProductInfo: React.FC<ProductInfoProps> = ({
+  id,
   name,
   price,
   originalPrice,
@@ -30,6 +33,8 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
   const [quantity, setQuantity] = useState(1);
   const [wishlisted, setWishlisted] = useState(false);
   const [screenWidth, setScreenWidth] = useState(0);
+
+  const { mutate: addToCart } = useAddToCart();
 
   useEffect(() => {
     const handleResize = () => {
@@ -123,7 +128,14 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
         <ButtonComponents
           variant="filled"
           size={getButtonSize()}
-          onClick={() => console.log(`Thêm ${quantity} sản phẩm vào giỏ hàng`)}
+          onClick={() =>
+            addToCart(
+              {
+                dishId: id,
+                quantity,
+              },
+            )
+          }
         >
           THÊM GIỎ HÀNG
         </ButtonComponents>

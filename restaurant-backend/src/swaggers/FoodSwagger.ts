@@ -10,7 +10,86 @@ registerSwaggerRoute({
   path: '/food/getFoodBest4',
   method: 'get',
   tags: ['Food'],
+  parameters: [
+    {
+      name: 'category',
+      in: 'query',
+      required: true,
+      description: 'ID của category để lấy sản phẩm',
+      schema: {
+        type: 'string',
+        example: '6803416bdf9079c175db7952',
+      },
+    },
+  ],
+  responses: {
+    200: {
+      description: 'Danh sách 4 sản phẩm yêu thích nhất',
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              success: { type: 'boolean', example: true },
+              message: { type: 'string', example: 'Food retrieved successfully' },
+              data: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    _id: { type: 'string' },
+                    name: { type: 'string' },
+                    price: { type: 'number' },
+                    description: { type: 'string' },
+                    images: {
+                      type: 'array',
+                      items: { type: 'string' },
+                    },
+                    favorites_count: { type: 'number' },
+                    categories: {
+                      type: 'array',
+                      items: { type: 'object' },
+                    },
+                    slug: { type: 'string' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    400: {
+      description: 'Thiếu hoặc sai tham số',
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              success: { type: 'boolean', example: false },
+              message: { type: 'string', example: 'Missing or invalid category parameter' },
+            },
+          },
+        },
+      },
+    },
+    500: {
+      description: 'Lỗi server',
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              success: { type: 'boolean', example: false },
+              message: { type: 'string', example: 'Internal server error' },
+            },
+          },
+        },
+      },
+    },
+  },
 });
+
 
 registerSwaggerRoute({
   path: '/food/favorite',
@@ -31,34 +110,7 @@ registerSwaggerRoute({
     },
     required: true,
   },
-  responses: {
-    200: {
-      description: 'Favorite toggled successfully',
-      content: {
-        'application/json': {
-          schema: {
-            type: 'object',
-            properties: {
-              message: { type: 'string', example: 'Favorite added successfully' },
-              data: {
-                type: 'object',
-                properties: {
-                  userId: { type: 'string', example: '6810b5fdb65d24bde710934c' },
-                  dishId: { type: 'string', example: '6803982ea6e191b3ff6192de' },
-                  createdAt: { type: 'string', example: '2025-05-02T12:00:00.000Z' },
-                  updatedAt: { type: 'string', example: '2025-05-02T12:00:00.000Z' },
-                  _id: { type: 'string', example: '689c1b2fa1e1929cfe7c9ae0' },
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-    400: { description: 'Bad request - dishId missing or invalid' },
-    401: { description: 'Unauthorized - user not logged in' },
-    500: { description: 'Internal server error' },
-  },
+ 
   security: [{ bearerAuth: [], }],
   tags: ['Food'],
 });

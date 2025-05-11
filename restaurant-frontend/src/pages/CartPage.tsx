@@ -1,115 +1,137 @@
 import ButtonComponents from '@components/common/ButtonComponents';
 import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
 import React, { useState } from 'react';
+import { useGetCart } from '@hooks/useCart';
+
+
 
 const CartPage = () => {
-  const cartItems = [
-    {
-      id: 1,
-      name: 'Olivas Rellenas',
-      price: 120000,
-      quantity: 2,
-      imageUrl: '/assets/images/products/SP1.jpg',
-      hoverImage: '/assets/images/products/SP1.1.jpg',
-      isNew: true,
-      discount: '10% OFF',
-      cate: 'Appetizer',
-      discountedPrice: 108000, // 10% OFF
-    },
-    {
-      id: 3,
-      name: 'Greek Salad',
-      price: 305000,
-      originalPrice: 350000,
-      quantity: 1,
-      imageUrl: '/assets/images/products/SP3.jpg',
-      hoverImage: '/assets/images/products/SP3.1.jpg',
-      isNew: true,
-      cate: 'Salad',
-      discountedPrice: 305000, // đã có sẵn
-    },
-    {
-      id: 9,
-      name: 'Grilled Fish',
-      price: 250000,
-      quantity: 1,
-      imageUrl: '/assets/images/products/SP9.jpg',
-      hoverImage: '/assets/images/products/SP9.1.jpg',
-      isNew: false,
-      cate: 'Main Course',
-      discountedPrice: 250000,
-    },
-    {
-      id: 1,
-      name: 'Olivas Rellenas',
-      price: 120000,
-      quantity: 2,
-      imageUrl: '/assets/images/products/SP1.jpg',
-      hoverImage: '/assets/images/products/SP1.1.jpg',
-      isNew: true,
-      discount: '10% OFF',
-      cate: 'Appetizer',
-      discountedPrice: 108000,
-    },
-    {
-      id: 3,
-      name: 'Greek Salad',
-      price: 305000,
-      originalPrice: 350000,
-      quantity: 1,
-      imageUrl: '/assets/images/products/SP3.jpg',
-      hoverImage: '/assets/images/products/SP3.1.jpg',
-      isNew: true,
-      cate: 'Salad',
-      discountedPrice: 305000,
-    },
-    {
-      id: 9,
-      name: 'Grilled Fish',
-      price: 250000,
-      quantity: 1,
-      imageUrl: '/assets/images/products/SP9.jpg',
-      hoverImage: '/assets/images/products/SP9.1.jpg',
-      isNew: false,
-      cate: 'Main Course',
-      discountedPrice: 250000,
-    },
-    {
-      id: 1,
-      name: 'Olivas Rellenas',
-      price: 120000,
-      quantity: 2,
-      imageUrl: '/assets/images/products/SP1.jpg',
-      hoverImage: '/assets/images/products/SP1.1.jpg',
-      isNew: true,
-      discount: '10% OFF',
-      cate: 'Appetizer',
-      discountedPrice: 108000,
-    },
-    {
-      id: 3,
-      name: 'Greek Salad',
-      price: 305000,
-      originalPrice: 350000,
-      quantity: 1,
-      imageUrl: '/assets/images/products/SP3.jpg',
-      hoverImage: '/assets/images/products/SP3.1.jpg',
-      isNew: true,
-      cate: 'Salad',
-      discountedPrice: 305000,
-    },
-    {
-      id: 9,
-      name: 'Grilled Fish',
-      price: 250000,
-      quantity: 1,
-      imageUrl: '/assets/images/products/SP9.jpg',
-      hoverImage: '/assets/images/products/SP9.1.jpg',
-      isNew: false,
-      cate: 'Main Course',
-      discountedPrice: 250000,
-    },
-  ];
+  const { data} = useGetCart();
+  const cartItems =
+    data?.items?.map((item) => ({
+      id: item.dishId._id,
+      name: item.dishId.name,
+      price: item.dishId.price,
+      discountedPrice: item.dishId.discount_price || item.dishId.price,
+      quantity: item.quantity,
+      imageUrl: item.dishId.images[0],
+      hoverImage: item.dishId.images[1] || item.dishId.images[0],
+      isNew: item.dishId.isNew || false,
+      discount: item.dishId.discount_price
+        ? `${Math.round(((item.dishId.price - item.dishId.discount_price) / item.dishId.price) * 100)}% OFF`
+        : undefined,
+      cate: item.dishId.categories?.[0]?.Cate_name || 'Main Course',
+    })) || [];
+
+  // const cartItems = [
+  //   {
+  //     id: 1,
+  //     name: 'Olivas Rellenas',
+  //     price: 120000,
+  //     quantity: 2,
+  //     imageUrl: '/assets/images/products/SP1.jpg',
+  //     hoverImage: '/assets/images/products/SP1.1.jpg',
+  //     isNew: true,
+  //     discount: '10% OFF',
+  //     cate: 'Appetizer',
+  //     discountedPrice: 108000, // 10% OFF
+  //   },
+  //   {
+  //     id: 3,
+  //     name: 'Greek Salad',
+  //     price: 305000,
+  //     originalPrice: 350000,
+  //     quantity: 1,
+  //     imageUrl: '/assets/images/products/SP3.jpg',
+  //     hoverImage: '/assets/images/products/SP3.1.jpg',
+  //     isNew: true,
+  //     cate: 'Salad',
+  //     discountedPrice: 305000, // đã có sẵn
+  //   },
+  //   {
+  //     id: 9,
+  //     name: 'Grilled Fish',
+  //     price: 250000,
+  //     quantity: 1,
+  //     imageUrl: '/assets/images/products/SP9.jpg',
+  //     hoverImage: '/assets/images/products/SP9.1.jpg',
+  //     isNew: false,
+  //     cate: 'Main Course',
+  //     discountedPrice: 250000,
+  //   },
+  //   {
+  //     id: 1,
+  //     name: 'Olivas Rellenas',
+  //     price: 120000,
+  //     quantity: 2,
+  //     imageUrl: '/assets/images/products/SP1.jpg',
+  //     hoverImage: '/assets/images/products/SP1.1.jpg',
+  //     isNew: true,
+  //     discount: '10% OFF',
+  //     cate: 'Appetizer',
+  //     discountedPrice: 108000,
+  //   },
+  //   {
+  //     id: 3,
+  //     name: 'Greek Salad',
+  //     price: 305000,
+  //     originalPrice: 350000,
+  //     quantity: 1,
+  //     imageUrl: '/assets/images/products/SP3.jpg',
+  //     hoverImage: '/assets/images/products/SP3.1.jpg',
+  //     isNew: true,
+  //     cate: 'Salad',
+  //     discountedPrice: 305000,
+  //   },
+  //   {
+  //     id: 9,
+  //     name: 'Grilled Fish',
+  //     price: 250000,
+  //     quantity: 1,
+  //     imageUrl: '/assets/images/products/SP9.jpg',
+  //     hoverImage: '/assets/images/products/SP9.1.jpg',
+  //     isNew: false,
+  //     cate: 'Main Course',
+  //     discountedPrice: 250000,
+  //   },
+  //   {
+  //     id: 1,
+  //     name: 'Olivas Rellenas',
+  //     price: 120000,
+  //     quantity: 2,
+  //     imageUrl: '/assets/images/products/SP1.jpg',
+  //     hoverImage: '/assets/images/products/SP1.1.jpg',
+  //     isNew: true,
+  //     discount: '10% OFF',
+  //     cate: 'Appetizer',
+  //     discountedPrice: 108000,
+  //   },
+  //   {
+  //     id: 3,
+  //     name: 'Greek Salad',
+  //     price: 305000,
+  //     originalPrice: 50000,
+  //     quantity: 1,
+  //     imageUrl: '/assets/images/products/SP3.jpg',
+  //     hoverImage: '/assets/images/products/SP3.1.jpg',
+  //     isNew: true,
+  //     cate: 'Salad',
+  //     discountedPrice: 5000,
+  //   },
+  //   {
+  //     id: 9,
+  //     name: 'Grilled Fish',
+  //     price: 250000,
+  //     quantity: 1,
+  //     imageUrl: '/assets/images/products/SP9.jpg',
+  //     hoverImage: '/assets/images/products/SP9.1.jpg',
+  //     isNew: false,
+  //     cate: 'Main Course',
+  //     discountedPrice: 250000,
+  //   },
+  // ];
+
+
   const [selectedItems, setSelectedItems] = useState<number[]>(
     cartItems.map((item) => item.id),
   );
@@ -120,7 +142,7 @@ const CartPage = () => {
         : [...prev, id],
     );
   };
-
+ 
   const handleSelectAll = () => {
     if (selectedItems.length === cartItems.length) {
       setSelectedItems([]);

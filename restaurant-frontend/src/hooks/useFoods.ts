@@ -131,10 +131,10 @@ export const useFoodNewest = () => {
   });
 };
 
-export const useFoodBest4 = () => {
+export const useFoodBest4 = (categoryId: string) => {
   return useQuery<FoodResponse>({
-    queryKey: ['foodBest4'],
-    queryFn: () => fetchFoodBest4(),
+    queryKey: ['foodBest4', categoryId],
+    queryFn: () => fetchFoodBest4(categoryId),
     refetchOnWindowFocus: false,
   });
 };

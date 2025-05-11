@@ -1,7 +1,7 @@
 import { Dish } from '../models/DishModel';
 import Category from '../models/CategoryModel';
 import { Favorite } from '../models/FavoriteModel';
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 
 class FoodService {
   async createFood(food: any) {
@@ -205,17 +205,38 @@ class FoodService {
     }
   }
 
-  async getFoodBest4() {
-    try {
-      const foodNewest = await Dish.find()
-        .sort({ favorites_count: -1 })
-        .limit(4)
-        .populate('categories');
-      return foodNewest;
-    } catch (error) {
-      console.error('Error in getFoodBest4:', error);
-    }
+
+async getFoodBest4(categoryId: string) {
+  try {
+    const objectId = new mongoose.Types.ObjectId(categoryId);
+
+    const foodNewest = await Dish.aggregate([
+      {
+        $match: { categories: { $in: [objectId] } }
+      },
+      {
+        $sort: { favorites_count: -1 }
+      },
+      {
+        $limit: 20
+      },
+      {
+        $lookup: {
+          from: 'categories',
+          localField: 'categories',
+          foreignField: '_id',
+          as: 'categories'
+        }
+      }
+    ]);
+
+    return foodNewest;
+  } catch (error) {
+    console.error('Error in getFoodBest4:', error);
+    throw new Error('Error fetching food by category');
   }
+}
+
 
   async getFoodByFavorites(favorites: number, type: string) {
     try {
