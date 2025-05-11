@@ -21,6 +21,8 @@ export const setRefreshToken = (refresh_token: string, rememberMe: boolean | und
 export const clearAuthCookies = () => {
   Cookies.remove('accessToken');
   Cookies.remove('refreshToken');
+
+  console.log('Auth cookies cleared');
 };
 
 export const getAccessToken = () => Cookies.get('accessToken');

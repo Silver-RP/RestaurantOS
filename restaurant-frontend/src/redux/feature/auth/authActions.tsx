@@ -2,12 +2,19 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios'; 
 import { RegisterPayload, LoginPayload } from './authTypes';
 import Cookies from 'js-cookie';
-import { setAccessToken, setRefreshToken } from '../../../utils/tokenHelpers';
+import { setAccessToken, setRefreshToken, clearAuthCookies } from '../../../utils/tokenHelpers';
+
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const apiRequest = async (url: string, payload: object, method: 'POST' | 'GET') => {
   try {
-    const response = await axios({ method, url, data: payload, headers: { 'Content-Type': 'application/json' } });
+    const response = await axios({
+      method,
+      url,
+      data: payload,
+      headers: { 'Content-Type': 'application/json' },
+      withCredentials: true, 
+    });
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
@@ -65,7 +72,9 @@ export const LogoutUser = createAsyncThunk(
   'auth/logout',
   async (_, { rejectWithValue }) => {
     try {
+      console.log('LogoutUser called action');
       const data = await apiRequest(`${BASE_URL}/auth/logout`, {}, 'POST');
+      clearAuthCookies();
       return data;
     } catch (error: any) {
       return rejectWithValue(error.message);
