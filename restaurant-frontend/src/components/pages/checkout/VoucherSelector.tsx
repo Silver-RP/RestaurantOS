@@ -84,7 +84,7 @@ const VoucherSelector: React.FC<Props> = ({
         Chọn mã giảm giá:
       </h3>
 
-      <div className="relative w-full md:w-1/2 lg:w-1/3 flex gap-2">
+      <div className="relative w-full md:w-1/2 lg:w-2/3 flex gap-2">
         {/* Listbox for voucher selection */}
         <Listbox value={selectedVoucherId} onChange={setSelectedVoucherId}>
           <div className="relative flex-grow">
