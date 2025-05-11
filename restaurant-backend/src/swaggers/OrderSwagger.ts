@@ -11,15 +11,36 @@ registerSwaggerRoute({
       'application/json': {
         schema: {
           type: 'object',
+          oneOf: [
+            {
+              required: ['address_id'],
+              properties: {
+                address_id: {
+                  type: 'string',
+                  description: 'ID of the saved address. Required if `address` is not provided.',
+                },
+              },
+            },
+            {
+              required: ['address'],
+              properties: {
+                address: {
+                  type: 'object',
+                  description: 'Raw delivery address. Required if `address_id` is not provided.',
+                  properties: {
+                    full_name: { type: 'string' },
+                    phone: { type: 'string' },
+                    street: { type: 'string' },
+                    ward: { type: 'string' },
+                    district: { type: 'string' },
+                    province: { type: 'string' },
+                  },
+                  required: ['full_name', 'phone', 'street', 'ward', 'district', 'province'],
+                },
+              },
+            },
+          ],
           properties: {
-            address_id: {
-              type: 'string',
-              description: 'ID of the saved address. Required if `address` is not provided.',
-            },
-            address: {
-              type: 'string',
-              description: 'Raw delivery address. Required if `address_id` is not provided.',
-            },
             payment_method: {
               type: 'string',
               description: 'Payment method for the order',
@@ -40,25 +61,17 @@ registerSwaggerRoute({
               items: {
                 type: 'object',
                 properties: {
-                  dish_id: {
-                    type: 'string',
-                    description: 'ID of the dish',
-                  },
-                  quantity: {
-                    type: 'integer',
-                    description: 'Quantity of the dish',
-                  },
-                  note: {
-                    type: 'string',
-                    description: 'Optional note for the dish',
-                  },
+                  dish_id: { type: 'string' },
+                  quantity: { type: 'integer' },
+                  note: { type: 'string' },
                 },
                 required: ['dish_id', 'quantity'],
               },
             },
           },
           required: ['payment_method', 'delivery_type', 'items'],
-        },
+        }
+        
       },
     },
     required: true,

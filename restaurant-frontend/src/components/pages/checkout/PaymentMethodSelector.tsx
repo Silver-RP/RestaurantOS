@@ -30,7 +30,7 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
         Phương thức thanh toán:
       </h3>
 
-      <div className="relative w-full md:w-1/2 lg:w-1/3">
+      <div className="relative w-full md:w-1/2 lg:w-2/3">
         {/* Dropdown selection */}
         <Listbox value={selectedMethod} onChange={(value) => onChange(value)}>
           <div className="relative">

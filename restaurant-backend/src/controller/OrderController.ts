@@ -2,16 +2,24 @@ import { Request, Response, NextFunction } from 'express';
 import OrderService from '../services/OrderService';
 import { IUser } from '../models/UserModel';
 import { Types } from 'mongoose';
+import OrderValidate from '../validators/orderValidator';
 
 class OrderController {
+
   async placeOrder(req: Request, res: Response): Promise<any> {
     try {
       if (!req.user) {
         return res.status(401).json({ message: 'Unauthorized' });
       }
+  
+      const validation = OrderValidate.validatePlaceOrder(req);
+      if (!validation.valid) {
+        return res.status(400).json({ message: validation.message });
+      }
+  
       const userId = (req.user as IUser).id as Types.ObjectId;
-      const { address_id, address, payment_method, delivery_type, items, order_type } = req.body;
-
+      const { address_id, address, payment_method, delivery_type, items, order_type, delivery_time_type, scheduled_time } = req.body;
+      
       const order = await OrderService.placeOrder({
         userId,
         address_id,
@@ -20,8 +28,10 @@ class OrderController {
         delivery_type,
         items,
         order_type,
+        delivery_time_type,
+        scheduled_time,
       });
-
+  
       return res.status(201).json({
         message: 'Order placed successfully',
         order,

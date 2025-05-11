@@ -129,23 +129,26 @@ const ProductInfoSection = ({
         />
       </div>
 
-      {/* Chọn mã giảm giá */}
-      {vouchers && vouchers.length > 0 && (
-        <div className="mt-4 md:mt-6">
-          <VoucherSelector
-            vouchers={vouchers}
-            orderTotal={totalPrice}
-            onApply={handleVoucherApply}
+      {/* Voucher và phương thức thanh toán trên cùng một dòng */}
+      <div className="mt-4 md:mt-6 flex flex-col md:flex-row md:gap-4">
+        {/* Chọn mã giảm giá */}
+        {vouchers && vouchers.length > 0 && (
+          <div className="flex-1 mb-4 md:mb-0">
+            <VoucherSelector
+              vouchers={vouchers}
+              orderTotal={totalPrice}
+              onApply={handleVoucherApply}
+            />
+          </div>
+        )}
+
+        {/* Phương thức thanh toán */}
+        <div className="flex-1">
+          <PaymentMethodSelector
+            selectedMethod={paymentMethod}
+            onChange={onPaymentMethodChange}
           />
         </div>
-      )}
-
-      {/* Phương thức thanh toán */}
-      <div className="mt-4 md:mt-6">
-        <PaymentMethodSelector
-          selectedMethod={paymentMethod}
-          onChange={onPaymentMethodChange}
-        />
       </div>
 
       {/* Tóm Tắt Đơn Hàng */}
