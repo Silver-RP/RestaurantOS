@@ -5,13 +5,22 @@ export interface AddToCartResponse {
 }
 
 export interface CartItem {
-  id: number;
-  name: string;
-  price: number;
-  originalPrice?: number;
-  quantity: number;
-  imageUrl: string;
-  hoverImage: string;
-  discountedPrice: number;
-  cate: string;
+  _id: string;
+  userId: string;
+  items: {
+    dishId: {
+      _id: string;
+      name: string;
+      price: number;
+      discount_price?: number;
+      imageUrl: string;
+      hoverImage?: string;
+    };
+    quantity: number;
+    price: number;
+    note: string | null;
+  }[];
+  totalPrice: number;
+  createdAt: string;
+  updatedAt: string;
 }

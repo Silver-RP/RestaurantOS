@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import ButtonComponents from '@components/common/ButtonComponents';
 
 interface CartSummaryProps {
@@ -40,9 +41,11 @@ const CartSummary: React.FC<CartSummaryProps> = ({ originalTotal, discountedTota
         <span className="text-secondaryColor font-light text-lg">{grandTotal.toLocaleString()} VND</span>
       </div>
 
+      <Link to="/checkout">
       <ButtonComponents variant="filled" size="small" className="w-full mt-4 py-3">
         TIẾN HÀNH THANH TOÁN
       </ButtonComponents>
+      </Link>
     </div>
   );
 };

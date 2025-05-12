@@ -1,4 +1,5 @@
 import React from 'react';
+import { useDeleteCartItem } from '@hooks/useCart';
 
 interface CartItemProps {
   item: {
@@ -11,12 +12,14 @@ interface CartItemProps {
 }
 
 const CartItem: React.FC<CartItemProps> = ({ item }) => {
+  const { mutate: deleteCartItem } = useDeleteCartItem();
+  
   return (
     <tr
       className="bg-[#0D3343]/50 hover:bg-[#0D3343] transition duration-150 border border-[#26455E] shadow-sm rounded"
     >
       <td className="text-lg text-gray-400 hover:text-red-500 cursor-pointer text-center align-middle px-2">
-        ×
+        <button onClick={() => deleteCartItem(item.id.toString())}>×</button>
       </td>
       <td className="flex items-center gap-4 py-4 align-middle whitespace-nowrap">
         <img

@@ -16,3 +16,8 @@ export const getCart = async (): Promise<CartItem> => {
   const res = await api.get<{ data: CartItem }>('/cart/getCart');
   return res.data.data;
 };
+
+export const deleteCartItem = async (dishId: string): Promise<void> => {
+  await api.delete(`/cart/item/${dishId}`);
+};
+
