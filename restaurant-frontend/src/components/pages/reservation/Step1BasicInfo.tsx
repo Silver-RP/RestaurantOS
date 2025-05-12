@@ -22,7 +22,7 @@ const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ formData, setFormData, 
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-6 rounded text-left space-y-6">
+    <form onSubmit={handleSubmit} className="px-[50px] py-6 rounded text-left space-y-6">
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="flex flex-col gap-2">
           <label className="text-sm">Họ tên</label>
@@ -125,7 +125,7 @@ const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ formData, setFormData, 
           type="submit"
           variant="filled"
           size="large"
-          className="w-full text-xs sm:text-sm md:text-base uppercase font-normal"
+          className="w-1/2 text-xs sm:text-sm md:text-base uppercase font-normal"
         >
          Tiếp tục
         </ButtonComponents>
