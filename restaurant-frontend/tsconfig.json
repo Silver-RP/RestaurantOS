@@ -15,9 +15,13 @@
     "resolveJsonModule": true,
     "baseUrl": "./src",
     "paths": {
+      "@/*": ["*"],
       "@components/*": ["components/*"],
       "@pages/*": ["pages/*"],
-      "@hooks/*": ["hooks/*"]
+      "@hooks/*": ["hooks/*"],
+      "@api/*": ["api/*"],
+      "@utils/*": ["utils/*"],
+      "@redux/*": ["redux/*"]
     },
     "types": ["vite/client"]
   },

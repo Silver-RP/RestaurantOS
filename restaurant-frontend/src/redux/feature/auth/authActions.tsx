@@ -4,6 +4,7 @@ import { RegisterPayload, LoginPayload } from './authTypes';
 import Cookies from 'js-cookie';
 import { setAccessToken, setRefreshToken, clearAuthCookies } from '../../../utils/tokenHelpers';
 
+
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const apiRequest = async (url: string, payload: object, method: 'POST' | 'GET') => {
@@ -32,8 +33,8 @@ export const RegisterUser = createAsyncThunk(
     try {
       const data = await apiRequest(`${BASE_URL}/auth/register`, payload, 'POST');
       return data;
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+    } catch (error: unknown) {
+      return rejectWithValue((error as { message: string })?.message || 'An unexpected error occurred');
     }
   }
 );
@@ -76,8 +77,11 @@ export const LogoutUser = createAsyncThunk(
       const data = await apiRequest(`${BASE_URL}/auth/logout`, {}, 'POST');
       clearAuthCookies();
       return data;
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        return rejectWithValue(error.response?.data?.message || 'An error occurred');
+      }
+      return rejectWithValue('An unexpected error occurred');
     }
   }
 );

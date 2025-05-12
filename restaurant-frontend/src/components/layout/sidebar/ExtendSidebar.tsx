@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useGetCart } from '@hooks/useCart';
 import {
   FiUser,
   FiShoppingCart,
@@ -18,6 +19,7 @@ import ButtonComponents from '../../common/ButtonComponents';
 import NavExtend from './NavExtend';
 import { useDispatch } from 'react-redux';
 import { openSearchModal } from '../../../redux/feature/searchModal/searchModalSlice';
+
 interface SidebarProps {
   isOpen: boolean;
   toggleSidebar: () => void;
@@ -25,6 +27,9 @@ interface SidebarProps {
 
 const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
+  const { data: cart } = useGetCart();
+  const countCart = cart?.items?.length || 0;
+
   const dispatch = useDispatch();
   useEffect(() => {
     const handleResize = () => {
@@ -95,7 +100,7 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
                   />
                 </Link>
                 <span className="absolute -top-1 -right-2 bg-secondaryColor text-black text-xs rounded-full px-1">
-                  0
+                  {countCart}
                 </span>
               </div>
               <FiSearch
@@ -120,10 +125,10 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
           </div>
           <div className="p-6">
             <div className="text-center text-sm text-white">
-              <p>Booking Info</p>
-              <p>71 Madison Ave, New York, USA</p>
-              <p>+39-055-123456</p>
-              <p>demo@demo.com</p>
+              <p>Đặt bàn tại</p>
+              <p>Nhà Hàng BeefBeef, 161 đường Quốc Hương, Thảo Điền, Quận 2</p>
+              <p>+84 - 055123456</p>
+              <p>beefbeef@gmail.com</p>
             </div>
             <div className="flex justify-center space-x-4 mt-4">
               <a

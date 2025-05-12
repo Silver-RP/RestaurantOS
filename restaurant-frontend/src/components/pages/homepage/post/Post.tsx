@@ -2,6 +2,7 @@ import React from "react";
 import { useMediaQuery } from "react-responsive"; 
 import ArticleCard from "./PostComponent"; 
 import { FaDiamond } from "react-icons/fa6";
+import ButtonComponents from "../../../common/ButtonComponents";
 
 const Postcomponent = () => {
   const isMobileOrTablet = useMediaQuery({ maxWidth: 1024 });
@@ -74,18 +75,9 @@ const Postcomponent = () => {
             <p className="text-sm text-[#FFDEA0] mb-4 text-left text-[10px]">{article.category}</p>
             <p className="text-sm mb-4 flex-grow text-left text-[10px]">{article.description}</p>
             <div className="mt-auto">
-              <button
-                className="text-white flex items-center justify-center uppercase px-4 py-2 hover:bg-[#FFDEA0] hover:border-[#FFDEA0] hover:text-black"
-                style={{
-                  backgroundColor: '#012B40',
-                  border: '1px solid #FFDEA0',
-                  width: '108px',
-                  height: '34px',
-                  borderRadius: '0px',
-                }}
-              >
-                Đọc thêm
-              </button>
+            <ButtonComponents variant="outline" size="small">
+ ĐỌC THÊM
+  </ButtonComponents>
             </div>
           </div>
         </div>

@@ -4,35 +4,6 @@ import { BsArrowLeftCircle, BsArrowRightCircle } from 'react-icons/bs';
 import { FaDiamond } from 'react-icons/fa6';
 import { useFoodNewest } from '@hooks/useFoods';
 
-interface Category {
-  _id: string;
-  Cate_name: string;
-  Cate_slug: string;
-  Cate_type: string;
-  Cate_img?: string;
-  parentCate?: string | null;
-}
-
-interface Product {
-  name: string;
-  price: number;
-  originalPrice?: number;
-  imageUrl: string;
-  hoverImage?: string;
-  isNew: boolean;
-  discount?: string;
-  cate?: string;
-  slug: string;
-  description?: string;
-  categories?: Category[];
-  views?: number;
-  ordered_count?: number;
-  rating_count?: number;
-  rating?: number;
-  favorites_count?: number;
-  countInStock?: number;
-}
-
 
 
 const OrderOnlineSection: React.FC = () => {
@@ -40,7 +11,7 @@ const OrderOnlineSection: React.FC = () => {
   const [productsPerPage, setProductsPerPage] = useState<number>(4);
   const { data: foods } = useFoodNewest();
   
-  const products: Product[] =
+  const products: Product[] = 
     foods?.map((food) => ({
       id: food._id,
       name: food.name,
@@ -56,11 +27,13 @@ const OrderOnlineSection: React.FC = () => {
       description: food.description || '',
       views: food.views || 0,
       categories: food.categories || [],
+      cate: food.categories?.[0]?.Cate_name,
       ordered_count: food.ordered_count || 0,
       rating_count: food.rating_count || 0,
-      rating: food.rating || 4,
+      rating: food.average_rating || 4,
       favorites_count: food.favorites_count || 0,
       countInStock: food.countInStock || 10,
+
     })) || [];
 
   useEffect(() => {
@@ -123,22 +96,7 @@ const OrderOnlineSection: React.FC = () => {
                 key={product.id}
                 style={{ width: `calc((100% - 96px) / 4)` }}
               >
-                <ProductCardGrid
-                  name={product.name}
-                  imageUrl={product.imageUrl}
-                  hoverImage={product.hoverImage}
-                  price={product.price}
-                  originalPrice={product.originalPrice}
-                  discount={product.discount}
-                  isNew={product.isNew}
-                  cate={product.cate}
-                  slug={product.slug}
-                  views={product.views}
-                  ordered_count={product.ordered_count}
-                  rating_count={product.rating_count}
-                  rating={product.rating}
-                  categories={product.categories}
-                />
+                <ProductCardGrid key={product.id} {...product} />
               </div>
             ))}
           </div>

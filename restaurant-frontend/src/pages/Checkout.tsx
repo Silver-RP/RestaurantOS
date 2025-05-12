@@ -5,6 +5,7 @@ import DeliveryTimeSection from "@components/pages/checkout/DeliveryTimeSection"
 import { Address } from "@components/pages/checkout/ModalSelectAddress";
 import { Voucher } from "@components/pages/checkout/VoucherSelector";
 import { DeliveryTime } from "@components/pages/checkout/ModalSelectDeliveryTime";
+import { useGetCart } from "@hooks/useCart";
 
 const CheckoutPage = () => {
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -13,23 +14,32 @@ const CheckoutPage = () => {
   const [shippingFee, setShippingFee] = useState<number>(25000);
   const [vouchers, setVouchers] = useState<Voucher[]>([]);
   const [deliveryTime, setDeliveryTime] = useState<DeliveryTime>({ type: "now" });
+  const { data: cart } = useGetCart();
 
-  const [products] = useState([
-    {
-      image: "/assets/images/products/SP5.jpg",
-      name: "Bánh mì chả lụa",
-      price: 20000,
-      quantity: 2,
-      category: "Bánh mì",
-    },
-    {
-      image: "/assets/images/products/SP6.jpg",
-      name: "Gỏi cuốn tôm thịt",
-      price: 15000,
-      quantity: 3,
-      category: "Món khác",
-    },
-  ]);
+  // const [products] = useState([
+  //   {
+  //     image: "/assets/images/products/SP5.jpg",
+  //     name: "Bánh mì chả lụa",
+  //     price: 20000,
+  //     quantity: 2,
+  //     category: "Bánh mì",
+  //   },
+  //   {
+  //     image: "/assets/images/products/SP6.jpg",
+  //     name: "Gỏi cuốn tôm thịt",
+  //     price: 15000,
+  //     quantity: 3,
+  //     category: "Món khác",
+  //   },
+  // ]);
+
+  const products = cart?.items?.map((item) => ({
+    image: item.dishId.images[0],
+    name: item.dishId.name,
+    price: item.dishId.price,
+    quantity: item.quantity,
+    category: item.dishId.categories[0].Cate_name,
+  }));
 
   const mockAddresses: Address[] = [{
     id: 1,

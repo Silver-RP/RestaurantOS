@@ -126,11 +126,11 @@ class CartService {
     return cart;
   }
 
-  static async DeleteCartItem(cartId: string, dishId: string) {
-    if (!mongoose.Types.ObjectId.isValid(cartId) || !mongoose.Types.ObjectId.isValid(dishId)) {
-      throw new Error('Invalid cartId or dishId');
+  static async DeleteCartItem(userId: string, dishId: string) {
+    if (!mongoose.Types.ObjectId.isValid(dishId)) {
+      throw new Error('Invalid dishId');
     }
-    const cart = await Cart.findById(cartId);
+    const cart = await Cart.findOne({ userId });
     if (!cart) {
       throw new Error('Cart not found');
     }
