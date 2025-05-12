@@ -13,8 +13,8 @@ const RelatedProductList: React.FC<RelatedProductListProps> = ({
   const [slideIndex, setSlideIndex] = useState(0);
   const [itemsPerSlide, setItemsPerSlide] = useState(1);
   const { data: foods, isLoading, error } = useFoodBest4(categories.join(','));
-  console.log(categories);
-  // Format dữ liệu trả về từ API
+
+
   const products: Product[] =
     foods?.map((food) => ({
       id: food._id,
@@ -31,9 +31,10 @@ const RelatedProductList: React.FC<RelatedProductListProps> = ({
       description: food.description || '',
       views: food.views || 0,
       categories: food.categories || [],
+      cate: food.categories?.[0]?.Cate_name,
       ordered_count: food.ordered_count || 0,
       rating_count: food.rating_count || 0,
-      rating: food.rating || 4,
+      rating: food.average_rating || 4,
       favorites_count: food.favorites_count || 0,
       countInStock: food.countInStock || 10,
     })) || [];

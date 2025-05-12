@@ -39,7 +39,8 @@ const MenuPage: React.FC = () => {
         imageUrl: food.images?.[0] || '',
         hoverImage: food.images?.[1] || '',
         description: food.description || '',
-        cate: food.categories?.[0]?.Cate_name || 'Danh mục',
+        categories: food.categories || [],
+        cate: food.categories?.[0]?.Cate_name,
       }))
     : [];
 
