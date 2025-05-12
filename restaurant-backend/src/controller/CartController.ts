@@ -78,12 +78,14 @@ class CartController {
 
   static async DeleteCartItem(req: Request, res: Response): Promise<void> {
     try {
-      const { cartId, dishId } = req.params;
-      if (!cartId || !dishId) {
-        res.status(400).json({ success: false, message: 'Missing cartId or dishId' });
+      const { dishId } = req.params;
+      const userId = (req.user as IUser).id?.toString();
+
+      if (!dishId) {
+        res.status(400).json({ success: false, message: 'Missing dishId' });
         return;
       }
-      const updatedCart = await cartService.DeleteCartItem(cartId, dishId);
+      const updatedCart = await cartService.DeleteCartItem(userId, dishId);
       if (!updatedCart) {
         res.status(404).json({ success: false, message: 'Cart not found' });
         return;

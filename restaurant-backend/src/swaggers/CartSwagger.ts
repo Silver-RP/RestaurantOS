@@ -101,29 +101,22 @@ registerSwaggerRoute({
   security: [{ bearerAuth: [] }],
 });
 registerSwaggerRoute({
-  path: '/cart/{cartId}/item/{dishId}',
+  path: '/cart/item/{dishId}',
   method: 'delete',
   summary: 'Delete a specific item from the cart',
-  description: 'Remove a dish from the cart by dishId.',
+  description: 'Remove a dish from the cart by dishId. The cart is identified by the authenticated user.',
   parameters: [
-    {
-      in: 'path',
-      name: 'cartId',
-      schema: { type: 'string' },
-      required: true,
-      description: 'Cart ID',
-    },
     {
       in: 'path',
       name: 'dishId',
       schema: { type: 'string' },
       required: true,
-      description: 'Dish ID',
+      description: 'Dish ID to remove from cart',
     },
   ],
   responses: {
     200: { description: 'Cart item deleted successfully' },
-    400: { description: 'Missing cartId or dishId' },
+    400: { description: 'Missing dishId' },
     404: { description: 'Cart or item not found' },
     500: { description: 'Internal server error' },
   },
