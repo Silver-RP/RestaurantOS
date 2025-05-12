@@ -21,7 +21,7 @@ interface CartItem {
 
 const CartPage = () => {
   const { data } = useGetCart();
-  const cartItemsRaw = (data as CartItem[]) || [];
+const cartItemsRaw = (data?.items || []) as CartItem[];
 
   const cartItems = cartItemsRaw.map((item) => ({
     id: item.dishId._id,

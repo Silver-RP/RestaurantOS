@@ -1,162 +1,124 @@
-import BreadcrumbComponent from '@components/common/BreadCrumbComponents';
-import ButtonComponents from '@components/common/ButtonComponents';
-import ShowcaseSection from '@components/common/ShowcaseSection';
 import React, { useState } from 'react';
-import { FiCalendar, FiChevronDown, FiClock } from 'react-icons/fi';
+import Step1BasicInfo from '@components/pages/reservation/Step1BasicInfo';
+import BreadcrumbComponent from '@components/common/BreadCrumbComponents';
+import ShowcaseSection from '@components/common/ShowcaseSection';
+import Step2Seating from '@components/pages/reservation/Step2Seating';
+import Step3Menu from '@components/pages/reservation/Step3Menu';
+
+const steps = [
+  { label: 'Thông tin', step: 1 },
+  { label: 'Vị trí ngồi', step: 2 },
+  { label: 'Menu', step: 3 },
+];
 
 const ReservationPage: React.FC = () => {
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
+    email: '',
     date: '',
-    time: '07:00 pm',
-    people: '1 Person',
+    time: '',
+    people: 1,
     note: '',
+    seating: '',
+    menu: '',
   });
-
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Reservation Info:', formData);
-  };
+  const [step, setStep] = useState(1);
 
   return (
     <>
       <BreadcrumbComponent />
-      <div className="bg-bodyBackground text-white py-16">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl font-restora mb-2">Đặt bàn trực tuyến</h2>
-          <p className="text-gray-300 mb-8">
-            Đặt bàn cho bữa trưa hoặc bữa tối của bạn.
-          </p>
+      <div
+        className="bg-bodyBackground text-white pt-16"
+      >
+        <div className="max-w-[1000px] w-full mx-auto text-center pb-10">
+        <div className="w-full flex justify-between items-center px-4 sm:px-10 mb-10 relative">
+  {steps.map((s, index) => {
+    const isCompleted = step > s.step;
+    const isActive = step === s.step;
 
-          <form
-            onSubmit={handleSubmit}
-            className=" p-6 rounded text-left space-y-6"
-          >
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div className="flex flex-col gap-2">
-                <label className="text-sm">Họ tên</label>
-                <input
-                  type="text"
-                  name="name"
-                  placeholder="Tên của bạn"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                  className="p-3 bg-transparent border border-[#074b6b] text-white 
-                  placeholder:text-gray-400 rounded focus:outline-none 
-                  focus:border-secondaryColor focus:ring-1 focus:ring-secondaryColor transition"
-                />
-              </div>
-              <div className="flex flex-col gap-2">
-                <label className="text-sm">Số điện thoại</label>
-                <input
-                  type="tel"
-                  name="phone"
-                  placeholder="Số điện thoại"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  required
-                  className="p-3 bg-transparent border border-[#074b6b] text-white 
-                  placeholder:text-gray-400 rounded focus:outline-none 
-                  focus:border-secondaryColor focus:ring-1 focus:ring-secondaryColor transition"
-                />
-              </div>
-            </div>
-
-            <div className="grid sm:grid-cols-3 gap-4">
-              <div className="flex flex-col gap-2">
-                <label className="text-sm mb-1">Số người</label>
-                <div className="relative">
-                  <select
-                    name="people"
-                    value={formData.people}
-                    onChange={handleChange}
-                    className="h-[48px] w-full appearance-none px-4 bg-transparent border border-[#074b6b] text-white placeholder:text-gray-400 rounded focus:outline-none  focus:border-secondaryColor focus:ring-1 focus:ring-secondaryColor transition pr-10"
-                  >
-                    <option>👤 1 người</option>
-                    <option>👥 2 người</option>
-                    <option>👥 3 người</option>
-                    <option>👥 4 người</option>
-                    <option>👥 5 - 10 người</option>
-                    <option>👥 10 - 20 người</option>
-                    <option>👥 Trên 20 người</option>
-                  </select>
-                  <FiChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-white" />
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label className="text-sm mb-1">Ngày</label>
-                <div className="relative w-full">
-                  <input
-                    type="date"
-                    name="date"
-                    value={formData.date}
-                    onChange={handleChange}
-                    className="h-[48px] w-full px-4 pr-10 bg-transparent border border-[#074b6b] text-white 
-        placeholder:text-gray-400 rounded focus:outline-none focus:border-secondaryColor 
-        focus:ring-1 focus:ring-secondaryColor transition 
-        [&::-webkit-calendar-picker-indicator]:opacity-0"
-                  />
-                  <FiCalendar className="absolute right-3 top-1/2 -translate-y-1/2 text-white pointer-events-none" />
-                </div>
-              </div>
-              <div className="flex flex-col gap-2">
-                <label className="text-sm mb-1">Giờ</label>
-                <div className="relative w-full">
-                  <input
-                    type="time"
-                    name="time"
-                    value={formData.time}
-                    onChange={handleChange}
-                    className="h-[48px] w-full px-4 pr-10 bg-transparent border border-[#074b6b] text-white 
-        placeholder:text-gray-400 rounded focus:outline-none focus:border-secondaryColor 
-        focus:ring-1 focus:ring-secondaryColor transition 
-        [&::-webkit-calendar-picker-indicator]:opacity-0"
-                  />
-                  <FiClock className="absolute right-3 top-1/2 -translate-y-1/2 text-white pointer-events-none" />
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label className="text-sm">Ghi chú thêm</label>
-              <textarea
-                name="note"
-                placeholder="Ghi chú đặc biệt nếu có..."
-                value={formData.note}
-                onChange={handleChange}
-                rows={4}
-                className="p-3 bg-transparent border border-[#074b6b] text-white placeholder:text-gray-400 rounded focus:outline-none focus:border-secondaryColor focus:ring-1 focus:ring-secondaryColor transition"
-              />
-            </div>
-
-            <div className="text-center">
-              <ButtonComponents
-                type="submit"
-                variant="filled"
-                size="large"
-                className="w-full text-xs sm:text-sm md:text-base uppercase font-normal"
-              >
-                Đặt Bàn
-              </ButtonComponents>
-            </div>
-          </form>
+    return (
+      <div key={s.step} className="flex-1 flex flex-col items-center text-center relative group transition-all duration-300">
+        <div
+          className={`
+            w-8 h-8 flex items-center justify-center bg-bodyBackground z-20 rounded-full border-2 
+            transition-all duration-500 transform 
+            ${isCompleted ? 'bg-secondaryColor text-black border-secondaryColor scale-100' : ''}
+            ${isActive ? 'border-secondaryColor text-secondaryColor scale-110 shadow-lg' : ''}
+            ${!isCompleted && !isActive ? 'border-white/40 text-white/40 scale-95' : ''}
+          `}
+        >
+          {isCompleted ? '✓' : s.step}
         </div>
-        <ShowcaseSection/>
+
+        <div
+          className={`text-sm mt-2 font-medium transition-all duration-300 ${
+            isActive
+              ? 'text-secondaryColor'
+              : isCompleted
+              ? 'text-white'
+              : 'text-white/50'
+          }`}
+        >
+          {s.label}
+        </div>
+
+        <div
+          className={`text-xs mt-1 transition-all duration-300 ${
+            isCompleted
+              ? 'text-green-400'
+              : isActive
+              ? 'text-secondaryColor'
+              : 'text-white/40'
+          }`}
+        >
+          {isCompleted ? 'Đã xong' : isActive ? 'Đang thực hiện' : 'Chưa thực hiện'}
+        </div>
+
+        {index < steps.length - 1 && (
+          <div
+            className="absolute top-4 left-1/2 right-[-50%] h-[2px] z-0"
+            style={{
+              backgroundColor:
+                step > s.step ? '#FFDEA0' : 'rgba(255, 255, 255, 0.2)',
+              width: '100%',
+            }}
+          />
+        )}
+      </div>
+    );
+  })}
+</div>
+          {step === 1 && (
+            <Step1BasicInfo
+              formData={formData}
+              setFormData={setFormData}
+              onNext={() => setStep(2)}
+            />
+          )}
+
+          {step === 2 && (
+            <Step2Seating
+              formData={formData}
+              setFormData={setFormData}
+              onNext={() => setStep(3)}
+              onBack={() => setStep(1)}
+            />
+          )}
+
+          {step === 3 && (
+            <Step3Menu
+              formData={formData}
+              setFormData={setFormData}
+              onNext={() => setStep(4)}
+              onBack={() => setStep(2)}
+            />
+          )}
+        </div>
+        <ShowcaseSection />
       </div>
     </>
   );
 };
 
-export default ReservationPage;
+export default ReservationPage;          

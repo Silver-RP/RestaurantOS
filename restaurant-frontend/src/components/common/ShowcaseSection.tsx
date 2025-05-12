@@ -1,7 +1,7 @@
 import React from 'react';
-import { FaWineGlass } from 'react-icons/fa';
-import { GiMeal } from 'react-icons/gi';
-import { FiCalendar } from 'react-icons/fi';
+import { PiWineThin } from "react-icons/pi";
+import { GiNoodles } from "react-icons/gi";
+import { BsCalendarEventFill } from "react-icons/bs";
 import ButtonComponents from './ButtonComponents';
 
 const items = [
@@ -10,7 +10,7 @@ const items = [
     title: 'Danh sách rượu',
     subtitle: 'TUYỂN CHỌN',
     description: 'Rượu "On-Tap" & Chai đóng sẵn',
-    icon: <FaWineGlass className="text-5xl text-secondaryColor mb-4" />,
+    icon: <PiWineThin className="text-5xl text-secondaryColor font-light mb-4" />,
   },
   {
     type: 'image',
@@ -22,7 +22,7 @@ const items = [
     title: 'Khai vị',
     subtitle: 'TUYỂN CHỌN',
     description: 'Món ăn chia sẻ & Bánh mì dẹt',
-    icon: <GiMeal className="text-5xl text-secondaryColor mb-4" />,
+    icon: <GiNoodles className="text-5xl text-secondaryColor font-light mb-4" />,
   },
   {
     type: 'image',
@@ -34,7 +34,7 @@ const items = [
     title: 'Sắp diễn ra',
     subtitle: 'SỰ KIỆN',
     description: 'Sự kiện nếm rượu sắp tới',
-    icon: <FiCalendar className="text-5xl text-secondaryColor mb-4" />,
+    icon: <BsCalendarEventFill className="text-5xl text-secondaryColor font-light mb-4" />,
   },
   {
     type: 'image',
