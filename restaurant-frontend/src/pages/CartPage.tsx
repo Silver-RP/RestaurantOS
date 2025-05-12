@@ -1,10 +1,14 @@
 import ButtonComponents from '@components/common/ButtonComponents';
 import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
-import React from 'react';
 import { useGetCart } from '@hooks/useCart';
 import CartTable from '@components/pages/cart/CartTable';
 import CartSummary from '@components/pages/cart/CartSummary';
 
+interface Cart {
+  _id: string;
+  userId: string;
+  items: CartItem[];
+}
 interface CartItem {
   dishId: {
     _id: number;
@@ -21,7 +25,9 @@ interface CartItem {
 
 const CartPage = () => {
   const { data } = useGetCart();
-  const cartItemsRaw = (data as CartItem[]) || [];
+  const cartItemsRaw = (data as unknown as Cart)?.items || [];
+
+  console.log('cartItemsRaw', cartItemsRaw);
 
   const cartItems = cartItemsRaw.map((item) => ({
     id: item.dishId._id,
