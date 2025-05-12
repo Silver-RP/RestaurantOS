@@ -98,7 +98,7 @@ const ProductCardList: React.FC<ProductCardProps> = ({
           <img
             src={hoverImage}
             alt={`${name} Hover`}
-            className="w-full h-full object-cover absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            className="w-full h-full object-cover absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
           />
         )}
 
