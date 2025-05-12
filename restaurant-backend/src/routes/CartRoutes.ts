@@ -1,9 +1,11 @@
 import { Router } from 'express';
 import CartController from '../controller/CartController';
-
+import AuthMiddleWare from '../middleware/AuthMiddleWare';
 const router = Router();
 
-router.put('/update/:id', CartController.UpdateCart); 
-router.delete('/:cartId/item/:dishId', CartController.DeleteCartItem);
-router.delete('/delete-all/:cartId', CartController.DeleteAllCart);
+router.get('/getCart', AuthMiddleWare.verifyToken, CartController.getCartItems);
+router.post('/add', AuthMiddleWare.verifyToken, CartController.AddItemToCart);
+router.put('/update/:id', AuthMiddleWare.verifyToken, CartController.UpdateCart); 
+router.delete('/item/:dishId', AuthMiddleWare.verifyToken, CartController.DeleteCartItem);
+router.delete('/delete-all/:cartId', AuthMiddleWare.verifyToken, CartController.DeleteAllCart);
 export default router;

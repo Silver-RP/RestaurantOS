@@ -22,12 +22,15 @@ const MenuPage: React.FC = () => {
     setSearchParams,
     setPagination,
   } = useFoods();
-
   const mappedFoods: ProductCardProps[] = Array.isArray(foods?.docs)
     ? foods.docs.map((food) => ({
         id: food._id,
         name: food.name,
         slug: food.slug,
+        views: food.views,
+        ordered_count: food.ordered_count,
+        rating: food.average_rating ?? 0,
+        rating_count: food.rating_count ?? 0, 
         price: food.discount_price || food.price,
         originalPrice: food.price,
         discount: food.discount_price
@@ -36,7 +39,8 @@ const MenuPage: React.FC = () => {
         imageUrl: food.images?.[0] || '',
         hoverImage: food.images?.[1] || '',
         description: food.description || '',
-        cate: food.categories?.[0]?.Cate_name || 'Danh mục',
+        categories: food.categories || [],
+        cate: food.categories?.[0]?.Cate_name,
       }))
     : [];
 
@@ -45,7 +49,7 @@ const MenuPage: React.FC = () => {
   setSearchParams((prevParams) => {
     const newParams = new URLSearchParams(prevParams);
     newParams.set('sort', sortValue);
-    newParams.set('page', '1'); // Reset về trang 1
+    newParams.set('page', '1'); 
     return newParams;
   });
 };
@@ -72,7 +76,7 @@ const MenuPage: React.FC = () => {
           } transition-transform duration-300 ease-in-out`}
         >
           <div className="p-6 overflow-y-auto h-full">
-            <FilterSidebar />
+          <FilterSidebar onClose={() => setIsFilterOpen(false)} />
           </div>
         </div>
         <main className="flex-1 space-y-8">
@@ -106,7 +110,7 @@ const MenuPage: React.FC = () => {
                   onChange={handleSortChange}
                   className="appearance-none bg-bodyBackground border border-gray-500 text-white rounded px-3 py-2 text-sm pr-10 focus:outline-none focus:ring-2 focus:ring-secondaryColor"
                 >
-                  <option value="relevance">Sắp xếp theo</option>
+                  <option value="relevance">Mặc định</option>
                   <option value="priceLow">Giá thấp đến cao</option>
                   <option value="priceHigh">Giá cao đến thấp</option>
                   <option value="newest">Mới nhất</option>
@@ -172,9 +176,11 @@ const MenuPage: React.FC = () => {
                 newPage >= 1 &&
                 newPage <= pagination.totalPages
               ) {
-                setSearchParams({
-                  page: newPage.toString(),
-                  sort: searchParams.get('sort') || 'default',
+                setSearchParams((prevParams) => {
+                  const newParams = new URLSearchParams(prevParams);
+                  newParams.set('page', newPage.toString());
+                  newParams.set('sort', newParams.get('sort') || 'default');
+                  return newParams;
                 });
                 setPagination((prev) => ({
                   ...prev,
@@ -183,6 +189,15 @@ const MenuPage: React.FC = () => {
                   nextPage: Math.min(newPage + 1, pagination.totalPages),
                 }));
               }
+            }}
+            limit={Number(searchParams.get('limit') || 10)}
+            onLimitChange={(newLimit) => {
+              setSearchParams((prev) => {
+                const newParams = new URLSearchParams(prev);
+                newParams.set('limit', newLimit.toString());
+                newParams.delete('page'); 
+                return newParams;
+              });
             }}
           />
         </main>

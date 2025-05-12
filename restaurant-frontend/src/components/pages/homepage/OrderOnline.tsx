@@ -2,126 +2,39 @@ import ProductCardGrid from '../../common/ProductCardGrid';
 import React, { useState, useEffect } from 'react';
 import { BsArrowLeftCircle, BsArrowRightCircle } from 'react-icons/bs';
 import { FaDiamond } from 'react-icons/fa6';
+import { useFoodNewest } from '@hooks/useFoods';
 
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  originalPrice?: number;
-  imageUrl: string;
-  hoverImage?: string;
-  isNew: boolean;
-  discount?: string;
-  cate?: string;
-}
 
-const products: Product[] = [
-  {
-    id: 1,
-    name: 'Olivas Rellenas',
-    price: 120000,
-    imageUrl: '/assets/images/products/SP1.jpg',
-    hoverImage: '/assets/images/products/SP1.1.jpg',
-    isNew: true,
-    discount: '10% OFF',
-    cate: 'Appetizer',
-  },
-  {
-    id: 2,
-    name: 'Fish Salad Asian',
-    price: 110000,
-    imageUrl: '/assets/images/products/SP2.jpg',
-    hoverImage: '/assets/images/products/SP2.1.jpg',
-    isNew: true,
-    cate: 'Salad',
-  },
-  {
-    id: 3,
-    name: 'Greek Salad',
-    price: 305000,
-    originalPrice: 350000,
-    imageUrl: '/assets/images/products/SP3.jpg',
-    hoverImage: '/assets/images/products/SP3.1.jpg',
-    isNew: true,
-    cate: 'Salad',
-  },
-  {
-    id: 4,
-    name: 'Mixed Vegetable',
-    price: 211000,
-    imageUrl: '/assets/images/products/SP4.jpg',
-    hoverImage: '/assets/images/products/SP4.1.jpg',
-    isNew: true,
-    cate: 'Vegetable',
-  },
-  {
-    id: 5,
-    name: 'Tomato Soup',
-    price: 80000,
-    imageUrl: '/assets/images/products/SP5.jpg',
-    hoverImage: '/assets/images/products/SP5.1.jpg',
-    isNew: true,
-    cate: 'Soup',
-  },
-  {
-    id: 6,
-    name: 'Caesar Salad',
-    price: 130000,
-    imageUrl: '/assets/images/products/SP6.jpg',
-    hoverImage: '/assets/images/products/SP6.1.jpg',
-    isNew: true,
-    cate: 'Salad',
-  },
-  {
-    id: 7,
-    name: 'Vegetable Soup',
-    price: 95000,
-    imageUrl: '/assets/images/products/SP7.jpg',
-    hoverImage: '/assets/images/products/SP7.1.jpg',
-    isNew: true,
-    cate: 'Soup',
-  },
-  {
-    id: 8,
-    name: 'Chicken Soup',
-    price: 150000,
-    imageUrl: '/assets/images/products/SP8.jpg',
-    hoverImage: '/assets/images/products/SP8.1.jpg',
-    isNew: false,
-    cate: 'Soup',
-  },
-  {
-    id: 9,
-    name: 'Grilled Fish',
-    price: 250000,
-    imageUrl: '/assets/images/products/SP9.jpg',
-    hoverImage: '/assets/images/products/SP9.1.jpg',
-    isNew: false,
-    cate: 'Main Course',
-  },
-  {
-    id: 10,
-    name: 'Vegetable Stir Fry',
-    price: 180000,
-    imageUrl: '/assets/images/products/SP10.jpg',
-    hoverImage: '/assets/images/products/SP10.1.jpg',
-    isNew: false,
-    cate: 'Vegetable',
-  },
-  {
-    id: 11,
-    name: 'Seafood Salad',
-    price: 220000,
-    imageUrl: '/assets/images/products/SP10.jpg',
-    hoverImage: '/assets/images/products/SP10.1.jpg',
-    isNew: false,
-    cate: 'Salad',
-  },
-];
 
 const OrderOnlineSection: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [productsPerPage, setProductsPerPage] = useState<number>(4);
+  const { data: foods } = useFoodNewest();
+  
+  const products: Product[] = 
+    foods?.map((food) => ({
+      id: food._id,
+      name: food.name,
+      price: food.discount_price || food.price,
+      originalPrice: food.discount_price ? food.price : undefined,
+      imageUrl: food.images[0] || '',
+      hoverImage: food.images[1] || '',
+      isNew: true,
+      discount: food.discount_price
+        ? `${Math.round(((food.price - food.discount_price) / food.price) * 100)}% OFF`
+        : undefined,
+      slug: food.slug,
+      description: food.description || '',
+      views: food.views || 0,
+      categories: food.categories || [],
+      cate: food.categories?.[0]?.Cate_name,
+      ordered_count: food.ordered_count || 0,
+      rating_count: food.rating_count || 0,
+      rating: food.average_rating || 4,
+      favorites_count: food.favorites_count || 0,
+      countInStock: food.countInStock || 10,
+
+    })) || [];
 
   useEffect(() => {
     const updateProductsPerPage = () => {
@@ -183,15 +96,7 @@ const OrderOnlineSection: React.FC = () => {
                 key={product.id}
                 style={{ width: `calc((100% - 96px) / 4)` }}
               >
-                <ProductCardGrid
-                  name={product.name}
-                  imageUrl={product.imageUrl}
-                  hoverImage={product.hoverImage}
-                  price={product.price}
-                  originalPrice={product.originalPrice}
-                  discount={product.discount}
-                  isNew={product.isNew}
-                  cate={product.cate} description={''}                />
+                <ProductCardGrid key={product.id} {...product} />
               </div>
             ))}
           </div>

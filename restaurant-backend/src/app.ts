@@ -1,8 +1,6 @@
 import express from 'express';
 import swaggerUi from 'swagger-ui-express';
-// import swaggerJsdoc from 'swagger-jsdoc';
 import { generateSwaggerSpec, getSwaggerRoutes } from './utils/swaggerOptions';
-import HealthCheckRoutes from './routes/HealthChecks';
 import AuthRoutes from './routes/AuthRoutes';
 import UserRoutes from './routes/UserRoutes';
 import RoleRoutes from './routes/RoleRouter';
@@ -17,27 +15,35 @@ import PermissionRoutes from './routes/PermissionRoutes';
 import OrderRoutes from './routes/OrderRoutes';
 import AuthMiddleWare from './middleware/AuthMiddleWare';
 import CartRouter from './routes/CartRoutes';
+import AddressRouter from './routes/AddressRoutes';
 import dotenv from 'dotenv';
 import connectDB from './config/db';
 import cookieParser from 'cookie-parser';
 import passport from 'passport';
 import cors from 'cors';
-import './swaggers/CartSwagger';
 
 const app = express();
 
 // Import file authSwagger để đăng ký metadata
 import './swaggers/AuthSwagger';
 import './swaggers/OrderSwagger';
+import './swaggers/FoodSwagger';
+import './swaggers/CartSwagger';
+import './swaggers/StaffSwagger';
+import './swaggers/UserSwagger';
+import './swaggers/CategorySwagger';
+
 
 dotenv.config();
 connectDB();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors({
-  origin: 'http://localhost:5173',
-  credentials: true 
-}));
+app.use(
+  cors({
+    origin: 'http://localhost:5173',
+    credentials: true,
+  }),
+);
 
 const port = process.env.PORT || 4000;
 
@@ -93,16 +99,19 @@ app.use('/api/category', CateRoutes);
 app.use('/api/reservationcontact', ReservationContactRoutes);
 app.use('/api/reservationdetailcontact', ReservationDetailContactRoutes);
 app.use('/api/search', SearchRoutes);
-app.use('/api/staff', StaffRoutes);
-app.use('/api/food', FoodRoutes);
-app.use('/api/order',  AuthMiddleWare.verifyToken, OrderRoutes); 
-app.use('/api', HealthCheckRoutes);
-app.use('/api/cart', CartRouter); 
+app.use(
+  '/api/staff',
+  AuthMiddleWare.verifyToken,
+  AuthMiddleWare.verifyRole(['superadmin', 'manager',]),
+  StaffRoutes
+);
 
+app.use('/api/food', FoodRoutes);
+app.use('/api/order', AuthMiddleWare.verifyToken, OrderRoutes);
+app.use('/api/cart', CartRouter);
+app.use('/api/address', AuthMiddleWare.verifyToken, AddressRouter);
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
   console.log('Mongo URI:', process.env.MONGO_URI);
   console.log(`Swagger UI available at http://localhost:${port}/api-docs`);
 });
-
-

@@ -1,10 +1,12 @@
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './feature/auth/authSlice';
 import quickViewReducer from './feature/quickView/quickViewSlice';
+import searchModalReducer from './feature/searchModal/searchModalSlice';
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     quickView: quickViewReducer,
+    searchModal: searchModalReducer,
     // cart: cartReducer,
     // ... (thêm các slice khác nếu cần)
   },

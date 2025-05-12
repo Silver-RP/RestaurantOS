@@ -4,7 +4,7 @@ import { refreshAccessToken } from './AuthApi';
 
 const axiosInstance = axios.create({
   baseURL: 'http://localhost:4000/api',
-  withCredentials: true, // Quan trọng để backend gửi cookies (ví dụ refreshToken)
+  withCredentials: true, 
 });
 
 let isRefreshing = false;
@@ -50,12 +50,12 @@ axiosInstance.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const response = await refreshAccessToken(); 
+        const response = await refreshAccessToken();
         const newAccessToken = response?.accessToken;
 
         if (!newAccessToken) throw new Error('No access token received');
         Cookies.set('accessToken', newAccessToken, {
-          expires: 1 / (24 * 60), 
+          expires: 1 / (24 * 60),
           sameSite: 'Lax',
           secure: false,
         });

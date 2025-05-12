@@ -1,119 +1,74 @@
 import api from './axiosInstance';
-import { useState } from 'react';   
-
 
 interface SendOtpResponse {
   message: string;
 }
+
 interface VerifyOtpResponse {
   message: string;
 }
+
 interface ChangePasswordResponse {
   message: string;
 }
+
 interface RefreshTokenResponse {
   accessToken: string;
 }
-export const useSendOtpEmail = () => {
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const sendOtpEmail = async (
-    email: string,
-  ): Promise<SendOtpResponse | null> => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await api.post<SendOtpResponse>('/auth/forgot-password', {
-        email,
-      });
-      return res.data;
-    } catch (err: any) {
-      const message =
-        err?.response?.data?.message || 'Đã xảy ra lỗi khi gửi OTP';
-      setError(message);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
+const authApi = {
+  sendOtpEmail: async (email: string): Promise<SendOtpResponse> => {
+    const res = await api.post<SendOtpResponse>('/auth/forgot-password', {
+      email,
+    });
+    return res.data;
+  },
 
-  return { sendOtpEmail, loading, error };
-};
+  verifyOtp: async (email: string, otp: string): Promise<VerifyOtpResponse> => {
+    const res = await api.post<VerifyOtpResponse>('/auth/verify-otpEmail', {
+      email: email.trim(),
+      otp: otp.trim(),
+    });
+    return res.data;
+  },
 
-export const useVerifyOtp = () => {
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const verifyOtp = async (
-    email: string,
-    otp: string,
-  ): Promise<VerifyOtpResponse | null> => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await api.post('/auth/verify-otpEmail', {
-        email: email.trim(),
-        otp: otp.trim(),
-      });
-      return res.data;
-
-    } catch (err: any) {
-      const message =
-        err?.response?.data?.message || 'Đã xảy ra lỗi khi xác minh OTP';
-      setError(message);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return { verifyOtp, loading, error };
-};
-
-export const useChangePassword = () => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const changePassword = async (
+  changePassword: async (
     email: string,
     newPassword: string,
     confirmPassword: string,
-  ): Promise<ChangePasswordResponse | null> => {
-    setLoading(true);
-    setError(null);
+  ): Promise<ChangePasswordResponse> => {
+    const res = await api.post<ChangePasswordResponse>(
+      '/auth/change-password',
+      {
+        email,
+        newPassword,
+        confirmPassword,
+      },
+    );
+    return res.data;
+  },
+};
+
+export default authApi;
+
+
+
+export const refreshAccessToken =
+  async (): Promise<RefreshTokenResponse | null> => {
     try {
-      const res = await api.post<ChangePasswordResponse>(
-        '/auth/change-password',
+      const response = await api.post<RefreshTokenResponse>(
+        '/auth/refresh-token',
+        {},
         {
-          email,
-          newPassword,
-          confirmPassword,
+          withCredentials: true,
         },
       );
-      console.log('Change password response:', res.data);
-      
-      return res.data;
+      return response.data;
     } catch (err: any) {
-      const message = err?.response?.data?.message || 'Lỗi khi đổi mật khẩu';
-      setError(message);
+      console.error(
+        'Failed to refresh access token:',
+        err?.response?.data || err,
+      );
       return null;
-    } finally {
-      setLoading(false);
     }
   };
-
-  return { changePassword, loading, error };
-};
-
-
-export const refreshAccessToken = async (): Promise<RefreshTokenResponse | null> => {
-  try {
-    const response = await api.post<RefreshTokenResponse>('/auth/refresh-token', {}, {
-      withCredentials: true,
-    });
-    return response.data;
-  } catch (err: any) {
-    console.error('Failed to refresh access token:', err?.response?.data || err);
-    return null;
-  }
-};

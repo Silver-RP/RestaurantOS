@@ -1,56 +1,60 @@
-import React from "react";
+import React from 'react';
 
 const ContactCard = () => {
   return (
-    <div className="flex flex-col md:flex-row text-white relative w-full mx-auto h-auto md:h-[810px] bg-headerBackground">
-      <div className="w-full md:w-1/2">
+    <div className="flex flex-col lg:flex-row text-white bg-headerBackground w-full">
+      <div className="w-full lg:w-1/2 h-[300px] lg:h-auto">
         <img
           src="/assets/images/Contact.png"
           alt="Bar"
           className="w-full h-full object-cover"
         />
       </div>
-      <div className="w-full md:w-1/2 flex items-center justify-center relative px-4 py-8 md:py-0">
-        <div className="relative w-full max-w-[447px]">
-          <div className="absolute inset-0 border-2 hidden md:block translate-x-2 translate-y-2 border-secondaryColor"></div>
-          <div className="relative flex flex-col justify-between h-fit px-6 md:py-20 md:px-20 text-center shadow-lg border-2 bg-transparent w-full border-secondaryColor">
-            <div className="mb-4 flex justify-between">
-              <img
-                src="assets/images/Icon.svg"
-                alt="Icon"
-                className="mx-auto w-[40px] h-[40px] md:w-[50px] md:h-[50px]"
-              />
-            </div>
 
-            <h2 className="text-2xl font-restora md:text-3xl font-light mb-4">
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-4 py-8 lg:py-20">
+        <div className="relative w-full max-w-[447px]">
+          <div className="absolute hidden lg:block inset-0 border-2 translate-x-2 translate-y-2 border-secondaryColor"></div>
+
+          <div className="relative bg-transparent border-2 border-secondaryColor px-6 py-8 lg:px-12 lg:py-16 text-center shadow-lg">
+            <img
+              src="/assets/images/Icon.svg"
+              alt="Icon"
+              className="mx-auto w-10 h-10 lg:w-12 lg:h-12 mb-4"
+            />
+
+            <h2 className="text-xl lg:text-3xl font-restora font-light mb-4">
               Liên hệ với chúng tôi
             </h2>
-            <p className="text-sm font-restora md:text-lg mb-2">Đặt bàn</p>
+
+            <p className="text-sm lg:text-lg font-restora mb-1">Đặt bàn</p>
             <a
               href="tel:+39055123456"
-              className="text-[18px] md:text-4xl font-restora font-thin text-secondaryColor"
+              className="text-lg lg:text-3xl font-roboto font-light text-secondaryColor block mb-4"
             >
               +39-055-123456
             </a>
-            <p className="text-sm md:text-xl font-restora">Địa chỉ</p>
-            <p className="mb-8 px-10 text-white font-thin text-md">
-               161 đường Quốc Hương, Thảo Điền, Quận 2
+
+            <p className="text-sm lg:text-lg font-restora mb-1">Địa chỉ</p>
+            <p className="text-xs lg:text-base text-white font-thin mb-6">
+              161 đường Quốc Hương, Thảo Điền, Quận 2
             </p>
-            <hr className="border-t border-hr mb-8" />
-            <div className="grid grid-cols-2 gap-2 md:gap-4 text-sm text-gray-400">
-              <div className=" flex flex-col items-start">
-                <h3 className="font-thin font-restora text-[13px] md:text-[24px] text-white">
+
+            <hr className="border-t border-hr mb-6" />
+
+            <div className="grid grid-cols-2 gap-6 text-left text-xs lg:text-sm text-gray-300">
+              <div>
+                <h3 className="text-base lg:text-lg font-restora text-white mb-1">
                   Bữa trưa
                 </h3>
-                <p className="text-[10px] md:text-[14px]">Thứ 2 - Chủ Nhật</p>
-                <p className="text-[10px] md:text-[14px]">10:30 am - 3:00 pm</p>
+                <p className="whitespace-nowrap">Thứ 2 - Chủ Nhật</p>
+                <p className="whitespace-nowrap">10:30 - 15:00</p>
               </div>
-              <div className=" flex flex-col items-start">
-                <h3 className="font-thin font-restora text-[13px] md:text-[24px] text-white">
+              <div>
+                <h3 className="text-base lg:text-lg font-restora text-white mb-1">
                   Bữa tối
                 </h3>
-                <p className="text-[10px] md:text-[14px]">Thứ 2 - Chủ Nhật</p>
-                <p className="text-[10px] md:text-[14px]">5:30 pm - 11:00 pm</p>
+                <p className="whitespace-nowrap">Thứ 2 - Chủ Nhật</p>
+                <p className="whitespace-nowrap">17:30 - 23:00</p>
               </div>
             </div>
           </div>

@@ -1,18 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { closeQuickView } from '../../../redux/feature/quickView/quickViewSlice';
 import { RootState } from 'redux/store';
+import { FilledStar, HalfStar, EmptyStar } from '../../common/StarIcons';
+import ButtonComponents from '../../common/ButtonComponents';
+import { useAddToCart } from '@hooks/useCart';
 
 const QuickViewModal = () => {
   const dispatch = useDispatch();
-  const product = useSelector((state: RootState) => state.quickView.selectedProduct);
-
+  const product = useSelector(
+    (state: RootState) => state.quickView.selectedProduct,
+  );
+  const [quantity, setQuantity] = useState(1);
+  const { mutate: addToCart } = useAddToCart();
   if (!product) return null;
+  const rating = Math.round((product.average_rating ?? 0) * 2) / 2;
 
+ 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[100] p-4">
-      <div className="bg-bodyBackground rounded-lg overflow-hidden max-w-5xl w-full relative flex flex-col md:flex-row">
-        {/* Close button */}
+      <div className="bg-headerBackground rounded-lg overflow-hidden max-w-4xl md:max-w-5xl w-full relative flex flex-col md:flex-row shadow-lg">
         <button
           onClick={() => dispatch(closeQuickView())}
           className="absolute top-4 right-4 text-white hover:text-secondaryColor text-2xl z-10"
@@ -20,45 +27,76 @@ const QuickViewModal = () => {
           &times;
         </button>
 
-        {/* Image */}
         <div className="w-full md:w-1/2 bg-black">
           <img
-            src={product.images?.[0] || '/placeholder.jpg'}
+            src={product.images?.[0] || '/assets/images/products/SP1.jpg'}
             alt={product.name}
             className="object-cover w-full h-full"
           />
         </div>
 
-        {/* Product info */}
-        <div className="w-full md:w-1/2 p-6 flex flex-col justify-center space-y-4">
-          <h2 className="text-3xl font-bold text-white">{product.name}</h2>
+        <div className="w-full md:w-1/2 p-8 flex flex-col justify-center space-y-4 text-white font-light">
+          <h2 className="text-2xl sm:text-3xl text-white mb-2">
+            {product.name}
+          </h2>
 
-          {/* Rating + số lượng đánh giá */}
-          <div className="flex items-center gap-2 text-secondaryColor text-sm">
-            {'★'.repeat(Math.round(product.average_rating || 0))}
-            {'☆'.repeat(5 - Math.round(product.average_rating || 0))}
-            <span className="text-gray-400 text-xs">
+          <div className="flex items-center gap-1 text-secondaryColor text-sm">
+            {[...Array(5)].map((_, index) => {
+              if (rating >= index + 1) return <FilledStar key={index} />;
+              else if (rating >= index + 0.5) return <HalfStar key={index} />;
+              else return <EmptyStar key={index} />;
+            })}
+            <span className="text-[12px] text-gray-400 ml-1">
               ({product.rating_count || 0} đánh giá)
             </span>
           </div>
 
-          {/* Giá */}
-          <div className="text-2xl font-bold text-secondaryColor">
-            {product.discount_price
-              ? `${product.discount_price.toLocaleString()} VND`
-              : `${product.price.toLocaleString()} VND`}
+          <div className="flex items-center gap-2">
+            {product.discount_price && (
+              <span className="text-gray-400 line-through text-sm">
+                {product.price.toLocaleString()} VND
+              </span>
+            )}
+            <span className="text-xl sm:text-2xl text-secondaryColor">
+              {(product.discount_price || product.price).toLocaleString()} VND
+            </span>
           </div>
 
-          {/* Mô tả */}
-          <p className="text-gray-400 text-sm leading-relaxed">
+          <p className="text-sm text-gray-300 leading-relaxed">
             {product.shortDescription || product.description}
           </p>
 
-          {/* Nút hành động */}
-          <div className="flex flex-wrap gap-4 mt-4">
-            <button className="flex-1 bg-secondaryColor hover:bg-yellow-400 text-black font-bold py-2 rounded">
-              Thêm vào giỏ
-            </button>
+          <div className="flex flex-col sm:flex-row items-stretch gap-4 mb-2">
+            <div className="flex items-center border border-hr rounded overflow-hidden">
+              <button
+                onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
+                className="px-3 py-2 text-white hover:bg-secondaryColor transition"
+              >
+                –
+              </button>
+              <span className="px-5 py-2 text-white">{quantity}</span>
+              <button
+                onClick={() => setQuantity((prev) => prev + 1)}
+                className="px-3 py-2 text-white hover:bg-secondaryColor transition"
+              >
+                +
+              </button>
+            </div>
+
+            <ButtonComponents
+              variant="filled"
+              size="small"
+              onClick={() =>
+                addToCart(
+                  { dishId: product._id, quantity },                 
+                )
+              }
+            >
+              THÊM GIỎ HÀNG
+            </ButtonComponents>
+          </div>
+
+          <div className="flex flex-wrap gap-4">
             <button className="text-sm text-white underline hover:text-secondaryColor">
               Yêu thích
             </button>
@@ -67,19 +105,17 @@ const QuickViewModal = () => {
             </button>
           </div>
 
-          {/* Thông tin phụ */}
           <div className="text-xs text-gray-400 mt-6 space-y-1">
             <div>
-              <strong>Danh mục: </strong>
-              {product.categories.map((cat) => cat.Cate_name).join(', ')}
+              <strong>Danh mục:</strong>{' '}
+              {product.categories?.map((cat) => cat.Cate_name).join(', ') ||
+                'Không xác định'}
             </div>
             <div>
-              <strong>Lượt xem: </strong>
-              {product.views || 0}
+              <strong>Lượt xem:</strong> {product.views ?? 0}
             </div>
             <div>
-              <strong>Lượt mua: </strong>
-              {product.ordered_count || 0}
+              <strong>Lượt mua:</strong> {product.ordered_count ?? 0}
             </div>
           </div>
         </div>

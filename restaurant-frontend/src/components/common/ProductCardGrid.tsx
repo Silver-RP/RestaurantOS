@@ -1,17 +1,25 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiShoppingCart, FiEye, FiHeart } from 'react-icons/fi';
+import { FiShoppingCart, FiEye, FiHeart, FiCheckSquare } from 'react-icons/fi';
 import { ProductCardProps } from '../../types/ProductCard.types';
 import { useAppDispatch } from '../../redux/hook';
 import { openQuickView } from '../../redux/feature/quickView/quickViewSlice';
+import { FilledStar, HalfStar, EmptyStar } from '../common/StarIcons';
+import { useAddToCart } from '@hooks/useCart';
 
 const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-
   const handleNavigateToDetail = () => {
-    navigate(`/product/${rest.slug}`);
+    navigate(`/foods/${rest.slug}`);
   };
+  const formatNumberShort = (num: number): string => {
+    if (num >= 1_000_000)
+      return (num / 1_000_000).toFixed(num >= 10_000_000 ? 0 : 1) + 'm';
+    if (num >= 1_000) return (num / 1_000).toFixed(num >= 10_000 ? 0 : 1) + 'k';
+    return num.toString();
+  };
+  const { mutate: addToCart } = useAddToCart();
 
   return (
     <div className="bg-primaryBackground rounded-lg overflow-hidden shadow-md w-full h-full group">
@@ -31,52 +39,115 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
             className="w-full h-full object-cover absolute top-0 left-0 opacity-0 transition-opacity duration-700 group-hover:opacity-100"
           />
         </div>
-
-        <div className="absolute top-2 left-2 flex flex-col gap-1">
+        <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
           {rest.discount && (
-            <span className="bg-secondaryColor text-black text-[10px] sm:text-xs font-semibold px-2 py-1 rounded-sm">
+            <span className="bg-secondaryColor text-black text-[10px] font-semibold px-2 py-1 rounded-sm">
               {rest.discount}
             </span>
           )}
           {rest.isNew && (
-            <span className="bg-secondaryColor text-black text-[10px] sm:text-xs font-semibold px-2 py-1 rounded-sm">
+            <span className="bg-secondaryColor text-black text-[10px] font-semibold px-2 py-1 rounded-sm">
               NEW
             </span>
           )}
         </div>
+        <div className="absolute top-2 right-2 flex flex-col items-end gap-1 z-10">
+          <span className="min-w-[56px] justify-center bg-secondaryColor text-black text-[10px] font-semibold px-2 py-1 rounded-sm flex items-center gap-1">
+            <FiEye className="w-3 h-3" />
+            {formatNumberShort(rest.views ?? 0)}
+          </span>
+          <span className="min-w-[56px] justify-center bg-secondaryColor text-black text-[10px] font-semibold px-2 py-1 rounded-sm flex items-center gap-1">
+            <FiCheckSquare className="w-3 h-3" />
+            {formatNumberShort(rest.ordered_count ?? 0)}
+          </span>
+        </div>
 
         <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 flex gap-2 transition-all duration-500 ease-in-out">
-          <button className="p-1.5 sm:p-2 bg-white text-[#002B40] rounded-full shadow-md hover:bg-secondaryColor hover:text-white hover:-translate-y-1 transition-all duration-300">
-            <FiShoppingCart size={18} />
-          </button>
-          <button
-           onClick={() => dispatch(openQuickView({
-            _id: rest.id,
-            name: rest.name,
-            slug: rest.slug,
-            price: rest.price,
-            discount_price: rest.originalPrice ?? rest.price,
-            description: rest.description,
-            shortDescription: rest.description,
-            ingredientsl: '',
-            status: 'available',
-            views: rest.views ?? 0,
-            ordered_count: rest.ordered_count ?? 0,
-            average_rating: rest.rating ?? 4,
-            rating_count: 10,
-            favorites_count: 0,
-            rating: rest.rating ?? 4,
-            categories: [],
-            countInStock: 10,
-            images: [rest.imageUrl],
-          }))}
-            className="p-1.5 sm:p-2 bg-white text-[#002B40] rounded-full shadow-md hover:bg-secondaryColor hover:text-white hover:-translate-y-1 transition-all duration-300"
-          >
-            <FiEye size={18} />
-          </button>
-          <button className="p-1.5 sm:p-2 bg-white text-[#002B40] rounded-full shadow-md hover:bg-secondaryColor hover:text-white hover:-translate-y-1 transition-all duration-300">
-            <FiHeart size={18} />
-          </button>
+          <div className="relative group/tooltip">
+            <button
+              onClick = {
+                () => {
+                  addToCart({
+                    dishId: rest.id,
+                    quantity: 1,
+                  });
+              }}
+              className="p-1.5 sm:p-2 bg-white text-[#002B40] rounded-full shadow-md 
+                       hover:bg-secondaryColor hover:text-white hover:-translate-y-1 transition-all duration-300"
+            >
+              <FiShoppingCart size={18} />
+            </button>
+            <div
+              className="absolute -top-8 left-1/2 -translate-x-1/2 
+                    bg-black text-white text-[10px] px-2 py-1 rounded 
+                    whitespace-nowrap opacity-0 group-hover/tooltip:opacity-100 
+                    transition-all duration-300 z-20 pointer-events-none"
+            >
+              Thêm vào giỏ
+              <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-black rotate-45"></div>
+            </div>
+          </div>
+
+          <div className="relative group/tooltip">
+            <button
+              onClick={() =>
+                dispatch(
+                  openQuickView({
+                    _id: rest.id,
+                    name: rest.name,
+                    slug: rest.slug,
+                    price: rest.price,
+                    discount_price: rest.originalPrice ?? rest.price,
+                    description: rest.description,
+                    shortDescription: rest.description,
+                    ingredients: '',
+                    status: 'available',
+                    views: rest.views ?? 0,
+                    ordered_count: rest.ordered_count ?? 0,
+                    average_rating: rest.rating ?? 4,
+                    rating_count: rest.rating_count ?? 0,
+                    favorites_count: 0,
+                    rating: rest.rating ?? 4,
+                    categories: rest.categories || [],
+                    countInStock: 10,
+                    images: [rest.imageUrl],
+                    createdAt: rest.createdAt ?? new Date().toISOString(),
+                  }),
+                )
+              }
+              className="p-1.5 sm:p-2 bg-white text-[#002B40] rounded-full shadow-md 
+                 hover:bg-secondaryColor hover:text-white hover:-translate-y-1 transition-all duration-300"
+            >
+              <FiEye size={18} />
+            </button>
+            <div
+              className="absolute -top-8 left-1/2 -translate-x-1/2 
+                    bg-black text-white text-[10px] px-2 py-1 rounded 
+                    whitespace-nowrap opacity-0 group-hover/tooltip:opacity-100 
+                    transition-all duration-300 z-20 pointer-events-none"
+            >
+              Xem nhanh
+              <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-black rotate-45"></div>
+            </div>
+          </div>
+
+          <div className="relative group/tooltip">
+            <button
+              className="p-1.5 sm:p-2 bg-white text-[#002B40] rounded-full shadow-md 
+                       hover:bg-secondaryColor hover:text-white hover:-translate-y-1 transition-all duration-300"
+            >
+              <FiHeart size={18} />
+            </button>
+            <div
+              className="absolute -top-8 left-1/2 -translate-x-1/2 
+                    bg-black text-white text-[10px] px-2 py-1 rounded 
+                    whitespace-nowrap opacity-0 group-hover/tooltip:opacity-100 
+                    transition-all duration-300 z-20 pointer-events-none"
+            >
+              Yêu thích
+              <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-black rotate-45"></div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -95,17 +166,30 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
           {rest.name || 'Tên sản phẩm'}
         </h3>
 
-        {/* ★★★★☆ */}
-        <div className="text-xs sm:text-sm text-secondaryColor mb-1">
+        <div className="text-xs sm:text-sm text-secondaryColor mb-1 flex items-center gap-1">
           {rest.rating ? (
             <>
-              {'★'.repeat(Math.round(rest.rating))}{'☆'.repeat(5 - Math.round(rest.rating))}
+              <span className="flex gap-[2px] text-secondaryColor">
+                {[...Array(5)].map((_, index) => {
+                  const value = Number(rest.rating ?? 0);
+                  const rounded = Math.round(value * 2) / 2;
+                  if (rounded >= index + 1) return <FilledStar key={index} />;
+                  else if (rounded >= index + 0.5)
+                    return <HalfStar key={index} />;
+                  else return <EmptyStar key={index} />;
+                })}
+              </span>
+              <span className="text-[10px] text-white">
+                ({rest.rating_count ?? 0})
+              </span>
             </>
           ) : (
-            '★★★★☆'
+            <>
+              <span>★★★★☆</span>
+              <span className="text-[10px] text-white">(0)</span>
+            </>
           )}
         </div>
-
         <div className="flex flex-col items-center space-y-1">
           {rest.originalPrice && (
             <div className="text-xs sm:text-sm font-light text-gray-400 line-through">
@@ -116,11 +200,6 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
             {rest.price?.toLocaleString() || '0'} VND
           </div>
         </div>
-
-        <div className="flex items-center justify-center gap-4 mt-2 text-gray-400 text-xs">
-  <div>👁 {rest.views ?? 0} lượt xem</div>
-  <div>🛒 {rest.ordered_count ?? 0} lượt mua</div>
-</div>
       </div>
     </div>
   );

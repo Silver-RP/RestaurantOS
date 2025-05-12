@@ -1,24 +1,42 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = require("express");
-const AuthController_1 = __importDefault(require("../controller/AuthController"));
-const GoogleAuthMiddleWare_1 = __importDefault(require("../middleware/GoogleAuthMiddleWare"));
-const auth_schema_1 = require("../schemas/auth.schema");
-const ValidateRequest_1 = require("../middleware/ValidateRequest");
-const AuthMiddleWare_1 = __importDefault(require("../middleware/AuthMiddleWare"));
+'use strict';
+var __importDefault =
+  (this && this.__importDefault) ||
+  function (mod) {
+    return mod && mod.__esModule ? mod : { default: mod };
+  };
+Object.defineProperty(exports, '__esModule', { value: true });
+const express_1 = require('express');
+const AuthController_1 = __importDefault(require('../controller/AuthController'));
+const GoogleAuthMiddleWare_1 = __importDefault(require('../middleware/GoogleAuthMiddleWare'));
+const auth_schema_1 = require('../schemas/auth.schema');
+const ValidateRequest_1 = require('../middleware/ValidateRequest');
+const AuthMiddleWare_1 = __importDefault(require('../middleware/AuthMiddleWare'));
 const router = (0, express_1.Router)();
-router.post("/register", (0, ValidateRequest_1.validateRequest)(auth_schema_1.registerSchema), AuthController_1.default.register);
-router.post('/login', (0, ValidateRequest_1.validateRequest)(auth_schema_1.loginSchema), AuthController_1.default.login);
-router.post("/refresh-token", AuthMiddleWare_1.default.verifyRefreshToken, AuthController_1.default.refreshAccessToken);
-router.get("/google/callback", AuthController_1.default.googleCallback);
-router.post("/google-login", GoogleAuthMiddleWare_1.default.verifyGoogleToken, AuthController_1.default.googleLogin);
-router.post("/logout", AuthController_1.default.Logout);
-router.post("/verify-otpEmail", AuthController_1.default.verifyOtpEmail);
-router.post("/forgot-password", AuthController_1.default.forgotPasswordHandler);
+router.post(
+  '/register',
+  (0, ValidateRequest_1.validateRequest)(auth_schema_1.registerSchema),
+  AuthController_1.default.register,
+);
+router.post(
+  '/login',
+  (0, ValidateRequest_1.validateRequest)(auth_schema_1.loginSchema),
+  AuthController_1.default.login,
+);
+router.post(
+  '/refresh-token',
+  AuthMiddleWare_1.default.verifyRefreshToken,
+  AuthController_1.default.refreshAccessToken,
+);
+router.get('/google/callback', AuthController_1.default.googleCallback);
+router.post(
+  '/google-login',
+  GoogleAuthMiddleWare_1.default.verifyGoogleToken,
+  AuthController_1.default.googleLogin,
+);
+router.post('/logout', AuthController_1.default.Logout);
+router.post('/verify-otpEmail', AuthController_1.default.verifyOtpEmail);
+router.post('/forgot-password', AuthController_1.default.forgotPasswordHandler);
 router.post('/change-password', AuthController_1.default.changePassword);
-router.post("/resend-verification", AuthController_1.default.resendVerificationEmail);
-router.post("/verify-resend-otpEmail", AuthController_1.default.verifyResendOtpEmail);
+router.post('/resend-verification', AuthController_1.default.resendVerificationEmail);
+router.post('/verify-resend-otpEmail', AuthController_1.default.verifyResendOtpEmail);
 exports.default = router;

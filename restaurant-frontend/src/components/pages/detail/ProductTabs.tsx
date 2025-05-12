@@ -47,15 +47,20 @@ const Tab: React.FC<SingleTabProps> = ({ item, isOpen, onToggle }) => {
 
   return (
     <div className="p-4 text-white border border-hr rounded-md overflow-hidden transition-all duration-300">
-      <button
-        onClick={() => onToggle(item.id)}
-        className="w-full flex justify-between items-center text-left"
-      >
-        <span className="font-semibold">{item.title}</span>
-        {isOpen ? <FaMinus /> : <FaPlus />}
-      </button>
+     <button
+  onClick={() => onToggle(item.id)}
+  className="w-full flex justify-between items-center text-left"
+>
+  <span className="font-semibold">{item.title}</span>
 
-      {/* Content */}
+  <div
+    className={`transition-transform duration-300 ${
+      isOpen ? "rotate-180" : ""
+    }`}
+  >
+    {isOpen ? <FaMinus /> : <FaPlus />}
+  </div>
+</button>
       <div
         ref={contentRef}
         style={{

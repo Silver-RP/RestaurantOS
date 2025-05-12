@@ -24,7 +24,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
             src={src}
             alt={`thumb-${idx}`}
             onClick={() => setSelectedImage(src)}
-            className={`w-20 h-20 object-fit rounded-md cursor-pointer transition-all border-2 ${
+            className={`w-20 h-20 object-fit object-cover rounded-md cursor-pointer transition-all border-2 ${
               selectedImage === src
                 ? 'border-secondaryColor'
                 : 'border-transparent hover:border-gray-400'
@@ -37,19 +37,19 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
         className="relative flex-1 h-[300px] sm:h-[350px] md:h-[400px] lg:h-[500px] 2xl:h-[700px] flex justify-center items-center overflow-hidden rounded-lg shadow-md bg-white"
       >
         {discount > 0 && (
-          <span className="absolute top-4 left-4 bg-secondaryColor text-black text-xs font-semibold px-2 py-1 rounded">
+          <span className="absolute top-4 left-4 bg-secondaryColor text-black text-xs px-2 py-1">
             -{discount}%
           </span>
         )}
         {isNew && (
-          <span className="absolute top-14 left-4 bg-secondaryColor text-black text-xs font-semibold px-2 py-1 rounded">
+          <span className="absolute top-14 left-4 bg-secondaryColor text-black text-xs font-semibold px-2 py-1">
             NEW
           </span>
         )}
         <img
           src={selectedImage}
           alt="product"
-          className="h-full w-full object-fit transition-all duration-300"
+        className="h-full w-full object-cover transition-all duration-300"
         />
       </div>
     </div>

@@ -1,7 +1,5 @@
-
-import {Request, Response} from "express";
-
-import RoleService from "../services/RoleService";
+import { Request, Response } from 'express';
+import RoleService from '../services/RoleService';
 
 class RoleController {
   async AddRole(req: Request, res: Response): Promise<void> {
@@ -9,7 +7,7 @@ class RoleController {
       const { name, description, permission } = req.body;
       const role = await RoleService.AddRole(name, description, permission);
 
-       res.status(201).json({ message: "Role added successfully", role });
+      res.status(201).json({ message: 'Role added successfully', role });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
@@ -19,7 +17,7 @@ class RoleController {
     try {
       const role = await RoleService.GetRoleById(req.params.id);
       if (!role) {
-       res.status(404).json({ message: "Role not found" });
+        res.status(404).json({ message: 'Role not found' });
       }
 
       res.status(200).json(role);
@@ -32,7 +30,7 @@ class RoleController {
     try {
       const roles = await RoleService.GetAllRole();
       if (!roles) {
-         res.status(404).json({ message: "No roles found!" });
+        res.status(404).json({ message: 'No roles found!' });
       }
 
       res.status(200).json(roles);
@@ -51,10 +49,10 @@ class RoleController {
       });
 
       if (!role) {
-        res.status(404).json({ message: "Role not found" });
+        res.status(404).json({ message: 'Role not found' });
       }
 
-       res.status(200).json({ message: "Role updated successfully", role });
+      res.status(200).json({ message: 'Role updated successfully', role });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
@@ -64,10 +62,10 @@ class RoleController {
     try {
       const success = await RoleService.DeleteRole(req.params.id);
       if (!success) {
-       res.status(404).json({ message: "Role not found" });
+        res.status(404).json({ message: 'Role not found' });
       }
 
-      res.status(200).json({ message: "Role deleted successfully" });
+      res.status(200).json({ message: 'Role deleted successfully' });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }

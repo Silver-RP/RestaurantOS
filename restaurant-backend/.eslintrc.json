@@ -15,8 +15,13 @@
   },
   "plugins": ["@typescript-eslint", "prettier"],
   "rules": {
+    "@typescript-eslint/no-explicit-any": "off",
     "prettier/prettier": "error",
     "semi": ["error", "always"],
-    "quotes": ["error", "single"]
+    "quotes": ["error", "single", { "avoidEscape": true }],
+    "padding-line-between-statements": [
+      "error",
+      { "blankLine": "always", "prev": "function", "next": "function" }
+    ]
   }
 }

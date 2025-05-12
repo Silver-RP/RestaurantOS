@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import InputComponent from '../components/pages/login/InputComponents';
 import ButtonComponent from '../components/pages/login/ButtonComponents';
-import { FaFacebook } from 'react-icons/fa';
-import { FcGoogle } from 'react-icons/fc';
+
 import CheckboxComponent from '../components/common/CheckboxComponents';
 import { Link, useNavigate } from 'react-router-dom';
 import { SlActionUndo } from 'react-icons/sl';
@@ -11,7 +10,9 @@ import { LoginUser } from '../redux/feature/auth/authActions';
 import { toast } from 'react-toastify';
 import { clearStatus } from '../redux/feature/auth/authSlice';
 import { AxiosError } from 'axios';
-// import Cookies from 'js-cookie';
+import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
+import { LoginWithGoogle } from '../redux/feature/auth/authActions';
+import Cookies from 'js-cookie';
 
 const Login = () => {
   const emailRef = useRef<HTMLInputElement>(null);
@@ -28,7 +29,6 @@ const Login = () => {
     emailRef.current?.focus();
   }, []);
 
-  // Load email/password từ localStorage nếu có
   useEffect(() => {
     const savedEmail = localStorage.getItem('email') || '';
     const savedPassword = localStorage.getItem('password') || '';
@@ -88,7 +88,9 @@ const Login = () => {
     }
 
     if (!isPasswordValid(password)) {
-      setFormError('Mật khẩu cần ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số');
+      setFormError(
+        'Mật khẩu cần ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt',
+      );
       return;
     }
 
@@ -96,14 +98,13 @@ const Login = () => {
     try {
       await dispatch(LoginUser({ email, password, rememberMe }))
         .unwrap()
-        .then(() => {
+        .then((result) => {
           if (rememberMe) {
             localStorage.setItem('email', email);
-            localStorage.setItem('password', password);
           } else {
             localStorage.removeItem('email');
-            localStorage.removeItem('password');
           }
+
           toast.success('Đăng nhập thành công!');
           navigate('/');
         });
@@ -118,11 +119,34 @@ const Login = () => {
 
   const handleKeyDown = (
     e: React.KeyboardEvent<HTMLInputElement>,
-    nextRef?: React.RefObject<HTMLInputElement> | null
+    nextRef?: React.RefObject<HTMLInputElement> | null,
   ) => {
     if (e.key === 'Enter' && nextRef?.current) {
       e.preventDefault();
       nextRef.current.focus();
+    }
+  };
+
+  const handleGoogleLoginSuccess = async (response: CredentialResponse) => {
+    try {
+      if (!response.credential) {
+        toast.error('Google credential không tồn tại');
+        return;
+      }
+      const result = await dispatch(
+        LoginWithGoogle({ credential: response.credential, rememberMe }),
+      ).unwrap();
+
+      Cookies.set('userInfo', JSON.stringify(result.user), { expires: 1 });
+
+      toast.success('Đăng nhập Google thành công!');
+      navigate('/');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message || 'Lỗi đăng nhập Google');
+      } else {
+        toast.error('Lỗi đăng nhập Google');
+      }
     }
   };
 
@@ -151,7 +175,9 @@ const Login = () => {
           />
 
           {formError && (
-            <div className="text-red-500 text-sm text-left mt-2">{formError}</div>
+            <div className="text-red-500 text-sm text-left mt-2">
+              {formError}
+            </div>
           )}
 
           <div className="flex justify-between items-center mt-4 mb-3">
@@ -178,24 +204,34 @@ const Login = () => {
 
         <div className="flex items-center my-8">
           <div className="flex-grow border-t border-gray-400"></div>
-          <span className="px-4 text-sm text-gray-300">Hoặc đăng nhập bằng</span>
+          <span className="px-4 text-sm text-gray-300">
+            Hoặc đăng nhập bằng
+          </span>
           <div className="flex-grow border-t border-gray-400"></div>
         </div>
 
         <div className="flex justify-center gap-8 mt-4">
-          <FaFacebook className="text-facebook text-3xl cursor-pointer" />
-          <FcGoogle className="text-3xl cursor-pointer" />
+          <GoogleLogin
+            onSuccess={handleGoogleLoginSuccess}
+            onError={() => toast.error('Đăng nhập Google thất bại')}
+          />
         </div>
 
         <div className="mt-6 text-sm text-white">
           <p>
             Bạn chưa có tài khoản?{' '}
-            <Link to="/register" className="text-white underline hover:text-secondaryColor">
+            <Link
+              to="/register"
+              className="text-white underline hover:text-secondaryColor"
+            >
               Đăng ký tại đây
             </Link>
           </p>
           <p className="flex items-center justify-start mt-6">
-            <Link to="/" className="flex items-center text-white hover:text-secondaryColor">
+            <Link
+              to="/"
+              className="flex items-center text-white hover:text-secondaryColor"
+            >
               <SlActionUndo className="mr-1 text-lg" />
               Quay lại trang chủ
             </Link>

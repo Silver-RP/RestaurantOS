@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { FaHeart, FaRegHeart, FaStar, FaStarHalfAlt } from 'react-icons/fa';
 import ButtonComponents from '../../common/ButtonComponents';
+import { useAddToCart } from '@hooks/useCart';
 
 interface ProductInfoProps {
+  id: string;
   name: string;
   price: number;
   originalPrice: number;
@@ -16,6 +18,7 @@ interface ProductInfoProps {
 }
 
 const ProductInfo: React.FC<ProductInfoProps> = ({
+  id,
   name,
   price,
   originalPrice,
@@ -30,6 +33,8 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
   const [quantity, setQuantity] = useState(1);
   const [wishlisted, setWishlisted] = useState(false);
   const [screenWidth, setScreenWidth] = useState(0);
+
+  const { mutate: addToCart } = useAddToCart();
 
   useEffect(() => {
     const handleResize = () => {
@@ -62,19 +67,17 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
 
   return (
     <div className="w-full">
-      <h2 className="text-2xl md:text-3xl font-bold font-restora mb-4 md:mb-6">
-        {name}
-      </h2>
+      <h2 className="text-2xl md:text-3xl font-restora mb-4 md:mb-6">{name}</h2>
 
       <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-4">
         <span className="text-gray-400 line-through text-xs sm:text-sm">
           {originalPrice.toLocaleString('vi-VN')} VND
         </span>
-        <span className="text-2xl font-bold text-secondaryColor">
+        <span className="text-2xl text-secondaryColor">
           {price.toLocaleString('vi-VN')} VND
         </span>
         {discount > 0 && (
-          <span className="bg-secondaryColor text-black font-bold text-xs px-3 py-1 rounded-lg">
+          <span className="bg-secondaryColor text-black text-xs px-3 py-1">
             GIẢM {discount}%
           </span>
         )}
@@ -120,17 +123,23 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
             +
           </button>
         </div>
-       
       </div>
-      <div className='flex'>
-      <ButtonComponents
+      <div className="flex">
+        <ButtonComponents
           variant="filled"
           size={getButtonSize()}
-          onClick={() => console.log(`Thêm ${quantity} sản phẩm vào giỏ hàng`)}
+          onClick={() =>
+            addToCart(
+              {
+                dishId: id,
+                quantity,
+              },
+            )
+          }
         >
           THÊM GIỎ HÀNG
         </ButtonComponents>
-      <button
+        <button
           className={`flex items-center justify-center gap-2 px-4 py-2 hover:text-secondaryColor rounded transition duration-300 text-sm ${
             wishlisted ? 'text-secondaryColor' : 'text-white'
           }`}
@@ -139,11 +148,8 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
           {wishlisted ? <FaHeart /> : <FaRegHeart />}
           {wishlisted ? 'Đã yêu thích' : 'Yêu thích'}
         </button>
-
       </div>
       <hr className="my-6 bg-hr h-[1px] border-0" />
-
-      
     </div>
   );
 };
