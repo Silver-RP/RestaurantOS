@@ -15,6 +15,10 @@ import AboutUs from "../pages/AboutUs";
 import FAQsCompoent from "../pages/FaqPage";
 import AddressPage from "../pages/AddressPage";
 import PostPage from "../pages/PostPage";
+import ConfirmOrder from "../pages/Confirm";
+import PostDetailsPage from "../pages/PostDetailsPage";
+import ReservationInformationPage from "../pages/ReservationInformationPage";
+import ContactReservationPage from "../pages/ContactReservationPage"; // 👈 Cập nhật đường dẫn ở đây
 
 const AppRoutes = () => {
   const routes = useRoutes([
@@ -22,19 +26,23 @@ const AppRoutes = () => {
     { path: "/aboutus", element: <AboutUs /> },
     { path: "/register", element: <Register /> },
     { path: "/login", element: <Login /> },
-    { path: "/wishlist", element: <WishList/> },
-    { path: "/reset-password", element: <ResetPassword/> }, 
-    { path: "/forgot-password", element: <ForgotPassword/> },
-    { path: "/verify-otp", element: <EnterOTP/> },
-    { path: "/profile", element: <ProfilePage/> },
-    { path: "/profile/address", element: <AddressPage /> },    
-    { path: "/menu", element: <MenuPage/> },
+    { path: "/wishlist", element: <WishList /> },
+    { path: "/reset-password", element: <ResetPassword /> },
+    { path: "/forgot-password", element: <ForgotPassword /> },
+    { path: "/verify-otp", element: <EnterOTP /> },
+    { path: "/profile", element: <ProfilePage /> },
+    { path: "/profile/address", element: <AddressPage /> },
+    { path: "/menu", element: <MenuPage /> },
     { path: "/product/:slug", element: <ProductDetail /> },
-    { path: "/contact", element: <ContactUsPage/> },
+    { path: "/contact", element: <ContactUsPage /> },
     { path: "/faqs", element: <FAQsCompoent /> },
-    { path: "/posts", element: <PostPage /> },    
+    { path: "/posts", element: <PostPage /> },
+    { path: "/post-details", element: <PostDetailsPage /> },
+    { path: "/confirm", element: <ConfirmOrder /> },
+    { path: "/reservation-information", element: <ReservationInformationPage /> }, // Cập nhật đường dẫn
+    { path: "/contact-reservation", element: <ContactReservationPage /> }, // Cập nhật đường dẫn cho ContactReservationPage
   ]);
   return routes;
 };
 
-export default AppRoutes
+export default AppRoutes;

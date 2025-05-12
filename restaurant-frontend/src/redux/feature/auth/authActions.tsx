@@ -2,6 +2,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios'; // <-- Missing import
 import { RegisterPayload, LoginPayload } from './authTypes';
 
+
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 // Helper function for handling API requests
@@ -17,10 +18,8 @@ const apiRequest = async (url: string, payload: object, method: 'POST' | 'GET') 
     throw new Error('An unexpected error occurred');
   }
 };
-import { setAccessToken, setRefreshToken } from '@/utils/tokenHelpers';
-import axiosInstance from '@/api/axiosInstance';
-const BASE_URL_REGISTER = import.meta.env.VITE_BACKEND_URL;
-const BASE_URL_LOGIN = import.meta.env.VITE_BACKEND_URL;
+import { setAccessToken } from '@/utils/tokenHelpers';
+
 
 // Register
 export const RegisterUser = createAsyncThunk(
@@ -29,8 +28,8 @@ export const RegisterUser = createAsyncThunk(
     try {
       const data = await apiRequest(`${BASE_URL}/auth/register`, payload, 'POST');
       return data;
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+    } catch (error: unknown) {
+      return rejectWithValue((error as { message: string })?.message || 'An unexpected error occurred');
     }
   }
 );
@@ -67,8 +66,11 @@ export const LogoutUser = createAsyncThunk(
     try {
       const data = await apiRequest(`${BASE_URL}/auth/logout`, {}, 'POST');
       return data;
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        return rejectWithValue(error.response?.data?.message || 'An error occurred');
+      }
+      return rejectWithValue('An unexpected error occurred');
     }
   }
 );

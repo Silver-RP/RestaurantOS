@@ -9,7 +9,8 @@ const PostSidebar: React.FC<PostSidebarProps> = ({ className }) => {
   const [showCategories, setShowCategories] = useState(false);
 
   return (
-    <aside className={`w-full space-y-6 text-white lg:space-y-10 ${className}`}> {/* Sử dụng className */}
+    <aside className={`w-full space-y-6 text-white lg:space-y-10 ${className} 
+      lg:relative fixed top-0 left-0 bg-[#012B40] lg:bg-transparent z-50 lg:w-[220px] xl:w-[250px]`}>
       {/* Tìm kiếm */}
       <div>
         <h3 className="text-xl font-semibold mb-2">Tìm kiếm blog</h3>
