@@ -1,11 +1,6 @@
 import * as jwt from 'jsonwebtoken';
 
-export const accessToken = (
-  payload: object,
-  secretKey: string,
- 
-  expires: number = 30 * 60,
-): string => {
+export const accessToken = (payload: object, secretKey: string, expires: number): string => {
   try {
     return jwt.sign(payload, secretKey, { expiresIn: expires });
   } catch (error) {
