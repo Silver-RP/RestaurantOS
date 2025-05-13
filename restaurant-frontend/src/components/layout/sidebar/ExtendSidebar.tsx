@@ -14,6 +14,7 @@ import {
   FaPinterest,
   FaInstagram,
 } from 'react-icons/fa';
+import { BsPersonCheck } from 'react-icons/bs';
 import { Link } from 'react-router-dom';
 import ButtonComponents from '../../common/ButtonComponents';
 import NavExtend from './NavExtend';
@@ -74,7 +75,6 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
 
         <div className="flex-1 overflow-y-auto px-4 sm:px-6 scrollbar-custom">
           <div className="flex justify-center">
-            {/* <Sidebar isOpen={isOpen} toggleSidebar={toggleSidebar} /> */}
             <NavExtend />
           </div>
 
@@ -82,6 +82,11 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
             <div className="flex space-x-6 sm:space-x-8 text-lg sm:text-xl">
               <Link to="/login" aria-label="Login">
                 <FiUser
+                  className={`text-white hover:text-secondaryColor ${iconSize}`}
+                />
+              </Link>
+              <Link to="/login" aria-label="Login">
+                <BsPersonCheck
                   className={`text-white hover:text-secondaryColor ${iconSize}`}
                 />
               </Link>
