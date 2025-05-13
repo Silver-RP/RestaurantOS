@@ -5,12 +5,21 @@ import ButtonComponents from '@components/common/ButtonComponents';
 interface CartSummaryProps {
   originalTotal: number;
   discountedTotal: number;
+  selectedItems?: any[];
 }
 
-const CartSummary: React.FC<CartSummaryProps> = ({ originalTotal, discountedTotal }) => {
+const CartSummary: React.FC<CartSummaryProps> = ({ 
+  originalTotal, 
+  discountedTotal,
+  selectedItems = [] 
+}) => {
   const savings = originalTotal - discountedTotal;
   const vat = discountedTotal * 0.08;
   const grandTotal = discountedTotal + vat;
+
+  const handleCheckout = () => {
+    localStorage.setItem('selectedCartItems', JSON.stringify(selectedItems));
+  };
 
   return (
     <div className="border border-[#26455E] p-4 sm:p-6 rounded-lg w-full 2xl:max-w-sm self-start shadow-md">
@@ -41,7 +50,7 @@ const CartSummary: React.FC<CartSummaryProps> = ({ originalTotal, discountedTota
         <span className="text-secondaryColor font-light text-base sm:text-lg">{grandTotal.toLocaleString()} VND</span>
       </div>
 
-      <Link to="/checkout">
+      <Link to="/checkout" onClick={handleCheckout}>
         <ButtonComponents variant="filled" size="small" className="w-full mt-4 py-2 sm:py-3">
           TIẾN HÀNH THANH TOÁN
         </ButtonComponents>

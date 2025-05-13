@@ -70,7 +70,7 @@ const CartItem: React.FC<CartItemProps> = ({ item, selected, onSelect }) => {
         </div>
       </td>
 
-      {/* Tạm tính */}
+      {/* Tạm tính */}  
       <td className="align-middle whitespace-nowrap">
         {(
           (item.discountedPrice || item.price) * item.quantity
