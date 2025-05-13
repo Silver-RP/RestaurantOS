@@ -20,6 +20,8 @@ router.get('/getfoodbyslug/:slug', FoodController.getFoodBySlug);
 router.put('/updatefood/:id', FoodController.updateFood);
 router.delete('/deletefood/:id', FoodController.deleteFood);
 router.get('/getFoodByCategory', FoodController.getFoodByCategory);
+router.get('/getFoodNewest', FoodController.getFoodByNewest);
+router.get('/getFoodBest4', FoodController.getFoodBest4);
 router.get('/getFoodBySearch', FoodController.getFoodBySearch);
 router.get('/getFoodByPrice', FoodController.getFoodByPrice);
 router.get('/getFoodByRating', FoodController.getFoodByRating);
@@ -27,5 +29,6 @@ router.get('/getFoodByFavorites', FoodController.getFoodByFavorites);
 router.get('/searchfood', FoodController.SearchFood);
 router.post('/favorite', AuthMiddleWare.verifyToken, FoodController.toggleFavorite);
 router.get('/getFavoriteFoods', AuthMiddleWare.verifyToken, FoodController.getFavoriteFoods);
+router.post('/countFoodView/:foodId', FoodController.countFoodView);
 
 export default router;

@@ -1,5 +1,4 @@
 import React, { useState, forwardRef } from 'react';
-import { Input } from 'antd';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 type Props = {
@@ -12,7 +11,6 @@ type Props = {
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 };
 
-// 👇 forwardRef cho phép nhận ref từ bên ngoài
 const InputComponent = forwardRef<HTMLInputElement, Props>(
   ({ type, value, placeholder, name, onChange, onKeyDown, hasError }, ref) => {
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -23,16 +21,15 @@ const InputComponent = forwardRef<HTMLInputElement, Props>(
 
     return (
       <div className="relative">
-        <Input
+        <input
+          ref={ref}
           onKeyDown={onKeyDown}
-          ref={ref} // 👈 sử dụng ref chính xác
           type={type === 'password' && isPasswordVisible ? 'text' : type}
           value={value}
           name={name}
           onChange={onChange}
           placeholder={placeholder}
           autoComplete="on"
-          //   className="bg-transparent mt-6 w-full px-4 py-3 text-white hover:bg-transparent focus:bg-transparent border border-white rounded-md placeholder-gray-400 focus:ring-white"
           className={`bg-transparent mt-6 w-full px-4 py-3 text-white hover:bg-transparent focus:bg-transparent border ${
             hasError ? 'border-red-500' : 'border-white'
           } rounded-md placeholder-gray-400 focus:ring-white`}
@@ -43,18 +40,17 @@ const InputComponent = forwardRef<HTMLInputElement, Props>(
             className="absolute right-6 top-2/3 transform -translate-y-1/2 cursor-pointer text-white hover:text-gray-200"
           >
             {isPasswordVisible ? (
-              <FaEyeSlash size={20} color="#fff" />
+              <FaEyeSlash size={20} />
             ) : (
-              <FaEye size={20} color="#fff" />
+              <FaEye size={20} />
             )}
           </span>
         )}
       </div>
     );
-  },
+  }
 );
 
-// 👇 thêm display name để debug dễ hơn
 InputComponent.displayName = 'InputComponent';
 
 export default InputComponent;

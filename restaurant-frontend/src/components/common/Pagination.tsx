@@ -8,6 +8,7 @@ interface PaginationProps {
   onPageChange: (page: number) => void;
   limit: number;
   onLimitChange: (newLimit: number) => void;
+  showLimit?: boolean;
 }
 
 const Pagination: React.FC<PaginationProps> = ({
@@ -16,6 +17,7 @@ const Pagination: React.FC<PaginationProps> = ({
   onPageChange,
   limit,
   onLimitChange,
+  showLimit = true,
 }) => {
   const getPageNumbers = () => {
     const maxVisible = 8;
@@ -26,27 +28,27 @@ const Pagination: React.FC<PaginationProps> = ({
 
   return (
     <div className="flex justify-between items-center flex-wrap gap-4 md:gap-6">
-      {/* limit */}
-      <div className="flex items-center mb-4 md:mb-0 relative">
-        <span className="text-white mr-2">Hiển thị</span>
-        <div className="relative">
-          <select
-            value={limit}
-            onChange={(e) => onLimitChange(Number(e.target.value))}
-            className="appearance-none bg-bodyBackground text-white rounded px-2 py-1 text-sm md:text-base border border-gray-600 pr-8"
-          >
-            <option value={12}>12</option>
-            <option value={24}>24</option>
-            <option value={36}>36</option>
-            <option value={48}>48</option>
-            <option value={100}>100</option>
-          </select>
-          <FiChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 text-white pointer-events-none" />
+      {showLimit !== false && (
+        <div className="flex items-center mb-4 md:mb-0 relative">
+          <span className="text-white mr-2">Hiển thị</span>
+          <div className="relative">
+            <select
+              value={limit}
+              onChange={(e) => onLimitChange(Number(e.target.value))}
+              className="appearance-none bg-bodyBackground text-white rounded px-2 py-1 text-sm md:text-base border border-gray-600 pr-8"
+            >
+              <option value={12}>12</option>
+              <option value={24}>24</option>
+              <option value={36}>36</option>
+              <option value={48}>48</option>
+              <option value={100}>100</option>
+            </select>
+            <FiChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 text-white pointer-events-none" />
+          </div>
+          <span className="text-white ml-2">món ăn mỗi trang</span>
         </div>
-        <span className="text-white ml-2">món ăn mỗi trang</span>
-      </div>
+      )}
 
-      {/* phân trang */}
       <nav className="flex items-center justify-center flex-wrap gap-4">
         {currentPage > 1 && (
           <button
@@ -83,7 +85,6 @@ const Pagination: React.FC<PaginationProps> = ({
         )}
       </nav>
 
-      {/* Thông tin phân trang */}
       <div className="text-white text-sm md:text-base">
         <span>
           Trang&nbsp;

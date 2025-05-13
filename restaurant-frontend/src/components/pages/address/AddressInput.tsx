@@ -19,17 +19,22 @@ interface AddressData {
     state_district?: string;
     region?: string;
     city?: string;
-    road?: string;
   };
 }
 
 // 🧠 Hàm format địa chỉ để tránh undefined
 const formatAddress = (item: AddressData): string => {
-  const full = item.display_name;
-  const cut = full.split(', Việt Nam')[0];
-  return cut.replace(/, Thành phố Hồ Chí Minh$/, '');
-};
+  const ward = item.address.suburb || item.address.village || '';
+  const district =
+    item.address.city_district ||
+    item.address.county ||
+    item.address.state_district ||
+    item.address.region ||
+    '';
+  const base = item.display_name.split(', Thành phố Hồ Chí Minh')[0];
 
+  return `${base}${ward ? `, Phường ${ward}` : ''}${district ? `, Quận ${district}` : ''}, TP. Hồ Chí Minh`;
+};
 
 export const AddressInput: React.FC<AddressInputProps> = ({
   value,
@@ -85,7 +90,7 @@ export const AddressInput: React.FC<AddressInputProps> = ({
               key={index}
               className="p-2 hover:bg-headerBackground cursor-pointer"
               onClick={() => {
-                onSelectLocation(parseFloat(item.lat), parseFloat(item.lon), item.address.road || '');
+                onSelectLocation(parseFloat(item.lat), parseFloat(item.lon), addressText);
                 setSuggestions([]);
                 setQuery(addressText);
               }}

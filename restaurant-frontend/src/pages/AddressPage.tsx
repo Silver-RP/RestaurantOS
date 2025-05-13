@@ -21,13 +21,16 @@ const AddressPage: React.FC = () => {
                 name: 'Nguyễn Thanh Tiến',
                 phone: '0376491104',
                 address: 'C10.07 Tòa C chung cư Sadora, Quận 2, Hồ Chí Minh',
+                coordinates: { lat: 10.7769, lon: 106.7009 },
+                addressType: 'home',
               }}
               otherAddresses={[
                 {
                   name: 'Nguyễn Ngọc Mỹ',
                   phone: '0378217272',
-                  address:
-                    'Đối diện Lotte Lê Văn Lương, Quận Gò Vấp, Hồ Chí Minh',
+                  address: 'Đối diện Lotte Lê Văn Lương, Quận Gò Vấp, Hồ Chí Minh',
+                  coordinates: { lat: 10.8231, lon: 106.6297 },
+                  addressType: 'home',
                 },
               ]}
             />

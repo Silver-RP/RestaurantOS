@@ -5,7 +5,6 @@ import { store } from "./redux/store";
 import 'react-toastify/dist/ReactToastify.css';
 import 'react-confirm-alert/src/react-confirm-alert.css';
 import { GoogleOAuthProvider } from "@react-oauth/google";
-import AppLayout from "./layouts/AppLayout";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ToastConfig } from "@components/common/ToastConfig";
 import ScrollToTop from "@components/common/ScrollToTop";
@@ -13,6 +12,7 @@ import QuickViewModal from "@components/pages/menu/QuickViewModal";
 import AppRoutes from "./routers/index";
 import AuthInitializer from "./utils/AuthInitializer";
 // import SearchModal from "@components/common/SearchModal";
+import SearchModal from "@components/common/SearchModal";
 
 const queryClient = new QueryClient();
 
@@ -28,9 +28,10 @@ const App = () => {
           <ToastConfig />
           <AppRoutes />
           <QuickViewModal /> 
+          <SearchModal/>
         </Router>
       </QueryClientProvider>
-      {/* <SearchModal/> */}
+     
     </Provider>
     </GoogleOAuthProvider>
   );

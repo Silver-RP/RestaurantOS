@@ -5,11 +5,13 @@ import { ProductCardProps } from '../../types/ProductCard.types';
 import { useAppDispatch } from '../../redux/hook';
 import { openQuickView } from '../../redux/feature/quickView/quickViewSlice';
 import { FilledStar, HalfStar, EmptyStar } from '../common/StarIcons';
+import { useAddToCart } from '@hooks/useCart';
+
 const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const handleNavigateToDetail = () => {
-    navigate(`/product/${rest.slug}`);
+    navigate(`/foods/${rest.slug}`);
   };
   const formatNumberShort = (num: number): string => {
     if (num >= 1_000_000)
@@ -17,6 +19,7 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
     if (num >= 1_000) return (num / 1_000).toFixed(num >= 10_000 ? 0 : 1) + 'k';
     return num.toString();
   };
+  const { mutate: addToCart } = useAddToCart();
 
   return (
     <div className="bg-primaryBackground rounded-lg overflow-hidden shadow-md w-full h-full group">
@@ -62,6 +65,13 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
         <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 flex gap-2 transition-all duration-500 ease-in-out">
           <div className="relative group/tooltip">
             <button
+              onClick = {
+                () => {
+                  addToCart({
+                    dishId: rest.id,
+                    quantity: 1,
+                  });
+              }}
               className="p-1.5 sm:p-2 bg-white text-[#002B40] rounded-full shadow-md 
                        hover:bg-secondaryColor hover:text-white hover:-translate-y-1 transition-all duration-300"
             >
@@ -150,7 +160,7 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
         </p>
 
         <h3
-          className="text-base sm:text-lg font-light mb-1 cursor-pointer hover:text-secondaryColor transition-colors line-clamp-2 break-words overflow-hidden text-ellipsis min-h-[3rem]"
+          className="text-base sm:text-lg font-light mb-1 cursor-pointer hover:text-secondaryColor transition-colors line-clamp-2 break-words overflow-hidden text-ellipsis min-h-[3.5rem]"
           onClick={handleNavigateToDetail}
         >
           {rest.name || 'Tên sản phẩm'}
@@ -180,16 +190,20 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
             </>
           )}
         </div>
-        <div className="flex flex-col items-center space-y-1">
-          {rest.originalPrice && (
-            <div className="text-xs sm:text-sm font-light text-gray-400 line-through">
-              {rest.originalPrice.toLocaleString()} VND
-            </div>
-          )}
-          <div className="text-base sm:text-lg font-light text-secondaryColor">
-            {rest.price?.toLocaleString() || '0'} VND
-          </div>
-        </div>
+        <div className="h-[60px] flex flex-col items-center justify-end space-y-1">
+  {rest.originalPrice && rest.originalPrice > rest.price ? (
+    <div className="text-xs sm:text-sm font-light text-gray-400 line-through">
+      {rest.originalPrice.toLocaleString()} VND
+    </div>
+  ) : (
+    <div className="text-xs sm:text-sm font-light invisible">
+      9&nbsp;999&nbsp;999&nbsp;VND
+    </div>
+  )}
+  <div className="text-base sm:text-lg font-light text-secondaryColor">
+    {rest.price?.toLocaleString()} VND
+  </div>
+</div>
       </div>
     </div>
   );

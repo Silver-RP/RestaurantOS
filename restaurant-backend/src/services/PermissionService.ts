@@ -1,4 +1,5 @@
 import PermissionsModel from '../models/PermissionModel';
+
 class PermissionService {
   async GetALlPermission(): Promise<any> {
     try {

@@ -4,6 +4,7 @@ import { closeQuickView } from '../../../redux/feature/quickView/quickViewSlice'
 import { RootState } from 'redux/store';
 import { FilledStar, HalfStar, EmptyStar } from '../../common/StarIcons';
 import ButtonComponents from '../../common/ButtonComponents';
+import { useAddToCart } from '@hooks/useCart';
 
 const QuickViewModal = () => {
   const dispatch = useDispatch();
@@ -11,10 +12,11 @@ const QuickViewModal = () => {
     (state: RootState) => state.quickView.selectedProduct,
   );
   const [quantity, setQuantity] = useState(1);
+  const { mutate: addToCart } = useAddToCart();
   if (!product) return null;
-
   const rating = Math.round((product.average_rating ?? 0) * 2) / 2;
 
+ 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[100] p-4">
       <div className="bg-headerBackground rounded-lg overflow-hidden max-w-4xl md:max-w-5xl w-full relative flex flex-col md:flex-row shadow-lg">
@@ -82,12 +84,16 @@ const QuickViewModal = () => {
             </div>
 
             <ButtonComponents
-          variant="filled"
-         size='small'
-          onClick={() => console.log(`Thêm ${quantity} sản phẩm vào giỏ hàng`)}
-        >
-          THÊM GIỎ HÀNG
-        </ButtonComponents>
+              variant="filled"
+              size="small"
+              onClick={() =>
+                addToCart(
+                  { dishId: product._id, quantity },                 
+                )
+              }
+            >
+              THÊM GIỎ HÀNG
+            </ButtonComponents>
           </div>
 
           <div className="flex flex-wrap gap-4">

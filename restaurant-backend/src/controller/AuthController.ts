@@ -1,10 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import bcrypt from 'bcrypt';
-import { accessToken, refreshToken } from '../services/GenerateToken';
 import AuthService from '../services/AuthService';
-import GoogleAuthMiddleWare from '../middleware/GoogleAuthMiddleWare';
-import mongoose from 'mongoose';
-import Roles from '../models/RoleModel';
 class AuthController {
   async register(req: Request, res: Response): Promise<any> {
     try {
@@ -26,24 +21,27 @@ class AuthController {
 
   async login(req: Request, res: Response): Promise<any> {
     try {
-      const { email, password } = req.body;
+      const { email, password, rememberMe } = req.body;
 
-      const { token, refresh_token, user } = await AuthService.login({
-        email,
-        password,
-      });
+      const { token, refresh_token, user, refreshTokenExpiresIn } = await AuthService.login(
+        { email, password, rememberMe },
+        req
+      );
 
       res.cookie('refreshToken', refresh_token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-        maxAge: 365 * 24 * 60 * 60 * 1000, 
+        ...(rememberMe ? { maxAge: refreshTokenExpiresIn * 1000 } : {}),
       });
+
+      console.log('Login refreshTokenExpiresIn:', refreshTokenExpiresIn);
 
       res.status(200).json({
         message: 'User logged in successfully',
         user,
         accessToken: token,
+        refreshToken: refresh_token, // for testing
       });
     } catch (error: any) {
       res.status(400).json({ message: error.message });
@@ -53,15 +51,23 @@ class AuthController {
   async refreshAccessToken(req: Request, res: Response): Promise<any> {
     try {
       const { refreshToken } = req.cookies;
-      const { newAccessToken } = await AuthService.refreshAccessToken(refreshToken);
+      const { newAccessToken, newRefreshToken } = await AuthService.refreshAccessToken(refreshToken, req);
+  
       res.cookie('accessToken', newAccessToken, {
         httpOnly: false,
         secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-        maxAge: 60 * 1000,
+        maxAge: 60 * 60 * 1000,
       });
-
-      res.status(200).json({ accessToken: newAccessToken }); // vẫn trả ra nếu FE dùng
+  
+      res.cookie('refreshToken', newRefreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        maxAge: 21 * 24 * 60 * 60 * 1000,
+      });
+  
+      res.status(200).json({ accessToken: newAccessToken });
     } catch (error: any) {
       res.status(400).json({ message: error.message });
     }
@@ -70,31 +76,48 @@ class AuthController {
   async googleLogin(req: Request, res: Response): Promise<any> {
     try {
       const googleUser = req.body.googleUser;
+      const rememberMe = req.body.rememberMe;
+  
       if (!googleUser) {
         return res.status(400).json({ message: 'Google user data is missing' });
       }
+  
       const { email, name, avatar, sub } = googleUser;
-      const { user, accessToken, refreshToken } = await AuthService.googleLogin({
+  
+      const {
+        user,
+        accessToken,
+        refreshToken,
+        refreshTokenExpiresIn,
+      } = await AuthService.googleLogin({
         id: sub,
         email,
         googleId: sub,
         username: name,
         avatar,
+        rememberMe,
       });
+  
       res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'none',
-        maxAge: 24 * 60 * 60 * 1000, // 1 ngày
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        maxAge: refreshTokenExpiresIn * 1000, 
       });
-      // Trả về kết quả cho frontend
+
+      console.log('Google login refreshTokenExpiresIn:', refreshTokenExpiresIn);
+  
       return res.status(200).json({
         message: 'Google login successful',
         user,
         accessToken,
+        refreshToken, // for testing
       });
     } catch (error: any) {
-      return res.status(400).json({ message: 'Error during Google login', error: error.message });
+      return res.status(400).json({
+        message: 'Error during Google login',
+        error: error.message,
+      });
     }
   }
 
@@ -121,14 +144,15 @@ class AuthController {
       if (!refreshToken) {
         return res.status(400).json({ message: 'No refresh token provided' });
       }
-      // console.log(refreshToken);
 
       await AuthService.logout(refreshToken);
+
       res.clearCookie('refreshToken', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'none',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       });
+      
       res.status(200).json({ message: 'Logout successful' });
     } catch (error: any) {
       res.status(400).json({ message: error.message });

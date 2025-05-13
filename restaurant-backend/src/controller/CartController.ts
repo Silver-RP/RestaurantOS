@@ -2,6 +2,12 @@ import { Request, Response } from 'express';
 import cartService from '../services/CartService';
 import { IUser } from '../models/UserModel';
 
+interface AuthenticatedRequest extends Request {
+  user?: {
+    _id: string;
+  };
+}
+
 class CartController {
 
   static async getCartItems(req: Request, res: Response): Promise<void> {
@@ -53,37 +59,43 @@ class CartController {
   }
 
   static async UpdateCart(req: Request, res: Response): Promise<void> {
-    try {
-      const { id } = req.params;
-      const { dishId, quantity } = req.body;
+  try {
 
-      if (!id || !dishId || typeof quantity !== 'number') {
-        res.status(400).json({ success: false, message: 'Missing or invalid input fields' });
-        return;
-      }
-      const updatedCart = await cartService.UpdateCart(id, dishId, quantity);
-      res.status(200).json({
-        success: true,
-        message: 'Cart updated successfully',
-        data: updatedCart,
-      });
-    } catch (error: any) {
-      console.error('Error updating cart:', error);
-      res.status(500).json({
-        success: false,
-        message: error.message || 'Internal Server Error',
-      });
+    const { dishId, quantity } = req.body; 
+    const userId = (req.user as IUser).id?.toString();
+
+    if (!dishId || quantity === undefined) {
+      res.status(400).json({ success: false, message: 'Missing dishId or quantity' });
+      return;
+    }
+
+    const updatedCart = await cartService.UpdateCart(userId, dishId, quantity);
+    
+    res.status(200).json({
+      success: true,
+      message: 'Cart updated successfully',
+      data: updatedCart,
+    });
+  } catch (error: unknown) {
+    console.error('Error updating cart:', error);
+    if (error instanceof Error) {
+      res.status(500).json({ success: false, message: error.message });
+    } else {
+      res.status(500).json({ success: false, message: 'Internal Server Error' });
     }
   }
+}
 
   static async DeleteCartItem(req: Request, res: Response): Promise<void> {
     try {
-      const { cartId, dishId } = req.params;
-      if (!cartId || !dishId) {
-        res.status(400).json({ success: false, message: 'Missing cartId or dishId' });
+      const { dishId } = req.params;
+      const userId = (req.user as IUser).id?.toString();
+
+      if (!dishId) {
+        res.status(400).json({ success: false, message: 'Missing dishId' });
         return;
       }
-      const updatedCart = await cartService.DeleteCartItem(cartId, dishId);
+      const updatedCart = await cartService.DeleteCartItem(userId, dishId);
       if (!updatedCart) {
         res.status(404).json({ success: false, message: 'Cart not found' });
         return;

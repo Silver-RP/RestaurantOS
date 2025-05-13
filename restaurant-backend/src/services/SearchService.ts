@@ -1,6 +1,5 @@
-import mongoose, { FilterQuery, Model } from 'mongoose';
-import Roles from '../models/RoleModel';
-import User, { IUser } from '../models/UserModel';
+import { Model } from 'mongoose';
+import User from '../models/UserModel';
 
 class SearchService {
   async search(model: Model<any>, query: any, searchFields: string[]): Promise<any> {

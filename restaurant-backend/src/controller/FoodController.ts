@@ -151,6 +151,23 @@ class FoodController {
     }
   }
 
+  async getFoodByNewest(_: Request, res: Response): Promise<any> {
+    try {
+      const food = await FoodService.getFoodByNewest();
+      return res.status(200).json({
+        success: true,
+        message: 'Food retrieved successfully',
+        data: food,
+      });
+    } catch (error) {
+      console.error('Error getting food by newest:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Error getting food by newest',
+      });
+    }
+  }
+
   async updateFood(req: Request, res: Response): Promise<any> {
     try {
       const { id } = req.params;
@@ -251,6 +268,29 @@ class FoodController {
     }
   }
 
+  async getFoodBest4(req: Request, res: Response): Promise<any> {
+    try {
+      const { category } = req.query; 
+      if (!category || typeof category !== 'string') {
+        return res.status(400).json({
+          success: false,
+          message: 'Missing or invalid category parameter',
+        });
+      }
+
+      const dishes = await FoodService.getFoodBest4(category); 
+
+      return res.status(200).json({
+        success: true,
+        message: 'Food retrieved successfully',
+        data: dishes,
+      });
+    } catch (error) {
+      console.error('Error in getFoodBest4:', error);
+      return res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+  }
+
   async SearchFood(req: Request, res: Response): Promise<any> {
     try {
       const result = await SearchService.search(Dish, req.query, ['name']);
@@ -272,7 +312,7 @@ class FoodController {
       console.log('User ID:', userId);
       console.log('Dish ID:', dishId);
 
-      if(!dishId){
+      if (!dishId) {
         return res.status(400).json({ message: 'Dish ID is required' });
       }
 
@@ -298,13 +338,24 @@ class FoodController {
           data: favoriteFoods ?? [],
         });
       }
-      return res.status(200).json({ message: 'Favorite foods retrieved successfully', data: favoriteFoods });
+      return res
+        .status(200)
+        .json({ message: 'Favorite foods retrieved successfully', data: favoriteFoods });
     } catch (error) {
       console.error('Error getting favorite foods:', error);
       return res.status(500).json({ message: 'Internal server error' });
     }
   }
 
-  
+  async countFoodView(req: Request, res: Response): Promise<any> {
+    try {
+      const foodId = req.params.foodId;
+      const updatedFood = await FoodService.countFoodView(foodId);
+      return res.status(200).json({ data: updatedFood });
+    } catch (error) {
+      console.error('Error counting food view:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  }
 }
 export default new FoodController();

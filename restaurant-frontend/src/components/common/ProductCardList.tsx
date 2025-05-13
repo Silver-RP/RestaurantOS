@@ -26,6 +26,7 @@ const ProductCardList: React.FC<ProductCardProps> = ({
   price,
   originalPrice,
   cate,
+  categories,
   discount,
   isNew,
   slug,
@@ -40,7 +41,7 @@ const ProductCardList: React.FC<ProductCardProps> = ({
   const dispatch = useAppDispatch();
 
   const handleNavigateToDetail = () => {
-    navigate(`/product/${slug}`);
+    navigate(`/foods/${slug}`);
   };
 
   const handleQuickView = (e: React.MouseEvent) => {
@@ -62,7 +63,7 @@ const ProductCardList: React.FC<ProductCardProps> = ({
         rating_count: rating_count ?? 0,
         favorites_count: 0,
         rating: rating ?? 4,
-        categories: [],
+        categories: categories || [],
         countInStock: 10,
         images: [imageUrl],
         createdAt: createdAt ?? new Date().toISOString(),
@@ -94,7 +95,7 @@ const ProductCardList: React.FC<ProductCardProps> = ({
           <img
             src={hoverImage}
             alt={`${name} Hover`}
-            className="w-full h-full object-cover absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            className="w-full h-full object-cover absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
           />
         )}
 

@@ -1,7 +1,8 @@
 import { Dish } from '../models/DishModel';
 import Category from '../models/CategoryModel';
 import { Favorite } from '../models/FavoriteModel';
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
+
 class FoodService {
   async createFood(food: any) {
     const newfood = new Dish(food);
@@ -46,7 +47,7 @@ class FoodService {
     if (search) {
       query.$or = [
         { name: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } },
+        // { description: { $regex: search, $options: 'i' } },
       ];
     }
 
@@ -129,6 +130,15 @@ class FoodService {
     return food;
   }
 
+  async getFoodByNewest() {
+    try {
+      const foodNewest = await Dish.find().sort({ createdAt: -1 }).limit(10).populate('categories');
+      return foodNewest;
+    } catch (error) {
+      console.error('Error in getFoodByNewest:', error);
+    }
+  }
+
   async getFoodById(id: string) {
     try {
       const food = await Dish.findById(id).populate('categories');
@@ -136,7 +146,7 @@ class FoodService {
     } catch (error) {
       throw new Error('Error getting food by id');
     }
-  } 
+  }
 
   async updateFood(id: string, food: any) {
     try {
@@ -194,6 +204,39 @@ class FoodService {
       throw new Error('Error getting food by rating');
     }
   }
+
+
+async getFoodBest4(categoryId: string) {
+  try {
+    const objectId = new mongoose.Types.ObjectId(categoryId);
+
+    const foodNewest = await Dish.aggregate([
+      {
+        $match: { categories: { $in: [objectId] } }
+      },
+      {
+        $sort: { favorites_count: -1 }
+      },
+      {
+        $limit: 20
+      },
+      {
+        $lookup: {
+          from: 'categories',
+          localField: 'categories',
+          foreignField: '_id',
+          as: 'categories'
+        }
+      }
+    ]);
+
+    return foodNewest;
+  } catch (error) {
+    console.error('Error in getFoodBest4:', error);
+    throw new Error('Error fetching food by category');
+  }
+}
+
 
   async getFoodByFavorites(favorites: number, type: string) {
     try {
@@ -283,28 +326,28 @@ class FoodService {
         throw new Error('Food not found');
       }
       const existingFavorite = await Favorite.findOne({ userId, dishId });
-      
+
       if (existingFavorite) {
         await Favorite.deleteOne({ userId, dishId });
-        return { 
+        return {
           message: 'Favorite removed successfully',
           isFavortite: false,
-       };
+        };
       } else {
         const newFavorite = new Favorite({
           userId,
-          dishId, 
+          dishId,
         });
-  
+
         if (!newFavorite.dishId) {
           throw new Error('dishId is required');
         }
-  
+
         await newFavorite.save();
-        return { 
+        return {
           message: 'Favorite added successfully',
           isFavortite: true,
-         };
+        };
       }
     } catch (error) {
       console.error('Error toggling favorite:', error);
@@ -314,24 +357,36 @@ class FoodService {
 
   async getFavoriteFoods(userId: Types.ObjectId) {
     try {
-      const favorites = await Favorite.find({ userId })
-        .populate('dishId')
-        .lean();
-  
+      const favorites = await Favorite.find({ userId }).populate('dishId').lean();
+
       if (!favorites || favorites.length === 0) {
         return {
           message: 'No favorite foods found',
           data: [],
         };
       }
-  
+
       return favorites.map((fav) => fav.dishId);
     } catch (error) {
       console.error('Error getting favorite foods:', error);
       throw new Error('Error getting favorite foods');
     }
   }
-  
+
+  async countFoodView(foodId: string) {
+    try {
+      const food = await Dish.findById(foodId);
+      if (!food) {
+        throw new Error('Food not found');
+      }
+      food.views = (food.views || 0) + 1;
+      await food.save();
+      return food;
+    } catch (error) {
+      console.error('Error counting food view:', error);
+      throw new Error('Error counting food view');
+    }
+  }
 }
 
 export default new FoodService();

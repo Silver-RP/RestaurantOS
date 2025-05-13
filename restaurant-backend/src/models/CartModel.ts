@@ -5,6 +5,7 @@ export interface ICart extends Document {
     dishId: Types.ObjectId;
     quantity: number;
     price: number;
+    note: null;
   }[];
   totalPrice: number;
   createdAt: Date;

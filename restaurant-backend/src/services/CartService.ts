@@ -8,7 +8,7 @@ class CartService {
       throw new Error('Invalid userId');
     }
 
-    const cart = await Cart.findOne({ userId, status: 'pending' }).populate('items.dishId');
+    const cart = await Cart.findOne({ userId}).populate('items.dishId');
 
     if (!cart) {
       throw new Error('Cart not found');
@@ -30,7 +30,7 @@ class CartService {
     session.startTransaction();
 
     try {
-      let cart = await Cart.findOne({ userId, status: 'pending' }).session(session);
+      let cart = await Cart.findOne({ userId}).session(session);
       if (!cart) {
         cart = new Cart({
           userId: new mongoose.Types.ObjectId(userId),
@@ -76,12 +76,12 @@ class CartService {
     }
   }
 
-  static async UpdateCart(id: string, dishId: string, quantity: number) {
-    if (!mongoose.Types.ObjectId.isValid(id) || !mongoose.Types.ObjectId.isValid(dishId)) {
-      throw new Error('Invalid cartId or dishId');
+  static async UpdateCart(userId: string, dishId: string, quantity: number) {
+    if (!mongoose.Types.ObjectId.isValid(dishId)) {
+      throw new Error('Invalid dishId');
     }
 
-    const cart = await Cart.findById(id);
+    const cart = await Cart.findOne({ userId });
     if (!cart) {
       throw new Error('Cart not found');
     }
@@ -118,7 +118,6 @@ class CartService {
         price: dish.price,
       });
     }
-
     // Cập nhật lại tổng tiền
     cart.totalPrice = cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
@@ -126,11 +125,11 @@ class CartService {
     return cart;
   }
 
-  static async DeleteCartItem(cartId: string, dishId: string) {
-    if (!mongoose.Types.ObjectId.isValid(cartId) || !mongoose.Types.ObjectId.isValid(dishId)) {
-      throw new Error('Invalid cartId or dishId');
+  static async DeleteCartItem(userId: string, dishId: string) {
+    if (!mongoose.Types.ObjectId.isValid(dishId)) {
+      throw new Error('Invalid dishId');
     }
-    const cart = await Cart.findById(cartId);
+    const cart = await Cart.findOne({ userId });
     if (!cart) {
       throw new Error('Cart not found');
     }
