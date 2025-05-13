@@ -6,6 +6,16 @@ import { Address } from "@components/pages/checkout/ModalSelectAddress";
 import { Voucher } from "@components/pages/checkout/VoucherSelector";
 import { DeliveryTime } from "@components/pages/checkout/ModalSelectDeliveryTime";
 import { useGetCart } from "@hooks/useCart";
+import { useNavigate } from "react-router-dom";
+
+// Define a Product type to fix TypeScript errors
+interface Product {
+  image: string;
+  name: string;
+  price: number;
+  quantity: number;
+  category?: string;
+}
 
 const CheckoutPage = () => {
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -14,38 +24,36 @@ const CheckoutPage = () => {
   const [shippingFee, setShippingFee] = useState<number>(25000);
   const [vouchers, setVouchers] = useState<Voucher[]>([]);
   const [deliveryTime, setDeliveryTime] = useState<DeliveryTime>({ type: "now" });
+  const [products, setProducts] = useState<Product[]>([]);
   const { data: cart } = useGetCart();
+  const navigate = useNavigate();
 
-  // const [products] = useState([
-  //   {
-  //     image: "/assets/images/products/SP5.jpg",
-  //     name: "Bánh mì chả lụa",
-  //     price: 20000,
-  //     quantity: 2,
-  //     category: "Bánh mì",
-  //   },
-  //   {
-  //     image: "/assets/images/products/SP6.jpg",
-  //     name: "Gỏi cuốn tôm thịt",
-  //     price: 15000,
-  //     quantity: 3,
-  //     category: "Món khác",
-  //   },
-  // ]);
-
-  console.log(cart);
-  
-
-  const products = cart?.items?.map((item) => ({
-    image: item.dishId.images[0],
-    name: item.dishId.name,
-    price: item.dishId.price,
-    quantity: item.quantity,
-    category: item.dishId.categories?.[0]?.Cate_name,
-  }));
-  
-  console.log(products);
-  
+  useEffect(() => {
+    const selectedItemsStr = localStorage.getItem('selectedCartItems');
+    
+    if (selectedItemsStr) {
+      try {
+        const selectedItems = JSON.parse(selectedItemsStr);
+        
+        if (selectedItems && selectedItems.length > 0) {
+          const formattedProducts: Product[] = selectedItems.map((item: any) => ({
+            image: item.imageUrl,
+            name: item.name,
+            price: item.discountedPrice || item.price,
+            quantity: item.quantity,
+            category: item.category || ""
+          }));
+          
+          setProducts(formattedProducts);
+        } else {
+          navigate('/cart');
+        }
+      } catch (error) {
+        console.error("Error parsing selected items:", error);
+        navigate('/cart');
+      }
+    } 
+  }, [cart, navigate]);
 
   const mockAddresses: Address[] = [{
     id: 1,

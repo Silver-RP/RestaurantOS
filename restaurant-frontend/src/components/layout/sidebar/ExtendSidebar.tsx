@@ -18,8 +18,9 @@ import { BsPersonCheck } from 'react-icons/bs';
 import { Link } from 'react-router-dom';
 import ButtonComponents from '../../common/ButtonComponents';
 import NavExtend from './NavExtend';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { openSearchModal } from '../../../redux/feature/searchModal/searchModalSlice';
+import Cookies from 'js-cookie';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -43,6 +44,9 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
 
   const fontSize = windowHeight <= 600 ? 'text-sm' : 'text-base';
   const iconSize = windowHeight <= 600 ? 'text-xl' : 'text-2xl';
+
+  const userInfo = Cookies.get('userInfo');
+  const user = userInfo ? JSON.parse(userInfo) : null;
 
   return (
     <div
@@ -80,16 +84,19 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
 
           <div className="flex flex-col items-center space-y-4 sm:space-y-6 md:space-y-8 mt-6">
             <div className="flex space-x-6 sm:space-x-8 text-lg sm:text-xl">
-              <Link to="/login" aria-label="Login">
-                <FiUser
-                  className={`text-white hover:text-secondaryColor ${iconSize}`}
-                />
-              </Link>
+              {user ? (
               <Link to="/profile" aria-label="Login">
                 <BsPersonCheck
                   className={`text-white hover:text-secondaryColor ${iconSize}`}
                 />
               </Link>
+              ) : (
+              <Link to="/login" aria-label="Login">
+                <FiUser
+                  className={`text-white hover:text-secondaryColor ${iconSize}`}
+                />
+              </Link>
+              )}
               <div className="relative">
                 <FiHeart
                   className={`text-white hover:text-secondaryColor ${iconSize}`}

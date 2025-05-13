@@ -9,7 +9,9 @@ import {
   FaSignOutAlt,
   FaAngleLeft,
   FaAngleRight,
+  
 } from 'react-icons/fa';
+import { GiHotMeal } from "react-icons/gi";
 import classNames from 'classnames';
 import { useAdminSidebar } from '../contexts/AdminSidebarContext';
 import AdminHeader from '../components/layout/AdminHeader';
@@ -44,7 +46,7 @@ const AdminLayout: React.FC = () => {
           <nav className="flex flex-col gap-6 w-full items-center">
             <NavItem href="/admin" icon={<FaHome />} label="Trang chủ" expanded={isSidebarOpen} />
             <NavItem href="/admin/foods" icon={<FaUtensils />} label="Món ăn" expanded={isSidebarOpen} />
-            <NavItem href="/admin/categories" icon={<FaUtensils />} label="Danh mục" expanded={isSidebarOpen} />
+            <NavItem href="/admin/categories" icon={<GiHotMeal />} label="Danh mục" expanded={isSidebarOpen} />
             <NavItem href="/admin/posts" icon={<FaFileAlt />} label="Bài viết" expanded={isSidebarOpen} />
             <NavItem href="/admin/about" icon={<FaInfoCircle />} label="Giới thiệu" expanded={isSidebarOpen} />
             <NavItem href="/admin/contact" icon={<FaEnvelope />} label="Liên hệ" expanded={isSidebarOpen} />
