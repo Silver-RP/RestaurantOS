@@ -65,6 +65,7 @@ class OrderService {
           $inc: {
             ordered_count: 1,
             totalSoldQuantity: item.quantity,
+            countInStock: -1 * item.quantity,
           },
         },
         { session }
