@@ -1,16 +1,14 @@
 import React, { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  ChangePasswordSchema,
-  changePasswordSchema,
-} from '../schemas/auth.schema';
+
 import InputComponent from '../components/pages/login/InputComponents';
 import ButtonComponent from '../components/pages/login/ButtonComponents';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { SlActionUndo } from 'react-icons/sl';
 import { toast } from 'react-toastify';
 import { useChangePassword } from '../hooks/useAuth';
+import { changePasswordSchema, ChangePasswordSchema } from '../types/Auth.type';
 
 const ResetPassword = () => {
   const navigate = useNavigate();

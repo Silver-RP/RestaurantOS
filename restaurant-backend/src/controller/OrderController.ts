@@ -43,10 +43,6 @@ class OrderController {
       const parsedPage = parseInt(page as string, 10);
       const parsedLimit = parseInt(limit as string, 10);
       const filtersObject = filters ? (filters as { [key: string]: string }) : {};
-
-      console.log('Filters:', filters);
-      console.log('MongoDB Query:', req.query);
-
       const options = {
         page: parsedPage,
         limit: parsedLimit,

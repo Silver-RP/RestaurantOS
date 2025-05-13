@@ -65,7 +65,7 @@ export const useChangePassword = () => {
         newPassword,
         confirmPassword,
       );
-      console.log('Change password response:', response);
+    
       return response;
     } catch (err: any) {
       const message = err?.response?.data?.message || 'Lỗi khi đổi mật khẩu';

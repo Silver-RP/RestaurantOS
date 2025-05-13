@@ -1,10 +1,6 @@
 import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  forgotPasswordSchema,
-  ForgotPasswordSchema,
-} from '../schemas/auth.schema';
 import InputComponent from '../components/pages/Login/InputComponents';
 import ButtonComponent from '../components/pages/Login/ButtonComponents';
 import { Link } from 'react-router-dom';
@@ -13,6 +9,7 @@ import { toast } from 'react-toastify';
 import { useSendOtpEmail } from '../hooks/useAuth';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { forgotPasswordSchema, ForgotPasswordSchema } from '../types/Auth.type';
 
 const ForgotPassword = () => {
   const {
@@ -34,7 +31,6 @@ const ForgotPassword = () => {
 
   useEffect(() => {
     if (error) {
-      console.log('Error state updated:', error);
       if (error === 'User not found') {
         toast.error('Email chưa được đăng ký trong hệ thống!');
       } else if (
@@ -49,7 +45,7 @@ const ForgotPassword = () => {
   }, [error]);
 
   const onSubmit = async (data: ForgotPasswordSchema) => {
-    console.log('error before API call:', error); 
+
     try {
       const res = await sendOtpEmail(data.email);
       if (res && res.message === 'OTP sent successfully') {

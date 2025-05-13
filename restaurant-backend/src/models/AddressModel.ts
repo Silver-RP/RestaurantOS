@@ -12,6 +12,8 @@ export interface IAddress extends Document {
   is_default?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
+  lat: number;
+  lon: number;
 }
 
 const AddressSchema = new Schema<IAddress>(
@@ -29,13 +31,15 @@ const AddressSchema = new Schema<IAddress>(
       default: 'HOME',
     },
     is_default: { type: Boolean, default: false },
+    lat: { type: Number },
+    lon: { type: Number },
   },
   { timestamps: true },
 );
 
 AddressSchema.index(
   { user_id: 1, is_default: 1 },
-  { unique: true, partialFilterExpression: { is_default: true } }
+  { unique: true, partialFilterExpression: { is_default: true } },
 );
 AddressSchema.set('toJSON', {
   virtuals: true,
@@ -44,7 +48,7 @@ AddressSchema.set('toJSON', {
     delete ret._id;
     delete ret.__v;
     return ret;
-  }
+  },
 });
 
 export const Address = model<IAddress>('Address', AddressSchema);

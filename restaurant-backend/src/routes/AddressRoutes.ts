@@ -8,5 +8,6 @@ router.get('/getall', AddressController.getAllAddresses)
 router.put('/update/:id', checkAddressOwner, AddressController.updateAddress)
 router.delete('/:id', checkAddressOwner, AddressController.deleteAddress);
 router.put('/set-default/:id',checkAddressOwner, AddressController.setDefaultAddress);
-router.post('/create', AddressController.createAddress); 
+router.post('/create',   AddressController.createAddress); 
+router.get('/searchmap', AddressController.searchAddress); 
 export default router;

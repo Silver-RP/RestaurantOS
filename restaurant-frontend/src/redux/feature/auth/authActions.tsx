@@ -42,6 +42,7 @@ export const LoginUser = createAsyncThunk(
       if (!accessToken) {
         console.warn('⚠️ accessToken is missing in API response');
       }
+      
       setAccessToken(accessToken, payload.rememberMe);
       setRefreshToken(refreshToken, payload.rememberMe);
       Cookies.set('userInfo', JSON.stringify(user), {
@@ -56,8 +57,6 @@ export const LoginUser = createAsyncThunk(
     }
   }
 );
-
-
 
 // Logout
 export const LogoutUser = createAsyncThunk(

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { searchAddress } from '@/api/AddressApi';
 
 interface AddressInputProps {
-  value: string; 
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; 
-  onSelectLocation: (lat: number, lon: number, address: string) => void; 
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onSelectLocation: (lat: number, lon: number, address: string) => void;
 }
 
 interface AddressData {
@@ -12,10 +13,23 @@ interface AddressData {
   display_name: string;
   address: {
     suburb?: string;
+    village?: string;
     city_district?: string;
+    county?: string;
+    state_district?: string;
+    region?: string;
     city?: string;
+    road?: string;
   };
 }
+
+// 🧠 Hàm format địa chỉ để tránh undefined
+const formatAddress = (item: AddressData): string => {
+  const full = item.display_name;
+  const cut = full.split(', Việt Nam')[0];
+  return cut.replace(/, Thành phố Hồ Chí Minh$/, '');
+};
+
 
 export const AddressInput: React.FC<AddressInputProps> = ({
   value,
@@ -37,28 +51,16 @@ export const AddressInput: React.FC<AddressInputProps> = ({
       }
 
       const fetchSuggestions = async () => {
-        const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}, Hồ Chí Minh&format=json&addressdetails=1&countrycodes=vn&limit=10`;
-      
         try {
-          const response = await fetch(url, {
-            headers: {
-              'User-Agent': 'FPTPolyStudent/1.0 (lamgiabao@example.com)',
-            },
-          });
-          const data: AddressData[] = await response.json();
-          const filtered = data.filter(item =>
-            item.address.city?.toLowerCase().includes('hồ chí minh') ||
-            item.address.city?.toLowerCase().includes('ho chi minh')
-          );
-          setSuggestions(filtered);
+          const data: AddressData[] = await searchAddress(`${query}, Hồ Chí Minh`);
+          setSuggestions(data);
         } catch (err) {
-          console.error('Fetch error:', err);
+          console.error('❌ Fetch address error:', err);
         }
       };
-      
 
       fetchSuggestions();
-    }, 100);
+    }, 300);
 
     return () => clearTimeout(timeout);
   }, [query]);
@@ -70,25 +72,22 @@ export const AddressInput: React.FC<AddressInputProps> = ({
         placeholder="Nhập địa chỉ, ví dụ: 123 Tô Ký"
         value={query}
         onChange={(e) => {
-          setQuery(e.target.value); 
-          onChange(e); 
+          setQuery(e.target.value);
+          onChange(e);
         }}
         className="w-full bg-transparent border-b border-white text-white placeholder-gray-500 focus:outline-none focus:border-secondaryColor py-2"
       />
       <ul className="rounded mt-2 bg-transparent max-h-60 overflow-y-auto">
         {suggestions.map((item, index) => {
-          const ward = item.address.suburb || 'Không xác định';
-          const district = item.address.city_district || 'Không xác định';
-          const addressText = `${item.display_name.split(', Thành phố Hồ Chí Minh')[0]}, Phường ${ward}, Quận ${district}, Thành phố Hồ Chí Minh`;
-
+          const addressText = formatAddress(item);
           return (
             <li
               key={index}
               className="p-2 hover:bg-headerBackground cursor-pointer"
               onClick={() => {
-                onSelectLocation(parseFloat(item.lat), parseFloat(item.lon), addressText); 
-                setSuggestions([]); 
-                setQuery(addressText); 
+                onSelectLocation(parseFloat(item.lat), parseFloat(item.lon), item.address.road || '');
+                setSuggestions([]);
+                setQuery(addressText);
               }}
             >
               {addressText}

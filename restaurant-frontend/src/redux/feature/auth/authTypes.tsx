@@ -1,13 +1,14 @@
 export interface User {
+  _id: string;
   username: string;
   email: string;
-  password: string;
-  confirmPassword: string;
-  phone?: string;
-  address?: string;
-  role: string[];
-  isActive: boolean;
+  avatar: string;
   isEmailVerified: boolean;
+  googleId?: string;
+  isActive: boolean; // New field to indicate if the user is active
+  roles: { _id: string; name: string }[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface AuthState {

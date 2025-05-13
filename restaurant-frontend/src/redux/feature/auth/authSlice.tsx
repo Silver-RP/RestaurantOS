@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { AuthState, User } from './authTypes';
 import { RegisterUser, LoginUser, LogoutUser, LoginWithGoogle } from './authActions';
 import Cookies from 'js-cookie';
+
 const initialState: AuthState = {
   userInfo: null,
   isAuthenticated: false,
@@ -42,6 +43,20 @@ const authSlice = createSlice({
       state.success = null;
       state.message = null;
     },
+    setUserInfo: (state, action: PayloadAction<User>) => {
+      state.userInfo = {
+        _id: action.payload._id || '', // Provide a default or actual value
+        username: action.payload.email,
+        email: action.payload.email,
+        roles: action.payload.roles || [],
+        isActive: true, 
+        isEmailVerified: false, 
+        avatar: action.payload.avatar || '', // Provide a default or actual value
+        createdAt: action.payload.createdAt || '', // Provide a default or actual value
+        updatedAt: action.payload.updatedAt || '', // Provide a default or actual value
+      };
+      state.isAuthenticated = true;
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -116,5 +131,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout, loadUserFromStorage, clearStatus } = authSlice.actions;
+export const { logout, loadUserFromStorage, clearStatus, setUserInfo } = authSlice.actions;
 export default authSlice.reducer;

@@ -108,7 +108,6 @@ const Login = () => {
 
         Cookies.set('accessToken', result.token, { expires: rememberMe ? 7 : 1 });
         Cookies.set('userInfo', JSON.stringify(result.user), { expires: rememberMe ? 7 : 1 });
-        console.log("result.token", result.token);
         
         toast.success('Đăng nhập thành công!');
         navigate('/');

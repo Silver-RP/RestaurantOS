@@ -26,7 +26,6 @@ class StaffService {
       }
 
       const query = { roles: { $ne: userRole._id } };
-      console.log('query', query);
 
       const options = {
         page,
