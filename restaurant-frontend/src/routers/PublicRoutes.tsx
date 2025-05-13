@@ -23,8 +23,6 @@ import CheckoutPage from '../pages/Checkout';
 import ReservationPage from '../pages/ReservationPage';
 import ConfirmOrder from '../pages/Confirm';
 import PostDetailsPage from '../pages/PostDetailsPage';
-import ReservationInformationPage from '../pages/ReservationInformationPage';
-import ContactReservationPage from '../pages/ContactReservationPage'; //
 
 const PublicRoutes = [
   {
@@ -53,11 +51,6 @@ const PublicRoutes = [
       { path: '*', element: <Navigate to="/" /> },
       { path: '/post-details', element: <PostDetailsPage /> },
       { path: '/confirm', element: <ConfirmOrder /> },
-      {
-        path: '/reservation-information',
-        element: <ReservationInformationPage />,
-      }, // Cập nhật đường dẫn
-      { path: '/contact-reservation', element: <ContactReservationPage /> },
     ],
   },
 ];

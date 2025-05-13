@@ -17,18 +17,22 @@ const ReservationMenuItemCard: React.FC<ReservationMenuItemCardProps> = ({
   onAdd,
 }) => {
   return (
-    <div className="flex bg-[#0C2B40] rounded overflow-hidden shadow-md hover:scale-[1.01] transition">
-      <div className="w-[100px] h-[100px] shrink-0">
+    <div className="flex bg-[#0C2B40] rounded overflow-hidden shadow-md transition border border-transparent hover:border-secondaryColor group h-[120px]">
+      {/* Ảnh bên trái */}
+      <div className="w-[120px] h-full shrink-0 overflow-hidden">
         <img
           src={image}
           alt={name}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
       </div>
 
+      {/* Nội dung bên phải */}
       <div className="flex-1 p-4 text-white flex flex-col justify-between">
         <div>
-          <h4 className="text-base text-left font-medium">{name}</h4>
+          <h4 className="text-base font-medium text-left line-clamp-2 min-h-[2.75rem] leading-snug break-words">
+            {name}
+          </h4>
           <p className="text-sm text-left text-gray-300">{category}</p>
         </div>
         <div className="flex justify-between items-center mt-2">
