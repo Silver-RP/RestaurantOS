@@ -87,9 +87,13 @@ const ProductInfoSection = ({
                   />
                   <div>
                     <p className="font-semibold">{product.name}</p>
-                    {product.category && (
+                    {product.category? (
                       <p className="text-xs text-white/60 mt-0.5">
                         Phân loại: {product.category}
+                      </p>
+                    ) : (
+                      <p className="text-xs text-white/60 mt-0.5">
+                        Phân loại: Không có
                       </p>
                     )}
                     <div className="mt-1.5">
@@ -153,8 +157,15 @@ const ProductInfoSection = ({
         />
       </div>
 
-      {/* Voucher và phương thức thanh toán trên cùng một dòng */}
       <div className="mt-4 md:mt-6 flex flex-col md:flex-row md:gap-4">
+        {/* Phương thức thanh toán */}
+
+        <div className="flex-1">
+          <PaymentMethodSelector
+            selectedMethod={paymentMethod}
+            onChange={onPaymentMethodChange}
+          />
+        </div>
         {/* Chọn mã giảm giá */}
         {vouchers && vouchers.length > 0 && (
           <div className="flex-1 mb-4 md:mb-0">
@@ -165,14 +176,6 @@ const ProductInfoSection = ({
             />
           </div>
         )}
-
-        {/* Phương thức thanh toán */}
-        <div className="flex-1">
-          <PaymentMethodSelector
-            selectedMethod={paymentMethod}
-            onChange={onPaymentMethodChange}
-          />
-        </div>
       </div>
 
       {/* Tóm Tắt Đơn Hàng */}
