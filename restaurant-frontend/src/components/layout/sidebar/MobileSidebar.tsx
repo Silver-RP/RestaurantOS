@@ -3,6 +3,7 @@ import { FiUser, FiShoppingCart, FiHeart, FiSearch } from 'react-icons/fi';
 import { Link, useNavigate } from 'react-router-dom';
 import ButtonComponents from '../../common/ButtonComponents';
 import NavExtend from './NavExtend';
+import { BsPersonCheck } from 'react-icons/bs';
 
 interface MobileSidebarProps {
   toggleSidebar: () => void;
@@ -47,6 +48,9 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({ toggleSidebar, isOpen }) 
                 <Link to="/login" onClick={toggleSidebar} aria-label="Login">
                   <FiUser className="hover:text-secondaryColor" />
                 </Link>
+              <Link to="/profile" aria-label="Login"> 
+                <BsPersonCheck className="hover:text-secondaryColor" />
+              </Link>
                 <Link to="/favorites" onClick={toggleSidebar} aria-label="Favorites" className="relative">
                   <FiHeart className="hover:text-secondaryColor" />
                   <span className="absolute -top-1 -right-2 bg-secondaryColor text-black text-xs rounded-full px-1">0</span>

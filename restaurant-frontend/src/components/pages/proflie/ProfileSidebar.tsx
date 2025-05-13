@@ -2,6 +2,8 @@ import { FaUser, FaClipboardList, FaMapMarkerAlt, FaStar, FaQuestionCircle, FaSi
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LogoutUser } from '../../../redux/feature/auth/authActions';
 import { useAppDispatch } from '../../../redux/hook';
+import Cookies from 'js-cookie';
+
 
 
 const sidebarItems = [
@@ -18,12 +20,63 @@ const ProfileSidebar = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-
-  const handleLogout = async () => {
-    dispatch(LogoutUser());
-    console.log('LogoutUser called');
-    navigate('/');
+  const clearAuthData = () => {
+    Cookies.remove('userInfo');
+    Cookies.remove('refreshToken');
+    Cookies.remove('accessToken');
+    localStorage.removeItem('token');
+    console.log('Auth data cleared');
   };
+
+  const userInfo = JSON.parse(Cookies.get('userInfo') || '{}');
+  const isGoogleLogin = userInfo?.isGoogleLogin;
+
+  const raw = Cookies.get('userInfo');
+  console.log('Raw cookie:', raw);
+
+  console.log('userInfo:', userInfo);
+  console.log('isGoogleLogin:', isGoogleLogin); 
+  const handleLogout = async () => {
+
+    const userInfo = JSON.parse(Cookies.get('userInfo') || '{}');
+    const isGoogleLogin = userInfo?.isGoogleLogin;
+
+
+    if (isGoogleLogin) {
+      const email = userInfo?.email;
+      if (email && (window as any).google?.accounts.id.revoke) {
+        (window as any).google.accounts.id.revoke(email, () => {
+          console.log('Google session revoked');
+          Cookies.remove('userInfo');
+          localStorage.removeItem('token');
+          clearAuthData();
+          navigate('/');
+        });
+      } else {
+        (window as any).google?.accounts.id.disableAutoSelect?.();
+        Cookies.remove('userInfo');
+        localStorage.removeItem('token');
+        clearAuthData();
+        setTimeout(() => {
+          navigate('/'); 
+        }, 100);
+      }
+      return;
+    }
+    
+
+    try {
+      await dispatch(LogoutUser()).unwrap(); 
+      console.log('LogoutUser called');
+    } catch (err) {
+      console.error('Logout failed:', err);
+    } finally {
+      setTimeout(() => {
+        navigate('/login');
+      }, 100);
+    }
+  };
+  
 
   return (
     <div className="flex flex-col gap-4 font-sans">

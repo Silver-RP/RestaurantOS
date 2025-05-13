@@ -137,8 +137,6 @@ const Login = () => {
         LoginWithGoogle({ credential: response.credential, rememberMe }),
       ).unwrap();
 
-      Cookies.set('userInfo', JSON.stringify(result.user), { expires: 1 });
-
       toast.success('Đăng nhập Google thành công!');
       navigate('/');
     } catch (error: unknown) {
