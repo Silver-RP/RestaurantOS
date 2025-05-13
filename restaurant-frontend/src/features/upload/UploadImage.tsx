@@ -15,7 +15,6 @@ const UploadImage = () => {
             body: formData,
         });
         const data = await response.json();
-        console.log(data);
         setImageUrl(data.secure_url);
     }
     return (

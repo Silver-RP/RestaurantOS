@@ -33,13 +33,19 @@ const CheckoutPage = () => {
   //   },
   // ]);
 
+  console.log(cart);
+  
+
   const products = cart?.items?.map((item) => ({
     image: item.dishId.images[0],
     name: item.dishId.name,
     price: item.dishId.price,
     quantity: item.quantity,
-    category: item.dishId.categories[0].Cate_name,
+    category: item.dishId.categories?.[0]?.Cate_name,
   }));
+  
+  console.log(products);
+  
 
   const mockAddresses: Address[] = [{
     id: 1,

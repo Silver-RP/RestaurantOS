@@ -1,5 +1,5 @@
 import React from 'react';
-import { useDeleteCartItem } from '@hooks/useCart';
+import { useDeleteCartItem, useUpdateCartItem } from '@hooks/useCart';
 
 interface CartItemProps {
   item: {
@@ -16,7 +16,7 @@ interface CartItemProps {
 
 const CartItem: React.FC<CartItemProps> = ({ item, selected, onSelect }) => {
   const { mutate: deleteCartItem } = useDeleteCartItem();
-
+  const { mutate: updateCartItem } = useUpdateCartItem();
   return (
     <tr className="bg-[#0D3343]/50 hover:bg-[#0D3343] transition duration-150 border border-[#26455E] shadow-sm rounded">
       {/* Checkbox */}
@@ -60,11 +60,11 @@ const CartItem: React.FC<CartItemProps> = ({ item, selected, onSelect }) => {
       {/* Số lượng */}
       <td className="align-middle">
         <div className="flex items-center border border-gray-600 w-fit rounded overflow-hidden">
-          <button className="px-2 py-1 hover:bg-secondaryColor hover:text-black transition">
+          <button className="px-2 py-1 hover:bg-secondaryColor hover:text-black transition" onClick={() => updateCartItem({ dishId: item.id.toString(), quantity: item.quantity - 1 })}>
             −
           </button>
           <span className="px-3">{item.quantity}</span>
-          <button className="px-2 py-1 hover:bg-secondaryColor hover:text-black transition">
+          <button className="px-2 py-1 hover:bg-secondaryColor hover:text-black transition" onClick={() => updateCartItem({ dishId: item.id.toString(), quantity: item.quantity + 1 })}>
             +
           </button>
         </div>

@@ -1,13 +1,14 @@
 import React, { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { verifyOtpSchema, VerifyOtpSchema } from '../schemas/auth.schema';
+
 import InputComponent from '../components/pages/login/InputComponents';
 import ButtonComponent from '../components/pages/login/ButtonComponents';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { SlActionUndo } from 'react-icons/sl';
 import { toast } from 'react-toastify';
 import { useVerifyOtp } from '../hooks/useAuth';
+import { verifyOtpSchema, VerifyOtpSchema } from '../types/Auth.type';
 
 const EnterOTP = () => {
   const location = useLocation();
@@ -37,7 +38,6 @@ const EnterOTP = () => {
 
   useEffect(() => {
     if (error) {
-      console.log('Error state updated:', error);
       if (error === 'Invalid OTP') {
         toast.error('Mã OTP không hợp lệ!');
       } else if( error === 'OTP expired') {
@@ -59,7 +59,16 @@ const EnterOTP = () => {
         navigate('/reset-password', { state: { email } });
       }
     } catch (err: any) {
-      console.log('API error:', err?.response?.data);
+
+      if (err?.response?.data?.message === 'Invalid OTP') {
+        toast.error('Mã OTP không hợp lệ!');
+      } else if (err?.response?.data?.message === 'OTP expired') {
+        toast.error('Mã OTP đã hết hạn! Vui lòng yêu cầu mã mới.');
+        navigate('/forgot-password'); 
+      } else if (err?.response?.data?.message === 'Email has already been verified') {
+        toast.warning('Email đã được xác minh trước đó!');
+        navigate('/login'); 
+      }
 
     }
   };

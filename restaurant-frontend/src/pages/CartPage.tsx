@@ -61,6 +61,10 @@ const CartPage = () => {
     0,
   );
 
+  const handleClick = () => {
+    window.location.href = '/menu';
+  };
+
   return (
     <>
       <div className="w-full mx-auto">
@@ -70,12 +74,13 @@ const CartPage = () => {
         <div className="w-full mx-auto pb-10 py-10">
           <h1 className="text-3xl mb-8 text-center lg:text-left">Giỏ hàng</h1>
 
+
           {isCartEmpty ? (
             <div className="text-center py-20 text-white/70">
               <h2 className="text-xl mb-4">
                 Không có sản phẩm nào trong giỏ hàng
               </h2>
-              <ButtonComponents variant="filled" size="small" className="mt-2">
+              <ButtonComponents variant="filled" size="small" className="mt-2" onClick={handleClick}>
                 Mua sắm ngay
               </ButtonComponents>
             </div>

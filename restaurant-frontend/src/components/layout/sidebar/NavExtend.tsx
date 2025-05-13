@@ -4,7 +4,7 @@ import { BiNews } from 'react-icons/bi';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 interface NavExtendProps {
-  onNavigate?: (path: string) => void; // prop optional, desktop không truyền cũng được
+  onNavigate?: (path: string) => void; 
 }
 
 const navItems = [

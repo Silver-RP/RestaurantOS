@@ -73,14 +73,11 @@ const ProductCardList: React.FC<ProductCardProps> = ({
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
-    // TODO: Thêm logic addToCart nếu có
-    console.log("Add to cart:", name);
+
   };
 
   const handleAddToFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
-    // TODO: Thêm logic addToFavorite nếu có
-    console.log("Add to favorite:", name);
   };
 
   return (

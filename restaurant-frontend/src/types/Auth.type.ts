@@ -1,3 +1,4 @@
+
 import { z } from 'zod';
 export interface GoogleDecodedToken {
   email: string;
@@ -42,5 +43,12 @@ export const changePasswordSchema = z
     message: 'Mật khẩu xác nhận không khớp',
     path: ['confirmPassword'],
   });
-
+// types/auth.ts
+export interface DecodedToken {
+    id: string;
+    email: string;
+    roles?: any[];
+    iat: number;
+    exp: number;
+  }
 export type ChangePasswordSchema = z.infer<typeof changePasswordSchema>;

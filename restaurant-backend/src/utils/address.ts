@@ -1,268 +1,424 @@
 export const HCM_ADDRESS_DATA = {
-    "TP. Hồ Chí Minh": {
-      "Quận 1": {
-        "wards": [
-          "Phường Bến Nghé",
-          "Phường Bến Thành",
-          "Phường Cầu Kho",
-          "Phường Cô Giang"
-        ],
-        "streets": [
-          "Lê Lợi",
-          "Nguyễn Huệ",
-          "Đồng Khởi"
-        ]
-      },
-      "Quận 3": {
-        "wards": [
-          "Phường 1",
-          "Phường 3",
-          "Phường 5",
-          "Phường Võ Thị Sáu"
-        ],
-        "streets": [
-          "Cách Mạng Tháng Tám",
-          "Nam Kỳ Khởi Nghĩa",
-          "Nguyễn Thị Minh Khai"
-        ]
-      },
-      "Quận 4": {
-        "wards": [
-          "Phường 1",
-          "Phường 3",
-          "Phường 6",
-          "Phường 8"
-        ],
-        "streets": [
-          "Tôn Đản",
-          "Vĩnh Hội",
-          "Nguyễn Tất Thành"
-        ]
-      },
-      "Quận 5": {
-        "wards": [
-          "Phường 1",
-          "Phường 4",
-          "Phường 7",
-          "Phường 8"
-        ],
-        "streets": [
-          "Trần Hưng Đạo",
-          "Nguyễn Trãi",
-          "Châu Văn Liêm"
-        ]
-      },
-      "Quận 6": {
-        "wards": [
-          "Phường 1",
-          "Phường 5",
-          "Phường 11",
-          "Phường 13"
-        ],
-        "streets": [
-          "Hậu Giang",
-          "Minh Phụng",
-          "Bình Tiên"
-        ]
-      },
-      "Quận 7": {
-        "wards": [
-          "Phường Tân Phong",
-          "Phường Tân Phú",
-          "Phường Phú Mỹ"
-        ],
-        "streets": [
-          "Nguyễn Thị Thập",
-          "Huỳnh Tấn Phát",
-          "Trần Trọng Cung"
-        ]
-      },
-      "Quận 8": {
-        "wards": [
-          "Phường 1",
-          "Phường 5",
-          "Phường 6",
-          "Phường 7"
-        ],
-        "streets": [
-          "Phạm Thế Hiển",
-          "Tạ Quang Bửu",
-          "Dương Bá Trạc"
-        ]
-      },
-      "Quận 10": {
-        "wards": [
-          "Phường 1",
-          "Phường 4",
-          "Phường 8",
-          "Phường 10"
-        ],
-        "streets": [
-          "Nguyễn Tri Phương",
-          "Ba Tháng Hai",
-          "Lý Thường Kiệt"
-        ]
-      },
-      "Quận 11": {
-        "wards": [
-          "Phường 1",
-          "Phường 5",
-          "Phường 10",
-          "Phường 14"
-        ],
-        "streets": [
-          "Lạc Long Quân",
-          "Hàn Hải Nguyên",
-          "Ông Ích Khiêm"
-        ]
-      },
-      "Quận 12": {
-        "wards": [
-          "Phường Tân Chánh Hiệp",
-          "Phường Đông Hưng Thuận",
-          "Phường Thạnh Xuân"
-        ],
-        "streets": [
-          "Lê Văn Khương",
-          "Nguyễn Ảnh Thủ",
-          "Tô Ký"
-        ]
-      },
-      "Bình Thạnh": {
-        "wards": [
-          "Phường 1",
-          "Phường 5",
-          "Phường 11",
-          "Phường 24"
-        ],
-        "streets": [
-          "Điện Biên Phủ",
-          "Xô Viết Nghệ Tĩnh",
-          "Nguyễn Hữu Cảnh"
-        ]
-      },
-      "Gò Vấp": {
-        "wards": [
-          "Phường 1",
-          "Phường 4",
-          "Phường 5",
-          "Phường 7"
-        ],
-        "streets": [
-          "Quang Trung",
-          "Phan Văn Trị",
-          "Lê Đức Thọ"
-        ]
-      },
-      "Tân Bình": {
-        "wards": [
-          "Phường 1",
-          "Phường 4",
-          "Phường 10",
-          "Phường 13"
-        ],
-        "streets": [
-          "Cộng Hòa",
-          "Trường Chinh",
-          "Hoàng Văn Thụ"
-        ]
-      },
-      "Tân Phú": {
-        "wards": [
-          "Phường Tân Thành",
-          "Phường Tân Sơn Nhì",
-          "Phường Phú Thọ Hòa"
-        ],
-        "streets": [
-          "Lũy Bán Bích",
-          "Âu Cơ",
-          "Thống Nhất"
-        ]
-      },
-      "Bình Tân": {
-        "wards": [
-          "Phường An Lạc",
-          "Phường Bình Trị Đông",
-          "Phường Tân Tạo"
-        ],
-        "streets": [
-          "Kinh Dương Vương",
-          "Hương Lộ 2",
-          "Tỉnh Lộ 10"
-        ]
-      },
-      "Thành phố Thủ Đức": {
-        "wards": [
-          "Phường Linh Trung",
-          "Phường Hiệp Bình Chánh",
-          "Phường Thảo Điền"
-        ],
-        "streets": [
-          "Phạm Văn Đồng",
-          "Lê Văn Việt",
-          "Xa Lộ Hà Nội"
-        ]
-      },
-      "Huyện Bình Chánh": {
-        "wards": [
-          "Xã Bình Hưng",
-          "Xã Vĩnh Lộc A",
-          "Xã Vĩnh Lộc B"
-        ],
-        "streets": [
-          "Quách Điêu",
-          "Nguyễn Văn Linh",
-          "Đoàn Nguyễn Tuấn"
-        ]
-      },
-      "Huyện Cần Giờ": {
-        "wards": [
-          "Xã Bình Khánh",
-          "Xã An Thới Đông",
-          "Xã Lý Nhơn"
-        ],
-        "streets": [
-          "Rừng Sác",
-          "Tắc Xuất",
-          "Duyên Hải"
-        ]
-      },
-      "Huyện Củ Chi": {
-        "wards": [
-          "Xã Tân Thông Hội",
-          "Xã Trung An",
-          "Xã Phước Hiệp"
-        ],
-        "streets": [
-          "Tỉnh Lộ 8",
-          "Tỉnh Lộ 15",
-          "Nguyễn Văn Khạ"
-        ]
-      },
-      "Huyện Hóc Môn": {
-        "wards": [
-          "Xã Bà Điểm",
-          "Xã Xuân Thới Thượng",
-          "Xã Đông Thạnh"
-        ],
-        "streets": [
-          "Nguyễn Ảnh Thủ",
-          "Lê Lợi",
-          "Phan Văn Hớn"
-        ]
-      },
-      "Huyện Nhà Bè": {
-        "wards": [
-          "Xã Phú Xuân",
-          "Xã Long Thới",
-          "Xã Nhơn Đức"
-        ],
-        "streets": [
-          "Nguyễn Hữu Thọ",
-          "Huỳnh Tấn Phát",
-          "Lê Văn Lương"
-        ]
-      }
-    }
-  } as const;
-  
+  'TP. Hồ Chí Minh': {
+    'Quận 1': {
+      wards: [
+        'Phường Bến Nghé',
+        'Phường Bến Thành',
+        'Phường Cầu Kho',
+        'Phường Cầu Ông Lãnh',
+        'Phường Cô Giang',
+        'Phường Đa Kao',
+        'Phường Nguyễn Cư Trinh',
+        'Phường Nguyễn Thái Bình',
+        'Phường Phạm Ngũ Lão',
+        'Phường Tân Định',
+      ],
+      streets: [
+        'Lê Lợi',
+        'Nguyễn Huệ',
+        'Đồng Khởi',
+        'Nam Kỳ Khởi Nghĩa',
+        'Hai Bà Trưng',
+        'Trần Hưng Đạo',
+        'Pasteur',
+        'Lý Tự Trọng',
+        'Nguyễn Thị Minh Khai',
+        'Cách Mạng Tháng Tám',
+        'Tôn Đức Thắng',
+        'Lê Duẩn',
+        'Nguyễn Văn Bình',
+        'Phạm Ngũ Lão',
+        'Lê Thánh Tôn',
+      ],
+    },
+    'Quận 3': {
+      wards: [
+        'Phường 1',
+        'Phường 2',
+        'Phường 3',
+        'Phường 4',
+        'Phường 5',
+        'Phường 6',
+        'Phường 7',
+        'Phường 8',
+        'Phường 9',
+        'Phường 10',
+        'Phường 11',
+        'Phường Võ Thị Sáu', // phường sáp nhập từ 3 phường cũ (6, 7, 8) vào năm 2020
+      ],
+      streets: [
+        'Cách Mạng Tháng Tám',
+        'Nam Kỳ Khởi Nghĩa',
+        'Nguyễn Thị Minh Khai',
+        'Lý Chính Thắng',
+        'Lê Văn Sỹ',
+        'Điện Biên Phủ',
+        'Võ Thị Sáu',
+        'Trần Quốc Thảo',
+        'Pasteur',
+        'Nguyễn Đình Chiểu',
+        'Kỳ Đồng',
+        'Bàn Cờ',
+        'Nguyễn Sơn Hà',
+      ],
+    },
+    'Quận 4': {
+      wards: [
+        'Phường 1',
+        'Phường 2',
+        'Phường 3',
+        'Phường 4',
+        'Phường 5',
+        'Phường 6',
+        'Phường 8',
+        'Phường 9',
+        'Phường 10',
+        'Phường 12',
+        'Phường 13',
+        'Phường 14',
+        'Phường 15',
+        'Phường 16',
+        'Phường 18',
+      ],
+      streets: [
+        'Tôn Đản',
+        'Vĩnh Hội',
+        'Nguyễn Tất Thành',
+        'Hoàng Diệu',
+        'Đoàn Văn Bơ',
+        'Khánh Hội',
+        'Lê Quốc Hưng',
+        'Bến Vân Đồn',
+        'Xóm Chiếu',
+        'Đoàn Như Hài',
+        'Nguyễn Khoái',
+        'Tôn Thất Thuyết',
+      ],
+    },
+
+    'Quận 5': {
+      wards: [
+        'Phường 1',
+        'Phường 2',
+        'Phường 3',
+        'Phường 4',
+        'Phường 5',
+        'Phường 6',
+        'Phường 7',
+        'Phường 8',
+        'Phường 9',
+        'Phường 10',
+        'Phường 11',
+        'Phường 12',
+        'Phường 13',
+        'Phường 14',
+        'Phường 15',
+      ],
+      streets: [
+        'Trần Hưng Đạo',
+        'Nguyễn Trãi',
+        'Châu Văn Liêm',
+        'Hồng Bàng',
+        'An Dương Vương',
+        'Lương Nhữ Học',
+        'Ngô Quyền',
+        'Lê Hồng Phong',
+        'Phan Văn Trị',
+        'Triệu Quang Phục',
+        'Hải Thượng Lãn Ông',
+        'Phùng Hưng',
+        'Nguyễn Duy Dương',
+      ],
+    },
+    "Quận 6": {
+  wards: [
+    "Phường 1",
+    "Phường 2",
+    "Phường 3",
+    "Phường 4",
+    "Phường 5",
+    "Phường 6",
+    "Phường 7",
+    "Phường 8",
+    "Phường 9",
+    "Phường 10",
+    "Phường 11",
+    "Phường 12",
+    "Phường 13",
+    "Phường 14"
+  ],
+  streets: [
+    "Hậu Giang",
+    "Minh Phụng",
+    "Bình Tiên",
+    "Kinh Dương Vương",
+    "Lý Chiêu Hoàng",
+    "Bà Hom",
+    "Nguyễn Văn Luông",
+    "Phạm Văn Chí",
+    "Mai Xuân Thưởng",
+    "Trần Văn Kiểu",
+    "Lò Siêu",
+    "Tân Hòa Đông"
+  ]
+},
+
+    "Quận 7": {
+  wards: [
+    "Phường Tân Thuận Đông",
+    "Phường Tân Thuận Tây",
+    "Phường Tân Kiểng",
+    "Phường Tân Hưng",
+    "Phường Tân Phong",
+    "Phường Tân Phú",
+    "Phường Phú Mỹ",
+    "Phường Phú Thuận",
+    "Phường Bình Thuận",
+    "Phường Bình Khánh" // đôi khi dùng để chỉ khu vực ven cầu Tân Thuận, nhưng không phải phường chính thức – bạn có thể bỏ nếu muốn bám sát
+  ],
+  streets: [
+    "Nguyễn Thị Thập",
+    "Huỳnh Tấn Phát",
+    "Trần Trọng Cung",
+    "Lê Văn Lương",
+    "Nguyễn Văn Linh",
+    "Tân Mỹ",
+    "Nguyễn Hữu Thọ",
+    "Phú Thuận",
+    "Tân Phú",
+    "Hoàng Quốc Việt",
+    "Đường số 1",
+    "Đường số 17",
+    "Đường số 79"
+  ]
+},
+   "Quận 8": {
+  wards: [
+    "Phường 1",
+    "Phường 2",
+    "Phường 3",
+    "Phường 4",
+    "Phường 5",
+    "Phường 6",
+    "Phường 7",
+    "Phường 8",
+    "Phường 9",
+    "Phường 10",
+    "Phường 11",
+    "Phường 12",
+    "Phường 13",
+    "Phường 14",
+    "Phường 15",
+    "Phường 16"
+  ],
+  streets: [
+    "Phạm Thế Hiển",
+    "Tạ Quang Bửu",
+    "Dương Bá Trạc",
+    "Nguyễn Duy",
+    "Âu Dương Lân",
+    "Hoàng Ngân",
+    "Ba Tơ",
+    "Trịnh Quang Nghị",
+    "Nguyễn Thị Tần",
+    "Hưng Phú",
+    "Bông Sao",
+    "Cao Lỗ",
+    "Nguyễn Văn Của"
+  ]
+},
+
+    "Quận 10": {
+  wards: [
+    "Phường 1",
+    "Phường 2",
+    "Phường 3",
+    "Phường 4",
+    "Phường 5",
+    "Phường 6",
+    "Phường 7",
+    "Phường 8",
+    "Phường 9",
+    "Phường 10",
+    "Phường 11",
+    "Phường 12",
+    "Phường 13",
+    "Phường 14",
+    "Phường 15"
+  ],
+  streets: [
+    "Nguyễn Tri Phương",
+    "Ba Tháng Hai",
+    "Lý Thường Kiệt",
+    "Ngô Gia Tự",
+    "Nguyễn Kim",
+    "Tô Hiến Thành",
+    "Sư Vạn Hạnh",
+    "Điện Biên Phủ",
+    "Trần Nhân Tôn",
+    "Vĩnh Viễn",
+    "Hùng Vương",
+    "Cách Mạng Tháng Tám"
+  ]
+},
+
+    "Quận 11": {
+  wards: [
+    "Phường 1",
+    "Phường 2",
+    "Phường 3",
+    "Phường 4",
+    "Phường 5",
+    "Phường 6",
+    "Phường 7",
+    "Phường 8",
+    "Phường 9",
+    "Phường 10",
+    "Phường 11",
+    "Phường 12",
+    "Phường 13",
+    "Phường 14",
+    "Phường 15",
+    "Phường 16"
+  ],
+  streets: [
+    "Lạc Long Quân",
+    "Hàn Hải Nguyên",
+    "Ông Ích Khiêm",
+    "Ba Tháng Hai",
+    "Hòa Bình",
+    "Tân Hóa",
+    "Bình Thới",
+    "Lý Thường Kiệt",
+    "Minh Phụng",
+    "Thiên Hộ Dương",
+    "Tuệ Tĩnh"
+  ]
+},
+
+    "Quận 12": {
+  wards: [
+    "Phường An Phú Đông",
+    "Phường Đông Hưng Thuận",
+    "Phường Hiệp Thành",
+    "Phường Tân Chánh Hiệp",
+    "Phường Tân Hưng Thuận",
+    "Phường Tân Thới Hiệp",
+    "Phường Tân Thới Nhất",
+    "Phường Thạnh Lộc",
+    "Phường Thạnh Xuân",
+    "Phường Thới An",
+    "Phường Trung Mỹ Tây"
+  ],
+  streets: [
+    "Lê Văn Khương",
+    "Nguyễn Ảnh Thủ",
+    "Tô Ký",
+    "Trường Chinh",
+    "Hà Huy Giáp",
+    "Nguyễn Văn Quá",
+    "Dương Thị Mười",
+    "Song Hành Quốc Lộ 22",
+    "Lê Thị Riêng"
+  ]
+},
+
+    "Bình Thạnh": {
+  wards: [
+    "Phường 1",
+    "Phường 2",
+    "Phường 3",
+    "Phường 5",
+    "Phường 6",
+    "Phường 7",
+    "Phường 11",
+    "Phường 12",
+    "Phường 13",
+    "Phường 14",
+    "Phường 15",
+    "Phường 17",
+    "Phường 19",
+    "Phường 21",
+    "Phường 22",
+    "Phường 24",
+    "Phường 25",
+    "Phường 26",
+    "Phường 27",
+    "Phường 28"
+  ],
+  streets: [
+    "Điện Biên Phủ",
+    "Xô Viết Nghệ Tĩnh",
+    "Nguyễn Hữu Cảnh",
+    "Đinh Bộ Lĩnh",
+    "Bạch Đằng",
+    "Nguyễn Văn Đậu",
+    "Phan Văn Trị",
+    "Phạm Viết Chánh",
+    "Ung Văn Khiêm",
+    "Nơ Trang Long",
+    "Chu Văn An",
+    "Lê Quang Định"
+  ]
+},
+
+    "Quận Gò Vấp": {
+  wards: [
+    "Phường 1", "Phường 3", "Phường 4", "Phường 5",
+    "Phường 6", "Phường 7", "Phường 8", "Phường 9",
+    "Phường 10", "Phường 11", "Phường 12", "Phường 13",
+    "Phường 14", "Phường 15", "Phường 16", "Phường 17"
+  ],
+  streets: [
+    "Quang Trung",
+    "Phan Văn Trị",
+    "Lê Đức Thọ",
+    "Nguyễn Oanh",
+    "Nguyễn Kiệm",
+    "Nguyễn Văn Lượng", // ✅ Bổ sung
+    "Thống Nhất",
+    "Phạm Văn Chiêu",
+    "Trần Thị Nghỉ",
+    "Lê Văn Thọ",
+    "Dương Quảng Hàm",
+    "Phạm Huy Thông"
+  ]
+}, 
+    'Tân Bình': {
+      wards: ['Phường 1', 'Phường 4', 'Phường 10', 'Phường 13'],
+      streets: ['Cộng Hòa', 'Trường Chinh', 'Hoàng Văn Thụ'],
+    },
+    'Tân Phú': {
+      wards: ['Phường Tân Thành', 'Phường Tân Sơn Nhì', 'Phường Phú Thọ Hòa'],
+      streets: ['Lũy Bán Bích', 'Âu Cơ', 'Thống Nhất'],
+    },
+    'Bình Tân': {
+      wards: ['Phường An Lạc', 'Phường Bình Trị Đông', 'Phường Tân Tạo'],
+      streets: ['Kinh Dương Vương', 'Hương Lộ 2', 'Tỉnh Lộ 10'],
+    },
+    'Thành phố Thủ Đức': {
+      wards: ['Phường Linh Trung', 'Phường Hiệp Bình Chánh', 'Phường Thảo Điền'],
+      streets: ['Phạm Văn Đồng', 'Lê Văn Việt', 'Xa Lộ Hà Nội'],
+    },
+    'Huyện Bình Chánh': {
+      wards: ['Xã Bình Hưng', 'Xã Vĩnh Lộc A', 'Xã Vĩnh Lộc B'],
+      streets: ['Quách Điêu', 'Nguyễn Văn Linh', 'Đoàn Nguyễn Tuấn'],
+    },
+    'Huyện Cần Giờ': {
+      wards: ['Xã Bình Khánh', 'Xã An Thới Đông', 'Xã Lý Nhơn'],
+      streets: ['Rừng Sác', 'Tắc Xuất', 'Duyên Hải'],
+    },
+    'Huyện Củ Chi': {
+      wards: ['Xã Tân Thông Hội', 'Xã Trung An', 'Xã Phước Hiệp'],
+      streets: ['Tỉnh Lộ 8', 'Tỉnh Lộ 15', 'Nguyễn Văn Khạ'],
+    },
+    'Huyện Hóc Môn': {
+      wards: ['Xã Bà Điểm', 'Xã Xuân Thới Thượng', 'Xã Đông Thạnh'],
+      streets: ['Nguyễn Ảnh Thủ', 'Lê Lợi', 'Phan Văn Hớn'],
+    },
+    'Huyện Nhà Bè': {
+      wards: ['Xã Phú Xuân', 'Xã Long Thới', 'Xã Nhơn Đức'],
+      streets: ['Nguyễn Hữu Thọ', 'Huỳnh Tấn Phát', 'Lê Văn Lương'],
+    },
+  },
+} as const;
