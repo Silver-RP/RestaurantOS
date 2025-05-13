@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { addToCart, getCart, deleteCartItem } from '../api/CartApi';
+import { addToCart, getCart, deleteCartItem, updateCartItem } from '../api/CartApi';
 import { useEffect, useState } from 'react'; 
 import Cookies from 'js-cookie'; 
 import { toast } from 'react-toastify'; 
@@ -70,4 +70,25 @@ export const useDeleteCartItem = () => {
   
   return mutation;
 };
+
+export const useUpdateCartItem = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: (data: { dishId: string; quantity: number }) => updateCartItem(data.dishId, data.quantity),
+    onSuccess: () => {
+      toast.success('Cập nhật số lượng sản phẩm trong giỏ hàng thành công!');
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
+    },
+    onError: (error: unknown) => {
+      console.error('Error updating cart item:', error);
+      toast.error('Có lỗi xảy ra khi cập nhật số lượng sản phẩm trong giỏ hàng!');
+    }
+  });
+
+  return mutation;
+};
+
+
+
 

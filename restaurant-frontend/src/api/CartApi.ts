@@ -21,3 +21,9 @@ export const deleteCartItem = async (dishId: string): Promise<void> => {
   await api.delete(`/cart/item/${dishId}`);
 };
 
+// cart/update/{id}
+export const updateCartItem = async (dishId: string, quantity: number): Promise<void> => {
+  await api.put(`/cart/update/${dishId}`, { quantity });
+};
+
+
