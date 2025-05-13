@@ -49,7 +49,7 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
                       active ? 'bg-white/10' : ''
                     } ${
                       selectedMethod === method.value
-                        ? 'border-l-4 border-secondaryColor'
+                        ? 'bg-white/10'
                         : ''
                     }`
                   }
