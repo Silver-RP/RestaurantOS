@@ -8,6 +8,7 @@ import ProductGallery from '../components/pages/detail/ProductGallery';
 import ProductInfo from '../components/pages/detail/ProductInfo';
 import ProductPolicies from '../components/pages/detail/ProductPolicies';
 import ProductTabs from '../components/pages/detail/ProductTabs';
+import ProductReviews from '..//components/pages/detail/ProductReviews';
 
 const ProductDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -18,26 +19,32 @@ const ProductDetail: React.FC = () => {
 
  
 
-  const tabs = [
+   const tabs = food ? [
     {
       id: 'description',
       title: 'Mô tả',
-      content:
-        'Biểu tượng của sự nhẹ nhàng và tinh tế, chim ruồi gợi lên sự tò mò và niềm vui. Bộ sưu tập Studio Design PolyFaune có các sản phẩm cổ điển với họa tiết đầy màu sắc, lấy cảm hứng từ nghệ thuật xếp giấy origami truyền thống của Nhật Bản.',
+      content: food.description || 'Chưa có mô tả cho sản phẩm này.',
     },
     {
       id: 'details',
       title: 'Chi tiết sản phẩm',
-      content:
-        'Chất liệu: 100% Cotton. Kiểu dáng: Regular. Giặt lạnh. Sản xuất tại Nhật Bản.',
+      content: food.ingredients 
+  ? `Nguyên liệu: ${food.ingredients}` 
+  : 'Chưa có thông tin chi tiết cho sản phẩm này.',
     },
     {
       id: 'reviews',
       title: 'Đánh giá',
-      content:
-        'Chưa có đánh giá nào. Hãy là người đầu tiên đánh giá sản phẩm này!',
+      content: (
+        <ProductReviews
+          productId={food._id}
+          productName={food.name}
+          averageRating={food.average_rating || 0}
+          ratingCount={food.rating_count || 0}
+        />
+      ),
     },
-  ];
+  ] : [];
 
   if (loading) {
     return (
