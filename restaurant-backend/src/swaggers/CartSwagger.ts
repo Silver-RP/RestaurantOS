@@ -49,25 +49,10 @@ registerSwaggerRoute({
   tags: ['Cart'],
   security: [{ bearerAuth: [] }],
 });
+
 registerSwaggerRoute({
-  path: '/cart/update/{id}',
+  path: '/cart/update',
   method: 'put',
-  summary: 'Update cart (add, increase, decrease, or remove dish)',
-  description: `Update the cart by adding a new dish, increasing or decreasing the quantity of an existing dish.
-    - If dish exists and quantity > 0 ➔ increase quantity.
-    - If dish exists and quantity < 0 ➔ decrease quantity.
-    - If quantity becomes 0 after update ➔ remove dish from cart.
-    - If dish does not exist and quantity > 0 ➔ add new dish.
-    - If dish does not exist and quantity < 0 ➔ throw error.`,
-  parameters: [
-    {
-      in: 'path',
-      name: 'id',
-      schema: { type: 'string' },
-      required: true,
-      description: 'Cart ID (from path parameter)',
-    },
-  ],
   requestBody: {
     required: true,
     content: {
@@ -75,14 +60,8 @@ registerSwaggerRoute({
         schema: {
           type: 'object',
           properties: {
-            dishId: {
-              type: 'string',
-              description: 'Dish ID to add, increase, or decrease',
-            },
-            quantity: {
-              type: 'integer',
-              description: 'Quantity change (positive to increase, negative to decrease)',
-            },
+            dishId: { type: 'string', description: 'Dish ID to update' },
+            quantity: { type: 'integer', description: 'New quantity' },
           },
           required: ['dishId', 'quantity'],
         },
@@ -90,16 +69,15 @@ registerSwaggerRoute({
     },
   },
   responses: {
-    200: {
-      description: 'Cart updated successfully (add/increase/decrease/remove)',
-    },
+    200: { description: 'Cart updated successfully' },
     400: { description: 'Invalid input or quantity' },
-    404: { description: 'Cart or Dish not found' },
+    404: { description: 'Dish not found or unavailable' },
     500: { description: 'Internal server error' },
   },
   tags: ['Cart'],
   security: [{ bearerAuth: [] }],
 });
+
 registerSwaggerRoute({
   path: '/cart/item/{dishId}',
   method: 'delete',
