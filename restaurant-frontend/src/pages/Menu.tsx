@@ -8,6 +8,7 @@ import { useFoods } from '../hooks/useFoods';
 import { ProductCardProps } from 'types/ProductCard.types';
 import { useSidebar } from '../contexts/SidebarContext';
 import { FiFilter } from 'react-icons/fi';
+import Container from '@/components/common/Container';
 
 const MenuPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -63,7 +64,8 @@ const MenuPage: React.FC = () => {
       <div className="w-full mx-auto">
         <BreadCrumbComponents />
       </div>
-      <div className="px-4 md:px-8 flex gap-8 py-10 w-full max-w-[1500px] mx-auto">
+      <Container>
+      <div className="flex gap-8 py-10 w-full max-w-[1500px] mx-auto">
         {isFilterOpen && (
           <div
             className="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300"
@@ -202,6 +204,7 @@ const MenuPage: React.FC = () => {
           />
         </main>
       </div>
+      </Container>
     </section>
   );
 };
