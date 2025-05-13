@@ -61,6 +61,10 @@ const CartPage = () => {
     0
   );
 
+  const handleClick = () => {
+    window.location.href = '/menu';
+  };
+
   return (
     <section className="bg-bodyBackground w-full text-white">
       <div className="w-full mx-auto">
@@ -83,6 +87,7 @@ const CartPage = () => {
               variant="filled"
               size="small"
               className="mt-2"
+              onClick={handleClick}
             >
               Mua sắm ngay
             </ButtonComponents>

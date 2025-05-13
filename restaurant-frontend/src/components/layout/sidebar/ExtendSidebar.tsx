@@ -40,9 +40,9 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const fontSize = windowHeight <= 600 ? 'text-sm' : 'text-base'; 
+  const fontSize = windowHeight <= 600 ? 'text-sm' : 'text-base';
   const iconSize = windowHeight <= 600 ? 'text-xl' : 'text-2xl';
-  
+
   return (
     <div
       className={`fixed top-0 left-0 h-screen bg-headerBackground text-white transform transition-all ease-in-out duration-500 ${
@@ -81,7 +81,9 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
           <div className="flex flex-col items-center space-y-4 sm:space-y-6 md:space-y-8 mt-6">
             <div className="flex space-x-6 sm:space-x-8 text-lg sm:text-xl">
               <Link to="/login" aria-label="Login">
-                <FiUser className={`text-white hover:text-secondaryColor ${iconSize}`} />
+                <FiUser
+                  className={`text-white hover:text-secondaryColor ${iconSize}`}
+                />
               </Link>
               <div className="relative">
                 <FiHeart
@@ -104,10 +106,10 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
                 </span>
               </div>
               <FiSearch
-  onClick={() => dispatch(openSearchModal())}
-  className={`text-white hover:text-secondaryColor ${iconSize} cursor-pointer`}
-  aria-label="Search"
-/>
+                onClick={() => dispatch(openSearchModal())}
+                className={`text-white hover:text-secondaryColor ${iconSize} cursor-pointer`}
+                aria-label="Search"
+              />
             </div>
             <Link
               to="/reservation"
