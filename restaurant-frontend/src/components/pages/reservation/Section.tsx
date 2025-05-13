@@ -1,18 +1,21 @@
 import React from 'react';
 
-const dishes = [
-  { name: 'Bò bít tết nướng', quantity: 2, price: 250000 },
-  { name: 'Mì Ý', quantity: 1, price: 250000 },
-  { name: 'Tôm Hùm Hấp', quantity: 1, price: 250000 },
-  { name: 'Gỏi Cá Châu Á', quantity: 1, price: 250000 },
-  { name: 'Súp Bí Ngô', quantity: 1, price: 250000 },
-];
+interface SectionProps {
+  menuItems: {
+    id: string;
+    name: string;
+    price: number;
+    quantity: number;
+    image: string;
+    note?: string;
+  }[];
+}
 
 const formatPrice = (price: number) =>
   price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }).replace('₫', 'VNĐ');
 
-const Section: React.FC = () => {
-  const total = dishes.reduce((sum, item) => sum + item.price * item.quantity, 0);
+const Section: React.FC<SectionProps> = ({ menuItems }) => {
+  const total = menuItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
     <div className="w-full md:w-2/3 lg:w-1/2 max-w-full overflow-hidden">
@@ -23,14 +26,14 @@ const Section: React.FC = () => {
         </h2>
 
         <div className="grid gap-4">
-          {dishes.map((dish, index) => (
+          {menuItems.map((dish, index) => (
             <div
-              key={index}
+              key={dish.id + (dish.note || '')}
               className={`flex items-center ${index === 0 ? 'pt-0 pb-4' : 'py-4'} 
-                          ${index === 4 ? '' : 'border-b border-[#FFDEA0]'} min-h-[110px]`}
+                          ${index === menuItems.length - 1 ? '' : 'border-b border-[#FFDEA0]'} min-h-[110px]`}
             >
               <img
-                src={`/assets/images/ReservationInformation/image${index + 1}.svg`}
+                src={dish.image}
                 alt={dish.name}
                 className="w-24 h-24 object-cover rounded-md border-2 border-[#FFDEA0] mr-4"
               />
@@ -39,7 +42,9 @@ const Section: React.FC = () => {
                 <p className="font-semibold text-white whitespace-nowrap overflow-hidden text-ellipsis">
                   {dish.name}
                 </p>
-                <p className="text-xs text-gray-300">Món chính</p>
+                {dish.note && (
+                  <p className="text-xs text-gray-400 italic">Ghi chú: {dish.note}</p>
+                )}
                 <p className="text-sm text-[#FFDEA0]">{formatPrice(dish.price)}</p>
               </div>
 
@@ -55,7 +60,7 @@ const Section: React.FC = () => {
             </div>
           ))}
 
-          {/* Thêm đường phân cách dưới "Súp Bí Ngô", giảm khoảng cách */}
+          {/* Thêm đường phân cách dưới cùng */}
           <div className="border-t border-[#FFDEA0] mt-1"></div>
         </div>
 

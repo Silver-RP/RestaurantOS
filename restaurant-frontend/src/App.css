@@ -68,3 +68,11 @@ input.no-spinner::-webkit-inner-spin-button {
 input.no-spinner[type='number'] {
   -moz-appearance: textfield;
 }
+
+/* Fix autofill styles */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  box-shadow: 0 0 0px 1000px #002B40 inset !important;
+  -webkit-text-fill-color: white !important;
+}

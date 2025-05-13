@@ -11,16 +11,16 @@ const ButtonComponents: React.FC<ButtonProps> = ({
   size = 'medium',
   children,
   className = '',
-  ...rest 
+  ...rest
 }) => {
   const baseStyles =
-    'transition duration-300 font-medium focus:outline-none focus:ring-2 focus:ring-offset-2';
+  'transition duration-300 font-medium active:scale-95 focus:outline-none focus:ring-0 focus:ring-offset-0';
 
   const variantStyles = {
     filled:
-      'bg-secondaryColor border border-secondaryColor text-headerBackground hover:bg-headerBackground hover:text-white',
-    outline:
-      'bg-transparent border border-secondaryColor text-white font-normal font-sans hover:bg-secondaryColor hover:text-headerBackground',
+      'bg-secondaryColor border border-secondaryColor text-headerBackground hover:bg-headerBackground hover:text-white focus:ring-bodyBackground  active:bg-headerBackground/90',
+      outline:
+      'bg-secondaryColor text-white font-normal font-sans border border-secondaryColor hover:brightness-95 active:brightness-90',
   };
 
   const sizeStyles = {
