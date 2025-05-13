@@ -41,7 +41,7 @@ class OrderService {
     throw { statusCode: 400, message: 'Address is required' };
   }
 
-  async createOrder(userId: string, finalAddressId: string, payment_method: string, delivery_type: string, totalAmount: number, order_type: string, session: any) {
+  async createOrder(userId: string, finalAddressId: string, payment_method: string, delivery_type: string, totalAmount: number, order_type: string, delivery_time_type:string, session: any) {
     const newOrder = new Order({
       user_id: userId,
       address_id: finalAddressId,
@@ -52,6 +52,7 @@ class OrderService {
       shipping_fee: 5000,
       delivery_status: 'PENDING_PICKUP',
       order_type,
+      delivery_time_type,
     });
   
     return await newOrder.save({ session });
@@ -90,7 +91,7 @@ class OrderService {
   }
 
   async placeOrder(input: any) {
-    const { userId, address_id, address, payment_method, delivery_type, items, order_type } = input;
+    const { userId, address_id, address, payment_method, delivery_type, items, order_type, delivery_time_type, scheduled_time } = input;
     const session = await mongoose.startSession();
     session.startTransaction();
   
@@ -99,7 +100,7 @@ class OrderService {
   
       const { orderItems, totalAmount } = await OrderValidator.validateCartAndItems(userId, items, session);
   
-      const savedOrder = await this.createOrder(userId, finalAddressId, payment_method, delivery_type, totalAmount, order_type, session);
+      const savedOrder = await this.createOrder(userId, finalAddressId, payment_method, delivery_type, totalAmount, order_type, delivery_time_type, session);
   
       if (!savedOrder) {
         throw { statusCode: 500, message: 'Order placement failed' };
