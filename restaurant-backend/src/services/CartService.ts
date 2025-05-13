@@ -76,12 +76,12 @@ class CartService {
     }
   }
 
-  static async UpdateCart(id: string, dishId: string, quantity: number) {
-    if (!mongoose.Types.ObjectId.isValid(id) || !mongoose.Types.ObjectId.isValid(dishId)) {
-      throw new Error('Invalid cartId or dishId');
+  static async UpdateCart(userId: string, dishId: string, quantity: number) {
+    if (!mongoose.Types.ObjectId.isValid(dishId)) {
+      throw new Error('Invalid dishId');
     }
 
-    const cart = await Cart.findById(id);
+    const cart = await Cart.findOne({ userId });
     if (!cart) {
       throw new Error('Cart not found');
     }
@@ -118,7 +118,6 @@ class CartService {
         price: dish.price,
       });
     }
-
     // Cập nhật lại tổng tiền
     cart.totalPrice = cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 

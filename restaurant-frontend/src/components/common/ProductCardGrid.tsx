@@ -160,7 +160,7 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
         </p>
 
         <h3
-          className="text-base sm:text-lg font-light mb-1 cursor-pointer hover:text-secondaryColor transition-colors line-clamp-2 break-words overflow-hidden text-ellipsis min-h-[3rem]"
+          className="text-base sm:text-lg font-light mb-1 cursor-pointer hover:text-secondaryColor transition-colors line-clamp-2 break-words overflow-hidden text-ellipsis min-h-[3.5rem]"
           onClick={handleNavigateToDetail}
         >
           {rest.name || 'Tên sản phẩm'}
@@ -190,16 +190,20 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
             </>
           )}
         </div>
-        <div className="flex flex-col items-center space-y-1">
-          {rest.originalPrice && (
-            <div className="text-xs sm:text-sm font-light text-gray-400 line-through">
-              {rest.originalPrice.toLocaleString()} VND
-            </div>
-          )}
-          <div className="text-base sm:text-lg font-light text-secondaryColor">
-            {rest.price?.toLocaleString() || '0'} VND
-          </div>
-        </div>
+        <div className="h-[60px] flex flex-col items-center justify-end space-y-1">
+  {rest.originalPrice && rest.originalPrice > rest.price ? (
+    <div className="text-xs sm:text-sm font-light text-gray-400 line-through">
+      {rest.originalPrice.toLocaleString()} VND
+    </div>
+  ) : (
+    <div className="text-xs sm:text-sm font-light invisible">
+      9&nbsp;999&nbsp;999&nbsp;VND
+    </div>
+  )}
+  <div className="text-base sm:text-lg font-light text-secondaryColor">
+    {rest.price?.toLocaleString()} VND
+  </div>
+</div>
       </div>
     </div>
   );

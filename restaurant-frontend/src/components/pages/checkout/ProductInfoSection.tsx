@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useState } from 'react';
 import PaymentMethodSelector from './PaymentMethodSelector';
@@ -48,7 +48,7 @@ const ProductInfoSection = ({
       setDiscountAmount(0);
       return;
     }
-    
+
     setSelectedVoucher(voucher);
     setDiscountAmount(discount);
   };
@@ -65,9 +65,15 @@ const ProductInfoSection = ({
           <thead>
             <tr className="bg-white/5 text-left">
               <th className="p-2 font-medium">Món ăn</th>
-              <th className="p-2 text-right font-medium whitespace-nowrap">Đơn giá</th>
-              <th className="p-2 text-right font-medium whitespace-nowrap">Số lượng</th>
-              <th className="p-2 text-right font-medium whitespace-nowrap">Thành tiền</th>
+              <th className="p-2 text-center font-medium whitespace-nowrap">
+                Đơn giá
+              </th>
+              <th className="p-2 text-center font-medium whitespace-nowrap">
+                Số lượng
+              </th>
+              <th className="p-2 text-right font-medium whitespace-nowrap">
+                Thành tiền
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -86,32 +92,50 @@ const ProductInfoSection = ({
                         Phân loại: {product.category}
                       </p>
                     )}
+                    <div className="mt-1.5">
+                      <input
+                        type="text"
+                        placeholder="Ghi chú cho món này (không bỏ ớt, thêm gia vị...)"
+                        className="w-full max-w-xs text-xs bg-gray-800 border border-gray-600 rounded p-1.5 text-white/80 focus:border-secondaryColor focus:outline-none"
+                        defaultValue={product.notes || ''}
+                        onChange={(e) => {
+                          // Here you would update the notes in your state/context
+                          // For example: updateProductNotes(product.id, e.target.value)
+                        }}
+                      />
+                    </div>
                   </div>
                 </td>
-                <td className="p-2 text-right">₫{product.price.toLocaleString()}</td>
-                <td className="p-2 text-right">x{product.quantity}</td>
+                <td className="p-2 text-center">
+                  {product.price.toLocaleString()}VND
+                </td>
+                <td className="p-2 text-center">x{product.quantity}</td>
                 <td className="p-2 font-semibold text-right">
-                  ₫{(product.price * product.quantity).toLocaleString()}
+                  {(product.price * product.quantity).toLocaleString()}VND
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      
+
       {/* Phí vận chuyển */}
       <div className="mt-3 md:mt-4 text-right">
-        <span className="text-xs sm:text-sm text-white/70 mr-2">Phí vận chuyển:</span>
+        <span className="text-xs sm:text-sm text-white/70 mr-2">
+          Phí vận chuyển:
+        </span>
         <span className="font-semibold text-sm sm:text-base">
-          ₫{shippingFee.toLocaleString()}
+          {shippingFee.toLocaleString()}VND
         </span>
       </div>
 
       {/* Tổng cộng */}
       <div className="mt-1 text-right">
-        <span className="text-xs sm:text-sm text-white/70 mr-2">Tổng cộng:</span>
+        <span className="text-xs sm:text-sm text-white/70 mr-2">
+          Tổng cộng:
+        </span>
         <span className="font-bold text-sm sm:text-base md:text-lg">
-          ₫{finalAmount.toLocaleString()}
+          {finalAmount.toLocaleString()}VND
         </span>
       </div>
 
@@ -157,17 +181,17 @@ const ProductInfoSection = ({
           <div className="space-y-2 md:space-y-3 text-xs sm:text-sm text-white">
             <div className="flex justify-between">
               <span>Tổng tiền hàng:</span>
-              <span>{totalPrice.toLocaleString()} ₫</span>
+              <span>{totalPrice.toLocaleString()} VND</span>
             </div>
             <div className="flex justify-between">
               <span>Phí vận chuyển:</span>
-              <span>{shippingFee.toLocaleString()} ₫</span>
+              <span>{shippingFee.toLocaleString()} VND</span>
             </div>
             {selectedVoucher && discountAmount > 0 && (
               <div className="flex justify-between">
                 <span>Giảm giá ({selectedVoucher.code}):</span>
                 <span className="text-green-400">
-                  -{discountAmount.toLocaleString()} ₫
+                  -{discountAmount.toLocaleString()} VND
                 </span>
               </div>
             )}
@@ -175,7 +199,7 @@ const ProductInfoSection = ({
             <div className="flex justify-between font-semibold text-sm sm:text-base">
               <span>Tổng thanh toán:</span>
               <span className="text-secondaryColor">
-                {finalAmount.toLocaleString()} ₫
+                {finalAmount.toLocaleString()} VND
               </span>
             </div>
           </div>

@@ -1,27 +1,29 @@
-import React, { useState, useRef, useEffect } from "react";
-import { FaPlus, FaMinus } from "react-icons/fa";
+import React, { useState, useRef, useEffect } from 'react';
+import { FaPlus, FaMinus } from 'react-icons/fa';
 
 interface TabItem {
   id: string;
   title: string;
-  content: string;
+  content: React.ReactNode | string;
 }
 
 interface ProductTabsProps {
   tabs: TabItem[];
+  defaultOpenTab?: string | null;
 }
 
-const ProductTabs: React.FC<ProductTabsProps> = ({ tabs }) => {
-  const [openTab, setOpenTab] = useState<string | null>(null);
-
-  const toggleTab = (id: string) => {
-    setOpenTab((prev) => (prev === id ? null : id));
-  };
-
+const ProductTabs: React.FC<ProductTabsProps> = ({ tabs, defaultOpenTab = null }) => {
+  const [openTab, setOpenTab] = useState<string | null>(defaultOpenTab);
+  
   return (
-    <div className="mt-10 space-y-4">
+    <div className="mt-8">
       {tabs.map((item) => (
-        <Tab key={item.id} item={item} isOpen={openTab === item.id} onToggle={toggleTab} />
+        <Tab 
+          key={item.id} 
+          item={item} 
+          isOpen={openTab === item.id} 
+          onToggle={(id) => setOpenTab(prev => prev === id ? null : id)} 
+        />
       ))}
     </div>
   );
@@ -35,40 +37,42 @@ interface SingleTabProps {
 
 const Tab: React.FC<SingleTabProps> = ({ item, isOpen, onToggle }) => {
   const contentRef = useRef<HTMLDivElement>(null);
-  const [height, setHeight] = useState<string>("0px");
-
+  const [height, setHeight] = useState('0px');
+  
   useEffect(() => {
     if (isOpen) {
       setHeight(`${contentRef.current?.scrollHeight}px`);
     } else {
-      setHeight("0px");
+      setHeight('0px');
     }
   }, [isOpen]);
-
+  
   return (
-    <div className="p-4 text-white border border-hr rounded-md overflow-hidden transition-all duration-300">
-     <button
-  onClick={() => onToggle(item.id)}
-  className="w-full flex justify-between items-center text-left"
->
-  <span className="font-semibold">{item.title}</span>
-
-  <div
-    className={`transition-transform duration-300 ${
-      isOpen ? "rotate-180" : ""
-    }`}
-  >
-    {isOpen ? <FaMinus /> : <FaPlus />}
-  </div>
-</button>
-      <div
-        ref={contentRef}
-        style={{
-          height,
-        }}
-        className="transition-all duration-300 ease-in-out overflow-hidden text-sm text-gray-300"
+    <div className="border rounded-lg border-hr px-3 my-4">
+      <button
+        onClick={() => onToggle(item.id)}
+        className="w-full flex justify-between items-center text-left py-4 px-1 text-white font-medium"
       >
-        <div className="pt-4">{item.content}</div>
+        <span>{item.title}</span>
+        <span className="text-gray-400">
+          {isOpen ? <FaMinus /> : <FaPlus />}
+        </span>
+      </button>
+      
+      <div 
+        ref={contentRef}
+        style={{ 
+          maxHeight: height,
+          overflow: 'hidden',
+          transition: 'max-height 0.3s ease-in-out'
+        }}
+        className="px-1 my-2"
+      >
+        {typeof item.content === 'string' ? (
+          <div className="text-white py-4">{item.content}</div>
+        ) : (
+          item.content
+        )}
       </div>
     </div>
   );

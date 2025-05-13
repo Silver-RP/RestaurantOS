@@ -98,7 +98,7 @@ const Login = () => {
     try {
       await dispatch(LoginUser({ email, password, rememberMe }))
         .unwrap()
-        .then((result) => {
+        .then(() => {
           if (rememberMe) {
             localStorage.setItem('email', email);
           } else {

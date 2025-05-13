@@ -31,7 +31,7 @@ const ReservationPage: React.FC = () => {
       <div
         className="bg-bodyBackground text-white pt-16"
       >
-        <div className="max-w-[1000px] w-full mx-auto text-center pb-10">
+        <div className="max-w-[1200px] w-full mx-auto text-center pb-10">
         <div className="w-full flex justify-between items-center px-4 sm:px-10 mb-10 relative">
   {steps.map((s, index) => {
     const isCompleted = step > s.step;

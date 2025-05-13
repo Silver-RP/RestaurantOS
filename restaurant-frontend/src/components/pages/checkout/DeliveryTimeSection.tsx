@@ -51,7 +51,7 @@ const DeliveryTimeSection = ({
             </p>
             <p
               onClick={() => setIsModalOpen(true)}
-              className="text-primary text-blue-500 text-sm hover:text-primary/80"
+              className="text-primary text-blue-500 text-sm cursor-pointer"
             >
               Thay đổi
             </p>
