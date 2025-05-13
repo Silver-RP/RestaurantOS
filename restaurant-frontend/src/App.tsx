@@ -1,4 +1,3 @@
-import React from "react";
 import { BrowserRouter as Router } from "react-router-dom";
 import { Provider } from "react-redux";
 import { store } from "./redux/store";
@@ -11,7 +10,6 @@ import ScrollToTop from "@components/common/ScrollToTop";
 import QuickViewModal from "@components/pages/menu/QuickViewModal";
 import AppRoutes from "./routers/index";
 import AuthInitializer from "./utils/AuthInitializer";
-// import SearchModal from "@components/common/SearchModal";
 import SearchModal from "@components/common/SearchModal";
 
 const queryClient = new QueryClient();

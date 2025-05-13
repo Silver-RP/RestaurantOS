@@ -85,7 +85,7 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
                   className={`text-white hover:text-secondaryColor ${iconSize}`}
                 />
               </Link>
-              <Link to="/login" aria-label="Login">
+              <Link to="/profile" aria-label="Login">
                 <BsPersonCheck
                   className={`text-white hover:text-secondaryColor ${iconSize}`}
                 />
