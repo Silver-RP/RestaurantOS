@@ -97,6 +97,14 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
       );
       reset(); // Reset form fields
       onClose();
+    } catch (error: any) {
+      if (error.response?.status === 409) {
+        setIsDuplicate(true); // đánh dấu địa chỉ trùng
+        toast.error('Địa chỉ này đã tồn tại!');
+      } else {
+        toast.error('Tạo địa chỉ thất bại. Vui lòng thử lại sau.');
+      }
+      console.error('❌ Lỗi khi tạo địa chỉ:', error);
     }
   };
 
@@ -136,148 +144,38 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
         >
           {/* Name */}
           <div>
-            <label className="text-gray-400 text-sm md:text-base">
-              Họ và Tên
-            </label>
-            <Controller
-              name="name"
-              control={control}
-              rules={{ required: 'Tên không được để trống' }}
-              render={({ field }) => (
-                <input
-                  {...field}
-                  type="text"
-                  className="w-full bg-transparent border-b border-gray-500 text-white placeholder-gray-500 focus:outline-none focus:border-secondaryColor py-1 md:py-2 text-sm md:text-base"
-                  placeholder="Nhập họ và tên"
-                />
-              )}
+            <label className="text-gray-400">Họ và Tên</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full bg-transparent border-b border-gray-500 text-white placeholder-gray-500 focus:outline-none focus:border-secondaryColor py-2"
+              placeholder="Nhập họ và tên"
             />
-            {errors.name && (
-              <span className="text-red-500 text-xs sm:text-sm">
-                {errors.name?.message}
-              </span>
-            )}
           </div>
 
           {/* Phone */}
           <div>
-            <label className="text-gray-400 text-sm md:text-base">
-              Số Điện Thoại
-            </label>
-            <Controller
-              name="phone"
-              control={control}
-              rules={{
-                required: 'Số điện thoại không được để trống',
-                validate: (value) =>
-                  validatePhone(value) || 'Số điện thoại không hợp lệ',
-              }}
-              render={({ field }) => (
-                <input
-                  {...field}
-                  type="text"
-                  className="w-full bg-transparent border-b border-gray-500 text-white placeholder-gray-500 focus:outline-none focus:border-secondaryColor py-1 md:py-2 text-sm md:text-base"
-                  placeholder="Nhập số điện thoại"
-                />
-              )}
+            <label className="text-gray-400">Số Điện Thoại</label>
+            <input
+              type="text"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="w-full bg-transparent border-b border-gray-500 text-white placeholder-gray-500 focus:outline-none focus:border-secondaryColor py-2"
+              placeholder="Nhập số điện thoại"
             />
-            {errors.phone && (
-              <span className="text-red-500 text-xs sm:text-sm">
-                {errors.phone?.message}
-              </span>
-            )}
-          </div>
-          <div className="flex gap-4">
-            {/* City Selection */}
-            <div className="flex-1">
-              <label className="text-gray-400 text-sm md:text-base">
-                Tỉnh / Thành Phố
-              </label>
-              <input
-                value="Hồ Chí Minh"
-                readOnly
-                className="w-full bg-transparent border-b border-gray-500 text-white placeholder-gray-500 focus:outline-none focus:border-secondaryColor py-1 md:py-2 text-sm md:text-base"
-              />
-            </div>
-
-            {/* District Selection */}
-            <div className="flex-1">
-              <label className="text-gray-400 text-sm md:text-base">
-                Quận / Huyện
-              </label>
-
-              <Listbox value={selectedDistrict} onChange={setSelectedDistrict}>
-                <div className="relative">
-                  <Listbox.Button className="w-full bg-transparent border-b border-gray-500 text-white placeholder-gray-500 focus:outline-none focus:border-secondaryColor py-1 md:py-2 text-sm md:text-base text-left capitalize-none flex items-center justify-between">
-                    <span className="truncate">
-                      {selectedDistrict || 'Chọn quận / huyện'}
-                    </span>
-                    {/* Biểu tượng mũi tên hướng xuống từ react-icons */}
-                    <FiChevronDown className="ml-2 text-white" />
-                  </Listbox.Button>
-
-                  <Listbox.Options className="absolute w-full mt-1 bg-bodyBackground border border-white/20 rounded-md shadow-lg z-10 max-h-60 overflow-auto">
-                    {cities
-                      .find((city) => city.name === selectedCity)
-                      ?.districts.map((district) => (
-                        <Listbox.Option
-                          key={district}
-                          value={district}
-                          className={({ active, selected }) =>
-                            `p-2 cursor-pointer rounded-md transition ${
-                              active ? 'bg-white/10' : ''
-                            } ${selected ? 'border-l-4 border-secondaryColor' : ''}`
-                          }
-                        >
-                          <span className="text-left capitalize-none">
-                            {district}
-                          </span>
-                        </Listbox.Option>
-                      ))}
-                  </Listbox.Options>
-                </div>
-              </Listbox>
-            </div>
           </div>
 
           {/* Address Input */}
-          <div>
-            <Controller
-              name="address"
-              control={control}
-              rules={{ required: 'Địa chỉ không được để trống' }}
-              render={({ field }) => (
-                <AddressInput
-                  value={field.value}
-                  onChange={(e) => {
-                    field.onChange(e);
-                    trigger('address');
-                  }}
-                  onSelectLocation={(
-                    lat: number,
-                    lon: number,
-                    address: string,
-                  ) => {
-                    setLat(lat);
-                    setLon(lon);
-                    setValue('address', address);
-                    trigger('address');
-                  }}
-                />
-              )}
-            />
-            {errors.address && (
-              <span className="text-red-500 text-xs sm:text-sm">
-                {errors.address?.message}
-              </span>
-            )}
-          </div>
+          <AddressInput
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            onSelectLocation={handleSelectLocation}
+          />
 
           {/* Map Display */}
           {lat !== 0 && lon !== 0 && (
-            <div className="mt-2 sm:mt-3 md:mt-4">
-              <MapDisplay lat={lat} lon={lon} address={getValues('address')} />
-            </div>
+            <MapDisplay lat={lat} lon={lon} address={address} />
           )}
 
           {/* Address Type */}
@@ -362,10 +260,10 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
               Hủy
             </button>
             <button
-              type="submit"
-              className="px-3 sm:px-4 md:px-6 py-1 md:py-2 border border-secondaryColor text-headerBackground bg-secondaryColor hover:bg-bodyBackground hover:text-white transition uppercase text-xs sm:text-sm md:text-base"
+              onClick={handleSave}
+              className="px-6 py-2 border border-secondaryColor text-headerBackground bg-secondaryColor hover:bg-bodyBackground hover:text-white transition uppercase text-sm md:text-base"
             >
-              Lưu
+              {isDuplicate ? 'Địa chỉ đã tồn tại' : 'Lưu'}
             </button>
           </div>
         </form>

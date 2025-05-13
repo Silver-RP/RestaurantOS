@@ -3,13 +3,15 @@ import { BrowserRouter as Router } from "react-router-dom";
 import { Provider } from "react-redux";
 import { store } from "./redux/store";
 import 'react-toastify/dist/ReactToastify.css';
+import 'react-confirm-alert/src/react-confirm-alert.css';
 import { GoogleOAuthProvider } from "@react-oauth/google";
-
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ToastConfig } from "@components/common/ToastConfig";
 import ScrollToTop from "@components/common/ScrollToTop";
 import QuickViewModal from "@components/pages/menu/QuickViewModal";
 import AppRoutes from "./routers/index";
+import AuthInitializer from "./utils/AuthInitializer";
+// import SearchModal from "@components/common/SearchModal";
 import SearchModal from "@components/common/SearchModal";
 
 const queryClient = new QueryClient();
@@ -19,7 +21,9 @@ const App = () => {
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
+      <AuthInitializer /> 
         <Router>
+          
           <ScrollToTop />
           <ToastConfig />
           <AppRoutes />

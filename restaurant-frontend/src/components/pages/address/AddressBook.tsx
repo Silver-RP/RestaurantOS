@@ -1,24 +1,42 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AddressInput } from './AddressInput';
 import { AddAddressModal } from './AddAddressModal';
+<<<<<<< HEAD
+import { useUserAddresses } from '@hooks/useAddress';
+import { deleteAddress } from '@api/AddressApi';
+import { UpdateAddressModal } from './UpdateAddressModal';
+import { toast } from 'react-toastify';
+import { confirmAlert } from 'react-confirm-alert';
+=======
 import { MapDisplay } from './MapDisplay';
+>>>>>>> cc490501bd56f30ede24bfecf488186d74867939
 
 interface Address {
   name: string;
   phone: string;
+<<<<<<< HEAD
+  street_address: string;
+  id?: string; // để lưu id xoá nếu cần
+=======
   address: string;
   coordinates?: {
     lat: number;
     lon: number;
   };
   addressType?: string;
+>>>>>>> cc490501bd56f30ede24bfecf488186d74867939
 }
 
-interface AddressBookProps {
-  defaultAddress: Address;
-  otherAddresses: Address[];
-}
+const AddressBook: React.FC = () => {
+  const { data, loading, error, refetch } = useUserAddresses();
+  console.log('📦 Address data:', data);
 
+<<<<<<< HEAD
+  const [defaultForm, setDefaultForm] = useState<Address>({
+    name: '',
+    phone: '',
+    street_address: '',
+=======
 const AddressBook: React.FC<AddressBookProps> = ({
   defaultAddress,
   otherAddresses,
@@ -53,7 +71,41 @@ const AddressBook: React.FC<AddressBookProps> = ({
     lat: 10.7769,
     lon: 106.7009,
     address: '',
+>>>>>>> cc490501bd56f30ede24bfecf488186d74867939
   });
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState<any | null>(null);
+  const [otherForms, setOtherForms] = useState<Address[]>([]);
+  const [isEditingDefault, setIsEditingDefault] = useState(false);
+  const [editingOtherIndex, setEditingOtherIndex] = useState<number | null>(
+    null,
+  );
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (!data || data.length === 0) return;
+
+    const defaultAddr = data.find((addr) => addr.is_default);
+    const others = data.filter((addr) => !addr.is_default);
+
+    if (defaultAddr) {
+      setDefaultForm({
+        name: defaultAddr.full_name,
+        phone: defaultAddr.phone,
+        street_address: `${defaultAddr.street_address}, ${defaultAddr.ward}, ${defaultAddr.district}, ${defaultAddr.province}`,
+        id: defaultAddr.id, // 👈 Thêm dòng này
+      });
+    }
+
+    const formattedOthers = others.map((addr) => ({
+      name: addr.full_name,
+      phone: addr.phone,
+      street_address: `${addr.street_address}, ${addr.ward}, ${addr.district}, ${addr.province}`,
+      id: addr.id, // ✅ đúng key
+    }));
+
+    setOtherForms(formattedOthers);
+  }, [data]);
 
   const handleDefaultChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setDefaultForm({ ...defaultForm, [e.target.name]: e.target.value });
@@ -71,6 +123,8 @@ const AddressBook: React.FC<AddressBookProps> = ({
     setOtherForms(newAddresses);
   };
 
+<<<<<<< HEAD
+=======
   const handleAddNewAddress = (
     address: string,
     lat: number,
@@ -96,12 +150,57 @@ const AddressBook: React.FC<AddressBookProps> = ({
     setOtherForms(newAddresses);
   };
 
+>>>>>>> cc490501bd56f30ede24bfecf488186d74867939
   const cancelDefaultEdit = () => {
-    setDefaultForm(defaultAddress); // Reset to initial default address
     setIsEditingDefault(false);
     setShowMap({ show: false, lat: 10.7769, lon: 106.7009, address: '' });
   };
+  const showDeleteConfirmToast = (onConfirm: () => void) => {
+    toast.dismiss(); // Đóng mọi toast hiện tại
 
+<<<<<<< HEAD
+    toast.info(
+      ({ closeToast }) => (
+        <div className="max-w-[360px] text-white text-sm">
+          <div className="flex items-start gap-3">
+            <div className="text-red-400 text-lg pt-1">⚠️</div>
+            <div className="flex-1">
+              <p className="font-semibold mb-2 leading-snug">
+                Bạn có chắc chắn muốn xoá địa chỉ này?
+              </p>
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={closeToast}
+                  className="px-3 py-1 border border-gray-400 text-gray-300 rounded hover:bg-gray-700"
+                >
+                  Huỷ
+                </button>
+                <button
+                  onClick={() => {
+                    onConfirm();
+                    closeToast?.();
+                  }}
+                  className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                >
+                  Xoá
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ),
+      {
+        icon: false, // ❌ bỏ icon mặc định
+        position: 'top-center',
+        autoClose: false,
+        closeButton: false,
+        draggable: false,
+        closeOnClick: false,
+        hideProgressBar: true,
+        theme: 'dark',
+      },
+    );
+=======
   const cancelOtherEdit = (index: number) => {
     const originalAddress = otherAddresses[index];
     const updatedAddresses = [...otherForms];
@@ -143,7 +242,53 @@ const AddressBook: React.FC<AddressBookProps> = ({
     setShowMap({ show: false, lat: 10.7769, lon: 106.7009, address: '' });
     
     console.log('New default address set:', newDefaultAddress);
+>>>>>>> cc490501bd56f30ede24bfecf488186d74867939
   };
+
+  const handleDelete = (id: string | undefined) => {
+    if (!id) return;
+
+    showDeleteConfirmToast(async () => {
+      try {
+        await deleteAddress(id);
+        toast.success('Đã xoá địa chỉ!');
+        if (data.length === 1) {
+          setDefaultForm({ name: '', phone: '', street_address: '' });
+        }
+        refetch();
+      } catch {
+        toast.error('Xoá địa chỉ thất bại!');
+      }
+    });
+  };
+
+  if (error) return <p className="text-red-400">Lỗi khi tải địa chỉ</p>;
+
+  if (Array.isArray(data) && data.length === 0) {
+    return (
+      <div className="flex-1 bg-bodyBackground p-4 md:p-10 border border-[#FFE0A0] text-white font-sans">
+        <h2 className="text-2xl md:text-3xl font-restora font-bold text-white mb-6">
+          Sổ địa chỉ
+        </h2>
+        <p className="text-gray-400 italic">Hiện chưa có địa chỉ nào.</p>
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="mt-6 px-6 py-2 border border-secondaryColor hover:text-secondaryColor bg-secondaryColor hover:bg-bodyBackground text-headerBackground transition uppercase text-sm md:text-base"
+        >
+          Thêm địa chỉ mới
+        </button>
+
+        <AddAddressModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSave={() => {
+            refetch();
+            setIsModalOpen(false);
+          }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 bg-bodyBackground p-4 md:p-10 border border-[#FFE0A0] text-white font-sans">
@@ -161,9 +306,16 @@ const AddressBook: React.FC<AddressBookProps> = ({
 
       {/* Địa chỉ mặc định */}
       <div className="space-y-6 mb-10">
+<<<<<<< HEAD
+        <h3 className="text-lg md:text-xl font-semibold mb-4">
+          Địa chỉ mặc định
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+=======
         <h3 className="text-lg md:text-xl font-semibold mb-4">Địa chỉ mặc định</h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+>>>>>>> cc490501bd56f30ede24bfecf488186d74867939
           <p className="text-gray-400">Họ và tên</p>
           <div className="min-h-10 flex items-center">
             {isEditingDefault ? (
@@ -192,6 +344,25 @@ const AddressBook: React.FC<AddressBookProps> = ({
             )}
           </div>
 
+<<<<<<< HEAD
+          <p className="text-gray-400">Địa chỉ</p>
+          {isEditingDefault ? (
+            <AddressInput
+              value={defaultForm.street_address}
+              onChange={(e) =>
+                setDefaultForm({
+                  ...defaultForm,
+                  street_address: e.target.value,
+                })
+              }
+              onSelectLocation={(lat, lon, street_address) =>
+                setDefaultForm({ ...defaultForm, street_address })
+              }
+            />
+          ) : (
+            <p className="font-medium">{defaultForm.street_address}</p>
+          )}
+=======
           <p className="text-gray-400 self-start pt-2">Địa chỉ</p>
           <div className="min-h-10 flex flex-col justify-start">
             {isEditingDefault ? (
@@ -233,6 +404,7 @@ const AddressBook: React.FC<AddressBookProps> = ({
               </p>
             )}
           </div>
+>>>>>>> cc490501bd56f30ede24bfecf488186d74867939
         </div>
 
         {isEditingDefault && showMap.show && (
@@ -246,6 +418,21 @@ const AddressBook: React.FC<AddressBookProps> = ({
         <div className="flex gap-6 mt-6">
           <button
             onClick={() => {
+<<<<<<< HEAD
+              const [street, ward, district, province] =
+                defaultForm.street_address.split(',').map((s) => s.trim());
+
+              setSelectedAddress({
+                ...defaultForm,
+                street_address: street,
+                ward,
+                district,
+                province,
+                is_default: true, // ⚠️ Quan trọng để giữ trạng thái mặc định
+              });
+
+              setIsUpdateModalOpen(true);
+=======
               if (isEditingDefault) {
                 // Gọi API lưu nếu cần
                 console.log('Lưu địa chỉ mặc định:', defaultForm);
@@ -264,18 +451,18 @@ const AddressBook: React.FC<AddressBookProps> = ({
               if (!isEditingDefault) {
                 setEditingOtherIndex(null);
               }
+>>>>>>> cc490501bd56f30ede24bfecf488186d74867939
             }}
             className="px-6 py-2 md:px-10 border border-secondaryColor hover:text-secondaryColor bg-secondaryColor hover:bg-bodyBackground text-headerBackground transition uppercase text-sm md:text-base"
           >
-            {isEditingDefault ? 'Lưu' : 'Cập nhật'}
+            Cập nhật
           </button>
-
-          {isEditingDefault && (
+          {data.length === 1 && (
             <button
-              onClick={cancelDefaultEdit}
-              className="px-6 py-2 md:px-10 border border-secondaryColor hover:text-secondaryColor hover:bg-bodyBackground text-white transition uppercase text-sm md:text-base"
+              onClick={() => handleDelete(defaultForm.id)}
+              className="px-4 py-1 text-sm border border-red-400 text-red-400 hover:bg-red-500 hover:text-white rounded transition"
             >
-              Hủy
+              Xoá
             </button>
           )}
         </div>
@@ -285,6 +472,89 @@ const AddressBook: React.FC<AddressBookProps> = ({
 
       {/* Địa chỉ khác */}
       <div className="space-y-6">
+<<<<<<< HEAD
+        <h3 className="text-lg md:text-xl font-semibold mb-4">
+          Các địa chỉ khác
+        </h3>
+        {otherForms.map((addr, index) => (
+          <div key={index} className="mb-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center mb-6">
+              <p className="text-gray-400">Họ và tên</p>
+              {editingOtherIndex === index ? (
+                <input
+                  name="name"
+                  value={addr.name}
+                  onChange={(e) => handleOtherChange(index, e)}
+                  className="w-full bg-transparent border-b border-gray-500 text-white placeholder-gray-500 focus:outline-none focus:border-secondaryColor py-2"
+                />
+              ) : (
+                <p className="font-medium">{addr.name}</p>
+              )}
+
+              <p className="text-gray-400">Số điện thoại</p>
+              {editingOtherIndex === index ? (
+                <input
+                  name="phone"
+                  value={addr.phone}
+                  onChange={(e) => handleOtherChange(index, e)}
+                  className="w-full bg-transparent border-b border-gray-500 text-white placeholder-gray-500 focus:outline-none focus:border-secondaryColor py-2"
+                />
+              ) : (
+                <p className="font-medium">{addr.phone}</p>
+              )}
+
+              <p className="text-gray-400">Địa chỉ</p>
+              {editingOtherIndex === index ? (
+                <AddressInput
+                  value={addr.street_address}
+                  onChange={(e) => {
+                    const newAddresses = [...otherForms];
+                    newAddresses[index] = {
+                      ...newAddresses[index],
+                      street_address: e.target.value,
+                    };
+                    setOtherForms(newAddresses);
+                  }}
+                  onSelectLocation={(lat, lon, street_address) => {
+                    const newAddresses = [...otherForms];
+                    newAddresses[index] = {
+                      ...newAddresses[index],
+                      street_address,
+                    };
+                    setOtherForms(newAddresses);
+                  }}
+                />
+              ) : (
+                <p className="font-medium">{addr.street_address}</p>
+              )}
+            </div>
+
+            <div className="flex gap-4">
+              <button
+                onClick={() => {
+                  const [street, ward, district, province] = addr.street_address
+                    .split(',')
+                    .map((s) => s.trim());
+                  setSelectedAddress({
+                    ...addr,
+                    street_address: street,
+                    ward,
+                    district,
+                    province,
+                  });
+                  setIsUpdateModalOpen(true);
+                }}
+                className="px-6 py-2 md:px-10 border border-secondaryColor hover:text-secondaryColor bg-secondaryColor hover:bg-bodyBackground text-headerBackground transition uppercase text-sm md:text-base"
+              >
+                Cập nhật
+              </button>
+              <button
+                onClick={() => handleDelete(addr.id)}
+                className="px-4 py-1 text-sm border border-red-400 text-red-400 hover:bg-red-500 hover:text-white rounded transition"
+              >
+                Xoá
+              </button>
+=======
         <h3 className="text-lg md:text-xl font-semibold mb-4">Các địa chỉ khác</h3>
 
         {otherForms.length === 0 ? (
@@ -447,17 +717,38 @@ const AddressBook: React.FC<AddressBookProps> = ({
               {index < otherForms.length - 1 && (
                 <div className="border-t border-gray-600 my-10"></div>
               )}
+>>>>>>> cc490501bd56f30ede24bfecf488186d74867939
             </div>
           ))
         )}
       </div>
 
-      {/* Modal Thêm địa chỉ mới */}
       <AddAddressModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSave={handleAddNewAddress}
+        onSave={() => {
+          toast.success('Thêm địa chỉ thành công!');
+          refetch(); // Làm mới danh sách địa chỉ
+          setIsModalOpen(false);
+        }}
       />
+
+      {selectedAddress && (
+        <UpdateAddressModal
+          isOpen={isUpdateModalOpen}
+          onClose={() => {
+            setIsUpdateModalOpen(false);
+            setSelectedAddress(null);
+          }}
+          address={selectedAddress}
+          onSave={() => {
+            toast.success('Cập nhật địa chỉ thành công!');
+            refetch(); // Làm mới danh sách
+            setIsUpdateModalOpen(false);
+            setSelectedAddress(null);
+          }}
+        />
+      )}
     </div>
   );
 };
