@@ -7,20 +7,22 @@ import FeatureSection from '../components/pages/homepage/FeatureSection';
 import OrderOnlineSection from '../components/pages/homepage/OrderOnline';
 import Postcomponent from '../components/pages/homepage/post/Post';
 import BestOffersSection from '../components/pages/homepage/offer/BestOffersSection';
+import ShowcaseSection from '@/components/common/ShowcaseSection';
 
 const Homepage = () => {
-    return (
-        <>
-            <Carousel></Carousel>
-            <AboutSection></AboutSection>
-            <ContactCard></ContactCard>
-            <BestOffersSection></BestOffersSection>
-            <FeatureSection></FeatureSection>
-            <OrderOnlineSection></OrderOnlineSection>
-            <ReservationSection></ReservationSection>
-            <Postcomponent></Postcomponent>
-        </>
-    );
-}
+  return (
+    <>
+      <Carousel />
+      <AboutSection />
+      <ContactCard />
+      <BestOffersSection />
+      <FeatureSection />
+      <OrderOnlineSection />
+      <ShowcaseSection />
+      <Postcomponent />
+      <ReservationSection />
+    </>
+  );
+};
 
 export default Homepage;

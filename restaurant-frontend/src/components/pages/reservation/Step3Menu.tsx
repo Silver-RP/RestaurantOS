@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { BsGridFill, BsListUl } from 'react-icons/bs';
+import { BsChevronDown } from 'react-icons/bs';
 import { FiFilter } from 'react-icons/fi';
 import { FiSearch } from 'react-icons/fi';
-import { useSidebar } from '@/contexts/SidebarContext';
 import { useFoods } from '@/hooks/useFoods';
 import Pagination from '@components/common/Pagination';
 import ButtonComponents from '@components/common/ButtonComponents';
-import ReservationMenuItemCard from '@/components/common/ReservationMenuItemCard';
+import ReservationMenuItemCard from '@/components/pages/reservation/ReservationMenuItemCard';
 import FilterSidebar from '@/components/pages/menu/FilterSidebar';
 import { ReservationFormData } from '../../../types/ReservationFormData.type';
+import ReservationOrderSidebar from '@/components/pages/reservation/ReservationOrderSidebar';
+import AddReservationItemModal from './AddItemModal';
 
 interface Step3MenuProps {
   formData: ReservationFormData;
@@ -17,18 +18,20 @@ interface Step3MenuProps {
   onBack: () => void;
 }
 
-const Step3Menu: React.FC<Step3MenuProps> = ({ formData, setFormData, onNext, onBack }) => {
+const Step3Menu: React.FC<Step3MenuProps> = ({
+  formData,
+  setFormData,
+  onNext,
+  onBack,
+}) => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const { isExtended } = useSidebar();
-  const {
-    foods,
-    loading,
-    error,
-    pagination,
-    searchParams,
-    setSearchParams,
-    setPagination,
-  } = useFoods();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedFood, setSelectedFood] = useState<
+    (typeof foods.docs)[0] | null
+  >(null);
+  const { foods, loading, error, pagination, setSearchParams, setPagination } =
+    useFoods();
 
   const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const sortValue = e.target.value;
@@ -42,10 +45,6 @@ const Step3Menu: React.FC<Step3MenuProps> = ({ formData, setFormData, onNext, on
 
   const toggleFilter = () => {
     setIsFilterOpen((prev) => !prev);
-  };
-
-  const handleSelect = (id: string) => {
-    setFormData((prev) => ({ ...prev, menu: id }));
   };
 
   return (
@@ -80,6 +79,7 @@ const Step3Menu: React.FC<Step3MenuProps> = ({ formData, setFormData, onNext, on
               <span className="text-sm">Lọc</span>
             </button>
 
+            {/* Ô dropdown sắp xếp */}
             <div className="relative">
               <select
                 onChange={handleSortChange}
@@ -95,10 +95,38 @@ const Step3Menu: React.FC<Step3MenuProps> = ({ formData, setFormData, onNext, on
                 <option value="mostFavorite">Được yêu thích nhất</option>
               </select>
 
+              {/* Icon: đổi FiSearch → BsChevronDown */}
               <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-secondaryColor">
-                <FiSearch className="w-4 h-4" />
+                <BsChevronDown className="w-4 h-4" />
               </div>
             </div>
+
+            {/* Ô tìm kiếm */}
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Tìm món ăn..."
+                className="bg-bodyBackground border border-gray-500 text-white placeholder:text-gray-400 rounded px-3 py-2 text-sm w-[180px] focus:outline-none focus:ring-2 focus:ring-secondaryColor"
+                onChange={(e) => {
+                  const keyword = e.target.value;
+                  setSearchParams((prev) => {
+                    const newParams = new URLSearchParams(prev);
+                    newParams.set('search', keyword);
+                    newParams.set('page', '1');
+                    return newParams;
+                  });
+                }}
+              />
+              <FiSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-secondaryColor w-4 h-4" />
+            </div>
+            <ButtonComponents
+              variant="filled"
+              size="small"
+              onClick={() => setIsSidebarOpen(true)}
+              className="ml-2"
+            >
+              Xem món đã chọn
+            </ButtonComponents>
           </div>
 
           {/* Display count */}
@@ -118,27 +146,31 @@ const Step3Menu: React.FC<Step3MenuProps> = ({ formData, setFormData, onNext, on
             sản phẩm
           </div>
         </div>
-
         {/* Content */}
         {loading ? (
           <div className="text-center py-20">Đang tải dữ liệu món ăn...</div>
         ) : error ? (
           <div className="text-center text-red-500 py-20">{error}</div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {foods?.docs?.map((item) => (
               <div
                 key={item._id}
                 className={`rounded border transition hover:scale-[1.01] ${
-                  formData.menu === item._id ? 'border-secondaryColor' : 'border-transparent'
+                  formData.menu === item._id
+                    ? 'border-secondaryColor'
+                    : 'border-transparent'
                 }`}
-                onClick={() => handleSelect(item._id)}
               >
                 <ReservationMenuItemCard
                   image={item.images?.[0]}
                   name={item.name}
                   category={item.categories?.[0]?.Cate_name || 'Khác'}
                   price={`${item.discount_price || item.price} VND`}
+                  onAdd={() => {
+                    setSelectedFood(item);
+                    setModalOpen(true);
+                  }}
                 />
               </div>
             ))}
@@ -163,9 +195,20 @@ const Step3Menu: React.FC<Step3MenuProps> = ({ formData, setFormData, onNext, on
             }));
           }}
           limit={pagination.limit}
-          onLimitChange={() => {}}
+          onLimitChange={(newLimit) => {
+            setSearchParams((prev) => {
+              const newParams = new URLSearchParams(prev);
+              newParams.set('limit', newLimit.toString());
+              newParams.set('page', '1'); // Reset về trang 1
+              return newParams;
+            });
+            setPagination((prev) => ({
+              ...prev,
+              limit: newLimit,
+              currentPage: 1,
+            }));
+          }}
         />
-
         {/* Action buttons */}
         <div className="flex justify-between mt-8">
           <ButtonComponents variant="outline" size="small" onClick={onBack}>
@@ -175,12 +218,59 @@ const Step3Menu: React.FC<Step3MenuProps> = ({ formData, setFormData, onNext, on
             variant="filled"
             size="small"
             onClick={onNext}
-            disabled={!formData.menu}
+            disabled={formData.selectedItems.length === 0}
           >
             Tiếp tục
           </ButtonComponents>
         </div>
       </main>
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+      <ReservationOrderSidebar
+        items={formData.selectedItems}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        onCheckout={() => alert('Đi tới thanh toán')}
+      />
+      <AddReservationItemModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSubmit={(quantity, note) => {
+          if (!selectedFood) return;
+          setFormData((prev) => {
+            const exist = prev.selectedItems.find(
+              (f) => f.id === selectedFood._id && f.note === note,
+            );
+            let newItems;
+            if (exist) {
+              newItems = prev.selectedItems.map((f) =>
+                f.id === selectedFood._id && f.note === note
+                  ? { ...f, quantity: f.quantity + quantity }
+                  : f,
+              );
+            } else {
+              newItems = [
+                ...prev.selectedItems,
+                {
+                  id: selectedFood._id,
+                  name: selectedFood.name,
+                  price: selectedFood.discount_price || selectedFood.price,
+                  quantity,
+                  image: selectedFood.images?.[0],
+                  note,
+                },
+              ];
+            }
+            return { ...prev, selectedItems: newItems };
+          });
+        }}
+        itemName={selectedFood?.name || ''}
+        itemPrice={selectedFood?.discount_price || selectedFood?.price || 0}
+      />
     </div>
   );
 };
