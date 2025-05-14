@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { closeQuickView } from '../../../redux/feature/quickView/quickViewSlice';
 import { RootState } from 'redux/store';
