@@ -92,7 +92,7 @@ app.get('/', (req, res) => {
 // Định nghĩa routes
 app.use('/api/auth', AuthRoutes);
 app.use('/api/user', UserRoutes);
-app.use('/api/profile', ProfileRoutes);
+app.use('/api/profile', AuthMiddleWare.verifyToken, ProfileRoutes);
 app.use('/api/role', RoleRoutes);
 app.use('/api/permission', PermissionRoutes);
 app.use('/api/category', CateRoutes);

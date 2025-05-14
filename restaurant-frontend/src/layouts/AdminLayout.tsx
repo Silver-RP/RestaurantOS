@@ -9,9 +9,8 @@ import {
   FaSignOutAlt,
   FaAngleLeft,
   FaAngleRight,
-  
 } from 'react-icons/fa';
-import { GiHotMeal } from "react-icons/gi";
+import { GiHotMeal } from 'react-icons/gi';
 import classNames from 'classnames';
 import { useAdminSidebar } from '../contexts/AdminSidebarContext';
 import AdminHeader from '../components/layout/AdminHeader';
@@ -25,14 +24,14 @@ const AdminLayout: React.FC = () => {
       <aside
         className={classNames(
           'bg-admincard flex flex-col justify-between transition-all duration-300 fixed top-0 left-0 z-50 h-full',
-          isSidebarOpen ? 'w-64 px-4' : 'w-16 items-center'
+          isSidebarOpen ? 'w-64 px-4' : 'w-16 items-center',
         )}
       >
         <div className="flex flex-col items-center space-y-8 mt-6 flex-1">
           <button
             className={classNames(
               'text-adminprimary focus:outline-none transition-all',
-              isSidebarOpen ? 'self-end mr-2' : 'self-center'
+              isSidebarOpen ? 'self-end mr-2' : 'self-center',
             )}
             onClick={toggleSidebarExtend}
           >
@@ -44,12 +43,42 @@ const AdminLayout: React.FC = () => {
           </button>
 
           <nav className="flex flex-col gap-6 w-full items-center">
-            <NavItem href="/admin" icon={<FaHome />} label="Trang chủ" expanded={isSidebarOpen} />
-            <NavItem href="/admin/foods" icon={<FaUtensils />} label="Món ăn" expanded={isSidebarOpen} />
-            <NavItem href="/admin/categories" icon={<GiHotMeal />} label="Danh mục" expanded={isSidebarOpen} />
-            <NavItem href="/admin/posts" icon={<FaFileAlt />} label="Bài viết" expanded={isSidebarOpen} />
-            <NavItem href="/admin/about" icon={<FaInfoCircle />} label="Giới thiệu" expanded={isSidebarOpen} />
-            <NavItem href="/admin/contact" icon={<FaEnvelope />} label="Liên hệ" expanded={isSidebarOpen} />
+            <NavItem
+              href="/admin"
+              icon={<FaHome />}
+              label="Trang chủ"
+              expanded={isSidebarOpen}
+            />
+            <NavItem
+              href="/admin/foods"
+              icon={<FaUtensils />}
+              label="Món ăn"
+              expanded={isSidebarOpen}
+            />
+            <NavItem
+              href="/admin/categories"
+              icon={<GiHotMeal />}
+              label="Danh mục"
+              expanded={isSidebarOpen}
+            />
+            <NavItem
+              href="/admin/posts"
+              icon={<FaFileAlt />}
+              label="Bài viết"
+              expanded={isSidebarOpen}
+            />
+            <NavItem
+              href="/admin/about"
+              icon={<FaInfoCircle />}
+              label="Giới thiệu"
+              expanded={isSidebarOpen}
+            />
+            <NavItem
+              href="/admin/contact"
+              icon={<FaEnvelope />}
+              label="Liên hệ"
+              expanded={isSidebarOpen}
+            />
           </nav>
         </div>
 
@@ -68,16 +97,18 @@ const AdminLayout: React.FC = () => {
       <div
         className={classNames(
           'flex-1 flex flex-col transition-all duration-300',
-          isSidebarOpen ? 'ml-64' : 'ml-16'
+          isSidebarOpen ? 'ml-64' : 'ml-16',
         )}
       >
         {/* Header */}
-        <AdminHeader/>
+        <AdminHeader />
 
         {/* Page content */}
         <main className="flex-1 p-6 transition-all duration-300">
-  <Outlet />
-</main>
+          <div className="w-full h-full overflow-auto">
+            <Outlet />
+          </div>
+        </main>
       </div>
     </div>
   );
@@ -91,18 +122,24 @@ interface NavItemProps {
   className?: string;
 }
 
-const NavItem: React.FC<NavItemProps> = ({ href, icon, label, expanded, className }) => {
+const NavItem: React.FC<NavItemProps> = ({
+  href,
+  icon,
+  label,
+  expanded,
+  className,
+}) => {
   return (
     <Link
       to={href}
       className={classNames(
         'flex items-center px-4 py-2 rounded-lg hover:bg-adminhover transition-colors w-full',
         expanded ? 'justify-start gap-3' : 'justify-center',
-        className
+        className,
       )}
     >
       <span className="text-lg">{icon}</span>
-     {expanded && <span className="text-left w-full">{label}</span>}
+      {expanded && <span className="text-left w-full">{label}</span>}
     </Link>
   );
 };

@@ -52,10 +52,11 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
   const [lon, setLon] = useState(0);
   const [addressType, setAddressType] = useState('home');
   const [isDefault, setIsDefault] = useState(false);
-  const [selectedCity, setSelectedCity] = useState('TP. Hồ Chí Minh');
+  const [selectedCity] = useState('TP. Hồ Chí Minh');
   const [selectedDistrict, setSelectedDistrict] = useState('');
   const [selectedWard, setSelectedWard] = useState('');
   const [isDuplicate, setIsDuplicate] = useState(false);
+  const [locationError, setLocationError] = useState('');
 
   const {
     control,
@@ -69,12 +70,13 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
     defaultValues: {
       full_name: '',
       province: selectedCity,
-      district: selectedDistrict,
-      ward: selectedWard,
+      district: '',
+      ward: '',
       street_address: '',
       phone: '',
     },
   });
+
   const watchedAddress = watch('street_address');
 
   const normalizeStreet = (input: string): string => {
@@ -87,18 +89,16 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
       .trim();
   };
   useEffect(() => {
-      if (isDuplicate) setIsDuplicate(false); 
+    if (isDuplicate) setIsDuplicate(false);
 
     const timeout = setTimeout(async () => {
       const street = normalizeStreet(watchedAddress);
 
-      if (
-        street.length > 5 
-      ) {
+      if (street.length > 5) {
         const fullAddress = getFullAddress(
           street,
-          selectedWard || '', 
-          selectedDistrict || '', 
+          selectedWard || '',
+          selectedDistrict || '',
           selectedCity,
         );
 
@@ -128,10 +128,24 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
   };
 
   const onSubmit = async (data: FormValues) => {
-    if (!selectedDistrict || !selectedWard || !lat || !lon) {
-      toast.error('Vui lòng điền đủ thông tin');
+    let hasError = false;
+    const isValid = await trigger();
+    if (!isValid) {
       return;
     }
+    if (!selectedDistrict || !selectedWard) {
+      setLocationError('Vui lòng chọn đầy đủ Quận / Huyện và Phường / Xã');
+      hasError = true;
+    } else {
+      setLocationError('');
+    }
+
+    if (!lat || !lon) {
+      toast.error('Không thể xác định vị trí. Vui lòng kiểm tra lại địa chỉ.');
+      hasError = true;
+    }
+
+    if (hasError) return;
 
     const fullSubmitData = {
       full_name: data.full_name,
@@ -147,9 +161,9 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
     };
 
     try {
-      await createAddress(fullSubmitData); 
+      await createAddress(fullSubmitData);
       reset();
-      setIsDuplicate(false); 
+      setIsDuplicate(false);
       onSave(
         selectedCity,
         selectedDistrict,
@@ -169,7 +183,6 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
       } else {
         toast.error('Tạo địa chỉ thất bại. Vui lòng thử lại sau.');
       }
-      console.error('❌ Lỗi khi tạo địa chỉ:', error);
     }
   };
 
@@ -278,7 +291,7 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
               </label>
               <Listbox value={selectedDistrict} onChange={setSelectedDistrict}>
                 <div className="relative">
-                 <Listbox.Button className="w-full bg-transparent border-b border-gray-500 text-white py-1.5 flex items-center justify-between text-sm md:text-base">
+                  <Listbox.Button className="w-full bg-transparent border-b border-gray-500 text-white py-1.5 flex items-center justify-between text-sm md:text-base">
                     <span className="truncate capitalize">
                       {selectedDistrict || 'Chọn Quận / Huyện'}
                     </span>
@@ -338,6 +351,11 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
                 </div>
               </Listbox>
             </div>
+            {locationError && (
+              <p className="text-red-500 text-xs sm:text-sm mt-1">
+                {locationError}
+              </p>
+            )}
           </div>
 
           {/* Address Input */}
@@ -356,7 +374,7 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
                   onSelectLocation={(lat, lon, address) => {
                     setLat(lat);
                     setLon(lon);
-                    setValue('street_address', address); // giờ address chỉ còn "Lê Đức Thọ"
+                    setValue('street_address', address);
                   }}
                 />
               )}

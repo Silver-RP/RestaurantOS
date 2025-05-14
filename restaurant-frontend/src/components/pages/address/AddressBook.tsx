@@ -5,7 +5,7 @@ import { useUserAddresses } from '@hooks/useAddress';
 import { deleteAddress } from '@api/AddressApi';
 import { UpdateAddressModal } from './UpdateAddressModal';
 import { toast } from 'react-toastify';
-import { confirmAlert } from 'react-confirm-alert';
+
 
 interface Address {
   name: string;
@@ -15,7 +15,7 @@ interface Address {
 }
 
 const AddressBook: React.FC = () => {
-  const { data, loading, error, refetch } = useUserAddresses();
+  const { data, error, refetch } = useUserAddresses();
   console.log('📦 Address data:', data);
 
   const [defaultForm, setDefaultForm] = useState<Address>({
@@ -26,8 +26,8 @@ const AddressBook: React.FC = () => {
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState<any | null>(null);
   const [otherForms, setOtherForms] = useState<Address[]>([]);
-  const [isEditingDefault, setIsEditingDefault] = useState(false);
-  const [editingOtherIndex, setEditingOtherIndex] = useState<number | null>(
+  const [isEditingDefault] = useState(false);
+  const [editingOtherIndex] = useState<number | null>(
     null,
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -75,7 +75,7 @@ const AddressBook: React.FC = () => {
 
  
   const showDeleteConfirmToast = (onConfirm: () => void) => {
-    toast.dismiss(); // Đóng mọi toast hiện tại
+    toast.dismiss(); 
 
     toast.info(
       ({ closeToast }) => (
@@ -108,7 +108,7 @@ const AddressBook: React.FC = () => {
         </div>
       ),
       {
-        icon: false, // ❌ bỏ icon mặc định
+        icon: false, 
         position: 'top-center',
         autoClose: false,
         closeButton: false,
@@ -157,6 +157,7 @@ const AddressBook: React.FC = () => {
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           onSave={() => {
+            toast.success('Thêm địa chỉ thành công!');
             refetch();
             setIsModalOpen(false);
           }}
