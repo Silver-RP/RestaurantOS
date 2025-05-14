@@ -54,21 +54,36 @@ const MenuTable: React.FC = () => {
 
   const foodList = foods?.docs || [];
   
-  const handleSort = (field: SortField) => {
-    const newSortDirection =
-      sortField === field && sortDirection === 'asc' ? 'desc' : 'asc';
+  const sortMapping: Record<string, { asc: string, desc: string }> = {
+    name: { asc: 'nameAZ', desc: 'nameZA' },
+    price: { asc: 'priceLow', desc: 'priceHigh' },
+    discount_price: { asc: 'discountLow', desc: 'discountHigh' },
+    countInStock: { asc: 'stockHigh', desc: 'stockLow' },
+    views: { asc: 'leastViews', desc: 'mostViewed' },
+    ordered_count: { asc: 'leastOrdered', desc: 'mostOrdered' },
+    average_rating: { asc: 'lowestRated', desc: 'highestRated' },
+    category: { asc: 'categoryAZ', desc: 'categoryZA' },
+    status: { asc: 'statusAZ', desc: 'statusZA' },
+  };
   
-    setSearchParams((prev) => {
+  const handleSort = (field: string) => {
+    const direction = sortField === field 
+      ? sortDirection === 'asc' ? 'desc' : 'asc'
+      : 'asc';
+  
+    setSortField(field as SortField);
+    setSortDirection(direction);
+  
+    const sortValue = sortMapping[field]?.[direction] || 'default';
+  
+    setSearchParams(prev => {
       const newParams = new URLSearchParams(prev);
-      newParams.set('sortField', field as string);
-      newParams.set('sortDirection', newSortDirection);
-      newParams.set('page', '1'); 
+      newParams.set('sort', sortValue);
+      newParams.set('page', '1');
       return newParams;
     });
-  
-    setSortField(field);
-    setSortDirection(newSortDirection);
   };
+  
 
   const getSortIcon = (field: SortField) => {
     if (sortField === field) {
