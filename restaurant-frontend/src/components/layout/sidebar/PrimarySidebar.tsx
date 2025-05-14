@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   FaHome,
   FaUtensils,
@@ -8,10 +8,12 @@ import {
   FaShoppingBag,
   FaUserAlt,
   FaSearch,
-} from "react-icons/fa";
-import { FiArrowRight } from "react-icons/fi";
-import { MdInfo } from "react-icons/md";
-import { useLocation, Link } from "react-router-dom";
+  FaUserCheck
+} from 'react-icons/fa';
+import { FiArrowRight } from 'react-icons/fi';
+import { MdInfo } from 'react-icons/md';
+import { useLocation, Link } from 'react-router-dom';
+import Cookies from 'js-cookie';
 
 interface PrimarySidebarProps {
   toggleSidebar: () => void;
@@ -21,19 +23,29 @@ const PrimarySidebar: React.FC<PrimarySidebarProps> = ({ toggleSidebar }) => {
   const location = useLocation();
 
   const menuItemsMain = [
-    { icon: <FaHome />, label: "Trang chủ", link: "/" },
-    { icon: <FaUtensils />, label: "Thực đơn", link: "/menu" },
-    { icon: <FaRegListAlt />, label: "Bài viết", link: "/post" },
-    { icon: <MdInfo />, label: "Giới thiệu", link: "/aboutus" },
-    { icon: <FaPhoneAlt />, label: "Liên hệ", link: "/contact" },
+    { icon: <FaHome />, label: 'Trang chủ', link: '/' },
+    { icon: <FaUtensils />, label: 'Thực đơn', link: '/menu' },
+    { icon: <FaRegListAlt />, label: 'Bài viết', link: '/post' },
+    { icon: <MdInfo />, label: 'Giới thiệu', link: '/aboutus' },
+    { icon: <FaPhoneAlt />, label: 'Liên hệ', link: '/contact' },
   ];
 
-  const menuItemsBottom = [
-    { icon: <FaHeart />, label: "Yêu thích", link: "/favorites" },
-    { icon: <FaShoppingBag />, label: "Giỏ hàng", link: "/cart" },
-    { icon: <FaUserAlt />, label: "Tài khoản", link: "/profile" },
-    { icon: <FaSearch />, label: "Tìm kiếm", link: "/search" },
-  ];
+  const userInfo = Cookies.get('userInfo');
+  const user = userInfo ? JSON.parse(userInfo) : null;
+
+  const menuItemsBottom = user
+    ? [
+        { icon: <FaHeart />, label: 'Yêu thích', link: '/favorites' },
+        { icon: <FaShoppingBag />, label: 'Giỏ hàng', link: '/cart' },
+        { icon: <FaUserCheck />, label: 'Tài khoản', link: '/profile' },
+        { icon: <FaSearch />, label: 'Tìm kiếm', link: '/search' },
+      ]
+    : [
+        { icon: <FaHeart />, label: 'Yêu thích', link: '/favorites' },
+        { icon: <FaShoppingBag />, label: 'Giỏ hàng', link: '/cart' },
+        { icon: <FaUserAlt />, label: 'Tài khoản', link: '/login' },
+        { icon: <FaSearch />, label: 'Tìm kiếm', link: '/search' },
+      ];
 
   return (
     <div className="h-screen fixed top-0 left-0 w-16 bg-headerBackground transform transition-transform duration-300 flex flex-col items-center py-4 justify-start">
@@ -57,8 +69,8 @@ const PrimarySidebar: React.FC<PrimarySidebarProps> = ({ toggleSidebar }) => {
               to={item.link}
               className={`relative h-1/6 flex items-center justify-center group transition text-base sm:text-lg ${
                 location.pathname === item.link
-                  ? "text-secondaryColor"
-                  : "text-white hover:text-secondaryColor"
+                  ? 'text-secondaryColor'
+                  : 'text-white hover:text-secondaryColor'
               }`}
             >
               <div className="text-xl ">{item.icon}</div>
@@ -79,8 +91,8 @@ const PrimarySidebar: React.FC<PrimarySidebarProps> = ({ toggleSidebar }) => {
             to={item.link}
             className={`relative h-1/4 flex items-center justify-center group transition ${
               location.pathname === item.link
-                ? "text-secondaryColor"
-                : "text-white hover:text-secondaryColor"
+                ? 'text-secondaryColor'
+                : 'text-white hover:text-secondaryColor'
             }`}
           >
             <div className="text-xl">{item.icon}</div>

@@ -28,19 +28,10 @@ const ProfileSidebar = () => {
     console.log('Auth data cleared');
   };
 
-  const userInfo = JSON.parse(Cookies.get('userInfo') || '{}');
-  const isGoogleLogin = userInfo?.isGoogleLogin;
-
-  const raw = Cookies.get('userInfo');
-  console.log('Raw cookie:', raw);
-
-  console.log('userInfo:', userInfo);
-  console.log('isGoogleLogin:', isGoogleLogin); 
   const handleLogout = async () => {
 
     const userInfo = JSON.parse(Cookies.get('userInfo') || '{}');
     const isGoogleLogin = userInfo?.isGoogleLogin;
-
 
     if (isGoogleLogin) {
       const email = userInfo?.email;
