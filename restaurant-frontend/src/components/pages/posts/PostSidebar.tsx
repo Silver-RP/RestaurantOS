@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 interface PostSidebarProps {
-  className?: string;  // Thêm className vào Props
+  className?: string; 
 }
 
 const PostSidebar: React.FC<PostSidebarProps> = ({ className }) => {
@@ -9,7 +9,7 @@ const PostSidebar: React.FC<PostSidebarProps> = ({ className }) => {
   const [showCategories, setShowCategories] = useState(false);
 
   return (
-    <aside className={`w-full space-y-6 text-white lg:space-y-10 ${className}`}> {/* Sử dụng className */}
+    <aside className={`w-full space-y-6 text-white lg:space-y-10 ${className}`}> 
       {/* Tìm kiếm */}
       <div>
         <h3 className="text-xl font-semibold mb-2">Tìm kiếm blog</h3>

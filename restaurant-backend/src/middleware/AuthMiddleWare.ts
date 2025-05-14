@@ -1,9 +1,7 @@
-import { accessToken, refreshToken } from '../services/GenerateToken';
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import User, { IUser } from '../models/UserModel';
 import Roles from '../models/RoleModel';
-import mongoose from 'mongoose';
 import RefreshToken from '../models/RefreshToken'; 
 
 class AuthMiddleWare {
@@ -15,6 +13,7 @@ class AuthMiddleWare {
         res.status(401).json({ message: 'Access token not provided' });
         return;
       }
+      
       const user = jwt.verify(token, process.env.ACCESS_TOKEN as string) as IUser;
       req.user = user;
       next();

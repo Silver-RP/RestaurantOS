@@ -1,4 +1,3 @@
-import React from 'react';
 import ButtonComponents from "../../../components/common/ButtonComponents";
 import Header from "./Header";
 import OrderDetails from "./OrderDetails";

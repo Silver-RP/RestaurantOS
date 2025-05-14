@@ -5,11 +5,16 @@ export const addToCart = async (
   dishId: string,
   quantity: number = 1,
 ): Promise<AddToCartResponse> => {
-  const res = await api.post<{ data: AddToCartResponse }>('/cart/add', {
-    dishId,
-    quantity,
-  });
-  return res.data.data;
+  try {
+    const res = await api.post<{ data: AddToCartResponse }>('/cart/add', {
+      dishId,
+      quantity,
+    });
+    return res.data.data;
+  } catch (error: any) {
+    const errorMessage = error.response?.data?.message || 'Failed to add to cart';
+    throw new Error(errorMessage);
+  }
 };
 
 export const getCart = async (): Promise<CartItem> => {
@@ -23,7 +28,12 @@ export const deleteCartItem = async (dishId: string): Promise<void> => {
 
 // cart/update/{id}
 export const updateCartItem = async (dishId: string, quantity: number): Promise<void> => {
-  await api.put(`/cart/update/${dishId}`, { quantity });
+  try {
+    await api.put(`/cart/update`, { dishId, quantity });
+  } catch (error: any) {
+    const errorMessage = error.response?.data?.message || 'Failed to update cart';
+    throw new Error(errorMessage);
+  }
 };
 
 

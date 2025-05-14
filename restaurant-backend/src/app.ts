@@ -108,7 +108,7 @@ app.use(
 
 app.use('/api/food', FoodRoutes);
 app.use('/api/order', AuthMiddleWare.verifyToken, OrderRoutes);
-app.use('/api/cart', CartRouter);
+app.use('/api/cart', AuthMiddleWare.verifyToken, CartRouter);
 app.use('/api/address', AuthMiddleWare.verifyToken, AddressRouter);
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);

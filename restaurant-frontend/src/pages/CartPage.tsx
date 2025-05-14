@@ -19,12 +19,15 @@ interface CartItem {
     price: number;
     discount_price?: number;
     images: string[];
+    categories?: { Cate_name: string }[];
   };
   quantity: number;
 }
 
 const CartPage = () => {
   const { data } = useGetCart();
+
+  console.log('data', data);
   const cartItemsRaw = (data as unknown as Cart)?.items || [];
 
   const cartItems = cartItemsRaw.map((item) => ({
@@ -34,6 +37,7 @@ const CartPage = () => {
     discountedPrice: item.dishId.discount_price || item.dishId.price,
     quantity: item.quantity,
     imageUrl: item.dishId.images[0],
+    category: item.dishId.categories?.[0]?.Cate_name || "",
   }));
 
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -96,6 +100,7 @@ const CartPage = () => {
               <CartSummary
                 originalTotal={originalTotal}
                 discountedTotal={discountedTotal}
+                selectedItems={filteredItems}
               />
             </div>
           )}

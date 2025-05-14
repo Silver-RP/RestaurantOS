@@ -23,6 +23,7 @@ const ReservationPage: React.FC = () => {
     people: 1,
     note: '',
     seating: '',
+    seatingName: '',
     menu: '',
     selectedItems: [],
   });
@@ -140,7 +141,7 @@ const ReservationPage: React.FC = () => {
               formData={formData}
               setFormData={setFormData}
               onNext={() => setStep(4)}
-              onBack={() => setStep(2)}
+              onBack={() => setStep(3)}
             />
           )}
         </div>

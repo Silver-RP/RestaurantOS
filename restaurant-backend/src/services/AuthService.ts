@@ -111,7 +111,7 @@ class AuthService {
 
     const token = accessToken(
       { id: user._id, roles: user.roles },
-      process.env.ACCESS_TOKEN || '',
+      process.env.ACCESS_TOKEN ?? '',
       accessTokenExpiresIn
     );
 

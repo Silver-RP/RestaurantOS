@@ -7,36 +7,36 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ formData }) => {
   return (
-    <div className="w-full md:w-[28%]">
+    <div className="w-full">
       <div className="bg-[#012B40] border border-[#FFDEA0] p-6 min-h-[480px] flex flex-col justify-between">
-        <div className="space-y-4 text-sm pt-2">
-          <div className="flex mb-2 gap-4">
+        <div className="space-y-4 text-left text-sm pt-2">
+          <div className="flex text-left mb-2 gap-0">
             <p className="w-[150px]">Họ và tên:</p>
             <p>{formData.name}</p>
           </div>
-          <div className="flex mb-2 gap-4">
+          <div className="flex mb-2 gap-0">
             <p className="w-[150px]">Số điện thoại:</p>
             <p>{formData.phone}</p>
           </div>
-          <div className="flex mb-2 gap-4">
+          <div className="flex mb-2 gap-0">
             <p className="w-[150px]">Thời gian:</p>
             <p>{formData.time}</p>
           </div>
-          <div className="flex mb-2 gap-4">
+          <div className="flex mb-2 gap-0">
             <p className="w-[150px]">Ngày đặt bàn:</p>
             <p>{formData.date}</p>
           </div>
-          <div className="flex mb-2 gap-4">
-            <p className="w-[150px]">Số bàn:</p>
-            <p>{formData.seating}</p>
+          <div className="flex mb-2 gap-0">
+            <p className="w-[150px]">Loại bàn:</p>
+            <p>{formData.seatingName}</p>
           </div>
-          <div className="flex mb-2 gap-4">
-            <p className="w-[150px]">Tổng lượng người:</p>
+          <div className="flex mb-2 gap-0">
+            <p className="w-[150px]">Số lượng người:</p>
             <p>{formData.people}</p>
           </div>
         </div>
 
-        <div className="mt-2">
+        <div className="mt-2 text-left">
           <p className="mb-2">Ghi chú:</p>
           <textarea
             className="w-full h-32 bg-[#012B40] border border-[#FFDEA0] p-2 text-white resize-none text-sm"

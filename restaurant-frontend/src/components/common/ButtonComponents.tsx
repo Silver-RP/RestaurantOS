@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'filled' | 'outline';
+  variant?: 'filled' | 'outline' | 'selected'; // thêm 'selected'
   size?: 'small' | 'medium' | 'large';
   className?: string;
 }
@@ -14,13 +14,15 @@ const ButtonComponents: React.FC<ButtonProps> = ({
   ...rest
 }) => {
   const baseStyles =
-  'transition duration-300 font-medium active:scale-95 focus:outline-none focus:ring-0 focus:ring-offset-0';
+    'transition duration-300 font-medium active:scale-95 focus:outline-none focus:ring-0 focus:ring-offset-0';
 
   const variantStyles = {
     filled:
       'bg-secondaryColor border border-secondaryColor text-headerBackground hover:bg-headerBackground hover:text-white focus:ring-bodyBackground  active:bg-headerBackground/90',
-      outline:
-      'bg-secondaryColor text-white font-normal font-sans border border-secondaryColor hover:brightness-95 active:brightness-90',
+    outline:
+      'bg-transparent border border-secondaryColor text-white font-normal font-sans hover:bg-secondaryColor hover:text-headerBackground focus:ring-bodyBackground active:bg-secondaryColor/90 active:text-headerBackground',
+    selected: 
+      'bg-headerBackground text-white font-semibold font-sans border border-secondaryColor',
   };
 
   const sizeStyles = {
