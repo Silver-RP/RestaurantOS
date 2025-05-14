@@ -19,13 +19,16 @@ const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
+
     setFormData((prev) => ({ ...prev, [name]: value }));
 
-    // Validate từng field khi nhập
     const result = reservationSchema.safeParse({ ...formData, [name]: value });
+
     if (!result.success) {
-      const fieldError = result.error.flatten().fieldErrors[name as keyof typeof formData]?.[0];
-      setErrors((prev) => ({ ...prev, [name]: fieldError || '' }));
+      const fieldErrors = result.error.flatten().fieldErrors;
+      const errorMessage =
+        fieldErrors[name as keyof typeof fieldErrors]?.[0] || '';
+      setErrors((prev) => ({ ...prev, [name]: errorMessage }));
     } else {
       setErrors((prev) => ({ ...prev, [name]: '' }));
     }
@@ -48,7 +51,6 @@ const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({
     }
   };
 
-
   return (
     <form
       onSubmit={handleSubmit}
@@ -65,7 +67,7 @@ const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({
             onChange={handleChange}
             className="p-3 bg-transparent text-white placeholder:text-gray-400 border border-[#074b6b] rounded focus:outline-none focus:ring-1 focus:ring-secondaryColor focus:border-secondaryColor focus:bg-transparent transition"
           />
-           {errors.name && <p className="text-red-400 text-sm">{errors.name}</p>}
+          {errors.name && <p className="text-red-400 text-sm">{errors.name}</p>}
         </div>
 
         <div className="flex flex-col gap-2">
@@ -78,7 +80,9 @@ const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({
             onChange={handleChange}
             className="p-3 bg-transparent text-white placeholder:text-gray-400 border border-[#074b6b] rounded focus:outline-none focus:ring-1 focus:ring-secondaryColor focus:border-secondaryColor focus:bg-transparent transition"
           />
-          {errors.email && <p className="text-red-400 text-sm">{errors.email}</p>}
+          {errors.email && (
+            <p className="text-red-400 text-sm">{errors.email}</p>
+          )}
         </div>
 
         <div className="flex flex-col gap-2">
@@ -91,7 +95,9 @@ const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({
             onChange={handleChange}
             className="p-3 bg-transparent text-white placeholder:text-gray-400 border border-[#074b6b] rounded focus:outline-none focus:ring-1 focus:ring-secondaryColor focus:border-secondaryColor focus:bg-transparent transition"
           />
-          {errors.phone && <p className="text-red-400 text-sm">{errors.phone}</p>}
+          {errors.phone && (
+            <p className="text-red-400 text-sm">{errors.phone}</p>
+          )}
         </div>
       </div>
 
@@ -109,22 +115,26 @@ const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({
               onChange={handleChange}
               className="h-[48px] w-full px-4 bg-transparent border border-[#074b6b] text-white placeholder:text-gray-400 rounded focus:outline-none focus:border-secondaryColor focus:ring-1 focus:ring-secondaryColor transition pr-10 no-spinner"
             />
-            {errors.people && <p className="text-red-400 text-sm">{errors.people}</p>}
+            {errors.people && (
+              <p className="text-red-400 text-sm">{errors.people}</p>
+            )}
           </div>
         </div>
 
         <div className="flex flex-col gap-2">
           <label className="text-sm mb-1">Ngày</label>
           <div className="relative w-full">
-          <input
-  type="date"
-  name="date"
-  min={new Date().toISOString().split('T')[0]}
-  value={formData.date}
-  onChange={handleChange}
-  className="h-[48px] w-full px-4 pr-2 bg-transparent border border-[#074b6b] text-white placeholder:text-gray-400 rounded focus:outline-none focus:border-secondaryColor focus:ring-1 focus:ring-secondaryColor transition [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:invert"
-/>
-            {errors.date && <p className="text-red-400 text-sm">{errors.date}</p>}
+            <input
+              type="date"
+              name="date"
+              min={new Date().toISOString().split('T')[0]}
+              value={formData.date}
+              onChange={handleChange}
+              className="h-[48px] w-full px-4 pr-2 bg-transparent border border-[#074b6b] text-white placeholder:text-gray-400 rounded focus:outline-none focus:border-secondaryColor focus:ring-1 focus:ring-secondaryColor transition [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:invert"
+            />
+            {errors.date && (
+              <p className="text-red-400 text-sm">{errors.date}</p>
+            )}
           </div>
         </div>
 
@@ -138,7 +148,9 @@ const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({
               onChange={handleChange}
               className="h-[48px] w-full px-4 pr-2 bg-transparent border border-[#074b6b] text-white placeholder:text-gray-400 rounded focus:outline-none focus:border-secondaryColor focus:ring-1 focus:ring-secondaryColor transition [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:invert"
             />
-            {errors.time && <p className="text-red-400 text-sm">{errors.time}</p>}
+            {errors.time && (
+              <p className="text-red-400 text-sm">{errors.time}</p>
+            )}
           </div>
         </div>
       </div>

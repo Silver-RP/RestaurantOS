@@ -2,6 +2,8 @@ import React from 'react';
 import ButtonComponents from '@components/common/ButtonComponents';
 import { ReservationFormData } from '../../../types/ReservationFormData.type';
 import { FilledStar, EmptyStar } from '../../common/StarIcons'; 
+import { confirmAlert } from 'react-confirm-alert';
+import 'react-confirm-alert/src/react-confirm-alert.css';
 
 interface Step2SeatingProps {
   formData: ReservationFormData;
@@ -20,16 +22,6 @@ const seatingOptions = [
     privacy: 3,
     photo: 4,
     image: '/assets/images/reservation/thiet-ke-nha-hang-su-buffet0.jpg',
-  },
-  {
-    id: 'random-table',
-    name: 'Bàn ngẫu nhiên',
-    available: true,
-    guests: '2 - 20 khách',
-    view: 3,
-    privacy: 2,
-    photo: 4,
-    image: '/assets/images/reservation/n-m-ngay-t-i-t-ng-1-khach.jpg',
   },
   {
     id: 'table-4-10',
@@ -51,6 +43,16 @@ const seatingOptions = [
     photo: 4,
     image: '/assets/images/reservation/thumb.png',
   },
+  {
+    id: 'random-table',
+    name: 'Bàn ngẫu nhiên',
+    available: true,
+    guests: '2 - 20 khách',
+    view: 3,
+    privacy: 2,
+    photo: 4,
+    image: '/assets/images/reservation/n-m-ngay-t-i-t-ng-1-khach.jpg',
+  },
 ];
 
 const renderStars = (count: number) => {
@@ -63,9 +65,29 @@ const renderStars = (count: number) => {
   );
 };
 
+
+
 const Step2Seating: React.FC<Step2SeatingProps> = ({ formData, setFormData, onNext, onBack }) => {
-  const handleSelect = (id: string) => {
-    setFormData((prev) => ({ ...prev, seating: id }));
+  const handleSelect = (id: string, name: string) => {
+    setFormData((prev) => ({ ...prev, seating: id, seatingName: name, }));
+  };
+  const handleNextClick = () => {
+    if (!formData.seating) {
+      confirmAlert({
+        customUI: ({ onClose }) => {
+          return (
+            <div className="custom-ui">
+              <h1>Thông báo</h1>
+              <p>Vui lòng chọn vị trí ngồi trước khi tiếp tục.</p>
+              <button onClick={onClose}>OK</button>
+            </div>
+          );
+        },
+        overlayClassName: 'custom-overlay',
+      });
+    } else {
+      onNext();
+    }
   };
 
   return (
@@ -78,7 +100,7 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({ formData, setFormData, onNe
           ${formData.seating === option.id ? 'border-secondaryColor' : 'border-transparent'}
           transition-all duration-300 hover:scale-[1.01]`}
       >
-        <div className="w-[300px] h-[250px] shrink-0">
+        <div className="xl:w-[300px] lg:w-[240px] w-[120px] h-[250px] shrink-0">
           <img
             src={option.image}
             alt={option.name}
@@ -105,9 +127,9 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({ formData, setFormData, onNe
 
           <div className="mt-3">
             <ButtonComponents
-              variant="filled"
+              variant={formData.seating === option.id ? 'selected' : 'filled'}
               size="small"
-              onClick={() => handleSelect(option.id)}
+              onClick={() => handleSelect(option.id,  option.name)}
               className="w-full"
             >
               {formData.seating === option.id ? 'Đã chọn' : 'Chọn'}
@@ -117,7 +139,6 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({ formData, setFormData, onNe
       </div>
     ))}
   </div>
-
   <div className="flex justify-between mt-8">
     <ButtonComponents variant="outline" size="small" onClick={onBack}>
       Quay lại
@@ -125,8 +146,7 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({ formData, setFormData, onNe
     <ButtonComponents
       variant="filled"
       size="small"
-      onClick={onNext}
-      disabled={!formData.seating}
+      onClick={handleNextClick}
     >
       Tiếp tục
     </ButtonComponents>

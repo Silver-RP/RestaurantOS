@@ -13,29 +13,39 @@ interface Step4ReviewProps {
 
 const Step4Review: React.FC<Step4ReviewProps> = ({ formData, onNext, onBack }) => {
   return (
-    <div className="min-h-screen bg-[#012B40] text-white py-8 px-4 flex items-center justify-center">
+    <div className="bg-bodyBackground text-white py-4 px-4 flex items-center justify-center">
       <div className="max-w-7xl mx-auto w-full">
-        <h1 className="text-3xl font-bold mb-6 text-center">Thông tin đặt bàn</h1>
-        <div className="flex flex-col md:flex-row justify-center gap-8">
-          <Sidebar formData={formData} />
-          <Section menuItems={formData.selectedItems} />
+        <h1 className="text-2xl mb-10 text-center text-secondaryColor uppercase tracking-wide">
+          Thông tin đặt bàn
+        </h1>
+
+        <div className="flex flex-col lg:flex-row gap-6 items-start">
+          {/* Sidebar (Thông tin) */}
+          <div className="w-full lg:w-1/3">
+            <Sidebar formData={formData} />
+          </div>
+
+          {/* Section (Món ăn) */}
+          <div className="w-full lg:w-2/3">
+            <Section menuItems={formData.selectedItems} />
+          </div>
         </div>
 
-        {/* Nút xác nhận nằm ngoài phần Section để căn giữa màn hình */}
-        <div className="flex justify-center mt-6 gap-4">
+        {/* Nút xác nhận nằm cuối */}
+        <div className="flex justify-center mt-10 gap-6">
           <ButtonComponents
             variant="outline"
-            size="large"
+            size="medium"
             onClick={onBack}
-            className="px-6 sm:px-8 py-3 rounded-none text-sm sm:text-base"
+            className="px-8 py-3 text-sm sm:text-base border-2 border-secondaryColor hover:bg-secondaryColor hover:text-black transition"
           >
             Quay lại
           </ButtonComponents>
           <ButtonComponents
             variant="filled"
-            size="large"
+            size="medium"
             onClick={onNext}
-            className="px-6 sm:px-8 py-3 rounded-none text-sm sm:text-base"
+            className="px-8 py-3 text-sm sm:text-base shadow-lg bg-secondaryColor hover:opacity-90"
           >
             Xác nhận đặt bàn
           </ButtonComponents>
