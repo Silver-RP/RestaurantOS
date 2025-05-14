@@ -74,17 +74,17 @@ const ProfilePage = () => {
   
                 <p className="text-gray-400">Giới tính</p>
                 {isEditingPersonal ? (
-                  <select
-                    name="gender"
-                    value={personalInfo.gender}
-                    onChange={handlePersonalChange}
-                    className="w-full bg-transparent border-b border-gray-500 text-white focus:outline-none focus:border-secondaryColor py-2"
-                  >
-                    <option value="">Chưa cập nhật</option>
-                    <option value="Nam">Nam</option>
-                    <option value="Nữ">Nữ</option>
-                    <option value="Khác">Khác</option>
-                  </select>
+                 <select
+                 name="gender"
+                 value={personalInfo.gender}
+                 onChange={handlePersonalChange}
+                 className="w-full bg-bodyBackground text-white border-b border-gray-500 appearance-none focus:outline-none focus:border-secondaryColor py-2 pr-6"
+               >
+                 <option className="text-black" value="">Chưa cập nhật</option>
+                 <option className="text-black" value="Nam">Nam</option>
+                 <option className="text-black" value="Nữ">Nữ</option>
+                 <option className="text-black" value="Khác">Khác</option>
+               </select>
                 ) : (
                   <p className="font-medium text-gray-400">{personalInfo.gender || 'Chưa cập nhật'}</p>
                 )}

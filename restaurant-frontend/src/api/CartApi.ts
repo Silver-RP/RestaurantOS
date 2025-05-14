@@ -1,4 +1,5 @@
 import api from './axiosInstance';
+import { AxiosError } from 'axios';
 import { AddToCartResponse, CartItem } from '../types/Cart.type';
 
 export const addToCart = async (
@@ -11,8 +12,9 @@ export const addToCart = async (
       quantity,
     });
     return res.data.data;
-  } catch (error: any) {
-    const errorMessage = error.response?.data?.message || 'Failed to add to cart';
+  } catch (error) {
+    const err = error as AxiosError<{ message?: string }>;
+    const errorMessage = err.response?.data?.message || 'Failed to add to cart';
     throw new Error(errorMessage);
   }
 };
@@ -26,14 +28,12 @@ export const deleteCartItem = async (dishId: string): Promise<void> => {
   await api.delete(`/cart/item/${dishId}`);
 };
 
-// cart/update/{id}
 export const updateCartItem = async (dishId: string, quantity: number): Promise<void> => {
   try {
     await api.put(`/cart/update`, { dishId, quantity });
-  } catch (error: any) {
-    const errorMessage = error.response?.data?.message || 'Failed to update cart';
+  } catch (error) {
+    const err = error as AxiosError<{ message?: string }>;
+    const errorMessage = err.response?.data?.message || 'Failed to update cart';
     throw new Error(errorMessage);
   }
 };
-
-

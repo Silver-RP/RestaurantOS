@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import Roles from '../models/RoleModel';
-import User from '../models/UserModel';
-
+import User, { IUser } from '../models/UserModel';
+import bcrypt from 'bcryptjs';
 interface FilterUserOptions {
   name?: string;
   email?: string;
@@ -30,7 +30,7 @@ class UserService {
 
   async getAllUserByUserRole(page: number = 1, pageSize: number = 10): Promise<any> {
     try {
-      const allUserByUserRole = await User.find();
+      // const allUserByUserRole = await User.find();
       const options = {
         page,
         limit: pageSize,
@@ -203,6 +203,64 @@ class UserService {
       };
     } catch (error: any) {
       throw new Error(`Error filtering users: ${error.message}`);
+    }
+  }
+
+  async updateUserInfo(userId: string, updateData: Partial<IUser>): Promise<any> {
+    try {
+      const user = await User.findByIdAndUpdate(userId, { $set: updateData }, { new: true }).select(
+        '-password',
+      );
+
+      if (!user) {
+        return {
+          status: 'ERROR',
+          message: 'User not found',
+        };
+      }
+
+      return {
+        status: 'OK',
+        message: 'User updated successfully',
+        data: user,
+      };
+    } catch (error: any) {
+      throw new Error('Failed to update user info: ' + error.message);
+    }
+  }
+
+  async changeUserPassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<any> {
+    try {
+      const user = await User.findById(userId);
+      if (!user || !user.password) {
+        return {
+          status: 'ERROR',
+          message: 'User not found or no password set',
+        };
+      }
+
+      const isMatch = await bcrypt.compare(currentPassword, user.password);
+      if (!isMatch) {
+        return {
+          status: 'ERROR',
+          message: 'Current password is incorrect',
+        };
+      }
+
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      user.password = hashedPassword;
+      await user.save();
+
+      return {
+        status: 'OK',
+        message: 'Password updated successfully',
+      };
+    } catch (error: any) {
+      throw new Error('Failed to change password: ' + error.message);
     }
   }
 }
