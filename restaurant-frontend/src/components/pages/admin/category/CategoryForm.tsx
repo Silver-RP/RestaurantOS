@@ -11,6 +11,7 @@ type CategoryFormProps = {
   loading: boolean;
   error: string | null;
   successMessage: string | null;
+  
 };
 
 const CategoryForm: React.FC<CategoryFormProps> = ({ initialData, onSubmit, submitLabel }) => {
