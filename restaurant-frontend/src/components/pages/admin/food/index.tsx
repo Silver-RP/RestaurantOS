@@ -209,6 +209,7 @@ const MenuTable: React.FC = () => {
           <table className="min-w-[1000px] w-full bg-white text-sm text-gray-700">
             <thead>
               <tr className="bg-gray-100 text-left">
+                <th className='px-4 py-2'>No.</th>
                 <th className="px-4 py-2">Hình</th>
 
                 <th
@@ -298,6 +299,7 @@ const MenuTable: React.FC = () => {
             <tbody>
               {foodList.map((item, index) => (
                 <tr key={index} className="border-b hover:bg-gray-50">
+                  <td className="px-4 py-2">{index + 1}</td>
                   <td className="px-4 py-2">
                     <img
                       src={item.images[0]}
@@ -353,6 +355,15 @@ const MenuTable: React.FC = () => {
              newParams.set('page', String(page));
              setSearchParams(newParams); 
            }}
+           limit={Number(searchParams.get('limit') || 10)}
+            onLimitChange={(newLimit) => {
+              setSearchParams((prev) => {
+                const newParams = new URLSearchParams(prev);
+                newParams.set('limit', newLimit.toString());
+                newParams.delete('page'); 
+                return newParams;
+              });
+            }}
          />
           )}
         </div>
