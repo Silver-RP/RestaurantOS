@@ -270,7 +270,7 @@ class FoodController {
 
   async getFoodBest4(req: Request, res: Response): Promise<any> {
     try {
-      const { category } = req.query; 
+      const { category } = req.query;
       if (!category || typeof category !== 'string') {
         return res.status(400).json({
           success: false,
@@ -278,7 +278,7 @@ class FoodController {
         });
       }
 
-      const dishes = await FoodService.getFoodBest4(category); 
+      const dishes = await FoodService.getFoodBest4(category);
 
       return res.status(200).json({
         success: true,

@@ -73,9 +73,7 @@ const AddressBook: React.FC = () => {
     setOtherForms(newAddresses);
   };
 
-  const cancelDefaultEdit = () => {
-    setIsEditingDefault(false);
-  };
+ 
   const showDeleteConfirmToast = (onConfirm: () => void) => {
     toast.dismiss(); // Đóng mọi toast hiện tại
 
@@ -361,7 +359,7 @@ const AddressBook: React.FC = () => {
         onClose={() => setIsModalOpen(false)}
         onSave={() => {
           toast.success('Thêm địa chỉ thành công!');
-          refetch(); // Làm mới danh sách địa chỉ
+          refetch();
           setIsModalOpen(false);
         }}
       />

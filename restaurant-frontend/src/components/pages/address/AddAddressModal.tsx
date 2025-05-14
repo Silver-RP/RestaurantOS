@@ -87,18 +87,18 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
       .trim();
   };
   useEffect(() => {
-      if (isDuplicate) setIsDuplicate(false); // reset lại khi người dùng sửa
+      if (isDuplicate) setIsDuplicate(false); 
 
     const timeout = setTimeout(async () => {
       const street = normalizeStreet(watchedAddress);
 
       if (
-        street.length > 5 // ✅ chỉ cần người dùng nhập rõ tên đường là gọi
+        street.length > 5 
       ) {
         const fullAddress = getFullAddress(
           street,
-          selectedWard || '', // vẫn truyền ward nếu có
-          selectedDistrict || '', // nhưng không bắt buộc phải chọn
+          selectedWard || '', 
+          selectedDistrict || '', 
           selectedCity,
         );
 
@@ -149,7 +149,7 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
     try {
       await createAddress(fullSubmitData); 
       reset();
-      setIsDuplicate(false); // reset lại nếu thêm thành công
+      setIsDuplicate(false); 
       onSave(
         selectedCity,
         selectedDistrict,
@@ -278,9 +278,9 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
               </label>
               <Listbox value={selectedDistrict} onChange={setSelectedDistrict}>
                 <div className="relative">
-                  <Listbox.Button className="w-full bg-transparent border-b border-gray-500 text-white py-1.5 flex items-center justify-between text-sm md:text-base">
-                    <span className="truncate">
-                      {selectedDistrict || 'Chọn quận / huyện'}
+                 <Listbox.Button className="w-full bg-transparent border-b border-gray-500 text-white py-1.5 flex items-center justify-between text-sm md:text-base">
+                    <span className="truncate capitalize">
+                      {selectedDistrict || 'Chọn Quận / Huyện'}
                     </span>
                     <FiChevronDown className="ml-2 text-white" />
                   </Listbox.Button>
@@ -314,7 +314,7 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
               <Listbox value={selectedWard} onChange={setSelectedWard}>
                 <div className="relative">
                   <Listbox.Button className="w-full bg-transparent border-b border-gray-500 text-white py-1.5 flex items-center justify-between text-sm md:text-base">
-                    <span className="truncate">
+                    <span className="truncate capitalize">
                       {selectedWard || 'Chọn phường / xã'}
                     </span>
                     <FiChevronDown className="ml-2 text-white" />

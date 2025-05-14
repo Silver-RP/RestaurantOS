@@ -48,3 +48,16 @@ export const reservationSchema = z.object({
   time: timeSchema,
   note: z.string().optional(),
 });
+
+export const CateTypeEnum = z.enum(['dish', 'drink']);
+export const createCategorySchema = z.object({
+  Cate_name: z.string().min(1, 'Tên danh mục không được để trống'),
+  Cate_slug: z.string().min(1, 'Slug không được để trống'),
+  Cate_type: CateTypeEnum,
+  parentCate: z.string().optional(), // Nếu có thể null, thì thêm `.nullable()` nếu dùng form JSON
+});
+
+// ✅ Schema cập nhật danh mục
+export const updateCategorySchema = createCategorySchema.partial().extend({
+  id: z.string().min(1, 'ID là bắt buộc'),
+});
