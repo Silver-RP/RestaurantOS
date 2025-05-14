@@ -1,3 +1,4 @@
+import React from "react";
 import { BrowserRouter as Router } from "react-router-dom";
 import { Provider } from "react-redux";
 import { store } from "./redux/store";
@@ -12,7 +13,8 @@ import AppRoutes from "./routers/index";
 import AuthInitializer from "./utils/AuthInitializer";
 import SearchModal from "@components/common/SearchModal";
 
-import ToastSwitcher from "@components/common/ToastSwitcher"; // ✅ thêm
+import ToastSwitcher from "@components/common/ToastSwitcher";
+import FullScreenOverlayLoading from "./components/common/FullScreenOverlayLoading";
 
 const queryClient = new QueryClient();
 
@@ -24,7 +26,7 @@ const App = () => {
       <QueryClientProvider client={queryClient}>
       <AuthInitializer /> 
         <Router>
-          
+        <FullScreenOverlayLoading />
           <ScrollToTop />
           <ToastSwitcher />
           <AppRoutes />

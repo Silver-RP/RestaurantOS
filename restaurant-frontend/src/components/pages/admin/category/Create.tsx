@@ -5,17 +5,21 @@ import CategoryForm from './CategoryForm';
 import { CategoryCreatePayload } from '@/types/Category.type';
 import { useAddCategory } from '@/hooks/useCategories';
 import { toast } from 'react-toastify';
+import { useDispatch } from 'react-redux';
+import { showOverlayLoading, hideOverlayLoading } from '@/redux/feature/loadingUI/uiSlice';
 const CreateCategoryPage = () => {
   const navigate = useNavigate();
-  const { addNewCategory, loading, error, successMessage } = useAddCategory();
+  const dispatch = useDispatch();
+  const { addNewCategory, error, successMessage } = useAddCategory();
 
   const handleSubmit = async (data: CategoryCreatePayload) => {
-  await addNewCategory(data, () => {
-    toast.success('Thêm danh mục thành công!'); 
-    navigate('/admin/categories');
-  });
-};
-
+    dispatch(showOverlayLoading()); 
+    await addNewCategory(data, () => {
+      toast.success('Thêm danh mục thành công!');
+      navigate('/admin/categories');
+    });
+    dispatch(hideOverlayLoading()); 
+  };
 
   return (
     <div className="relative">
@@ -29,9 +33,9 @@ const CreateCategoryPage = () => {
 
       <CategoryForm
         initialData={undefined}
-        submitLabel={loading ? 'Đang thêm...' : 'Thêm danh mục'}
+        submitLabel={'Thêm danh mục'}
         onSubmit={handleSubmit}
-        loading={loading}
+        loading={false}
         error={error}
         successMessage={successMessage}
       />
