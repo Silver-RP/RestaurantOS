@@ -8,7 +8,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ formData }) => {
   return (
     <div className="w-full">
-      <div className="bg-[#012B40] border border-[#FFDEA0] p-6 min-h-[480px] flex flex-col justify-between">
+      <div className="bg-[#012B40] border border-[#FFDEA0] p-6 min-h-[500px] flex flex-col justify-between">
         <div className="space-y-4 text-left text-sm pt-2">
           <div className="flex text-left mb-2 gap-0">
             <p className="w-[150px]">Họ và tên:</p>

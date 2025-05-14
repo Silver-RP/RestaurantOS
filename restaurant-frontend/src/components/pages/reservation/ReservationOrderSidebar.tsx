@@ -93,7 +93,7 @@ const ReservationOrderSidebar: React.FC<ReservationOrderSidebarProps> = ({
   size="medium"
   className="w-full bg-[#FFE4A0] text-black py-2"
 >
-  TIẾN HÀNH ĐẶT BÀN
+  XÁC NHẬN ĐƠN HÀNG
 </ButtonComponents>
       </div>
     </div>
