@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { searchAddress } from '@/api/AddressApi';
 
-interface AddressInputProps {
+export interface AddressInputProps {
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSelectLocation: (lat: number, lon: number, address: string) => void;
+  district: string;
+  ward: string;
+  province: string;
 }
 
 interface AddressData {

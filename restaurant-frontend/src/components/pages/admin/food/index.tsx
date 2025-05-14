@@ -54,21 +54,36 @@ const MenuTable: React.FC = () => {
 
   const foodList = foods?.docs || [];
   
-  const handleSort = (field: SortField) => {
-    const newSortDirection =
-      sortField === field && sortDirection === 'asc' ? 'desc' : 'asc';
+  const sortMapping: Record<string, { asc: string, desc: string }> = {
+    name: { asc: 'nameAZ', desc: 'nameZA' },
+    price: { asc: 'priceLow', desc: 'priceHigh' },
+    discount_price: { asc: 'discountLow', desc: 'discountHigh' },
+    countInStock: { asc: 'stockHigh', desc: 'stockLow' },
+    views: { asc: 'leastViews', desc: 'mostViewed' },
+    ordered_count: { asc: 'leastOrdered', desc: 'mostOrdered' },
+    average_rating: { asc: 'lowestRated', desc: 'highestRated' },
+    category: { asc: 'categoryAZ', desc: 'categoryZA' },
+    status: { asc: 'statusAZ', desc: 'statusZA' },
+  };
   
-    setSearchParams((prev) => {
+  const handleSort = (field: string) => {
+    const direction = sortField === field 
+      ? sortDirection === 'asc' ? 'desc' : 'asc'
+      : 'asc';
+  
+    setSortField(field as SortField);
+    setSortDirection(direction);
+  
+    const sortValue = sortMapping[field]?.[direction] || 'default';
+  
+    setSearchParams(prev => {
       const newParams = new URLSearchParams(prev);
-      newParams.set('sortField', field as string);
-      newParams.set('sortDirection', newSortDirection);
-      newParams.set('page', '1'); 
+      newParams.set('sort', sortValue);
+      newParams.set('page', '1');
       return newParams;
     });
-  
-    setSortField(field);
-    setSortDirection(newSortDirection);
   };
+  
 
   const getSortIcon = (field: SortField) => {
     if (sortField === field) {
@@ -194,6 +209,7 @@ const MenuTable: React.FC = () => {
           <table className="min-w-[1000px] w-full bg-white text-sm text-gray-700">
             <thead>
               <tr className="bg-gray-100 text-left">
+                <th className='px-4 py-2'>No.</th>
                 <th className="px-4 py-2">Hình</th>
 
                 <th
@@ -283,6 +299,7 @@ const MenuTable: React.FC = () => {
             <tbody>
               {foodList.map((item, index) => (
                 <tr key={index} className="border-b hover:bg-gray-50">
+                  <td className="px-4 py-2">{index + 1}</td>
                   <td className="px-4 py-2">
                     <img
                       src={item.images[0]}
@@ -338,6 +355,15 @@ const MenuTable: React.FC = () => {
              newParams.set('page', String(page));
              setSearchParams(newParams); 
            }}
+           limit={Number(searchParams.get('limit') || 10)}
+            onLimitChange={(newLimit) => {
+              setSearchParams((prev) => {
+                const newParams = new URLSearchParams(prev);
+                newParams.set('limit', newLimit.toString());
+                newParams.delete('page'); 
+                return newParams;
+              });
+            }}
          />
           )}
         </div>

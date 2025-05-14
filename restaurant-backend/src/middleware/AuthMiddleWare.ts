@@ -32,6 +32,8 @@ class AuthMiddleWare {
       }
   
       const decoded = jwt.verify(token, process.env.REFRESH_TOKEN as string) as any;
+      console.log('Decoded refresh token:', decoded);
+  
       const storedToken = await RefreshToken.findOne({ token });
       if (!storedToken) {
         return res.status(403).json({ message: 'Refresh token not found in database' });
@@ -48,15 +50,20 @@ class AuthMiddleWare {
         return res.status(403).json({ message: 'New device detected. Verification required.' });
       }
   
-      const user: IUser = new User(decoded.id, decoded.roles);
-      req.user = user; 
-      (req as any).refreshToken = storedToken; 
+      req.user = {
+        _id: decoded.id,
+        roles: decoded.roles,
+      } as IUser;
+  
+      (req as any).refreshToken = storedToken;
   
       next();
     } catch (err: any) {
+      console.error('Error in verifyRefreshToken:', err);
       return res.status(403).json({ message: 'Invalid or expired refresh token' });
     }
   }
+  
 
   verifyRole(roles: string[]) {
     return async (req: Request, res: Response, next: NextFunction): Promise<void> => {

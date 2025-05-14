@@ -185,8 +185,9 @@ class AddressController {
     const query = req.query.q as string;
     const limit = req.query.limit || 5;
     const agent = new https.Agent({ family: 4 });
-    if (!query) {
-      res.status(400).json({ error: 'Missing address query `q`' });
+
+    if (!query || query.split(',').length < 3) {
+      res.status(400).json({ error: 'Địa chỉ chưa đầy đủ (ít nhất cần có đường, phường, quận)' });
       return;
     }
 
@@ -198,13 +199,14 @@ class AddressController {
           addressdetails: 1,
           countrycodes: 'vn',
           limit,
+          bounded: 1, // ✅ chỉ tìm trong khung tọa độ bên dưới
+          viewbox: '106.3656,10.8301,106.7227,10.7081', // ✅ giới hạn phạm vi TP.HCM
         },
         headers: {
           'User-Agent': 'beefbeef-restaurant/1.0 (nguyenngocmy1311@gmail.com)',
           'Accept-Language': 'vi',
         },
-        timeout: 5000, // nên đặt timeout
-        // 👇 thêm dòng này để buộc axios dùng IPv4
+        timeout: 5000,
         httpsAgent: agent,
       });
 

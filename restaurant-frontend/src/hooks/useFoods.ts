@@ -31,7 +31,7 @@ export const useFoods = () => {
   useEffect(() => {
     const loadFoods = async () => {
       const page = parseInt(searchParams.get('page') || '1', 10);
-      const sort = searchParams.get('sort') || 'default';
+      const sortParam = searchParams.get('sort') || 'default';
       const priceMin = searchParams.get('priceMin');
       const priceMax = searchParams.get('priceMax');
       const category = searchParams.get('category');
@@ -44,7 +44,7 @@ export const useFoods = () => {
       try {
         const params: FetchFoodsParams = {
           page,
-          sort,
+          sort: sortParam,
           priceMin: priceMin ? Number(priceMin) : undefined,
           priceMax: priceMax ? Number(priceMax) : undefined,
           category: category || undefined,
