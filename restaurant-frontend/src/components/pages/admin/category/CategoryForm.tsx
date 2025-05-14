@@ -3,7 +3,7 @@ import slugify from 'slugify';
 import { useNavigate } from 'react-router-dom';
 import {  CategoryCreatePayload } from 'types/Category.type';
 import ImageUploadPreview from '../ImageUploadPreview';
-import { toast } from 'react-toastify';
+
 type CategoryFormProps = {
   initialData: CategoryCreatePayload | undefined;
   submitLabel: string;
@@ -48,9 +48,9 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ initialData, onSubmit, subm
     }
     if (!slug.trim()) newErrors.slug = 'Slug không được để trống';
 
-    if (!image || !(image instanceof File)) {
+    if (!image) {
       newErrors.image = 'Vui lòng chọn ảnh';
-    } else {
+    } else if (image instanceof File) {
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
       if (!allowedTypes.includes(image.type)) {
         newErrors.image = 'Chỉ chấp nhận ảnh JPG hoặc PNG';
@@ -58,7 +58,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ initialData, onSubmit, subm
       if (image.size > 2 * 1024 * 1024) {
         newErrors.image = 'Ảnh phải nhỏ hơn 2MB';
       }
-    }
+}
 
     setErrors(newErrors);
  
