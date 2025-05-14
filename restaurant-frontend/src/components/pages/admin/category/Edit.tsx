@@ -7,11 +7,12 @@ import { toast } from 'react-toastify';
 
 const EditCategoryPage = () => {
   const { id } = useParams();
-  const { category, loading, error } = useCategoryDetail(id || '');
-  const { updateExistingCategory } = useUpdateCategory();
+  const { category, error } = useCategoryDetail(id || '');
+  const { updateExistingCategory, loading: updating } = useUpdateCategory();
   const navigate = useNavigate();
 
-  if (loading) return <p>Đang tải danh mục...</p>;
+
+  if (updating) return <p>Đang tải danh mục...</p>;
   if (error || !category) return <p className="text-red-500">Không tìm thấy danh mục.</p>;
 
   const handleSubmit = async (data: CategoryCreatePayload) => {
@@ -34,7 +35,8 @@ const EditCategoryPage = () => {
 
       <CategoryForm
         initialData={category}
-        submitLabel="Cập nhật danh mục"
+        loading={updating}
+        submitLabel={updating ? 'Đang cập nhật...' : 'Cập nhật danh mục'}
         onSubmit={handleSubmit}
       />
     </div>
