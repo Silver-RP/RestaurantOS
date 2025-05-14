@@ -25,12 +25,13 @@ class CartService {
     if (quantity <= 0) {
       throw new Error('Quantity must be greater than 0');
     }
+    // check status khác available thì không cho thêm vào giỏ hàng
 
     const session = await mongoose.startSession();
     session.startTransaction();
 
     try {
-      let cart = await Cart.findOne({ userId}).session(session);
+      let cart = await Cart.findOne({ userId }).session(session);
       if (!cart) {
         cart = new Cart({
           userId: new mongoose.Types.ObjectId(userId),
@@ -43,14 +44,17 @@ class CartService {
       if (!dish) {
         throw new Error('Dish does not exist');
       }
-
+      if (dish.countInStock <= 0) {
+        throw new Error('Dish is out of stock');
+      }
+      if (dish.status !== 'available') {
+        throw new Error('Dish is not available');
+      }
       const existingItem = cart.items.find((item) => item.dishId.toString() === dishId);
       const newQuantity = existingItem ? existingItem.quantity + quantity : quantity;
 
       if (newQuantity > dish.countInStock) {
-        throw new Error(
-          `Requested quantity (${newQuantity}) exceeds available stock (${dish.countInStock})`,
-        );
+        throw new Error(`Adding more exceeds available stock`);
       }
 
       if (existingItem) {
@@ -90,14 +94,11 @@ class CartService {
     if (!dish) {
       throw new Error('Dish does not exist');
     }
-    if (dish.status !== 'available') {
-      throw new Error('Dish is not available for purchase');
-    }
 
     const existingItem = cart.items.find((item) => item.dishId.toString() === dishId);
 
     if (existingItem) {
-      const newQuantity = existingItem.quantity + quantity;
+      const newQuantity = quantity;
 
       if (newQuantity > dish.countInStock) {
         throw new Error('Adding more exceeds available stock');
@@ -109,9 +110,7 @@ class CartService {
         cart.items = cart.items.filter((item) => item.dishId.toString() !== dishId);
       }
     } else {
-      if (quantity <= 0) {
-        throw new Error('Cannot decrease item that does not exist in cart');
-      }
+
       cart.items.push({
         dishId: new mongoose.Types.ObjectId(dishId),
         quantity,
