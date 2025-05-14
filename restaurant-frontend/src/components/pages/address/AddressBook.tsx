@@ -223,6 +223,9 @@ const AddressBook: React.FC = () => {
               onSelectLocation={(lat, lon, street_address) =>
                 setDefaultForm({ ...defaultForm, street_address })
               }
+                district={defaultForm.street_address.split(',')[2]?.trim() || ''}
+              ward={defaultForm.street_address.split(',')[1]?.trim() || ''}
+              province={defaultForm.street_address.split(',')[3]?.trim() || 'TP. Hồ Chí Minh'}
             />
           ) : (
             <p className="font-medium">{defaultForm.street_address}</p>
@@ -241,7 +244,7 @@ const AddressBook: React.FC = () => {
                 ward,
                 district,
                 province,
-                is_default: true, // ⚠️ Quan trọng để giữ trạng thái mặc định
+                is_default: true, 
               });
 
               setIsUpdateModalOpen(true);
@@ -250,10 +253,13 @@ const AddressBook: React.FC = () => {
           >
             Cập nhật
           </button>
+         <span className="text-xs md:text-sm text-red-500 border border-red-500 rounded px-2 h-10 flex items-center justify-center ml-1">
+            Mặc định
+          </span>
           {data.length === 1 && (
             <button
               onClick={() => handleDelete(defaultForm.id)}
-              className="px-4 py-1 text-sm border border-red-400 text-red-400 hover:bg-red-500 hover:text-white rounded transition"
+              className="px-4 py-1 text-sm border border-red-400 text-red-400 hover:bg-red-500 hover:text-white rounded transition ml-1"
             >
               Xoá
             </button>
@@ -315,6 +321,9 @@ const AddressBook: React.FC = () => {
                     };
                     setOtherForms(newAddresses);
                   }}
+                    district={defaultForm.street_address.split(',')[2]?.trim() || ''}
+                    ward={defaultForm.street_address.split(',')[1]?.trim() || ''}
+                    province={defaultForm.street_address.split(',')[3]?.trim() || 'TP. Hồ Chí Minh'}
                 />
               ) : (
                 <p className="font-medium">{addr.street_address}</p>
