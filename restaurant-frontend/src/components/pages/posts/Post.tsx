@@ -39,10 +39,9 @@ const Post: React.FC<PostProps> = ({ post }) => {
       </div>
       <h3 className="text-xl font-bold mt-3">{post.title}</h3>
       <p className="text-sm mt-2">{post.description}</p>
-      <button className="mt-4 border border-secondaryColor text-bodyBackground bg-secondaryColor px-4 py-2 hover:bg-bodyBackground hover:text-white transition">ĐỌC THÊM</button>
-      {/* <ButtonComponents variant="outline" size="small">
+      <ButtonComponents variant="filled" size="small">
         Đọc thêm
-      </ButtonComponents> */}
+      </ButtonComponents>
     </div>
   );
 };

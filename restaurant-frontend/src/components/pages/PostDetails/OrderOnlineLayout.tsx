@@ -1,6 +1,6 @@
-import React, { ReactNode } from 'react';
+import { ReactNode } from 'react';
 
-import PostSidebar from './PostSidebar'; // 👉 import từ Posts folder
+import PostSidebar from './PostSidebar'; 
 
 interface Props {
   children: ReactNode;
@@ -11,7 +11,7 @@ const OrderOnlineLayout = ({ children }: Props) => (
 
     <div className="flex flex-col lg:flex-row gap-6 px-4 py-6">
       {/* Đặt class thêm cho PostSidebar trong PostDetails */}
-      <PostSidebar className="lg:w-[220px] xl:w-[250px] w-full" /> {/* Điều chỉnh chiều rộng */}
+      <PostSidebar className="lg:w-[220px] xl:w-[250px] w-full" />
       <main className="flex-1 bg-white text-black">{children}</main>
     </div>
   </div>

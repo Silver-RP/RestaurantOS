@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 interface PostSidebarProps {
-  className?: string;  // Thêm className vào Props
+  className?: string;  
 }
 
 const PostSidebar: React.FC<PostSidebarProps> = ({ className }) => {
