@@ -52,17 +52,19 @@ export const createAddress = async (
  * @param query Địa chỉ người dùng nhập (vd: "274 Nguyễn Văn Lương")
  * @returns Mảng kết quả địa chỉ từ Nominatim
  */
-export const searchAddress = async (query: string) => {
+export const searchAddress = async (query: string): Promise<any[]> => {
   if (!query.trim()) return [];
 
-  const response = await axiosInstance.get<{
-    data: any; // hoặc bạn có thể typing cụ thể hơn
-  }>(`${BaseURLADDRESS}/address/searchmap`, {
-    params: { q: query },
-  });
+  const response = await axiosInstance.get<any[]>(
+    `${BaseURLADDRESS}/address/searchmap`,
+    {
+      params: { q: query },
+    }
+  );
 
-  return response.data;
+  return response.data; 
 };
+
 export const deleteAddress = async (id: string) => {
   const res = await axiosInstance.delete(`${BaseURLADDRESS}/address/${id}`);
   return res.data;

@@ -76,31 +76,43 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
       phone: '',
     },
   });
-
+  useEffect(() => {
+    if (selectedDistrict && selectedWard) {
+      setLocationError('');
+    }
+  }, [selectedDistrict, selectedWard]);
   const watchedAddress = watch('street_address');
 
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedDistrict('');
+      setSelectedWard('');
+      setLat(0);
+      setLon(0);
+      setIsDuplicate(false);
+      setLocationError('');
+      reset(); // Reset toàn bộ form
+    }
+  }, [isOpen]);
   const normalizeStreet = (input: string): string => {
-    return input
+    const normalized = input
       .replace(/\b(Phường|Quận|Huyện|TP\.?|Thành phố|TP|Thủ Đức)\b/gi, '')
       .replace(/[,]+/g, ',')
       .replace(/,\s*,/g, ',')
       .replace(/\s{2,}/g, ' ')
       .replace(/^,|,$/g, '')
       .trim();
+    return normalized;
   };
+
   useEffect(() => {
     if (isDuplicate) setIsDuplicate(false);
 
     const timeout = setTimeout(async () => {
       const street = normalizeStreet(watchedAddress);
 
-      if (street.length > 5) {
-        const fullAddress = getFullAddress(
-          street,
-          selectedWard || '',
-          selectedDistrict || '',
-          selectedCity,
-        );
+      if (street.length > 5 && selectedDistrict && selectedWard) {
+        const fullAddress = `${street}, ${selectedWard}, ${selectedDistrict}, ${selectedCity}`;
 
         try {
           const results = await searchAddress(fullAddress);
@@ -109,11 +121,16 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
             setLat(Number(lat));
             setLon(Number(lon));
           }
-        } catch (error) {
-          console.error('❌ Lỗi khi tìm địa chỉ:', error);
+        } catch (error: any) {
+          if (error.response?.status === 504) {
+            toast.error('Hệ thống phản hồi chậm. Vui lòng thử lại sau.');
+          } else if (error.response?.status === 429) {
+            toast.error('Bạn thao tác quá nhanh. Vui lòng chờ giây lát.');
+          } else {
+            toast.error('Lỗi khi tìm địa chỉ. Vui lòng kiểm tra kết nối mạng.');
+          }
         }
       } else {
-        // ❌ reset nếu nhập thiếu
         setLat(0);
         setLon(0);
       }
@@ -128,24 +145,26 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
   };
 
   const onSubmit = async (data: FormValues) => {
-    let hasError = false;
-    const isValid = await trigger();
-    if (!isValid) {
-      return;
-    }
-    if (!selectedDistrict || !selectedWard) {
-      setLocationError('Vui lòng chọn đầy đủ Quận / Huyện và Phường / Xã');
-      hasError = true;
-    } else {
-      setLocationError('');
-    }
+     const isValid = await trigger(['full_name', 'phone', 'district', 'ward', 'street_address']);
+
+  const missingDistrict = !data.district;
+  const missingWard = !data.ward;
+
+  if (missingDistrict || missingWard) {
+    setLocationError('Vui lòng chọn Quận/Huyện và Phường/Xã trước khi tiếp tục.');
+  } else {
+    setLocationError('');
+  }
+
+  if (!isValid || missingDistrict || missingWard) {
+    return;
+  }
 
     if (!lat || !lon) {
       toast.error('Không thể xác định vị trí. Vui lòng kiểm tra lại địa chỉ.');
-      hasError = true;
+     
     }
 
-    if (hasError) return;
 
     const fullSubmitData = {
       full_name: data.full_name,
@@ -164,6 +183,7 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
       await createAddress(fullSubmitData);
       reset();
       setIsDuplicate(false);
+      onClose();
       onSave(
         selectedCity,
         selectedDistrict,
@@ -175,7 +195,8 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
         data.phone,
         addressType,
       );
-      onClose();
+      reset();
+      setIsDuplicate(false);
     } catch (error: any) {
       if (error.response?.status === 409) {
         setIsDuplicate(true); // đánh dấu địa chỉ trùng
@@ -285,100 +306,149 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
             </div>
 
             {/* Quận / Huyện */}
-            <div className="flex flex-col">
-              <label className="text-gray-400 text-sm md:text-base mb-1">
-                Quận / Huyện
-              </label>
-              <Listbox value={selectedDistrict} onChange={setSelectedDistrict}>
-                <div className="relative">
-                  <Listbox.Button className="w-full bg-transparent border-b border-gray-500 text-white py-1.5 flex items-center justify-between text-sm md:text-base">
-                    <span className="truncate capitalize">
-                      {selectedDistrict || 'Chọn Quận / Huyện'}
-                    </span>
-                    <FiChevronDown className="ml-2 text-white" />
-                  </Listbox.Button>
+            <Controller
+              name="district"
+              control={control}
+              rules={{ required: 'Vui lòng chọn Quận / Huyện' }}
+              render={({ field }) => (
+                <div className="flex flex-col">
+                  <label className="text-gray-400 text-sm md:text-base mb-1">
+                    Quận / Huyện
+                  </label>
+                  <Listbox
+                    value={field.value}
+                    onChange={(value) => {
+                      field.onChange(value);
+                      setSelectedDistrict(value); // để giữ logic cũ đang dùng
+                      setLocationError(''); // reset lỗi nếu có
+                    }}
+                  >
+                    <div className="relative">
+                      <Listbox.Button className="w-full bg-transparent border-b border-gray-500 text-white py-1.5 flex items-center justify-between text-sm md:text-base">
+                        <span className="truncate capitalize">
+                          {field.value || 'Chọn Quận / Huyện'}
+                        </span>
+                        <FiChevronDown className="ml-2 text-white" />
+                      </Listbox.Button>
 
-                  <Listbox.Options className="absolute w-full mt-1 bg-bodyBackground border border-white/20 rounded-md shadow-lg z-10 max-h-60 overflow-auto text-sm">
-                    {cities
-                      .find((c) => c.name === selectedCity)
-                      ?.districts.map((d) => (
-                        <Listbox.Option
-                          key={d}
-                          value={d}
-                          className={({ active, selected }) =>
-                            `p-2 cursor-pointer rounded-md transition ${
-                              active ? 'bg-white/10' : ''
-                            } ${selected ? 'border-l-4 border-secondaryColor' : ''}`
-                          }
-                        >
-                          {d}
-                        </Listbox.Option>
-                      ))}
-                  </Listbox.Options>
+                      <Listbox.Options className="absolute w-full mt-1 bg-bodyBackground border border-white/20 rounded-md shadow-lg z-10 max-h-60 overflow-auto text-sm">
+                        {cities
+                          .find((c) => c.name === selectedCity)
+                          ?.districts.map((d) => (
+                            <Listbox.Option
+                              key={d}
+                              value={d}
+                              className={({ active, selected }) =>
+                                `p-2 cursor-pointer rounded-md transition ${
+                                  active ? 'bg-white/10' : ''
+                                } ${selected ? 'border-l-4 border-secondaryColor' : ''}`
+                              }
+                            >
+                              {d}
+                            </Listbox.Option>
+                          ))}
+                      </Listbox.Options>
+                    </div>
+                  </Listbox>
+
+                  {errors.district && (
+                    <span className="text-red-500 text-xs sm:text-sm mt-1">
+                      {errors.district.message}
+                    </span>
+                  )}
                 </div>
-              </Listbox>
-            </div>
+              )}
+            />
 
             {/* Phường / Xã */}
-            <div className="flex flex-col">
-              <label className="text-gray-400 text-sm md:text-base mb-1">
-                Phường / Xã
-              </label>
-              <Listbox value={selectedWard} onChange={setSelectedWard}>
-                <div className="relative">
-                  <Listbox.Button className="w-full bg-transparent border-b border-gray-500 text-white py-1.5 flex items-center justify-between text-sm md:text-base">
-                    <span className="truncate capitalize">
-                      {selectedWard || 'Chọn phường / xã'}
-                    </span>
-                    <FiChevronDown className="ml-2 text-white" />
-                  </Listbox.Button>
+            <Controller
+              name="ward"
+              control={control}
+              rules={{ required: 'Vui lòng chọn Phường / Xã' }}
+              render={({ field }) => (
+                <div className="flex flex-col">
+                  <label className="text-gray-400 text-sm md:text-base mb-1">
+                    Phường / Xã
+                  </label>
+                  <Listbox
+                    value={field.value}
+                    onChange={(value) => {
+                      field.onChange(value);
+                      setSelectedWard(value); // để tương thích logic cũ
+                      setLocationError(''); // xoá lỗi nếu có
+                    }}
+                  >
+                    <div className="relative">
+                      <Listbox.Button className="w-full bg-transparent border-b border-gray-500 text-white py-1.5 flex items-center justify-between text-sm md:text-base">
+                        <span className="truncate capitalize">
+                          {field.value || 'Chọn phường / xã'}
+                        </span>
+                        <FiChevronDown className="ml-2 text-white" />
+                      </Listbox.Button>
 
-                  <Listbox.Options className="absolute w-full mt-1 bg-bodyBackground border border-white/20 rounded-md shadow-lg z-10 max-h-60 overflow-auto text-sm">
-                    {(wardsByDistrict[selectedDistrict] || []).map((ward) => (
-                      <Listbox.Option
-                        key={ward}
-                        value={ward}
-                        className={({ active, selected }) =>
-                          `p-2 cursor-pointer rounded-md transition ${
-                            active ? 'bg-white/10' : ''
-                          } ${selected ? 'border-l-4 border-secondaryColor' : ''}`
-                        }
-                      >
-                        {ward}
-                      </Listbox.Option>
-                    ))}
-                  </Listbox.Options>
+                      <Listbox.Options className="absolute w-full mt-1 bg-bodyBackground border border-white/20 rounded-md shadow-lg z-10 max-h-60 overflow-auto text-sm">
+                        {(wardsByDistrict[selectedDistrict] || []).map(
+                          (ward) => (
+                            <Listbox.Option
+                              key={ward}
+                              value={ward}
+                              className={({ active, selected }) =>
+                                `p-2 cursor-pointer rounded-md transition ${
+                                  active ? 'bg-white/10' : ''
+                                } ${selected ? 'border-l-4 border-secondaryColor' : ''}`
+                              }
+                            >
+                              {ward}
+                            </Listbox.Option>
+                          ),
+                        )}
+                      </Listbox.Options>
+                    </div>
+                  </Listbox>
+
+                  {/* ✅ HIỂN THỊ LỖI */}
+                  {errors.ward && (
+                    <span className="text-red-500 text-xs sm:text-sm mt-1">
+                      {errors.ward.message}
+                    </span>
+                  )}
                 </div>
-              </Listbox>
-            </div>
-            {locationError && (
-              <p className="text-red-500 text-xs sm:text-sm mt-1">
-                {locationError}
-              </p>
-            )}
+              )}
+            />
           </div>
+       
 
           {/* Address Input */}
           <div>
-            <Controller
-              name="street_address"
-              control={control}
-              rules={{ required: 'Địa chỉ không được để trống' }}
-              render={({ field }) => (
-                <AddressInput
-                  value={field.value}
-                  onChange={(e) => {
-                    field.onChange(e);
-                    trigger('street_address');
-                  }}
-                  onSelectLocation={(lat, lon, address) => {
-                    setLat(lat);
-                    setLon(lon);
-                    setValue('street_address', address);
-                  }}
-                />
-              )}
-            />
+            {!selectedDistrict || !selectedWard ? (
+              <p className="text-sm italic text-gray-400">
+                Vui lòng chọn Quận / Huyện và Phường / Xã trước khi nhập địa chỉ
+              </p>
+            ) : (
+              <Controller
+                name="street_address"
+                control={control}
+                rules={{ required: 'Địa chỉ không được để trống' }}
+                render={({ field }) => (
+                  <AddressInput
+                    value={field.value}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      trigger('street_address');
+                    }}
+                    onSelectLocation={(lat, lon, address) => {
+                      setLat(lat);
+                      setLon(lon);
+                      setValue('street_address', address);
+                    }}
+                    district={selectedDistrict}
+                    ward={selectedWard}
+                    province={selectedCity}
+                  />
+                )}
+              />
+            )}
+
             {errors.street_address && (
               <span className="text-red-500 text-xs sm:text-sm">
                 {errors.street_address?.message}
@@ -398,6 +468,11 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
                 />
               </div>
             )}
+          {lat === 0 && normalizeStreet(watchedAddress).length > 5 && (
+            <p className="text-red-400 text-sm mt-2">
+              Không tìm thấy vị trí phù hợp. Vui lòng kiểm tra lại tên đường.
+            </p>
+          )}
 
           {/* Address Type */}
           <div>
