@@ -9,9 +9,9 @@ export const fetchUserById = createAsyncThunk<
   { rejectValue: string } 
 >(
   'user/fetchUserById',
-  async ({ userId, token }, { rejectWithValue }) => {
+  async ({ userId }, { rejectWithValue }) => {
     try {
-      const user = await getUserById(userId, token);
+      const user = await getUserById(userId);
       return user;
     } catch (err: unknown) {
       const error = err as AxiosError<{ message?: string }>;

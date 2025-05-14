@@ -8,7 +8,7 @@ class CartService {
       throw new Error('Invalid userId');
     }
 
-    const cart = await Cart.findOne({ userId}).populate('items.dishId');
+    const cart = await Cart.findOne({ userId }).populate('items.dishId');
 
     if (!cart) {
       throw new Error('Cart not found');
@@ -89,7 +89,7 @@ class CartService {
     if (!cart) {
       throw new Error('Cart not found');
     }
- 
+
     const dish = await Dish.findById(dishId);
     if (!dish) {
       throw new Error('Dish does not exist');
@@ -110,7 +110,6 @@ class CartService {
         cart.items = cart.items.filter((item) => item.dishId.toString() !== dishId);
       }
     } else {
-
       cart.items.push({
         dishId: new mongoose.Types.ObjectId(dishId),
         quantity,

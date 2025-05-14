@@ -14,19 +14,44 @@ interface FilterUserOptions {
   nameSort?: string;
   emailSort?: string;
 }
+interface GetAllUserParams {
+  page?: number;
+  limit?: number;
+  keyword?: string;
+}
 class UserService {
-  async getAllUser(): Promise<any> {
+  getAllUser = async ({ page = 1, limit = 10, keyword = '' }: GetAllUserParams) => {
+    const query: any = {};
+
+    if (keyword) {
+      query.$or = [
+        { username: { $regex: keyword, $options: 'i' } },
+        { email: { $regex: keyword, $options: 'i' } },
+      ];
+    }
+
+    const skip = (page - 1) * limit;
+
     try {
-      const allUser = await User.find({});
+      const [docs, totalDocs] = await Promise.all([
+        User.find(query).skip(skip).limit(limit),
+        User.countDocuments(query),
+      ]);
+
+      const totalPages = Math.ceil(totalDocs / limit);
+
       return {
-        status: 'OK',
-        message: 'getAllUser success',
-        data: allUser,
+        docs,
+        totalDocs,
+        totalPages,
+        page,
+        limit,
       };
     } catch (error: any) {
-      throw new Error(error);
+      console.error('Error in getAllUser:', error.message);
+      throw new Error('Failed to fetch users');
     }
-  }
+  };
 
   async getAllUserByUserRole(page: number = 1, pageSize: number = 10): Promise<any> {
     try {

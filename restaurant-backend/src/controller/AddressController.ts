@@ -4,7 +4,6 @@ import { CreateAddressSchema } from '../schemas/address.schema';
 import mongoose from 'mongoose';
 import axios from 'axios';
 import https from 'https';
-import type { AxiosRequestConfig } from 'axios';
 import { Address } from '../models/AddressModel';
 
 class AddressController {

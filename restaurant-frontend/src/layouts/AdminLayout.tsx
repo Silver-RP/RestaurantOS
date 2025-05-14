@@ -9,6 +9,7 @@ import {
   FaSignOutAlt,
   FaAngleLeft,
   FaAngleRight,
+  FaUser,
 } from 'react-icons/fa';
 import { GiHotMeal } from 'react-icons/gi';
 import classNames from 'classnames';
@@ -47,6 +48,13 @@ const AdminLayout: React.FC = () => {
               href="/admin"
               icon={<FaHome />}
               label="Trang chủ"
+              expanded={isSidebarOpen}
+            />
+
+            <NavItem
+              href="/admin/users"
+              icon={<FaUser />}
+              label="Người dùng"
               expanded={isSidebarOpen}
             />
             <NavItem
