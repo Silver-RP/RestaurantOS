@@ -1,12 +1,17 @@
 import ProfileService from '../services/ProfileService';
 import { Request, Response } from 'express';
+import { IUser } from '../models/UserModel';
+import { Types } from 'mongoose';
 
 class ProfileController {
-  // Get user profile
+
   async getUserProfile(req: Request, res: Response) {
     try {
-      const userId = req.params._id;
-      const user = await ProfileService.getUserProfile(userId);
+      if (!req.user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+      const userId = (req.user as IUser).id as Types.ObjectId;
+      const user = await ProfileService.getUserProfile(userId.toString());
       res.status(200).json(user);
     } catch (error: any) {
       res.status(400).json({ message: error.message });
@@ -15,8 +20,11 @@ class ProfileController {
 
   async updateUserProfile(req: Request, res: Response) {
     try {
-      const userId = req.params._id;
-      const user = await ProfileService.updateUserProfile(userId, req.body);
+      if (!req.user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+      const userId = (req.user as IUser).id as Types.ObjectId;
+      const user = await ProfileService.updateUserProfile(userId.toString(), req.body);
       res.status(200).json(user);
     } catch (error: any) {
       res.status(400).json({ message: error.message });
@@ -25,8 +33,11 @@ class ProfileController {
 
   async changePasswordProfile(req: Request, res: Response) {
     try {
-      const userId = req.params._id;
-      const user = await ProfileService.changePasswordProfile(userId, req.body);
+      if (!req.user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+      const userId = (req.user as IUser).id as Types.ObjectId;
+      const user = await ProfileService.changePasswordProfile(userId.toString(), req.body);
       res.status(200).json(user);
     } catch (error: any) {
       res.status(400).json({ message: error.message });

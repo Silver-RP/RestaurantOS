@@ -101,6 +101,10 @@ class FoodService {
 
   private getSortQuery(sort: string) {
     switch (sort) {
+      case 'nameAZ':
+        return { name: 1 };
+      case 'nameZA':
+        return { name: -1 };
       case 'priceLow':
         return { price: 1 };
       case 'priceHigh':

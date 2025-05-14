@@ -5,7 +5,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { FaChevronDown } from 'react-icons/fa';
 import AdminPagination from '../AdminPagination';
 import { useNavigate } from 'react-router-dom';
-import { FoodDetail } from '@/types/Dish.types';
 import { FaSort, FaArrowUp, FaArrowDown } from 'react-icons/fa';
 
 type SortField =
@@ -56,47 +55,20 @@ const MenuTable: React.FC = () => {
   const foodList = foods?.docs || [];
   
   const handleSort = (field: SortField) => {
-    if (sortField === field) {
-      setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-    } else {
-      setSortField(field);
-      setSortDirection('asc');
-    }
-  };
-
-  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const sortValue = e.target.value;
-    setSearchParams((prevParams) => {
-      const newParams = new URLSearchParams(prevParams);
-      newParams.set('sort', sortValue);
-      newParams.set('page', '1');
+    const newSortDirection =
+      sortField === field && sortDirection === 'asc' ? 'desc' : 'asc';
+  
+    setSearchParams((prev) => {
+      const newParams = new URLSearchParams(prev);
+      newParams.set('sortField', field as string);
+      newParams.set('sortDirection', newSortDirection);
+      newParams.set('page', '1'); 
       return newParams;
     });
+  
+    setSortField(field);
+    setSortDirection(newSortDirection);
   };
-
-  const sortedFoods = useMemo(() => {
-    if (!foods?.docs || !sortField) return foods?.docs || [];
-
-    return [...foods.docs].sort((a, b) => {
-      let valA: string | number = '';
-      let valB: string | number = '';
-
-      if (sortField === 'category') {
-        valA = a.category?.toLowerCase?.() || '';
-        valB = b.category?.toLowerCase?.() || '';
-      } else if (sortField === 'status') {
-        valA = a.status?.toLowerCase?.() || '';
-        valB = b.status?.toLowerCase?.() || '';
-      } else {
-        valA = a[sortField as keyof FoodDetail] as any;
-        valB = b[sortField as keyof FoodDetail] as any;
-      }
-
-      if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
-      if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
-      return 0;
-    });
-  }, [foods, sortField, sortDirection]);
 
   const getSortIcon = (field: SortField) => {
     if (sortField === field) {
@@ -309,7 +281,7 @@ const MenuTable: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {sortedFoods.map((item, index) => (
+              {foodList.map((item, index) => (
                 <tr key={index} className="border-b hover:bg-gray-50">
                   <td className="px-4 py-2">
                     <img
@@ -364,18 +336,9 @@ const MenuTable: React.FC = () => {
            onPageChange={(page) => {
              const newParams = new URLSearchParams(searchParams.toString());
              newParams.set('page', String(page));
-         
-             const currentSortField = searchParams.get('sortField');
-             const currentSortDirection = searchParams.get('sortDirection');
-         
-             if (currentSortField) newParams.set('sortField', currentSortField);
-             if (currentSortDirection) newParams.set('sortDirection', currentSortDirection);
-         
-             setSearchParams(newParams);
+             setSearchParams(newParams); 
            }}
          />
-         
-         
           )}
         </div>
       )}

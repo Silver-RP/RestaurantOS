@@ -113,6 +113,8 @@ const MenuPage: React.FC = () => {
                   className="appearance-none bg-bodyBackground border border-gray-500 text-white rounded px-3 py-2 text-sm pr-10 focus:outline-none focus:ring-2 focus:ring-secondaryColor"
                 >
                   <option value="relevance">Mặc định</option>
+                  <option value="nameAZ">Tên A-Z</option>
+                  <option value="nameZA">Tên Z-A</option>
                   <option value="priceLow">Giá thấp đến cao</option>
                   <option value="priceHigh">Giá cao đến thấp</option>
                   <option value="newest">Mới nhất</option>
