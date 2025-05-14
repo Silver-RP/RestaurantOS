@@ -1,5 +1,5 @@
+import { AxiosError } from 'axios';
 import api from './axiosInstance';
-
 interface SendOtpResponse {
   message: string;
 }
@@ -53,22 +53,22 @@ export default authApi;
 
 
 
-export const refreshAccessToken =
-  async (): Promise<RefreshTokenResponse | null> => {
-    try {
-      const response = await api.post<RefreshTokenResponse>(
-        '/auth/refresh-token',
-        {},
-        {
-          withCredentials: true,
-        },
-      );
-      return response.data;
-    } catch (err: any) {
-      console.error(
-        'Failed to refresh access token:',
-        err?.response?.data || err,
-      );
-      return null;
-    }
-  };
+export const refreshAccessToken = async (): Promise<RefreshTokenResponse | null> => {
+  try {
+    const response = await api.post<RefreshTokenResponse>(
+      '/auth/refresh-token',
+      {},
+      {
+        withCredentials: true,
+      },
+    );
+    return response.data;
+  } catch (err: unknown) {
+    const error = err as AxiosError<{ message?: string }>;
+    console.error(
+      'Failed to refresh access token:',
+      error.response?.data || error.message,
+    );
+    return null;
+  }
+};

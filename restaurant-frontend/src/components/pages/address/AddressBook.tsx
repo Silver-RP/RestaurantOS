@@ -43,7 +43,7 @@ const AddressBook: React.FC = () => {
         name: defaultAddr.full_name,
         phone: defaultAddr.phone,
         street_address: `${defaultAddr.street_address}, ${defaultAddr.ward}, ${defaultAddr.district}, ${defaultAddr.province}`,
-        id: defaultAddr.id, // 👈 Thêm dòng này
+        id: defaultAddr.id, 
       });
     }
 
@@ -241,7 +241,7 @@ const AddressBook: React.FC = () => {
                 ward,
                 district,
                 province,
-                is_default: true, // ⚠️ Quan trọng để giữ trạng thái mặc định
+                is_default: true,
               });
 
               setIsUpdateModalOpen(true);

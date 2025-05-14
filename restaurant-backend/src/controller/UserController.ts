@@ -82,5 +82,34 @@ class UserController {
       });
     }
   }
+
+  async updateUser(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.params.userId;
+      const updateData = req.body;
+
+      const result = await UserService.updateUserInfo(userId, updateData);
+      res.status(200).json(result); // ❌ không return
+    } catch (error: any) {
+      res.status(500).json({
+        status: 'ERROR',
+        message: error.message,
+      });
+    }
+  }
+
+  async changeUserPassword(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.params.userId;
+      const { currentPassword, newPassword } = req.body;
+      const result = await UserService.changeUserPassword(userId, currentPassword, newPassword);
+      res.status(200).json(result);
+    } catch (error: any) {
+      res.status(500).json({
+        status: 'ERROR',
+        message: error.message,
+      });
+    }
+  }
 }
 export default new UserController();
