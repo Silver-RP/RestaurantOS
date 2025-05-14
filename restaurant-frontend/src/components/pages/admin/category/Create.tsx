@@ -1,14 +1,21 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import CategoryForm from './CategoryForm';
-
+// import { useAddCategory } from '@hooks/useAddCategory';
+import { CategoryCreatePayload } from '@/types/Category.type';
+import { useAddCategory } from '@/hooks/useCategories';
+import { toast } from 'react-toastify';
 const CreateCategoryPage = () => {
   const navigate = useNavigate();
+  const { addNewCategory, loading, error, successMessage } = useAddCategory();
 
-  const handleSubmit = (formData: FormData) => {
-    console.log('Submited form', formData);
-    // await createCategory(formData);
-  };
+  const handleSubmit = async (data: CategoryCreatePayload) => {
+  await addNewCategory(data, () => {
+    toast.success('Thêm danh mục thành công!'); 
+    navigate('/admin/categories');
+  });
+};
+
 
   return (
     <div className="relative">
@@ -22,8 +29,11 @@ const CreateCategoryPage = () => {
 
       <CategoryForm
         initialData={undefined}
-        submitLabel="Thêm danh mục"
+        submitLabel={loading ? 'Đang thêm...' : 'Thêm danh mục'}
         onSubmit={handleSubmit}
+        loading={loading}
+        error={error}
+        successMessage={successMessage}
       />
     </div>
   );

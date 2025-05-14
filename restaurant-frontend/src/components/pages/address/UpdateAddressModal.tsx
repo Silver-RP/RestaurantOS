@@ -162,14 +162,14 @@ export const UpdateAddressModal: React.FC<UpdateAddressModalProps> = ({ isOpen, 
             <div>
               <label className="text-gray-400">Quận / Huyện</label>
               <Listbox value={district} onChange={(val) => setDistrict(val.trim())}>
-                <div className="relative">
+                <div className="relative capitalize">
                   <Listbox.Button className="w-full border-b border-gray-500 py-2 text-white flex justify-between">
                     <span>{district || 'Chọn quận'}</span>
                     <FiChevronDown />
                   </Listbox.Button>
-                  <Listbox.Options className="absolute mt-1 max-h-60 overflow-auto bg-bodyBackground border border-white/20 z-10">
+                  <Listbox.Options className="absolute mt-1 max-h-60 overflow-auto bg-bodyBackground border border-white/20 z-10 capitalize">
                     {cities.find((c) => c.name === 'TP. Hồ Chí Minh')?.districts.map((d) => (
-                      <Listbox.Option key={d} value={d} className="p-2 text-sm hover:bg-white/10 cursor-pointer">
+                      <Listbox.Option key={d} value={d} className="p-2 text-sm hover:bg-white/10 cursor-pointer capitalize">
                         {d}
                       </Listbox.Option>
                     ))}

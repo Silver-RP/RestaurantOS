@@ -1,18 +1,25 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useCategoryDetail } from '@hooks/useCategories';
+import { useCategoryDetail, useUpdateCategory } from '@hooks/useCategories';
 import CategoryForm from './CategoryForm';
+import { CategoryCreatePayload } from '@/types/Category.type';
+import { toast } from 'react-toastify';
 
 const EditCategoryPage = () => {
   const { id } = useParams();
   const { category, loading, error } = useCategoryDetail(id || '');
+  const { updateExistingCategory } = useUpdateCategory();
   const navigate = useNavigate();
-  console.log(id)
+
   if (loading) return <p>Đang tải danh mục...</p>;
   if (error || !category) return <p className="text-red-500">Không tìm thấy danh mục.</p>;
 
-  const handleSubmit = (formData: FormData) => {
-    console.log('Submited form', formData);
+  const handleSubmit = async (data: CategoryCreatePayload) => {
+    if (!id) return;
+    await updateExistingCategory(id, data, () => {
+      toast.success('Cập nhật danh mục thành công!');
+      navigate('/admin/categories');
+    });
   };
 
   return (

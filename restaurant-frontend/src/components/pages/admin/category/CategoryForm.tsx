@@ -1,15 +1,17 @@
-// components/pages/admin/category/CategoryForm.tsx
 import React, { useEffect, useState } from 'react';
 import slugify from 'slugify';
 import { useNavigate } from 'react-router-dom';
-import { Category } from 'types/Category.type';
+import {  CategoryCreatePayload } from 'types/Category.type';
 import ImageUploadPreview from '../ImageUploadPreview';
-
-interface CategoryFormProps {
-  initialData?: Category;
-  onSubmit: (formData: FormData) => void;
+import { toast } from 'react-toastify';
+type CategoryFormProps = {
+  initialData: CategoryCreatePayload | undefined;
   submitLabel: string;
-}
+  onSubmit: (data: CategoryCreatePayload) => void;
+  loading: boolean;
+  error: string | null;
+  successMessage: string | null;
+};
 
 const CategoryForm: React.FC<CategoryFormProps> = ({ initialData, onSubmit, submitLabel }) => {
   const navigate = useNavigate();
@@ -17,6 +19,8 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ initialData, onSubmit, subm
   const [slug, setSlug] = useState('');
   const [type, setType] = useState<'dish' | 'drink'>('dish');
   const [image, setImage] = useState<File | string | null>(null);
+
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     if (initialData) {
@@ -27,20 +31,53 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ initialData, onSubmit, subm
     }
   }, [initialData]);
 
+  const generateSlug = (value: string) => slugify(value, { lower: true, strict: true });
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) setImage(file);
   };
 
-  const generateSlug = (value: string) => slugify(value, { lower: true, strict: true });
+  const validate = (): boolean => {
+    const newErrors: { [key: string]: string } = {};
+
+     if (!name.trim()) {
+    newErrors.name = 'Tên danh mục không được để trống';
+    } else if (name.trim().length < 3) {
+      newErrors.name = 'Tên danh mục phải có ít nhất 3 ký tự';
+    }
+    if (!slug.trim()) newErrors.slug = 'Slug không được để trống';
+
+    if (!image || !(image instanceof File)) {
+      newErrors.image = 'Vui lòng chọn ảnh';
+    } else {
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      if (!allowedTypes.includes(image.type)) {
+        newErrors.image = 'Chỉ chấp nhận ảnh JPG hoặc PNG';
+      }
+      if (image.size > 2 * 1024 * 1024) {
+        newErrors.image = 'Ảnh phải nhỏ hơn 2MB';
+      }
+    }
+
+    setErrors(newErrors);
+ 
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const formData = new FormData();
-    formData.append('Cate_name', name.trim());
-    formData.append('Cate_slug', slug.trim() || generateSlug(name));
-    formData.append('Cate_type', type);
-    if (image instanceof File) formData.append('Cate_img', image);
+
+    if (!validate()) return;
+
+    const formData: CategoryCreatePayload = {
+      Cate_name: name.trim(),
+      Cate_slug: slug.trim() || generateSlug(name),
+      Cate_type: type,
+      Cate_img: image instanceof File ? image : undefined,
+    };
+    
+    
     onSubmit(formData);
   };
 
@@ -50,6 +87,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ initialData, onSubmit, subm
         {initialData ? 'Chỉnh sửa danh mục' : 'Thêm danh mục mới'}
       </h1>
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Tên danh mục */}
         <div>
           <label className="block mb-1 text-sm font-medium text-admintext">Tên danh mục</label>
           <input
@@ -60,10 +98,11 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ initialData, onSubmit, subm
               setSlug(generateSlug(e.target.value));
             }}
             className="border rounded px-4 py-2 w-full"
-            required
           />
+          {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
         </div>
 
+        {/* Slug */}
         <div>
           <label className="block mb-1 text-sm font-medium text-admintext">Slug</label>
           <input
@@ -72,27 +111,30 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ initialData, onSubmit, subm
             onChange={(e) => setSlug(e.target.value)}
             className="border rounded px-4 py-2 w-full"
           />
+          {errors.slug && <p className="text-red-500 text-sm mt-1">{errors.slug}</p>}
         </div>
 
+        {/* Loại */}
         <div>
           <label className="block mb-1 text-sm font-medium text-admintext">Loại</label>
           <select
             value={type}
-            onChange={(e) => setType(e.target.value as 'dish' | 'drink')}
+            onChange={(e) => setType(e.target.value.trim() as 'dish' | 'drink')}
             className="border rounded px-4 py-2 w-full"
-            required
           >
             <option value="dish">Món ăn</option>
             <option value="drink">Đồ uống</option>
           </select>
         </div>
 
+        {/* Ảnh */}
         <ImageUploadPreview
           images={image ? [image] : []}
           onChange={handleImageChange}
-        //   single
         />
+        {errors.image && <p className="text-red-500 text-sm mt-1">{errors.image}</p>}
 
+        {/* Buttons */}
         <div className="flex justify-end gap-2">
           <button
             type="button"
