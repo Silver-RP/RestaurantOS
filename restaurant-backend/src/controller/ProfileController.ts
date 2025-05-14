@@ -5,7 +5,7 @@ import { Types } from 'mongoose';
 
 class ProfileController {
 
-  async getUserProfile(req: Request, res: Response) {
+  async getUserProfile(req: Request, res: Response): Promise<any> {
     try {
       if (!req.user) {
         return res.status(401).json({ message: 'Unauthorized' });
@@ -18,7 +18,7 @@ class ProfileController {
     }
   }
 
-  async updateUserProfile(req: Request, res: Response) {
+  async updateUserProfile(req: Request, res: Response): Promise<any> {
     try {
       if (!req.user) {
         return res.status(401).json({ message: 'Unauthorized' });
@@ -31,7 +31,7 @@ class ProfileController {
     }
   }
 
-  async changePasswordProfile(req: Request, res: Response) {
+  async changePasswordProfile(req: Request, res: Response): Promise<any> {
     try {
       if (!req.user) {
         return res.status(401).json({ message: 'Unauthorized' });
