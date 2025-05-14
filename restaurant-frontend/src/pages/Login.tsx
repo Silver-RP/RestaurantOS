@@ -12,7 +12,6 @@ import { clearStatus } from '../redux/feature/auth/authSlice';
 import { AxiosError } from 'axios';
 import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
 import { LoginWithGoogle } from '../redux/feature/auth/authActions';
-import Cookies from 'js-cookie';
 
 const Login = () => {
   const emailRef = useRef<HTMLInputElement>(null);

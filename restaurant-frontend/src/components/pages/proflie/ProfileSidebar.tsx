@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LogoutUser } from '../../../redux/feature/auth/authActions';
 import { useAppDispatch } from '../../../redux/hook';
 import Cookies from 'js-cookie';
+import React from 'react';
 
 
 
@@ -28,19 +29,10 @@ const ProfileSidebar = () => {
     console.log('Auth data cleared');
   };
 
-  const userInfo = JSON.parse(Cookies.get('userInfo') || '{}');
-  const isGoogleLogin = userInfo?.isGoogleLogin;
-
-  const raw = Cookies.get('userInfo');
-  console.log('Raw cookie:', raw);
-
-  console.log('userInfo:', userInfo);
-  console.log('isGoogleLogin:', isGoogleLogin); 
   const handleLogout = async () => {
 
     const userInfo = JSON.parse(Cookies.get('userInfo') || '{}');
     const isGoogleLogin = userInfo?.isGoogleLogin;
-
 
     if (isGoogleLogin) {
       const email = userInfo?.email;

@@ -56,7 +56,6 @@ const NavExtend: React.FC<NavExtendProps> = ({ onNavigate }) => {
 
   return (
     <nav className="flex flex-col font-sans text-sm px-6 space-y-5">
-    {/* <nav className="w-full max-w-[300px] xl:max-w-[320px] 2xl:max-w-[350px] flex flex-col font-sans text-sm px-4 xl:px-6 space-y-4"> */}
       {navItems.map((item, index) => (
         <button
           key={index}
@@ -67,8 +66,6 @@ const NavExtend: React.FC<NavExtendProps> = ({ onNavigate }) => {
               : "text-white hover:text-secondaryColor hover:bg-gray-800"
           }`}
         >
-
-       
           {item.icon}
           <span 
           className={`transform group-hover:translate-x-1 ${fontSize}  transition-transform duration-300`}
