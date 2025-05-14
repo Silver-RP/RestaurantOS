@@ -245,7 +245,6 @@ const AddressBook: React.FC = () => {
                 district,
                 province,
                 is_default: true, 
-                is_default: true,
               });
 
               setIsUpdateModalOpen(true);
