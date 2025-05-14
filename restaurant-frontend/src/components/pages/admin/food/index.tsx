@@ -5,6 +5,21 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { FaChevronDown } from 'react-icons/fa';
 import AdminPagination from '../AdminPagination';
 import { useNavigate } from 'react-router-dom';
+import { FoodDetail } from '@/types/Dish.types';
+import { FaSort, FaArrowUp, FaArrowDown } from 'react-icons/fa';
+
+type SortField =
+  | 'name'
+  | 'price'
+  | 'discount_price'
+  | 'countInStock'
+  | 'views'
+  | 'category'
+  | 'ordered_count'
+  | 'average_rating'
+  | 'status'
+  | null;
+type SortDirection = 'asc' | 'desc';
 
 const MenuTable: React.FC = () => {
   const { foods, loading, error, searchParams, setSearchParams } = useFoods();
@@ -14,7 +29,6 @@ const MenuTable: React.FC = () => {
     loading: loadingCategories,
     error: categoryError,
   } = useCategories();
-
   const [search, setSearch] = useState(searchParams.get('keyword') || '');
   const [categoryFilter, setCategoryFilter] = useState(
     searchParams.get('category') || '',
@@ -22,9 +36,11 @@ const MenuTable: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | ''>('');
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
+  const [sortField, setSortField] = useState<SortField>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+
   useEffect(() => {
     const newParams = new URLSearchParams(searchParams.toString());
-
     newParams.set('keyword', search);
 
     if (categoryFilter) newParams.set('category', categoryFilter);
@@ -34,11 +50,61 @@ const MenuTable: React.FC = () => {
     else newParams.delete('sort');
 
     newParams.set('page', '1');
-
     setSearchParams(newParams);
   }, [search, categoryFilter, sortOrder]);
 
   const foodList = foods?.docs || [];
+  
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const sortValue = e.target.value;
+    setSearchParams((prevParams) => {
+      const newParams = new URLSearchParams(prevParams);
+      newParams.set('sort', sortValue);
+      newParams.set('page', '1');
+      return newParams;
+    });
+  };
+
+  const sortedFoods = useMemo(() => {
+    if (!foods?.docs || !sortField) return foods?.docs || [];
+
+    return [...foods.docs].sort((a, b) => {
+      let valA: string | number = '';
+      let valB: string | number = '';
+
+      if (sortField === 'category') {
+        valA = a.category?.toLowerCase?.() || '';
+        valB = b.category?.toLowerCase?.() || '';
+      } else if (sortField === 'status') {
+        valA = a.status?.toLowerCase?.() || '';
+        valB = b.status?.toLowerCase?.() || '';
+      } else {
+        valA = a[sortField as keyof FoodDetail] as any;
+        valB = b[sortField as keyof FoodDetail] as any;
+      }
+
+      if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
+      if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [foods, sortField, sortDirection]);
+
+  const getSortIcon = (field: SortField) => {
+    if (sortField === field) {
+      return sortDirection === 'asc' ? <FaArrowUp /> : <FaArrowDown />;
+    }
+    return <FaSort />;
+  };
+
   const uniqueCategories = useMemo(() => {
     if (!categories?.data) return [{ label: 'Tất cả', value: '' }];
     return [
@@ -49,7 +115,7 @@ const MenuTable: React.FC = () => {
       })),
     ];
   }, [categories]);
-  console.log(uniqueCategories);
+
   return (
     <div>
       <div className="flex flex-wrap gap-4 mb-4 items-center justify-between">
@@ -152,24 +218,98 @@ const MenuTable: React.FC = () => {
       ) : error ? (
         <p className="text-red-500">{error}</p>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white text-sm text-gray-700">
+        <div className="w-full overflow-x-auto">
+          <table className="min-w-[1000px] w-full bg-white text-sm text-gray-700">
             <thead>
               <tr className="bg-gray-100 text-left">
                 <th className="px-4 py-2">Hình</th>
-                <th className="px-4 py-2">Tên món</th>
-                <th className="px-4 py-2">Giá</th>
-                <th className="px-4 py-2">Giá KM</th>
-                <th className="px-4 py-2">Kho</th>
-                <th className="px-4 py-2">Danh mục</th>
-                <th className="px-4 py-2">Lượt xem</th>
-                <th className="px-4 py-2">Số đặt</th>
-                <th className="px-4 py-2">Rating</th>
+
+                <th
+                  className="px-4 py-2 cursor-pointer whitespace-nowrap"
+                  onClick={() => handleSort('name')}
+                >
+                  <span className="flex items-center gap-1">
+                    Tên món {getSortIcon('name')}
+                  </span>
+                </th>
+
+                <th
+                  className="px-4 py-2 cursor-pointer whitespace-nowrap"
+                  onClick={() => handleSort('price')}
+                >
+                  <span className="flex items-center gap-1">
+                    Giá (đ) {getSortIcon('price')}
+                  </span>
+                </th>
+
+                <th
+                  className="px-4 py-2 cursor-pointer whitespace-nowrap"
+                  onClick={() => handleSort('discount_price')}
+                >
+                  <span className="flex items-center gap-1">
+                    Giá KM {getSortIcon('discount_price')}
+                  </span>
+                </th>
+
+                <th
+                  className="px-4 py-2 cursor-pointer whitespace-nowrap"
+                  onClick={() => handleSort('countInStock')}
+                >
+                  <span className="flex items-center gap-1">
+                    Kho {getSortIcon('countInStock')}
+                  </span>
+                </th>
+
+                <th
+                  className="px-4 py-2 cursor-pointer whitespace-nowrap"
+                  onClick={() => handleSort('category')}
+                >
+                  <span className="flex items-center gap-1">
+                    Danh mục {getSortIcon('category')}
+                  </span>
+                </th>
+
+                <th
+                  className="px-4 py-2 cursor-pointer whitespace-nowrap"
+                  onClick={() => handleSort('views')}
+                >
+                  <span className="flex items-center gap-1">
+                    Lượt xem {getSortIcon('views')}
+                  </span>
+                </th>
+
+                <th
+                  className="px-4 py-2 cursor-pointer whitespace-nowrap"
+                  onClick={() => handleSort('ordered_count')}
+                >
+                  <span className="flex items-center gap-1">
+                    Số đặt {getSortIcon('ordered_count')}
+                  </span>
+                </th>
+
+                <th
+                  className="px-4 py-2 cursor-pointer whitespace-nowrap"
+                  onClick={() => handleSort('average_rating')}
+                >
+                  <span className="flex items-center gap-1">
+                    Rating {getSortIcon('average_rating')}
+                  </span>
+                </th>
+
+                <th
+                  className="px-4 py-2 cursor-pointer whitespace-nowrap"
+                  onClick={() => handleSort('status')}
+                >
+                  <span className="flex items-center gap-1">
+                    Status {getSortIcon('status')}
+                  </span>
+                </th>
+
                 <th className="px-4 py-2">Hành động</th>
               </tr>
             </thead>
             <tbody>
-              {foodList.map((item, index) => (
+              {sortedFoods.map((item, index) => (
                 <tr key={index} className="border-b hover:bg-gray-50">
                   <td className="px-4 py-2">
                     <img
@@ -179,10 +319,10 @@ const MenuTable: React.FC = () => {
                     />
                   </td>
                   <td className="px-4 py-2 font-medium">{item.name}</td>
-                  <td className="px-4 py-2">{item.price.toLocaleString()} đ</td>
+                  <td className="px-4 py-2">{item.price.toLocaleString()}</td>
                   <td className="px-4 py-2">
                     {item.discount_price != null
-                      ? item.discount_price.toLocaleString() + ' đ'
+                      ? item.discount_price.toLocaleString()
                       : '—'}
                   </td>
                   <td className="px-4 py-2">{item.countInStock}</td>
@@ -192,6 +332,19 @@ const MenuTable: React.FC = () => {
                   <td className="px-4 py-2">{item.views}</td>
                   <td className="px-4 py-2">{item.ordered_count}</td>
                   <td className="px-4 py-2">{item.average_rating}</td>
+                  <td className="px-4 py-2">
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                        item.status === 'available'
+                          ? 'bg-green-100 text-green-800'
+                          : item.status === 'soldout'
+                            ? 'bg-red-100 text-red-800'
+                            : 'bg-gray-100 text-gray-800'
+                      }`}
+                    >
+                      {item.status}
+                    </span>
+                  </td>
                   <td className="px-4 py-2 space-x-2">
                     <button
                       className="text-blue-500 hover:underline"
@@ -205,15 +358,24 @@ const MenuTable: React.FC = () => {
             </tbody>
           </table>
           {foods && (
-            <AdminPagination
-              currentPage={foods.page}
-              totalPages={foods.totalPages}
-              onPageChange={(page) => {
-                const newParams = new URLSearchParams(searchParams.toString());
-                newParams.set('page', String(page));
-                setSearchParams(newParams);
-              }}
-            />
+           <AdminPagination
+           currentPage={foods.page}
+           totalPages={foods.totalPages}
+           onPageChange={(page) => {
+             const newParams = new URLSearchParams(searchParams.toString());
+             newParams.set('page', String(page));
+         
+             const currentSortField = searchParams.get('sortField');
+             const currentSortDirection = searchParams.get('sortDirection');
+         
+             if (currentSortField) newParams.set('sortField', currentSortField);
+             if (currentSortDirection) newParams.set('sortDirection', currentSortDirection);
+         
+             setSearchParams(newParams);
+           }}
+         />
+         
+         
           )}
         </div>
       )}
