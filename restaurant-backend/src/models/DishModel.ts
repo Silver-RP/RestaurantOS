@@ -18,10 +18,14 @@ export interface IDish extends mongoose.Document {
   rating: number;
   categories: mongoose.Schema.Types.ObjectId[];
   countInStock: number;
-  isNew: boolean;
+  isDishNew: boolean;
   newUntil?: Date;
   totalSoldQuantity?: number;
   discountUntil?: Date;
+  alcohol_type?: string; // Loại rượu
+  origin?: string; // Xuất xứ
+  alcohol_content?: number; // Nồng độ cồn
+  volume?: number; 
 }
 
 const dishSchema = new mongoose.Schema(
@@ -53,10 +57,14 @@ const dishSchema = new mongoose.Schema(
       },
     ],
     countInStock: { type: Number, default: 0, min: 0 },
-    isNew: { type: Boolean, default: false },
+    isDishNew: { type: Boolean, default: false },
     newUntil: { type: Date },
     totalSoldQuantity: { type: Number, default: 0 },
     discountUntil: { type: Date },
+    alcohol_type: { type: String }, 
+    origin: { type: String }, 
+    alcohol_content: { type: Number, min: 0 }, 
+    volume: { type: Number, min: 0 }, // Thể tích (ml)
   },
   {
     timestamps: true,
