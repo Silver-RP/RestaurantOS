@@ -9,23 +9,18 @@ class AuthMiddleWare {
     try {
       const authHeader = req.headers['authorization'];
       const token = authHeader && typeof authHeader === 'string' ? authHeader.split(' ')[1] : null;
-
       if (!token) {
-        return res.status(401).json({ message: 'Access token not provided' });
+        res.status(401).json({ message: 'Access token not provided' });
+        return;
       }
 
-      const decoded = jwt.verify(token, process.env.ACCESS_TOKEN as string) as {
-        _id?: string;
-        id?: string;
-      };
-
-      req.user = {
-        _id: decoded._id || decoded.id,
-      };
+      const user = jwt.verify(token, process.env.ACCESS_TOKEN as string) as IUser;
+      req.user = user;
       next();
     } catch (err: any) {
       console.error('Token verification failed:', err.message);
-      return res.status(403).json({ message: 'Invalid or expired token' });
+      res.status(403).json({ message: 'Invalid or expired token' });
+      return;
     }
   }
 
