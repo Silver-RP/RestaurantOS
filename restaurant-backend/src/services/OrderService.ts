@@ -209,9 +209,16 @@ class OrderService {
       const orderDetails = await OrderDetail.find({
         order_id: { $in: orderIds },
       })
-        .populate('dish_id')
+        .populate({
+          path: 'dish_id',
+          populate: {
+            path: 'categories', 
+            model: 'categories',
+            select: 'Cate_name', 
+          },
+        })
         .lean();
-
+      
       // Gom nhóm orderDetails theo order_id
       const detailsMap = new Map<string, any[]>();
       for (const detail of orderDetails) {
