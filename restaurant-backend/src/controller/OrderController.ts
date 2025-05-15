@@ -26,6 +26,7 @@ class OrderController {
         order_type,
         delivery_time_type,
         scheduled_time,
+        note,
       } = req.body;
 
       const order = await OrderService.placeOrder({
@@ -38,6 +39,7 @@ class OrderController {
         order_type,
         delivery_time_type,
         scheduled_time,
+        note,
       });
 
       return res.status(201).json({
@@ -88,7 +90,8 @@ class OrderController {
         return res.status(401).json({ message: 'Unauthorized' });
       }
       const userId = (req.user as IUser).id as Types.ObjectId;
-      const orders = await OrderService.getUserOrders(userId);
+      const status = typeof req.query.status === 'string' ? req.query.status : null;
+      const orders = await OrderService.getUserOrders(userId, status);
 
       return res.status(200).json({
         message: 'Orders retrieved successfully',

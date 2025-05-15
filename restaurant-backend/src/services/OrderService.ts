@@ -27,12 +27,12 @@ enum OrderStatus {
 }
 
 class OrderService {
-  
+
   async handleAddress(userId: string, address_id: string | null, address: any, session: any) {
     if (address_id) {
       await OrderValidator.validateAddress(address_id);
       return address_id;
-    } 
+    }
     if (address) {
       const newAddress = new Address({ user_id: userId, ...address });
       const savedAddress = await newAddress.save({ session });
@@ -41,20 +41,30 @@ class OrderService {
     throw { statusCode: 400, message: 'Address is required' };
   }
 
-  async createOrder(userId: string, finalAddressId: string, payment_method: string, delivery_type: string, totalAmount: number, order_type: string, delivery_time_type:string, session: any) {
+  // tôi muốn truyền tổng số lượng sản phẩm vào database
+  async createOrder(userId: string, finalAddressId: string, payment_method: string, delivery_type: string, totalAmount: number, order_type: string, delivery_time_type: string, total_quantity: number, note: string, scheduled_time: Date | null, session: any) {
+    const items_price = totalAmount;
+    const vat_amount = items_price * 0.08;
+    const shipping_fee = 5000;
+    const total_price = items_price + vat_amount + shipping_fee;
+
     const newOrder = new Order({
       user_id: userId,
       address_id: finalAddressId,
       payment_method,
       delivery_type,
-      total_amount: totalAmount,
-      vat_amount: totalAmount * 0.1,
-      shipping_fee: 5000,
+      items_price,
+      vat_amount,
+      shipping_fee,
+      total_price,
+      total_quantity,
       delivery_status: 'PENDING_PICKUP',
       order_type,
       delivery_time_type,
+      note,
+      scheduled_time,
     });
-  
+
     return await newOrder.save({ session });
   }
 
@@ -72,7 +82,7 @@ class OrderService {
         { session }
       );
     });
-  
+
     await Promise.all(updateDishPromises);
   }
 
@@ -91,21 +101,35 @@ class OrderService {
   }
 
   async placeOrder(input: any) {
-    const { userId, address_id, address, payment_method, delivery_type, items, order_type, delivery_time_type, scheduled_time } = input;
+    const { userId, address_id, address, payment_method, delivery_type, items, order_type, delivery_time_type, scheduled_time, note } = input;
     const session = await mongoose.startSession();
     session.startTransaction();
-  
+
     try {
       const finalAddressId = await this.handleAddress(userId, address_id, address, session);
-  
+
       const { orderItems, totalAmount } = await OrderValidator.validateCartAndItems(userId, items, session);
-  
-      const savedOrder = await this.createOrder(userId, finalAddressId, payment_method, delivery_type, totalAmount, order_type, delivery_time_type, session);
-  
+
+      const total_quantity = orderItems.reduce((sum, item) => sum + item.quantity, 0);
+
+      const savedOrder = await this.createOrder(
+        userId,
+        finalAddressId,
+        payment_method,
+        delivery_type,
+        totalAmount,
+        order_type,
+        delivery_time_type,
+        total_quantity,
+        note,
+        scheduled_time,
+        session
+      );
+
       if (!savedOrder) {
         throw { statusCode: 500, message: 'Order placement failed' };
       }
-  
+
       // Save order details
       const orderDetailPromises = orderItems.map((item) => {
         const orderDetail = new OrderDetail({
@@ -119,18 +143,18 @@ class OrderService {
         });
         return orderDetail.save({ session });
       });
-  
+
       await Promise.all(orderDetailPromises);
-  
+
       // Update dish counts
       await this.updateDishCounts(orderItems, session);
-  
+
       const orderedDishIds = items.map((item: { dish_id: any; }) => item.dish_id);
       await this.updateCart(userId, orderedDishIds, session);
-  
+
       await session.commitTransaction();
       session.endSession();
-  
+
       return savedOrder;
     } catch (error: any) {
       await session.abortTransaction();
@@ -188,9 +212,14 @@ class OrderService {
     };
   }
 
-  async getUserOrders(userId: mongoose.Types.ObjectId) {
+  async getUserOrders(userId: mongoose.Types.ObjectId, status: string | null) {
     try {
-      const orders = await Order.find({ user_id: userId })
+      const query: any = { user_id: userId };
+      if (status) {
+        query.status = status;
+      }
+
+      const orders = await Order.find(query)
         .populate('address_id')
         .sort({ createdAt: -1 })
         .lean();
@@ -200,10 +229,16 @@ class OrderService {
       const orderDetails = await OrderDetail.find({
         order_id: { $in: orderIds },
       })
-        .populate('dish_id')
+        .populate({
+          path: 'dish_id',
+          populate: {
+            path: 'categories',
+            model: 'categories',
+            select: 'Cate_name',
+          },
+        })
         .lean();
 
-      // Gom nhóm orderDetails theo order_id
       const detailsMap = new Map<string, any[]>();
       for (const detail of orderDetails) {
         const key = detail.order_id.toString();
@@ -213,10 +248,28 @@ class OrderService {
         detailsMap.get(key)!.push(detail);
       }
 
-      const ordersWithDetails = orders.map((order) => ({
-        ...order,
-        order_items: detailsMap.get(order._id.toString()) || [],
-      }));
+      const ordersWithDetails = orders.map((order) => {
+        const details = detailsMap.get(order._id.toString()) || [];
+
+        const mappedItems = details.map((detail) => {
+          const dish = detail.dish_id;
+          const categoryNames = (dish?.categories || []).map(
+            (cat: any) => cat.Cate_name
+          );
+
+          return {
+            ...detail,
+            dish_id: dish?._id,
+            dish_name: dish?.name,
+            categories: categoryNames,
+          };
+        });
+
+        return {
+          ...order,
+          order_items: mappedItems,
+        };
+      });
 
       return ordersWithDetails;
     } catch (error: any) {
@@ -226,6 +279,7 @@ class OrderService {
       };
     }
   }
+
 
   async getOrderById(orderId: mongoose.Types.ObjectId) {
     try {

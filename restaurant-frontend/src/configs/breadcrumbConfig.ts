@@ -13,6 +13,7 @@ export const breadcrumbConfig: Record<string, string> = {
     "/order": "Đơn hàng của tôi",
     "/cart": "Giỏ hàng",
     "/contact": "Liên hệ",
-    "/reservation" : "Đặt bàn"
+    "/reservation" : "Đặt bàn",
+    "/favorites" : "Danh sách yêu thích",
   };
   
