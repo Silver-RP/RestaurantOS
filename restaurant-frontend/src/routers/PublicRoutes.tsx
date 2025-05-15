@@ -23,6 +23,7 @@ import CheckoutPage from '../pages/Checkout';
 import ReservationPage from '../pages/ReservationPage';
 import ConfirmOrder from '../pages/Confirm';
 import PostDetailsPage from '../pages/PostDetailsPage';
+import FavoritePage from '@/pages/FavoritePage';
 
 const PublicRoutes = [
   {
@@ -48,6 +49,7 @@ const PublicRoutes = [
       { path: 'cart', element: <CartPage /> },
       { path: 'checkout', element: <CheckoutPage /> },
       { path: 'reservation', element: <ReservationPage /> },
+      { path: 'favorites', element: <FavoritePage /> },
       { path: '*', element: <Navigate to="/" /> },
       { path: '/post-details', element: <PostDetailsPage /> },
       { path: '/confirm', element: <ConfirmOrder /> },

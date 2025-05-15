@@ -99,10 +99,13 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
               </Link>
               )}
               <div className="relative">
-                <FiHeart
+              <Link to="/favorites" aria-label="Favorites">
+              <FiHeart
                   className={`text-white hover:text-secondaryColor ${iconSize}`}
                   aria-label="Favorites"
                 />
+              </Link>
+               
                 <span className="absolute -top-1 -right-2 bg-secondaryColor text-black text-xs rounded-full px-1">
                   0
                 </span>
