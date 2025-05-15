@@ -48,3 +48,10 @@ export const createUser = async (formData: FormData): Promise<User> => {
 
   return response.data.data;
 };
+export const updateUserInfoAPI = async (
+  userId: string,
+  data: Partial<User>
+): Promise<{ status: string; message: string; data: User }> => {
+  const res = await axiosInstance.put(`/user/updateUser/${userId}`, data);
+  return res.data;
+};
