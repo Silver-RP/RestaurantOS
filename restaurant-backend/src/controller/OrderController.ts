@@ -26,6 +26,7 @@ class OrderController {
         order_type,
         delivery_time_type,
         scheduled_time,
+        note,
       } = req.body;
 
       const order = await OrderService.placeOrder({
@@ -38,6 +39,7 @@ class OrderController {
         order_type,
         delivery_time_type,
         scheduled_time,
+        note,
       });
 
       return res.status(201).json({

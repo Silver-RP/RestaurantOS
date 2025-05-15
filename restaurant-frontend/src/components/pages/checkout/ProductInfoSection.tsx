@@ -8,6 +8,7 @@ import VoucherSelector, { Voucher } from './VoucherSelector';
 interface Product {
   image: string;
   name: string;
+  discountedPrice: number;
   price: number;
   discount_price?: number;
   quantity: number;
@@ -139,18 +140,16 @@ const ProductInfoSection = ({
                   </div>
                 </td>
                 <td className="p-2 text-center">
-                  {product.discount_price !== undefined ? (
-                    <div className="flex flex-col items-center">
-                      <span className="line-through text-white/50 text-xs">
-                        {product.price.toLocaleString()}VND
-                      </span>
-                      <span className="font-semibold">
-                        {product.discount_price.toLocaleString()}VND
-                      </span>
-                    </div>
-                  ) : (
-                    <span>{product.price.toLocaleString()}VND</span>
-                  )}
+                 <div>
+                {product.discountedPrice !== product.price ? (
+                  <div className="text-sm mt-1 flex flex-col">
+                    <span className="line-through text-gray-400">{product.price.toLocaleString()} VND</span>
+                    <span className="text-secondaryColor font-semibold">{product.discountedPrice.toLocaleString()} VND</span>
+                  </div>
+                ) : (
+                  <div className="text-sm mt-1">{product.price.toLocaleString()} VND</div>
+                )}
+              </div>
                 </td>
                 <td className="p-2 text-center">x{product.quantity}</td>
                 <td className="p-2 font-semibold text-right">

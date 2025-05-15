@@ -7,8 +7,15 @@ class CartService {
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       throw new Error('Invalid userId');
     }
-
-    const cart = await Cart.findOne({ userId }).populate('items.dishId');
+    // tôi muốn lấy ra tên category của dish
+    const cart = await Cart.findOne({ userId}).populate({
+      path: 'items.dishId',
+      populate: {
+        path: 'categories',
+        model: 'categories',
+        select: 'Cate_name Cate_slug'
+      }
+    });
 
     if (!cart) {
       throw new Error('Cart not found');

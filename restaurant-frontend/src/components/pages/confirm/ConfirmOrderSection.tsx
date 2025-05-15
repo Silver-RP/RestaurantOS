@@ -1,128 +1,173 @@
-import ButtonComponents from "../../../components/common/ButtonComponents";
-import Header from "./Header";
-import OrderDetails from "./OrderDetails";
-import { FaUser, FaPhoneAlt, FaMapMarkerAlt, FaClock } from 'react-icons/fa';
+import React, { useState } from "react";
+import ButtonComponents from '@components/common/ButtonComponents';
+import { FiMenu, FiX, FiHome, FiBook, FiCalendar, FiPhone, FiInfo } from "react-icons/fi";
+// import { motion } from "framer-motion";
 
-const ConfirmOrderSection = () => (
-  <section className="text-white w-full px-4 sm:px-6 py-8 sm:py-10 bg-[#012B40]">
-    <Header />
-    <OrderDetails />
+const OrderConfirmation = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    <div className="bg-[#012B40] shadow-xl w-full max-w-3xl mx-auto p-6 sm:p-8 border border-[#FFDEA0] rounded-lg space-y-8">
-      
-      {/* Sản phẩm đã đặt */}
-      <div>
-        <h2 className="text-xl sm:text-2xl font-restora font-light mb-4 sm:mb-6 text-[#FFDEA0]">Sản phẩm đã đặt</h2>
-        <div className="space-y-4">
-          {/* Một món */}
-          <div className="grid grid-cols-1 sm:grid-cols-[auto_1fr_auto_auto_auto] gap-y-2 sm:gap-x-6 py-4 border-b border-[#FFDEA0]">
-            <div className="flex justify-center">
-              <img
-                src="/assets/images/confirm/image.svg"
-                alt="Bò bít tết nướng"
-                className="w-20 h-20 object-cover mx-auto"
-              />
-            </div>
-            <div className="text-white font-medium text-sm sm:text-base">Bò bít tết nướng</div>
-            <div className="text-white text-sm text-right sm:text-left">Giá: 500.000đ</div>
-            <div className="text-white text-sm">×&nbsp;2</div>
-            <div className="text-white font-medium text-sm text-right sm:text-left">Tổng: 1.000.000đ</div>
-          </div>
+  const orderData = {
+    userInfo: {
+      fullName: "Nguyen Van A",
+      phone: "+84 123 456 789",
+      address: "123 Nguyen Hue, District 1, HCMC",
+      email: "example@email.com"
+    },
+    orderItems: [
+      {
+        id: 1,
+        name: "Phở Bò Đặc Biệt",
+        quantity: 2,
+        discountedPrice: 83000,
+        price: 85000,
+        image: "https://images.unsplash.com/photo-1503764654157-72d979d9af2f",
+        note: "Không rau"
+      },
+      {
+        id: 2,
+        name: "Gỏi Cuốn Tôm Thịt",
+        quantity: 3,
+        discountedPrice: 43000,
+        price: 45000,
+        image: "https://images.unsplash.com/photo-1553163147-622ab57be1c7",
+        note: "Ít cay"
+      }
+    ],
+    deliveryMethod: "Giao hàng tận nơi",
+    paymentMethod: "Thanh toán khi nhận hàng",
+    specialInstructions: "Không hành, thêm ớt",
+    subtotal: 265000,
+    deliveryFee: 30000
+  };
 
-          {/* Món thứ hai */}
-          <div className="grid grid-cols-1 sm:grid-cols-[auto_1fr_auto_auto_auto] gap-y-2 sm:gap-x-6 py-4 border-b border-[#FFDEA0]">
-            <div className="flex justify-center">
-              <img
-                src="/assets/images/confirm/image 9.svg"
-                alt="Tôm hùm hấp"
-                className="w-20 h-20 object-cover mx-auto"
-              />
-            </div>
-            <div className="text-white font-medium text-sm sm:text-base">Tôm hùm hấp</div>
-            <div className="text-white text-sm text-right sm:text-left">Giá: 700.000đ</div>
-            <div className="text-white text-sm">×&nbsp;1</div>
-            <div className="text-white font-medium text-sm text-right sm:text-left">Tổng: 700.000đ</div>
-          </div>
-        </div>
-      </div>
+  return (
+    <div className="min-h-screen bg-[#012B40] text-white">
 
-      {/* Ghi chú và các khoản tiền */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-        {/* Ghi chú */}
-        <div className="flex flex-col space-y-2">
-          <label htmlFor="orderNote" className="text-[#FFDEA0] text-sm sm:text-base font-light">Ghi chú</label>
-          <textarea
-            id="orderNote"
-            placeholder="Thêm ghi chú cho đơn hàng"
-            className="p-3 sm:p-4 bg-[#013C5A] text-white border border-[#FFDEA0] rounded-md resize-none h-auto text-xs sm:text-sm"
-            defaultValue="Ít ớt và không cho rau"
-          />
-        </div>
-
-        {/* Tổng tiền và các khoản */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="text-white text-xs sm:text-sm">Tổng tiền</div>
-            <div className="text-white text-xs sm:text-sm text-right">1.700.000đ</div>
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="text-white text-xs sm:text-sm">Tiền ship</div>
-            <div className="text-white text-xs sm:text-sm text-right">30.000đ</div>
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="text-white text-xs sm:text-sm">Voucher</div>
-            <div className="text-white text-xs sm:text-sm text-right">-50.000đ</div>
-          </div>
-          <div className="flex items-center justify-between border-t border-[#FFDEA0] pt-2">
-            <div className="text-white font-medium text-xs sm:text-sm">Tổng tất cả</div>
-            <div className="text-white font-medium text-xs sm:text-sm text-right">1.680.000đ</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Địa chỉ giao hàng */}
-      <div className="space-y-6">
-        <h2 className="text-xl sm:text-2xl font-restora font-light mb-4 sm:mb-6 text-[#FFDEA0]">Địa chỉ giao hàng</h2>
-        <div className="bg-[#013C5A] p-4 sm:p-6 rounded-lg shadow-lg text-xs sm:text-sm">
-          {/* Căn chỉnh Thời gian giao hàng và Địa chỉ */}
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2">
-              <FaUser className="text-[#FFDEA0]" size={16} />
-              <span className="font-semibold text-[#FFDEA0]">Họ và tên:</span>
-              <span className="text-white">Nguyễn Ngọc Mỹ</span>
-            </div>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2">
-              <FaPhoneAlt className="text-[#FFDEA0]" size={16} />
-              <span className="font-semibold text-[#FFDEA0]">SĐT:</span>
-              <span className="text-white">0378217272</span>
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2">
-              <FaMapMarkerAlt className="text-[#FFDEA0]" size={16} />
-              <span className="font-semibold text-[#FFDEA0]">Địa chỉ:</span>
-              <span className="text-white">Đối diện Lotte Lê Văn Lương, Gò Vấp</span>
-            </div>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2">
-              <FaClock className="text-[#FFDEA0]" size={16} />
-              <span className="font-semibold text-[#FFDEA0]">Thời gian giao hàng:</span>
-              <span className="text-white">Dự kiến 30 phút</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Nút Xem đơn hàng */}
-      <div className="flex justify-center pt-4 sm:pt-6">
-        <ButtonComponents
-          variant="filled"
-          size="large"
-          className="px-6 sm:px-8 py-3 rounded-none text-sm sm:text-base"
+      {/* Main Content */}
+      <main className=" mx-auto pt-10 pb-12">
+        <h1
+          className="text-4xl font-bold text-center mb-12"
         >
-          Xem đơn hàng
-        </ButtonComponents>
-      </div>
+          Xác nhận đơn hàng
+        </h1>
+
+        {/* User Information */}
+        <section className="border text-white placeholder:text-gray-400 border-[#074b6b] rounded p-6 mb-8">
+          <h2 className="text-2xl font-semibold mb-4">Thông tin khách hàng</h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            <InfoItem label="Họ tên" value={orderData.userInfo.fullName} />
+            <InfoItem label="Số điện thoại" value={orderData.userInfo.phone} />
+            <InfoItem label="Địa chỉ" value={orderData.userInfo.address} />
+            {/* <InfoItem label="Email" value={orderData.userInfo.email} /> */}
+          </div>
+        </section>
+
+        {/* Order Items */}
+        <section className="border text-white placeholder:text-gray-400 border-[#074b6b] rounded p-6 mb-8">
+          <h2 className="text-2xl font-semibold mb-4">Món ăn đã chọn</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-white/20">
+                  <th className="text-left py-4">Món ăn</th>
+                  <th className="text-center py-4">Số lượng</th>
+                  <th className="text-right py-4">Đơn giá</th>
+                  <th className="text-right py-4">Thành tiền</th>
+                </tr>
+              </thead>
+              <tbody>
+                {orderData.orderItems.map((item) => (
+                  <tr key={item.id} className="border-b border-white/20">
+                    <td className="py-4">
+                      <div className="flex items-center space-x-4 w-full">
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-16 h-16 object-cover"
+                        />
+                        <div className="flex flex-col flex-grow">
+                          <span className="font-medium">{item.name}</span>
+                          <span className="text-sm text-gray-300">Phân loại: Món chính</span>
+                          <span className="text-sm italic text-gray-400 mt-1">Ghi chú: {item.note || 'Không có ghi chú'}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="text-center">{item.quantity}</td>
+                    <td className="text-right"> <div>
+                      {item.discountedPrice !== item.price ? (
+                        <div className="text-sm mt-1 flex flex-col">
+                          <span className="line-through text-gray-400">{item.price.toLocaleString()} VNĐ</span>
+                          <span className="text-secondaryColor font-semibold">{item.discountedPrice.toLocaleString()} VNĐ</span>
+                        </div>
+                      ) : (
+                          <div className="text-sm mt-1">{item.price.toLocaleString()} VNĐ</div>
+                      )}
+                    </div>
+                    </td>
+                    <td className="text-right">
+                      {(item.price * item.quantity).toLocaleString()} VNĐ
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        {/* Order Details */}
+        <section className="border text-white placeholder:text-gray-400 border-[#074b6b] rounded p-6 mb-8">
+          <h2 className="text-2xl font-semibold mb-4">Chi tiết đơn hàng</h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            <InfoItem label="Phương thức giao hàng" value={orderData.deliveryMethod} />
+            <InfoItem label="Phương thức thanh toán" value={orderData.paymentMethod} />
+            <InfoItem label="Ghi chú" value={orderData.specialInstructions} />
+          </div>
+        </section>
+
+        {/* Price Summary */}
+        <section className="border text-white placeholder:text-gray-400 border-[#074b6b] rounded p-6 mb-8">
+          <div className="space-y-4">
+            <div className="flex justify-between">
+              <span>Tạm tính:</span>
+              <span>{orderData.subtotal.toLocaleString()} VNĐ</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Phí giao hàng:</span>
+              <span>{orderData.deliveryFee.toLocaleString()} VNĐ</span>
+            </div>
+            <div className="flex justify-between text-xl font-bold pt-4 border-t border-white/20">
+              <span>Tổng cộng:</span>
+              <span>{(orderData.subtotal + orderData.deliveryFee).toLocaleString()} VNĐ</span>
+            </div>
+          </div>
+        </section>
+
+        {/* Confirmation Button */}
+        <div className="text-center">
+          <ButtonComponents variant="filled" size="large" className="mt-2">
+            Xác nhận đơn hàng
+          </ButtonComponents>
+        </div>
+      </main>
     </div>
-  </section>
+  );
+};
+
+const NavItem = ({ icon, text }) => (
+  <a
+    href="#"
+    className="flex items-center space-x-2 hover:text-teal-300 transition-colors duration-200"
+  >
+    {icon}
+    <span>{text}</span>
+  </a>
 );
 
-export default ConfirmOrderSection;
+const InfoItem = ({ label, value }) => (
+  <div>
+    <span className="text-gray-300">{label}:</span>
+    <p className="font-medium">{value}</p>
+  </div>
+);
+
+export default OrderConfirmation;
