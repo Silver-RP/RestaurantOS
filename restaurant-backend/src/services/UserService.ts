@@ -2,6 +2,10 @@ import mongoose from 'mongoose';
 import Roles from '../models/RoleModel';
 import User, { IUser } from '../models/UserModel';
 import bcrypt from 'bcryptjs';
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+
+dayjs.extend(customParseFormat);
 interface FilterUserOptions {
   name?: string;
   email?: string;
@@ -208,6 +212,15 @@ class UserService {
 
   async updateUserInfo(userId: string, updateData: Partial<IUser>): Promise<any> {
     try {
+      if (updateData.birthday && typeof updateData.birthday === 'string') {
+        const parsed = dayjs(updateData.birthday, ['DD-MM-YYYY', 'YYYY-MM-DD'], true);
+
+        if (!parsed.isValid()) {
+          throw new Error(`Invalid birthday format: ${updateData.birthday}`);
+        }
+        updateData.birthday = parsed.toDate();
+      }
+
       const user = await User.findByIdAndUpdate(userId, { $set: updateData }, { new: true }).select(
         '-password',
       );

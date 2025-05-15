@@ -17,8 +17,7 @@ export const addCategory = async (formData: FormData): Promise<CategoryCreatePay
       'Content-Type': 'multipart/form-data',
     },
   });
-  console.log(res.data);
-  
+
   return res.data;
 };
 

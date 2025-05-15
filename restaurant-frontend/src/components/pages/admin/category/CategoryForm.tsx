@@ -87,6 +87,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ initialData, onSubmit, subm
       <h1 className="text-2xl font-bold mb-4 text-admintext">
         {initialData ? 'Chỉnh sửa danh mục' : 'Thêm danh mục mới'}
       </h1>
+      
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Tên danh mục */}
         <div>

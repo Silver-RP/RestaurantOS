@@ -1,8 +1,8 @@
-import axios from 'axios';
+import axiosInstance from './axiosInstance';
 import { User } from 'types/User.type';
 
 export const getUserById = async (userId: string, token: string): Promise<User> => {
-  const response = await axios.get<{
+  const response = await axiosInstance.get<{
     status: string;
     message: string;
     data: User;
@@ -12,4 +12,11 @@ export const getUserById = async (userId: string, token: string): Promise<User> 
     },
   });
   return response.data.data;
+};
+export const updateUserInfoAPI = async (
+  userId: string,
+  data: Partial<User>
+): Promise<{ status: string; message: string; data: User }> => {
+  const res = await axiosInstance.put(`/user/updateUser/${userId}`, data);
+  return res.data;
 };

@@ -16,6 +16,11 @@ interface RefreshTokenResponse {
   accessToken: string;
 }
 
+interface ChangePasswordPayload {
+  oldPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
 const authApi = {
   sendOtpEmail: async (email: string): Promise<SendOtpResponse> => {
     const res = await api.post<SendOtpResponse>('/auth/forgot-password', {
@@ -71,4 +76,8 @@ export const refreshAccessToken = async (): Promise<RefreshTokenResponse | null>
     );
     return null;
   }
+};
+export const changePasswordProfile = async (data: ChangePasswordPayload): Promise<{ message: string }> => {
+  const response = await api.put('/auth/change-password', data);
+  return response.data;
 };
