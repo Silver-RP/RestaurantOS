@@ -10,10 +10,20 @@ export const FavoriteService = {
   },
 
   async getFavorites(userId: string) {
-    return await Favorite.find({ userId }).populate('dishId');
+    return await Favorite.find({ userId }).populate({
+      path: 'dishId',
+      populate: {
+        path: 'categories',
+        model: 'categories',
+      },
+    });
   },
 
-  async isFavorite(userId: string, dishId: string) {
-    return await Favorite.findOne({ userId, dishId });
+  async removeFromFavoriteById(favoriteId: string) {
+    return await Favorite.findByIdAndDelete(favoriteId);
+  },
+
+  isFavorite(userId: string, dishId: string) {
+    return Favorite.findOne({ userId, dishId });
   },
 };

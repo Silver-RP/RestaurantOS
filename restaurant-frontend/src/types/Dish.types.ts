@@ -49,10 +49,16 @@ export interface FoodResponse {
 }
 export interface FavoriteItem {
   _id: string;
-  name: string;
-  price: number;
-  discountPrice: string;
-  category: string;
-  images: string[];
-  quantity: number;
+  userId: string;
+  dishId: {
+    _id: string;
+    name: string;
+    price: number;
+    discount_price?: number;
+    images: string[];
+    categories?: {
+      _id: string;
+      Cate_name: string;
+    }[];
+  };
 }

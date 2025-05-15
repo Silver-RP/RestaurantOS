@@ -10,7 +10,7 @@ interface FilterSidebarProps {
 
 const FilterSidebar: React.FC<FilterSidebarProps> = ({ onClose }) => {
   const { categories, loading, error } = useCategories();
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 30000000]);
   const [searchParams, setSearchParams] = useSearchParams();
 
   const handlePriceChange = (values: number | number[]) => {
@@ -101,8 +101,8 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onClose }) => {
           <Slider
             range
             min={0}
-            max={2000000}
-            step={10000}
+            max={30000000}
+            step={100000}
             value={priceRange}
             onChange={handlePriceChange}
             trackStyle={[{ backgroundColor: '#FFDEA0', height: 2 }]}

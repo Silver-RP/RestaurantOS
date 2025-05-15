@@ -1,59 +1,42 @@
-import { useEffect, useState } from 'react';
+// hooks/useFavorites.ts
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { toastService } from '@/utils/toastService';
+import { addToFavorites as addFavoriteApi, removeFavorite as removeFavoriteApi } from '@/api/FavoriteApi';
 import { FavoriteItem } from '@/types/Dish.types';
-import {
-  getFavorites,
-  addToFavorites,
-  removeFavorite,
-} from '@/api/FavoriteApi';
+import { useState } from 'react';
 
 export const useFavorites = () => {
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
 
-  // Fetch favorites
-  const fetchFavorites = async () => {
+  const addToFavorites = async (dishId: string) => {
     try {
-      setLoading(true);
-      const data = await getFavorites();
-      setFavorites(data);
-    } catch (err) {
-      setError('Không thể tải danh sách yêu thích');
-    } finally {
-      setLoading(false);
+      const response = await addFavoriteApi(dishId);
+      const addedItem = response.data;
+      setFavorites((prev) => [...prev, addedItem]);
+      toastService.success('Đã thêm vào danh sách yêu thích');
+    } catch (err: any) {
+      if (err?.response?.status === 409) {
+        toastService.warning('Món ăn đã có trong danh sách yêu thích');
+      } else {
+        toastService.error('Thêm vào yêu thích thất bại');
+      }
     }
   };
 
-  // Add a dish to favorites
-  const handleAddToFavorites = async (dishId: string) => {
+  const removeFromFavorites = async (favoriteId: string) => {
     try {
-      const newFavorite = await addToFavorites(dishId);
-      setFavorites((prev) => [...prev, newFavorite]);
-    } catch (err) {
-      console.error('Add favorite error:', err);
+      await removeFavoriteApi(favoriteId);
+      setFavorites((prev) => prev.filter((item) => item._id !== favoriteId));
+      toastService.success('Đã xoá khỏi danh sách yêu thích');
+    } catch {
+      toastService.error('Xoá khỏi danh sách yêu thích thất bại');
     }
   };
-
-  // Remove a dish from favorites
-  const handleRemoveFavorite = async (dishId: string) => {
-    try {
-      await removeFavorite(dishId);
-      setFavorites((prev) => prev.filter((item) => item.dishId !== dishId));
-    } catch (err) {
-      console.error('Remove favorite error:', err);
-    }
-  };
-
-  useEffect(() => {
-    fetchFavorites();
-  }, []);
 
   return {
     favorites,
-    loading,
-    error,
-    refetch: fetchFavorites,
-    addToFavorites: handleAddToFavorites,
-    removeFromFavorites: handleRemoveFavorite,
+    setFavorites,
+    addToFavorites,
+    removeFromFavorites,
   };
 };
