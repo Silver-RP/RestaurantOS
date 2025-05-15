@@ -12,6 +12,8 @@ interface Props {
   onAdd: (newAddr: Omit<Address, "id">) => void;
   onDeliveryTimeChange?: (deliveryTime: DeliveryTime) => void;
   initialDeliveryTime?: DeliveryTime;
+  deliveryMethod?: "delivery" | "pickup";
+  onDeliveryMethodChange?: (method: "delivery" | "pickup") => void;
 }
 
 // Define delivery methods
@@ -22,15 +24,16 @@ const ShippingAddressSection = ({
   selectedId,
   onSelect,
   onAdd,
-  onDeliveryTimeChange = () => {},
+  onDeliveryTimeChange = () => { },
   initialDeliveryTime = { type: "now" },
+  deliveryMethod = "delivery",
+  onDeliveryMethodChange = () => { },
 }: Props) => {
   const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>("delivery");
   const [isDeliveryTimeModalOpen, setIsDeliveryTimeModalOpen] = useState(false);
   const [deliveryTime, setDeliveryTime] = useState<DeliveryTime>(initialDeliveryTime);
-  
+
   const selected = addresses.find((addr) => addr.id === selectedId);
 
   const getFormattedAddress = (address: Address) => {
@@ -58,7 +61,7 @@ const ShippingAddressSection = ({
       name,
       phone,
       address,
-      isDefault: addresses.length === 0, 
+      isDefault: addresses.length === 0,
     });
     setIsAddModalOpen(false);
   };
@@ -93,7 +96,7 @@ const ShippingAddressSection = ({
   return (
     <div className="border border-hr rounded-lg p-4 shadow-sm">
       <h2 className="font-semibold text-lg text-white mb-3">Phương Thức Nhận Hàng</h2>
-      
+
       {/* Delivery method selection */}
       <div className="flex gap-4 mb-4">
         <label className="flex items-center cursor-pointer">
@@ -101,7 +104,7 @@ const ShippingAddressSection = ({
             type="radio"
             name="deliveryMethod"
             checked={deliveryMethod === "delivery"}
-            onChange={() => setDeliveryMethod("delivery")}
+            onChange={() => onDeliveryMethodChange("delivery")}
             className="mr-2"
           />
           <span>Giao hàng tận nơi</span>
@@ -111,7 +114,7 @@ const ShippingAddressSection = ({
             type="radio"
             name="deliveryMethod"
             checked={deliveryMethod === "pickup"}
-            onChange={() => setDeliveryMethod("pickup")}
+            onChange={() => onDeliveryMethodChange("pickup")}
             className="mr-2"
           />
           <span>Đến lấy tại cửa hàng</span>
@@ -175,12 +178,12 @@ const ShippingAddressSection = ({
           <h3 className="font-semibold text-white mb-2">Nhà Hàng Nhận Hàng</h3>
           <div className="space-y-4">
             {storeLocations.map((store) => (
-              <div 
-                key={store.id} 
+              <div
+                key={store.id}
                 className=""
               >
                 <p className="font-medium">{store.name}</p>
-                <p className="text-sm text-white/50">{store.address} ({store.phone})</p>   
+                <p className="text-sm text-white/50">{store.address} ({store.phone})</p>
               </div>
             ))}
           </div>

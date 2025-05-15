@@ -8,7 +8,6 @@ const BestOffersSection: React.FC = () => {
   const cateTypes = ["dish", "drink"];
   const [activeTab, setActiveTab] = useState(0);
   const { data, isLoading, isError } = useDishByFavoriteCategory(cateTypes[activeTab]);
-  console.log(data)
   return (
     <section className="w-full bg-bodyBackground py-16">
       <div className="w-11/12 md:w-container95 lg:w-mainContainer xl:w-container95 2xl:w-mainContainer mx-auto">

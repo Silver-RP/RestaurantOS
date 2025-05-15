@@ -133,3 +133,26 @@ export interface OrderQueryParams {
   sort?: 'createdAt' | 'total_price' | 'updatedAt';
   order?: 'asc' | 'desc';
 }
+
+export interface PlaceOrderRequest {
+  payment_method: 'CASH' | 'BANKING' | 'VNPAY' | 'MOMO' | 'CREDIT_CARD';
+  delivery_type: DeliveryType;
+  order_type: OrderType;
+  delivery_time_type: DeliveryTimeType;
+  address?: {
+    full_name: string;
+    phone: string;
+    ward: string;
+    province: string;
+    district: string;
+    street_address: string;
+  };
+  address_id?: string;
+  note?: string;
+  scheduled_time?: string;
+  items: Array<{
+    dish_id: string;
+    quantity: number;
+    note?: string;
+  }>;
+}
