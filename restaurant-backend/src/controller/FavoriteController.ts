@@ -1,23 +1,25 @@
 import { Request, Response } from 'express';
 import { FavoriteService } from '../services/FavoriteService';
+import { IUser } from '../models/UserModel';
 
 export const FavoriteController = {
-  add: async (req: Request, res: Response) => {
+  add: async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = req.user?._id;
-      console.log(userId);
+      const userId = (req.user as IUser).id?.toString();
       const { dishId } = req.body;
 
       if (!userId || !dishId) {
-        return res.status(400).json({ message: 'Missing userId or dishId' });
+        res.status(400).json({ message: 'Missing userId or dishId' });
+        return;
       }
 
-      const existing = await FavoriteService.isFavorite(userId.toString(), dishId.toString());
+      const existing = await FavoriteService.isFavorite(userId, dishId);
       if (existing) {
-        return res.status(409).json({ message: 'Dish already in favorite' });
+        res.status(409).json({ message: 'Dish already in favorite' });
+        return;
       }
 
-      const favorite = await FavoriteService.addToFavorite(userId.toString(), dishId.toString());
+      const favorite = await FavoriteService.addToFavorite(userId, dishId);
       res.status(201).json({ success: true, data: favorite });
     } catch (error) {
       console.error('Add favorite error:', error);
@@ -25,14 +27,20 @@ export const FavoriteController = {
     }
   },
 
-  remove: async (req: Request, res: Response) => {
+  remove: async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = req.user?._id as string;
-      const { dishId } = req.params;
+      const userId = (req.user as IUser).id?.toString();
+      const { id: favoriteId } = req.params;
 
-      const deleted = await FavoriteService.removeFromFavorite(userId, dishId);
+      if (!userId || !favoriteId) {
+        res.status(400).json({ message: 'Missing userId or favoriteId' });
+        return;
+      }
+
+      const deleted = await FavoriteService.removeFromFavoriteById(favoriteId);
       if (!deleted) {
-        return res.status(404).json({ message: 'Favorite not found' });
+        res.status(404).json({ message: 'Favorite not found' });
+        return;
       }
 
       res.json({ success: true, message: 'Removed from favorites' });
@@ -44,7 +52,7 @@ export const FavoriteController = {
 
   list: async (req: Request, res: Response) => {
     try {
-      const userId = req.user?._id as string;
+      const userId = (req.user as IUser).id?.toString();
       const favorites = await FavoriteService.getFavorites(userId);
 
       res.json({ success: true, data: favorites });

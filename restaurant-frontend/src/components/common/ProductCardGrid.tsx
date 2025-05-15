@@ -6,6 +6,7 @@ import { useAppDispatch } from '../../redux/hook';
 import { openQuickView } from '../../redux/feature/quickView/quickViewSlice';
 import { FilledStar, HalfStar, EmptyStar } from '../common/StarIcons';
 import { useAddToCart } from '@hooks/useCart';
+import { useFavorites } from '@/hooks/useFavorites';
 
 const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
     return num.toString();
   };
   const { mutate: addToCart } = useAddToCart();
-
+  const { addToFavorites } = useFavorites();
   return (
     <div className="bg-primaryBackground rounded-lg overflow-hidden shadow-md w-full h-full group">
       <div className="relative w-full pb-[100%] overflow-hidden group">
@@ -132,12 +133,16 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
           </div>
 
           <div className="relative group/tooltip">
-            <button
-              className="p-1.5 sm:p-2 bg-white text-[#002B40] rounded-full shadow-md 
-                       hover:bg-secondaryColor hover:text-white hover:-translate-y-1 transition-all duration-300"
-            >
-              <FiHeart size={18} />
-            </button>
+          <button
+  onClick={(e) => {
+    e.stopPropagation();
+    addToFavorites(rest.id);
+  }}
+  className="p-1.5 sm:p-2 bg-white text-[#002B40] rounded-full shadow-md 
+         hover:bg-secondaryColor hover:text-white hover:-translate-y-1 transition-all duration-300"
+>
+  <FiHeart size={18} />
+</button>
             <div
               className="absolute -top-8 left-1/2 -translate-x-1/2 
                     bg-black text-white text-[10px] px-2 py-1 rounded 

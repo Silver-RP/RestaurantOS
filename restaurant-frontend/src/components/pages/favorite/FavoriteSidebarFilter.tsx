@@ -3,9 +3,13 @@ import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { useCategories } from '@/hooks/useCategories';
 
-const FavoriteSidebarFilter: React.FC = () => {
+interface FavoriteSidebarFilterProps {
+  onSelectCategory: (category: string | null) => void;
+}
+
+const FavoriteSidebarFilter: React.FC<FavoriteSidebarFilterProps> = ({ onSelectCategory }) => {
   const { categories, loading, error } = useCategories();
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 30000000]);
 
   const handlePriceChange = (values: number | number[]) => {
     if (Array.isArray(values)) {
@@ -26,20 +30,22 @@ const FavoriteSidebarFilter: React.FC = () => {
           <p className="text-red-500">{error}</p>
         ) : categories?.data?.length ? (
           <ul className="space-y-3 text-sm">
-            <li className="flex justify-between hover:text-secondaryColor cursor-pointer">
-              <span>Tất cả</span>
-              <span>({categories.data.reduce((acc, c) => acc + (c.foodCount || 0), 0)})</span>
-            </li>
-            {categories.data.map((cat) => (
-              <li
-                key={cat._id}
-                className="flex justify-between hover:text-secondaryColor cursor-pointer capitalize"
-              >
-                <span>{cat.Cate_name}</span>
-                <span>({cat.foodCount || 0})</span>
-              </li>
-            ))}
-          </ul>
+  <li
+    className="flex justify-between hover:text-secondaryColor cursor-pointer"
+    onClick={() => onSelectCategory(null)}
+  >
+    <span>Tất cả</span>
+  </li>
+  {categories.data.map((cat) => (
+    <li
+      key={cat._id}
+      className="flex justify-between hover:text-secondaryColor cursor-pointer capitalize"
+      onClick={() => onSelectCategory(cat.Cate_name)}
+    >
+      <span>{cat.Cate_name}</span>
+    </li>
+  ))}
+</ul>
         ) : (
           <p>Không có danh mục.</p>
         )}
@@ -52,7 +58,7 @@ const FavoriteSidebarFilter: React.FC = () => {
           <Slider
             range
             min={0}
-            max={2000000}
+            max={30000000}
             step={10000}
             value={priceRange}
             onChange={handlePriceChange}

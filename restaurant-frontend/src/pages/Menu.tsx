@@ -9,11 +9,12 @@ import { ProductCardProps } from 'types/ProductCard.types';
 import { useSidebar } from '../contexts/SidebarContext';
 import { FiFilter } from 'react-icons/fi';
 import Container from '@/components/common/Container';
-
+import { useFavorites } from '@/hooks/useFavorites';
 const MenuPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const { isExtended } = useSidebar();
+  const { addToFavorites } = useFavorites();
   const {
     foods,
     loading,
@@ -42,6 +43,7 @@ const MenuPage: React.FC = () => {
         description: food.description || '',
         categories: food.categories || [],
         cate: food.categories?.[0]?.Cate_name,
+        onAddToFavorite: () => addToFavorites(food._id),
       }))
     : [];
 
@@ -88,7 +90,7 @@ const MenuPage: React.FC = () => {
                 onClick={toggleFilter}
                 className="flex items-center gap-2 text-white hover:text-secondaryColor transition"
               >
-                <FiFilter className="h-5 w-5" /> {/* dùng react-icons */}
+                <FiFilter className="h-5 w-5" />
                 <span className="text-sm">Lọc</span>
               </button>
 
