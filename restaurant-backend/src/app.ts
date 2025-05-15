@@ -21,7 +21,6 @@ import connectDB from './config/db';
 import cookieParser from 'cookie-parser';
 import passport from 'passport';
 import cors from 'cors';
-
 const app = express();
 
 // Import file authSwagger để đăng ký metadata
@@ -32,7 +31,6 @@ import './swaggers/CartSwagger';
 import './swaggers/StaffSwagger';
 import './swaggers/UserSwagger';
 import './swaggers/CategorySwagger';
-
 
 dotenv.config();
 connectDB();
@@ -102,8 +100,8 @@ app.use('/api/search', SearchRoutes);
 app.use(
   '/api/staff',
   AuthMiddleWare.verifyToken,
-  AuthMiddleWare.verifyRole(['superadmin', 'manager',]),
-  StaffRoutes
+  AuthMiddleWare.verifyRole(['superadmin', 'manager']),
+  StaffRoutes,
 );
 
 app.use('/api/food', FoodRoutes);

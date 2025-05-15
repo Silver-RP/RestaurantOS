@@ -85,6 +85,8 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
 
       <div className="flex items-center gap-2 mb-2">
         <div className="flex text-secondaryColor text-sm">{renderStars()}</div>
+        <span className="text-sm text-secondaryColor">{rating}</span>
+        <span className="text-sm text-gray-400">|</span>
         <span className="text-sm text-gray-400">({reviews} đánh giá)</span>
       </div>
 

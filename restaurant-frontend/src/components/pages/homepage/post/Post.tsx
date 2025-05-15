@@ -2,6 +2,7 @@ import { useMediaQuery } from 'react-responsive';
 import ArticleCard from './PostComponent';
 import { FaDiamond } from 'react-icons/fa6';
 import ButtonComponents from '../../../common/ButtonComponents';
+import React from 'react';
 
 const Postcomponent = () => {
   const isMobileOrTablet = useMediaQuery({ maxWidth: 1024 });
