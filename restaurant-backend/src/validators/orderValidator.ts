@@ -9,9 +9,6 @@ class OrderValidator {
   static validatePlaceOrder(req: Request) {
     const { address_id, address, payment_method, delivery_type, items, order_type, delivery_time_type, scheduled_time, note } = req.body;
 
-    if (!address_id && !address) {
-      return { valid: false, message: 'Either address_id or address is required.' };
-    }
 
     if (!Array.isArray(items) || items.length === 0) {
       return { valid: false, message: 'Items are required and must be an array.' };

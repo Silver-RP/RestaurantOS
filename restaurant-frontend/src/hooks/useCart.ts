@@ -7,11 +7,14 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 
 
+export const checkIsLoggedIn = (): boolean => {
+  const userInfo = Cookies.get('userInfo');
+  return !!userInfo;
+};
 
 export const useAddToCart = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
 
   const checkLoginStatus = () => {
     const userInfo = Cookies.get('userInfo'); 
@@ -28,7 +31,6 @@ export const useAddToCart = () => {
     mutationFn: (data: { dishId: string; quantity: number }) => {
       if (!isLoggedIn) {
         toast.error('Bạn cần đăng nhập để thêm sản phẩm vào giỏ!');
-        navigate('/login');
         const error = new Error('AUTH_ERROR');
         return Promise.reject(error);
       }
@@ -59,9 +61,17 @@ export const useAddToCart = () => {
 };
 
 export const useGetCart = () => {
+  const queryClient = useQueryClient();
   const { data, isLoading, error } = useQuery({
+  
     queryKey: ['cart'],
-    queryFn: () => getCart(),
+    queryFn: () => {
+      if (!checkIsLoggedIn()) {
+        return Promise.resolve(null);
+      }
+      return getCart();
+    },
+    enabled: checkIsLoggedIn(),
   });
 
   return { data, isLoading, error };

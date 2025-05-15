@@ -5,11 +5,13 @@ import {
   getOrderById,
   createOrder,
   cancelOrder,
+  placeDirectOrder,
 } from '@/api/OrderApi';
 import {
   OrderQueryParams,
   CancelOrderRequest,
   CreateOrderRequest,
+  PlaceOrderRequest,
 } from '../types/Order.type';
 
 export const useOrders = (params: OrderQueryParams) => {
@@ -40,5 +42,16 @@ export const useOrderDetail = (orderId: string) => {
     queryKey: ['order', orderId],
     queryFn: () => getOrderById(orderId),
     enabled: !!orderId,
+  });
+};
+
+export const usePlaceDirectOrder = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: PlaceOrderRequest) => placeDirectOrder(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
+    },
   });
 };

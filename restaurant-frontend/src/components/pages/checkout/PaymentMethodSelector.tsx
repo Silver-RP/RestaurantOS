@@ -10,11 +10,11 @@ interface PaymentMethodSelectorProps {
 }
 
 const paymentMethods = [
-  { value: 'momo', label: 'Thanh toán với Momo' },
-  { value: 'vnpay', label: 'Thanh toán với VNPay' },
-  { value: 'credit-card', label: 'Thẻ tín dụng' },
-  { value: 'bank-transfer', label: 'Chuyển khoản ngân hàng' },
-  { value: 'cod', label: 'Tiền mặt khi nhận hàng' },
+  { value: 'MOMO', label: 'Thanh toán với Momo' },
+  { value: 'VNPAY', label: 'Thanh toán với VNPay' },
+  { value: 'CREDIT_CARD', label: 'Thẻ tín dụng' },
+  { value: 'BANKING', label: 'Chuyển khoản ngân hàng' },
+  { value: 'CASH', label: 'Tiền mặt khi nhận hàng' },
 ];
 
 const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({

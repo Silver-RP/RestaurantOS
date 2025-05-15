@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useGetCart } from '@hooks/useCart';
+import { useGetCart, checkIsLoggedIn } from '@hooks/useCart';
 import {
   FiUser,
   FiShoppingCart,
@@ -30,6 +30,7 @@ interface SidebarProps {
 const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
   const { data: cart } = useGetCart();
+  const isLoggedIn = checkIsLoggedIn();
   const countCart = cart?.items?.length || 0;
 
   const dispatch = useDispatch();
@@ -117,7 +118,7 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
                   />
                 </Link>
                 <span className="absolute -top-1 -right-2 bg-secondaryColor text-black text-xs rounded-full px-1">
-                  {countCart}
+                  {isLoggedIn ? countCart : 0}
                 </span>
               </div>
               <FiSearch
