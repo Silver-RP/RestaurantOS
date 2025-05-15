@@ -8,14 +8,14 @@ import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/redux/store';
 import { updateUserInfo } from '@/redux/feature/user/userAction';
 import { toast } from 'react-toastify';
-import { useChangePassword } from '@/hooks/useAuth'; // thêm dòng này ở đầu file
+import { useChangePasswordProfile } from '@/hooks/useAuth';
 
 const ProfilePage = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { changePassword, loading: changingPassword } = useChangePassword();
+  const { changePasswordProfile, loading: changingPassword } =
+    useChangePasswordProfile();
 
   const { user } = useSelector((state: RootState) => state.user);
-  console.log(user);
   const [formattedBirthday, setFormattedBirthday] = useState('');
 
   const [isEditingPersonal, setIsEditingPersonal] = useState(false);
@@ -60,17 +60,80 @@ const ProfilePage = () => {
         ...prev,
         email: user.email || '',
       }));
-      setFormattedBirthday(birthdayFormattedForView); // Xem mục 2
+      setFormattedBirthday(birthdayFormattedForView); 
     }
   }, [user]);
+  const validatePasswordFormat = (password: string): string | null => {
+    const minLength = 8;
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasLowercase = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSpecialChar = /[^A-Za-z0-9]/.test(password);
+
+    if (password.length < minLength) return 'Mật khẩu phải có ít nhất 8 ký tự';
+    if (!hasUppercase) return 'Mật khẩu phải chứa ít nhất 1 chữ hoa';
+    if (!hasLowercase) return 'Mật khẩu phải chứa ít nhất 1 chữ thường';
+    if (!hasNumber) return 'Mật khẩu phải chứa ít nhất 1 số';
+    if (!hasSpecialChar) return 'Mật khẩu phải chứa ít nhất 1 ký tự đặc biệt';
+
+    return null;
+  };
+
+  const handleChangePassword = async () => {
+    const { password, newPassword, confirmPassword } = accountInfo;
+
+    // ==== Kiểm tra rỗng ====
+    if (!password.trim() || !newPassword.trim() || !confirmPassword.trim()) {
+      toast.error('Vui lòng nhập đầy đủ thông tin mật khẩu');
+      return;
+    }
+
+    // ==== Kiểm tra trùng mật khẩu cũ ====
+    if (password === newPassword) {
+      toast.error('Mật khẩu mới không được trùng mật khẩu cũ');
+      return;
+    }
+
+    // ==== Kiểm tra độ mạnh mật khẩu mới ====
+    const passwordFormatError = validatePasswordFormat(newPassword);
+    if (passwordFormatError) {
+      toast.error(passwordFormatError);
+      return;
+    }
+
+    // ==== Xác nhận mật khẩu ====
+    if (newPassword !== confirmPassword) {
+      toast.error('Mật khẩu xác nhận không khớp');
+      return;
+    }
+
+    // ==== Gửi request đổi mật khẩu ====
+    try {
+      await changePasswordProfile({
+        oldPassword: password,
+        newPassword,
+        confirmPassword,
+      });
+
+      toast.success('Đổi mật khẩu thành công!');
+      setAccountInfo({
+        email: accountInfo.email,
+        password: '',
+        newPassword: '',
+        confirmPassword: '',
+      });
+      setIsEditingAccount(false);
+    } catch (e: any) {
+      const errorMessage =
+        e?.response?.data?.message || 'Đổi mật khẩu thất bại!';
+      toast.error(errorMessage);
+    }
+  };
+
   const handleSavePersonalInfo = async () => {
-    // ===== TRIM =====
     const fullName = personalInfo.fullName.trim();
     const phone = personalInfo.phone.trim();
     const birthday = personalInfo.birthday;
-
-    // ===== VALIDATION =====
-
     if (!fullName) {
       toast.error('Họ và tên không được để trống');
       return;
@@ -92,8 +155,6 @@ const ProfilePage = () => {
       toast.error('Không xác định được người dùng');
       return;
     }
-
-    // ===== SUBMIT API =====
     try {
       const payload = {
         username: fullName,
@@ -111,38 +172,6 @@ const ProfilePage = () => {
     } catch (err: any) {
       const errorMessage = err?.message || 'Cập nhật thất bại!';
       toast.error(errorMessage);
-    }
-  };
-  const handleChangePassword = async () => {
-    const { password, newPassword, confirmPassword } = accountInfo;
-
-    // Validation cơ bản
-    if (!password || !newPassword || !confirmPassword) {
-      toast.error('Vui lòng nhập đầy đủ thông tin mật khẩu');
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      toast.error('Mật khẩu xác nhận không khớp');
-      return;
-    }
-
-    try {
-      await changePassword(
-        { oldPassword: password, newPassword, confirmPassword },
-        () => {
-          toast.success('Đổi mật khẩu thành công!');
-          setAccountInfo((prev) => ({
-            ...prev,
-            password: '',
-            newPassword: '',
-            confirmPassword: '',
-          }));
-          setIsEditingAccount(false);
-        },
-      );
-    } catch (e) {
-      // error đã được xử lý trong hook
     }
   };
   const handlePersonalChange = (
@@ -308,10 +337,21 @@ const ProfilePage = () => {
               </div>
 
               <button
-                onClick={() => setIsEditingAccount(!isEditingAccount)}
-                className="px-6 py-2 md:px-10 border border-secondaryColor hover:text-secondaryColor bg-secondaryColor hover:bg-bodyBackground text-headerBackground transition uppercase "
+                disabled={changingPassword}
+                onClick={
+                  isEditingAccount
+                    ? handleChangePassword
+                    : () => setIsEditingAccount(true)
+                }
+                className={`px-6 py-2 md:px-10 border border-secondaryColor transition uppercase ${
+                  changingPassword ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
               >
-                {isEditingAccount ? 'Lưu' : 'Cập nhật'}
+                {changingPassword
+                  ? 'Đang lưu...'
+                  : isEditingAccount
+                    ? 'Lưu'
+                    : 'Cập nhật'}
               </button>
             </div>
           </div>

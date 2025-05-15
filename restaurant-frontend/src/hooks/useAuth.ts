@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import authApi from '../api/AuthApi';
-
-import { changePasswordProfile } from '@/api/AuthApi';
+import { changePasswordProfile as changePasswordApi } from '@/api/AuthApi';
 interface ChangePasswordPayload {
   oldPassword: string;
   newPassword: string;
@@ -83,6 +82,7 @@ export const useChangePassword = () => {
 
   return { changePassword, loading, error };
 };
+
 export const useChangePasswordProfile = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -94,7 +94,7 @@ export const useChangePasswordProfile = () => {
     setSuccessMessage(null);
 
     try {
-      const res = await changePasswordProfile(data);
+      const res = await changePasswordApi(data);
       setSuccessMessage(res.message);
       onSuccess?.();
     } catch (err: any) {

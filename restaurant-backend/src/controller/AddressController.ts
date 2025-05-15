@@ -14,14 +14,31 @@ class AddressController {
         const errors = parseResult.error.format();
         console.error('❌ BE: Lỗi validate dữ liệu tạo địa chỉ:', errors);
 
-        res.status(400).json({ success: false, message: 'Validation failed', errors }); // 👈 trả lỗi
+        res.status(400).json({ success: false, message: 'Validation failed', errors });
         return;
       }
-      // ✅ Log lại địa chỉ trước chuẩn hóa nếu cần debug
-      const input = parseResult.data;
 
+      const input = parseResult.data;
+      const userId = req.user?.id;
+
+      if (!userId) {
+        res.status(401).json({ success: false, message: 'Unauthorized: No user_id in token' });
+        return;
+      }
+
+      // ✅ Giới hạn tối đa 5 địa chỉ
+      const addressCount = await Address.countDocuments({ user_id: userId });
+      if (addressCount >= 5) {
+        res.status(403).json({
+          success: false,
+          message: 'Bạn chỉ có thể lưu tối đa 5 địa chỉ.',
+        });
+        return;
+      }
+
+      // ✅ Kiểm tra trùng địa chỉ
       const isExisted = await Address.findOne({
-        user_id: req.user?.id,
+        user_id: userId,
         street_address: input.street_address,
         ward: input.ward,
         district: input.district,
@@ -35,16 +52,16 @@ class AddressController {
         });
         return;
       }
+
       console.log('📥 Input address:', input);
 
-      // ✅ Gọi service tạo địa chỉ (sẽ tự động gọi Nominatim nếu thiếu lat/lng)
       const address = await AddressService.createAddress({
         ...input,
-        user_id: req.user?.id,
+        user_id: userId,
       });
+
       console.log('📦 Address after service:', address);
 
-      // ✅ Trả thêm cả tọa độ và thông tin chuẩn hóa cho FE biết
       res.status(201).json({
         success: true,
         message: 'Địa chỉ đã được chuẩn hóa và lưu thành công',
@@ -75,6 +92,7 @@ class AddressController {
       });
     }
   }
+
   async getAllAddresses(req: Request, res: Response): Promise<void> {
     try {
       const user_id = req.user?.id;
@@ -88,6 +106,7 @@ class AddressController {
         success: true,
         message: 'Addresses retrieved successfully',
         data: addresses,
+        total: addresses.length,
       });
     } catch (error: any) {
       res.status(500).json({
