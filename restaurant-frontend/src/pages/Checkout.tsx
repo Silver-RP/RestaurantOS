@@ -1,20 +1,21 @@
 import React, { useEffect, useState } from "react";
 import ProductInfoSection from "@components/pages/checkout/ProductInfoSection";
 import ShippingAddressSection from "@components/pages/checkout/ShippingAddressSection";
-import DeliveryTimeSection from "@components/pages/checkout/DeliveryTimeSection";
 import { Address } from "@components/pages/checkout/ModalSelectAddress";
 import { Voucher } from "@components/pages/checkout/VoucherSelector";
 import { DeliveryTime } from "@components/pages/checkout/ModalSelectDeliveryTime";
 import { useGetCart } from "@hooks/useCart";
 import { useNavigate } from "react-router-dom";
 
-// Define a Product type to fix TypeScript errors
+// Define a Product type to match the updated ProductInfoSection requirements
 interface Product {
   image: string;
   name: string;
   price: number;
+  discount_price?: number;
   quantity: number;
   category?: string;
+  notes?: string;
 }
 
 const CheckoutPage = () => {
@@ -39,9 +40,11 @@ const CheckoutPage = () => {
           const formattedProducts: Product[] = selectedItems.map((item: any) => ({
             image: item.imageUrl,
             name: item.name,
-            price: item.discountedPrice || item.price,
+            price: item.price, // Original price
+            discount_price: item.discountedPrice, // Discounted price if available
             quantity: item.quantity,
-            category: item.category || ""
+            category: item.category || "",
+            notes: item.notes || ""
           }));
           
           setProducts(formattedProducts);
@@ -52,7 +55,10 @@ const CheckoutPage = () => {
         console.error("Error parsing selected items:", error);
         navigate('/cart');
       }
-    } 
+    } else {
+      // If no selected items are found, redirect to cart
+      navigate('/cart');
+    }
   }, [cart, navigate]);
 
   const mockAddresses: Address[] = [{
@@ -138,12 +144,35 @@ const CheckoutPage = () => {
 
   const handleDeliveryTimeChange = (time: DeliveryTime) => {
     setDeliveryTime(time);
-    // Ở đây bạn có thể xử lý thêm logic khi thời gian giao hàng thay đổi
-    // Ví dụ: tính lại phí vận chuyển dựa trên thời gian giao hàng
+    
+    // Update shipping fee based on delivery time
+    if (time.type === "scheduled") {
+      // For scheduled deliveries, we might adjust the shipping fee
+      // For example, express delivery might cost more
+      setShippingFee(35000); // Higher fee for scheduled delivery
+    } else {
+      // Standard delivery fee for "now" type deliveries
+      setShippingFee(25000);
+    }
   };
 
-  // Lấy địa chỉ đã chọn để truyền xuống component con (nếu cần)
+  // Get the selected address to pass down to the ProductInfoSection component
   const selectedAddress = addresses.find(addr => addr.id === selectedId);
+
+  // Handle proceeding to payment
+  const handleProceedToPayment = () => {
+    // Here you would implement the logic to proceed with payment
+    // This could include validating the order, sending data to an API, etc.
+    console.log("Processing payment with method:", paymentMethod);
+    console.log("Shipping to address:", selectedAddress);
+    console.log("Products:", products);
+    
+    // For demo purposes, show an alert
+    alert("Đơn hàng đã được xác nhận! Đang chuyển hướng đến trang thanh toán...");
+    
+    // In a real implementation, you might navigate to a confirmation page or payment processor
+    // navigate('/payment-confirmation');
+  };
 
   return (
     <div className="flex py-10 bg-bodyBackground min-h-screen text-white">
@@ -155,14 +184,10 @@ const CheckoutPage = () => {
           selectedId={selectedId}
           onSelect={setSelectedId}
           onAdd={handleAddAddress}
-        />
-        
-        {/* Thêm DeliveryTimeSection ngay dưới phần địa chỉ */}
-        <DeliveryTimeSection 
-          initialDeliveryTime={deliveryTime}
+          deliveryTime={deliveryTime}
           onDeliveryTimeChange={handleDeliveryTimeChange}
-        />
-        
+        />        
+       
         <ProductInfoSection
           products={products}
           note="Ít cay, không hành nha!"
@@ -170,7 +195,7 @@ const CheckoutPage = () => {
           paymentMethod={paymentMethod}
           onPaymentMethodChange={setPaymentMethod}
           vouchers={vouchers}
-          // selectedAddress={selectedAddress}
+          onProceedToPayment={handleProceedToPayment}
         />
       </div>
     </div>
