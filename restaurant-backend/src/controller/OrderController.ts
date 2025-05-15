@@ -90,7 +90,8 @@ class OrderController {
         return res.status(401).json({ message: 'Unauthorized' });
       }
       const userId = (req.user as IUser).id as Types.ObjectId;
-      const orders = await OrderService.getUserOrders(userId);
+      const status = typeof req.query.status === 'string' ? req.query.status : null;
+      const orders = await OrderService.getUserOrders(userId, status);
 
       return res.status(200).json({
         message: 'Orders retrieved successfully',
