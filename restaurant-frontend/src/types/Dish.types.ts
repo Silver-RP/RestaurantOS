@@ -47,3 +47,12 @@ export interface FoodResponse {
   nextPage: number | null;
   prevPage: number | null;
 }
+export interface FavoriteItem {
+  _id: string;
+  name: string;
+  price: number;
+  discountPrice: string;
+  category: string;
+  images: string[];
+  quantity: number;
+}

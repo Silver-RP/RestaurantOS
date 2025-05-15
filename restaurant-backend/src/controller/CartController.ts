@@ -9,7 +9,6 @@ interface AuthenticatedRequest extends Request {
 }
 
 class CartController {
-
   static async getCartItems(req: Request, res: Response): Promise<void> {
     try {
       const userId = (req.user as any).id?.toString();
@@ -59,32 +58,31 @@ class CartController {
   }
 
   static async UpdateCart(req: Request, res: Response): Promise<void> {
-  try {
+    try {
+      const { dishId, quantity } = req.body;
+      const userId = (req.user as IUser).id?.toString();
 
-    const { dishId, quantity } = req.body; 
-    const userId = (req.user as IUser).id?.toString();
+      if (!dishId || quantity === undefined) {
+        res.status(400).json({ success: false, message: 'Missing dishId or quantity' });
+        return;
+      }
 
-    if (!dishId || quantity === undefined) {
-      res.status(400).json({ success: false, message: 'Missing dishId or quantity' });
-      return;
-    }
+      const updatedCart = await cartService.UpdateCart(userId, dishId, quantity);
 
-    const updatedCart = await cartService.UpdateCart(userId, dishId, quantity);
-    
-    res.status(200).json({
-      success: true,
-      message: 'Cart updated successfully',
-      data: updatedCart,
-    });
-  } catch (error: unknown) {
-    console.error('Error updating cart:', error);
-    if (error instanceof Error) {
-      res.status(500).json({ success: false, message: error.message });
-    } else {
-      res.status(500).json({ success: false, message: 'Internal Server Error' });
+      res.status(200).json({
+        success: true,
+        message: 'Cart updated successfully',
+        data: updatedCart,
+      });
+    } catch (error: unknown) {
+      console.error('Error updating cart:', error);
+      if (error instanceof Error) {
+        res.status(500).json({ success: false, message: error.message });
+      } else {
+        res.status(500).json({ success: false, message: 'Internal Server Error' });
+      }
     }
   }
-}
 
   static async DeleteCartItem(req: Request, res: Response): Promise<void> {
     try {
