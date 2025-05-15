@@ -414,5 +414,22 @@ class AuthService {
 
     return 'Xác minh email thành công';
   }
+  changePasswordProfile = async (
+    userId: string,
+    oldPassword: string,
+    newPassword: string,
+  ): Promise<string> => {
+    const user = await User.findById(userId);
+    if (!user) throw new Error('Người dùng không tồn tại');
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password || '');
+    if (!isMatch) throw new Error('Mật khẩu cũ không đúng');
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    return 'Đổi mật khẩu thành công';
+  };
 }
 export default new AuthService();
