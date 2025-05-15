@@ -1,5 +1,7 @@
 import { AxiosError } from 'axios';
 import api from './axiosInstance';
+import axiosInstance from './axiosInstance';
+
 interface SendOtpResponse {
   message: string;
 }
@@ -77,7 +79,8 @@ export const refreshAccessToken = async (): Promise<RefreshTokenResponse | null>
     return null;
   }
 };
+
 export const changePasswordProfile = async (data: ChangePasswordPayload): Promise<{ message: string }> => {
-  const response = await api.put('/auth/change-password', data);
+  const response = await axiosInstance.put('/auth/change-password-profile', data);
   return response.data;
 };

@@ -8,18 +8,28 @@ import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/redux/store';
 import { updateUserInfo } from '@/redux/feature/user/userAction';
 import { toast } from 'react-toastify';
-import { useChangePassword } from '@/hooks/useAuth'; // thêm dòng này ở đầu file
+import { useChangePasswordProfile } from '@/hooks/useAuth';
 
 const ProfilePage = () => {
+  const [touchedFields, setTouchedFields] = useState({
+    password: false,
+    newPassword: false,
+    confirmPassword: false,
+  });
   const dispatch = useDispatch<AppDispatch>();
-  const { changePassword, loading: changingPassword } = useChangePassword();
+  const { changePasswordProfile, loading: changingPassword } =
+    useChangePasswordProfile();
 
   const { user } = useSelector((state: RootState) => state.user);
-  console.log(user);
   const [formattedBirthday, setFormattedBirthday] = useState('');
 
   const [isEditingPersonal, setIsEditingPersonal] = useState(false);
   const [isEditingAccount, setIsEditingAccount] = useState(false);
+  const [passwordErrors, setPasswordErrors] = useState({
+    password: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
   const [personalInfo, setPersonalInfo] = useState({
     fullName: '',
     phone: '',
@@ -60,17 +70,135 @@ const ProfilePage = () => {
         ...prev,
         email: user.email || '',
       }));
-      setFormattedBirthday(birthdayFormattedForView); // Xem mục 2
+      setFormattedBirthday(birthdayFormattedForView);
     }
   }, [user]);
+
+  const validatePasswordFormat = (password: string): string | null => {
+    const minLength = 8;
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasLowercase = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSpecialChar = /[^A-Za-z0-9]/.test(password);
+
+    if (password.length < minLength) return 'Mật khẩu phải có ít nhất 8 ký tự';
+    if (!hasUppercase) return 'Mật khẩu phải chứa ít nhất 1 chữ hoa';
+    if (!hasLowercase) return 'Mật khẩu phải chứa ít nhất 1 chữ thường';
+    if (!hasNumber) return 'Mật khẩu phải chứa ít nhất 1 số';
+    if (!hasSpecialChar) return 'Mật khẩu phải chứa ít nhất 1 ký tự đặc biệt';
+    return null;
+  };
+  const handleAccountChangetouchedFields = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const { name, value } = e.target;
+
+    setAccountInfo((prev) => ({ ...prev, [name]: value }));
+    setTouchedFields((prev) => ({ ...prev, [name]: true }));
+
+    const updatedErrors = { ...passwordErrors };
+
+    // Tự động validate mỗi trường riêng lẻ:
+    if (name === 'password') {
+      updatedErrors.password = value.trim()
+        ? ''
+        : 'Vui lòng nhập mật khẩu hiện tại';
+    }
+
+    if (name === 'newPassword') {
+      if (!value.trim()) {
+        updatedErrors.newPassword = 'Vui lòng nhập mật khẩu mới';
+      } else if (value === accountInfo.password) {
+        updatedErrors.newPassword = 'Mật khẩu mới không được trùng mật khẩu cũ';
+      } else {
+        const formatError = validatePasswordFormat(value);
+        updatedErrors.newPassword = formatError || '';
+      }
+    }
+
+    if (name === 'confirmPassword') {
+      updatedErrors.confirmPassword =
+        value !== accountInfo.newPassword ? 'Mật khẩu xác nhận không khớp' : '';
+    }
+
+    setPasswordErrors(updatedErrors);
+  };
+
+  const handleChangePassword = async () => {
+    const { password, newPassword, confirmPassword } = accountInfo;
+
+    const newErrors = {
+      password: '',
+      newPassword: '',
+      confirmPassword: '',
+    };
+
+    if (!password.trim()) {
+      newErrors.password = 'Vui lòng nhập mật khẩu hiện tại';
+    }
+
+    if (!newPassword.trim()) {
+      newErrors.newPassword = 'Vui lòng nhập mật khẩu mới';
+    }
+
+    if (!confirmPassword.trim()) {
+      newErrors.confirmPassword = 'Vui lòng xác nhận mật khẩu mới';
+    }
+
+    if (password && newPassword && password === newPassword) {
+      newErrors.newPassword = 'Mật khẩu mới không được trùng mật khẩu cũ';
+    }
+
+    const passwordFormatError = validatePasswordFormat(newPassword);
+    if (newPassword && passwordFormatError) {
+      newErrors.newPassword = passwordFormatError;
+    }
+
+    if (newPassword && confirmPassword && newPassword !== confirmPassword) {
+      newErrors.confirmPassword = 'Mật khẩu xác nhận không khớp';
+    }
+
+    // Nếu có bất kỳ lỗi nào
+    if (Object.values(newErrors).some((msg) => msg !== '')) {
+      setPasswordErrors(newErrors);
+      return;
+    }
+
+    // Gửi request nếu không có lỗi
+    try {
+      await changePasswordProfile({
+        oldPassword: password,
+        newPassword,
+        confirmPassword,
+      });
+
+      toast.success('Đổi mật khẩu thành công!');
+      setAccountInfo({
+        email: accountInfo.email,
+        password: '',
+        newPassword: '',
+        confirmPassword: '',
+      });
+      setIsEditingAccount(false);
+      setPasswordErrors({
+        password: '',
+        newPassword: '',
+        confirmPassword: '',
+      });
+    } catch (e: any) {
+      const errorMessage =
+        e?.response?.data?.message || 'Đổi mật khẩu thất bại!';
+      setPasswordErrors((prev) => ({
+        ...prev,
+        password: errorMessage,
+      }));
+    }
+  };
+
   const handleSavePersonalInfo = async () => {
-    // ===== TRIM =====
     const fullName = personalInfo.fullName.trim();
     const phone = personalInfo.phone.trim();
     const birthday = personalInfo.birthday;
-
-    // ===== VALIDATION =====
-
     if (!fullName) {
       toast.error('Họ và tên không được để trống');
       return;
@@ -78,7 +206,7 @@ const ProfilePage = () => {
 
     if (phone && !/^0\d{9,10}$/.test(phone)) {
       toast.error(
-        'Số điện thoại không hợp lệ. Phải bắt đầu bằng số 0 và có 10-11 chữ số.',
+        'Số điện thoại không hợp lệ. Phải bắt đầu bằng số 0 và có 10 chữ số.',
       );
       return;
     }
@@ -92,8 +220,6 @@ const ProfilePage = () => {
       toast.error('Không xác định được người dùng');
       return;
     }
-
-    // ===== SUBMIT API =====
     try {
       const payload = {
         username: fullName,
@@ -111,38 +237,6 @@ const ProfilePage = () => {
     } catch (err: any) {
       const errorMessage = err?.message || 'Cập nhật thất bại!';
       toast.error(errorMessage);
-    }
-  };
-  const handleChangePassword = async () => {
-    const { password, newPassword, confirmPassword } = accountInfo;
-
-    // Validation cơ bản
-    if (!password || !newPassword || !confirmPassword) {
-      toast.error('Vui lòng nhập đầy đủ thông tin mật khẩu');
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      toast.error('Mật khẩu xác nhận không khớp');
-      return;
-    }
-
-    try {
-      await changePassword(
-        { oldPassword: password, newPassword, confirmPassword },
-        () => {
-          toast.success('Đổi mật khẩu thành công!');
-          setAccountInfo((prev) => ({
-            ...prev,
-            password: '',
-            newPassword: '',
-            confirmPassword: '',
-          }));
-          setIsEditingAccount(false);
-        },
-      );
-    } catch (e) {
-      // error đã được xử lý trong hook
     }
   };
   const handlePersonalChange = (
@@ -236,6 +330,7 @@ const ProfilePage = () => {
                     type="date"
                     name="birthday"
                     value={personalInfo.birthday}
+                    max={new Date().toISOString().split('T')[0]}
                     onChange={handlePersonalChange}
                     className="w-full bg-transparent border-b border-gray-500 text-white focus:outline-none focus:border-secondaryColor py-2"
                   />
@@ -275,43 +370,77 @@ const ProfilePage = () => {
                 {isEditingAccount && (
                   <>
                     <p className="text-gray-400">Mật khẩu hiện tại</p>
-                    <input
-                      type="password"
-                      name="password"
-                      value={accountInfo.password}
-                      onChange={handleAccountChange}
-                      placeholder="Nhập mật khẩu hiện tại"
-                      className="w-full bg-transparent border-b border-gray-500 text-white placeholder-gray-500 focus:outline-none focus:border-secondaryColor py-2"
-                    />
+                    <div className="flex flex-col">
+                      <input
+                        type="password"
+                        name="password"
+                        value={accountInfo.password}
+                        onChange={handleAccountChangetouchedFields}
+                        placeholder="Nhập mật khẩu hiện tại"
+                        className="w-full bg-transparent border-b border-gray-500 text-white placeholder-gray-500 focus:outline-none focus:border-secondaryColor py-2"
+                      />
+                      {touchedFields.password && passwordErrors.password && (
+                        <span className="text-red-400 text-sm mt-1">
+                          {passwordErrors.password}
+                        </span>
+                      )}
+                    </div>
 
                     <p className="text-gray-400">Mật khẩu mới</p>
-                    <input
-                      type="password"
-                      name="newPassword"
-                      value={accountInfo.newPassword}
-                      onChange={handleAccountChange}
-                      placeholder="Nhập mật khẩu mới"
-                      className="w-full bg-transparent border-b border-gray-500 text-white placeholder-gray-500 focus:outline-none focus:border-secondaryColor py-2"
-                    />
+                    <div className="flex flex-col">
+                      <input
+                        type="password"
+                        name="newPassword"
+                        value={accountInfo.newPassword}
+                        onChange={handleAccountChangetouchedFields}
+                        placeholder="Nhập mật khẩu mới"
+                        className="w-full bg-transparent border-b border-gray-500 text-white placeholder-gray-500 focus:outline-none focus:border-secondaryColor py-2"
+                      />
+                      {touchedFields.newPassword &&
+                        passwordErrors.newPassword && (
+                          <span className="text-red-400 text-sm mt-1">
+                            {passwordErrors.newPassword}
+                          </span>
+                        )}
+                    </div>
 
                     <p className="text-gray-400">Xác nhận mật khẩu mới</p>
-                    <input
-                      type="password"
-                      name="confirmPassword"
-                      value={accountInfo.confirmPassword}
-                      onChange={handleAccountChange}
-                      placeholder="Nhập lại mật khẩu mới"
-                      className="w-full bg-transparent border-b border-gray-500 text-white placeholder-gray-500 focus:outline-none focus:border-secondaryColor py-2"
-                    />
+                    <div className="flex flex-col">
+                      <input
+                        type="password"
+                        name="confirmPassword"
+                        value={accountInfo.confirmPassword}
+                        onChange={handleAccountChangetouchedFields}
+                        placeholder="Nhập lại mật khẩu mới"
+                        className="w-full bg-transparent border-b border-gray-500 text-white placeholder-gray-500 focus:outline-none focus:border-secondaryColor py-2"
+                      />
+                      {touchedFields.confirmPassword &&
+                        passwordErrors.confirmPassword && (
+                          <span className="text-red-400 text-sm mt-1">
+                            {passwordErrors.confirmPassword}
+                          </span>
+                        )}
+                    </div>
                   </>
                 )}
               </div>
 
               <button
-                onClick={() => setIsEditingAccount(!isEditingAccount)}
-                className="px-6 py-2 md:px-10 border border-secondaryColor hover:text-secondaryColor bg-secondaryColor hover:bg-bodyBackground text-headerBackground transition uppercase "
+                disabled={changingPassword}
+                onClick={
+                  isEditingAccount
+                    ? handleChangePassword
+                    : () => setIsEditingAccount(true)
+                }
+                className={`px-6 py-2 md:px-10 border border-secondaryColor transition uppercase ${
+                  changingPassword ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
               >
-                {isEditingAccount ? 'Lưu' : 'Cập nhật'}
+                {changingPassword
+                  ? 'Đang lưu...'
+                  : isEditingAccount
+                    ? 'Lưu'
+                    : 'Cập nhật'}
               </button>
             </div>
           </div>

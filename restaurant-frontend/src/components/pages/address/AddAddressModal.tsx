@@ -23,7 +23,9 @@ interface AddAddressModalProps {
     lon: number,
     phone: string,
     addressType: string,
+    
   ) => void;
+  total: number; 
 }
 
 interface FormValues {
@@ -39,6 +41,7 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
   isOpen,
   onClose,
   onSave,
+  total,
 }) => {
   const getFullAddress = (
     street: string,
@@ -145,26 +148,36 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
   };
 
   const onSubmit = async (data: FormValues) => {
-     const isValid = await trigger(['full_name', 'phone', 'district', 'ward', 'street_address']);
+    if (total >= 5) {
+      toast.error('Bạn đã đạt giới hạn 5 địa chỉ. Không thể thêm mới.');
+      return;
+    }
+    const isValid = await trigger([
+      'full_name',
+      'phone',
+      'district',
+      'ward',
+      'street_address',
+    ]);
 
-  const missingDistrict = !data.district;
-  const missingWard = !data.ward;
+    const missingDistrict = !data.district;
+    const missingWard = !data.ward;
 
-  if (missingDistrict || missingWard) {
-    setLocationError('Vui lòng chọn Quận/Huyện và Phường/Xã trước khi tiếp tục.');
-  } else {
-    setLocationError('');
-  }
+    if (missingDistrict || missingWard) {
+      setLocationError(
+        'Vui lòng chọn Quận/Huyện và Phường/Xã trước khi tiếp tục.',
+      );
+    } else {
+      setLocationError('');
+    }
 
-  if (!isValid || missingDistrict || missingWard) {
-    return;
-  }
+    if (!isValid || missingDistrict || missingWard) {
+      return;
+    }
 
     if (!lat || !lon) {
       toast.error('Không thể xác định vị trí. Vui lòng kiểm tra lại địa chỉ.');
-     
     }
-
 
     const fullSubmitData = {
       full_name: data.full_name,
@@ -416,7 +429,6 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
               )}
             />
           </div>
-       
 
           {/* Address Input */}
           <div>
