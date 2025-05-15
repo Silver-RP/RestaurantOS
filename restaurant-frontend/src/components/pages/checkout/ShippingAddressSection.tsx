@@ -1,12 +1,17 @@
 import React, { useState } from "react";
 import ModalSelectAddress, { Address } from "./ModalSelectAddress";
 import { AddAddressModal } from "../address/AddAddressModal";
+import ModalSelectDeliveryTime, {
+  DeliveryTime,
+} from "./ModalSelectDeliveryTime";
 
 interface Props {
   addresses: Address[];
   selectedId: number | null;
   onSelect: (id: number) => void;
   onAdd: (newAddr: Omit<Address, "id">) => void;
+  onDeliveryTimeChange?: (deliveryTime: DeliveryTime) => void;
+  initialDeliveryTime?: DeliveryTime;
 }
 
 // Define delivery methods
@@ -17,10 +22,14 @@ const ShippingAddressSection = ({
   selectedId,
   onSelect,
   onAdd,
+  onDeliveryTimeChange = () => {},
+  initialDeliveryTime = { type: "now" },
 }: Props) => {
   const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>("delivery");
+  const [isDeliveryTimeModalOpen, setIsDeliveryTimeModalOpen] = useState(false);
+  const [deliveryTime, setDeliveryTime] = useState<DeliveryTime>(initialDeliveryTime);
   
   const selected = addresses.find((addr) => addr.id === selectedId);
 
@@ -52,6 +61,28 @@ const ShippingAddressSection = ({
       isDefault: addresses.length === 0, 
     });
     setIsAddModalOpen(false);
+  };
+
+  const handleDeliveryTimeSelect = (selectedTime: DeliveryTime) => {
+    setDeliveryTime(selectedTime);
+    onDeliveryTimeChange(selectedTime);
+  };
+
+  // Format delivery time for display
+  const getFormattedDeliveryTime = () => {
+    if (deliveryTime.type === "now") {
+      return "Giao hàng ngay khi chuẩn bị xong";
+    } else if (deliveryTime.type === "scheduled" && deliveryTime.scheduledTime) {
+      const options: Intl.DateTimeFormatOptions = {
+        weekday: "long",
+        day: "numeric",
+        month: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      };
+      return `Giao vào ${deliveryTime.scheduledTime.toLocaleString("vi-VN", options)}`;
+    }
+    return "Chưa chọn thời gian giao hàng";
   };
 
   // Store locations (example data)
@@ -122,6 +153,22 @@ const ShippingAddressSection = ({
               </p>
             </>
           )}
+
+          {/* Delivery Time Section */}
+          <div className="mt-4 pt-4 border-t border-white/10">
+            <h3 className="font-semibold text-white mb-2">Thời Gian Giao Hàng</h3>
+            <div className="flex items-center">
+              <p className="text-sm text-white/70">
+                {getFormattedDeliveryTime()}
+              </p>
+              <p
+                onClick={() => setIsDeliveryTimeModalOpen(true)}
+                className="text-blue-500 mx-3 text-sm cursor-pointer"
+              >
+                Thay đổi
+              </p>
+            </div>
+          </div>
         </>
       ) : (
         <>
@@ -151,6 +198,14 @@ const ShippingAddressSection = ({
           setIsSelectModalOpen(false);
         }}
         onAddAddress={handleOpenAddModal}
+      />
+
+      {/* Modal for selecting delivery time */}
+      <ModalSelectDeliveryTime
+        isOpen={isDeliveryTimeModalOpen}
+        onClose={() => setIsDeliveryTimeModalOpen(false)}
+        onSelect={handleDeliveryTimeSelect}
+        currentSelection={deliveryTime}
       />
 
       {/* Modal for adding a new address */}
