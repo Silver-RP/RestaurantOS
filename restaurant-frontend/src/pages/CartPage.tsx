@@ -92,7 +92,7 @@ const CartPage = () => {
               </ButtonComponents>
             </div>
           ) : (
-            <div className="flex flex-col md:flex-row gap-10">
+            <div className="flex flex-col lg:flex-row gap-2">
               <div className="flex-1 min-w-0 overflow-x-auto">
                 <CartTable
                   items={cartItems}
@@ -100,7 +100,7 @@ const CartPage = () => {
                   onSelectionChange={handleSelectionChange}
                 />
               </div>
-              <div className="w-full md:w-[350px] shrink-0">
+              <div className="w-full lg:w-[350px] shrink-0">
                 <CartSummary
                   originalTotal={originalTotal}
                   discountedTotal={discountedTotal}
