@@ -16,10 +16,10 @@ const FavoriteItemCard: React.FC<Props> = ({
   return (
     <div className="flex flex-col md:flex-row items-center gap-4 rounded-lg p-4 shadow-2xl hover:shadow-[0_12px_32px_rgba(0,0,0,0.4)] transition duration-300">
       <img
-        src={item.images[0]}
-        alt={item.name}
-        className="w-32 h-32 object-cover rounded"
-      />
+  src={item.images?.[0] || '/fallback-image.jpg'} 
+  alt={item.name}
+  className="w-32 h-32 object-cover rounded"
+/>
 
       <div className="flex-1 text-white">
         <h2 className="text-lg font-semibold">{item.name}</h2>

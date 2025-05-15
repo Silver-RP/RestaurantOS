@@ -5,6 +5,7 @@ export const FavoriteController = {
   add: async (req: Request, res: Response) => {
     try {
       const userId = req.user?._id;
+      console.log(userId);
       const { dishId } = req.body;
 
       if (!userId || !dishId) {

@@ -1,14 +1,14 @@
 import axiosInstance from './axiosInstance';
 
 export const getFavorites = async () => {
-  const response = await axiosInstance.get('/favorites');
+  const response = await axiosInstance.get('/favorite/getFavorites');
   return response.data.data;
 };
 
-export const removeFavorite = async (foodId: string) => {
-  return axiosInstance.delete(`/favorites/${foodId}`);
+export const addToFavorites = async (dishId: string) => {
+  return axiosInstance.post('/favorite/add', { dishId });
 };
 
-export const updateFavoriteQuantity = async (foodId: string, quantity: number) => {
-  return axiosInstance.put(`/favorites/${foodId}`, { quantity });
+export const removeFavorite = async (dishId: string) => {
+  return axiosInstance.delete(`/favorite/item/${dishId}`);
 };
