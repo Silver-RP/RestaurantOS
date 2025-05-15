@@ -11,12 +11,12 @@ export const FavoriteController = {
         return res.status(400).json({ message: 'Missing userId or dishId' });
       }
 
-      const existing = await FavoriteService.isFavorite(userId, dishId);
+      const existing = await FavoriteService.isFavorite(userId.toString(), dishId.toString());
       if (existing) {
         return res.status(409).json({ message: 'Dish already in favorite' });
       }
 
-      const favorite = await FavoriteService.addToFavorite(userId, dishId);
+      const favorite = await FavoriteService.addToFavorite(userId.toString(), dishId.toString());
       res.status(201).json({ success: true, data: favorite });
     } catch (error) {
       console.error('Add favorite error:', error);
@@ -26,7 +26,7 @@ export const FavoriteController = {
 
   remove: async (req: Request, res: Response) => {
     try {
-      const userId = req.user?._id;
+      const userId = req.user?._id as string;
       const { dishId } = req.params;
 
       const deleted = await FavoriteService.removeFromFavorite(userId, dishId);
@@ -43,7 +43,7 @@ export const FavoriteController = {
 
   list: async (req: Request, res: Response) => {
     try {
-      const userId = req.user?._id;
+      const userId = req.user?._id as string;
       const favorites = await FavoriteService.getFavorites(userId);
 
       res.json({ success: true, data: favorites });

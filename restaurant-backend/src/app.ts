@@ -22,7 +22,6 @@ import connectDB from './config/db';
 import cookieParser from 'cookie-parser';
 import passport from 'passport';
 import cors from 'cors';
-import './types/express';
 const app = express();
 
 // Import file authSwagger để đăng ký metadata
