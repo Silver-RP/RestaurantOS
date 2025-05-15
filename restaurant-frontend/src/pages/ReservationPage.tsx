@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Step1BasicInfo from '@components/pages/reservation/Step1BasicInfo';
 import BreadcrumbComponent from '@components/common/BreadCrumbComponents';
 import ShowcaseSection from '@components/common/ShowcaseSection';
@@ -6,6 +6,10 @@ import Step2Seating from '@components/pages/reservation/Step2Seating';
 import Step3Menu from '@components/pages/reservation/Step3Menu';
 import Step4Review from '@/components/pages/reservation/Step4Review';
 import { ReservationFormData } from '@/types/ReservationFormData.type';
+import ReservationSteps from '@/components/pages/reservation/ReservationSteps';
+import { confirmAlert } from 'react-confirm-alert';
+import ButtonComponents from '@/components/common/ButtonComponents';
+
 const steps = [
   { label: 'Thông tin', step: 1 },
   { label: 'Vị trí ngồi', step: 2 },
@@ -14,102 +18,110 @@ const steps = [
 ];
 
 const ReservationPage: React.FC = () => {
-  const [formData, setFormData] = useState<ReservationFormData>({
-    name: '',
-    phone: '',
-    email: '',
-    date: '',
-    time: '',
-    people: 1,
-    note: '',
-    seating: '',
-    seatingName: '',
-    menu: '',
-    selectedItems: [],
-  });
-  const [step, setStep] = useState(1);
+  const getInitialFormData = (): ReservationFormData => {
+    const saved = localStorage.getItem('reservation-data');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      const expired = Date.now() - parsed.timestamp > 60 * 60 * 1000;
+      if (!expired) return parsed.formData;
+    }
+    return {
+      name: '',
+      phone: '',
+      email: '',
+      date: '',
+      time: '',
+      people: 1,
+      note: '',
+      seating: '',
+      seatingName: '',
+      menu: '',
+      selectedItems: [],
+    };
+  };
 
+  const [formData, setFormData] =
+    useState<ReservationFormData>(getInitialFormData());
+  const [step, setStep] = useState(1);
+  useEffect(() => {
+    const saved = localStorage.getItem('reservation-data');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      const expired = Date.now() - parsed.timestamp > 60 * 1000;
+
+      const hasInfo =
+        parsed.formData?.name ||
+        parsed.formData?.phone ||
+        parsed.formData?.email ||
+        parsed.formData?.selectedItems?.length > 0;
+
+      if (!expired && hasInfo) {
+        confirmAlert({
+          overlayClassName: 'custom-overlay',
+          customUI: ({ onClose }) => (
+            <div className="custom-ui bg-headerBackground text-secondaryColor p-6 shadow-md max-w-md mx-auto text-center">
+              <h2 className="text-xl mb-4">Khôi phục dữ liệu?</h2>
+              <p className="mb-6">
+                Bạn còn giữ thông tin đặt bàn trước đó. <br /> Bạn có muốn sử
+                dụng lại không?
+              </p>
+              <div className="flex justify-center gap-4">
+                <ButtonComponents
+                  variant="outline"
+                  size="small"
+                  onClick={() => {
+                    localStorage.removeItem('reservation-data');
+                    setFormData({
+                      name: '',
+                      phone: '',
+                      email: '',
+                      date: '',
+                      time: '',
+                      people: 1,
+                      note: '',
+                      seating: '',
+                      seatingName: '',
+                      menu: '',
+                      selectedItems: [],
+                    });
+                    onClose();
+                  }}
+                  className="px-6 py-2 rounded-none border-secondaryColor"
+                >
+                  Tạo mới
+                </ButtonComponents>
+
+                <ButtonComponents
+                  variant="filled"
+                  size="small"
+                  onClick={() => {
+                    setFormData(parsed.formData);
+                    onClose();
+                  }}
+                  className="px-6 py-2 rounded-none"
+                >
+                  Sử dụng lại
+                </ButtonComponents>
+              </div>
+            </div>
+          ),
+        });
+      }
+    }
+  }, []);
+  useEffect(() => {
+    const dataToSave = {
+      formData,
+      timestamp: Date.now(),
+    };
+    localStorage.setItem('reservation-data', JSON.stringify(dataToSave));
+  }, [formData]);
   return (
     <>
       <BreadcrumbComponent />
       <div className="bg-bodyBackground text-white pt-16">
         <div className="max-w-[1200px] w-full mx-auto text-center pb-10">
-          <div className="w-full flex justify-between items-center px-4 sm:px-10 mb-10 relative">
-            {steps.map((s, index) => {
-              const isCompleted = step > s.step;
-              const isActive = step === s.step;
-
-              return (
-                <div
-                  key={s.step}
-                  className="flex-1 flex flex-col items-center text-center relative group transition-all duration-300"
-                >
-                  <div
-                    className={`
-            w-8 h-8 flex items-center justify-center bg-bodyBackground z-20 rounded-full border-2 
-            transition-all duration-500 transform 
-            ${isCompleted ? 'bg-secondaryColor text-black border-secondaryColor scale-100' : ''}
-            ${isActive ? 'border-secondaryColor text-secondaryColor scale-110 shadow-lg' : ''}
-            ${!isCompleted && !isActive ? 'border-white/40 text-white/40 scale-95' : ''}
-          `}
-                  >
-                    {isCompleted ? '✓' : s.step}
-                  </div>
-
-                  <div
-                    className={`text-sm mt-2 font-medium transition-all duration-300 ${
-                      isActive
-                        ? 'text-secondaryColor'
-                        : isCompleted
-                          ? 'text-white'
-                          : 'text-white/50'
-                    }`}
-                  >
-                    {s.label}
-                  </div>
-
-                  <div
-                    className={`text-xs mt-1 transition-all duration-300 ${
-                      isCompleted
-                        ? 'text-green-400'
-                        : isActive
-                          ? 'text-secondaryColor'
-                          : 'text-white/40'
-                    }`}
-                  >
-                    <div
-                      className={`text-xs mt-1 transition-all duration-300 hidden sm:block ${
-                        isCompleted
-                          ? 'text-green-400'
-                          : isActive
-                            ? 'text-secondaryColor'
-                            : 'text-white/40'
-                      }`}
-                    >
-                      {isCompleted
-                        ? 'Đã xong'
-                        : isActive
-                          ? 'Đang thực hiện'
-                          : 'Chưa thực hiện'}
-                    </div>
-                  </div>
-
-                  {index < steps.length - 1 && (
-                    <div
-                      className="absolute top-4 left-1/2 right-[-50%] h-[2px] z-0"
-                      style={{
-                        backgroundColor:
-                          step > s.step
-                            ? '#FFDEA0'
-                            : 'rgba(255, 255, 255, 0.2)',
-                        width: '100%',
-                      }}
-                    />
-                  )}
-                </div>
-              );
-            })}
-          </div>
+          <ReservationSteps step={step} steps={steps} />
           {step === 1 && (
             <Step1BasicInfo
               formData={formData}

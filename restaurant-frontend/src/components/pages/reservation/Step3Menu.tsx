@@ -275,7 +275,10 @@ const Step3Menu: React.FC<Step3MenuProps> = ({
             items={formData.selectedItems}
             isOpen={isSidebarOpen}
             onClose={() => setIsSidebarOpen(false)}
-            onCheckout={() => alert('Đi tới thanh toán')}
+            onCheckout={() => {
+              setIsSidebarOpen(false);
+              onNext();
+            }}
           />
           <AddReservationItemModal
             isOpen={modalOpen}

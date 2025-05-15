@@ -67,7 +67,6 @@ export const useCategoryDetail = (id: string) => {
   return { category, loading, error };
 };
 
-
 export const useAddCategory = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -116,9 +115,6 @@ export const useAddCategory = () => {
     successMessage,
   };
 };
-
-
-
 
 export const useUpdateCategory = () => {
   const [loading, setLoading] = useState(false);

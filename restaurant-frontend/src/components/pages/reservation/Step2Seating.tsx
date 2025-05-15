@@ -110,8 +110,8 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({ formData, setFormData, onNe
 
         <div className="flex flex-col justify-between p-4 flex-1">
           <div className='text-left'>
-            <p className="text-green-400 text-sm font-semibold mb-1">Còn bản</p>
-            <h4 className="text-lg mb-1">{option.name}</h4>
+            
+            <h4 className="text-xl mb-3">{option.name}</h4>
             <p className="text-sm text-gray-300 mb-1">Số khách: {option.guests}</p>
 
             <div className="text-sm text-gray-300 flex items-center gap-2 mb-1">
@@ -123,9 +123,11 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({ formData, setFormData, onNe
             <div className="text-sm text-gray-300 flex items-center gap-2 mb-1">
               Độ riêng tư: {renderStars(option.privacy)}
             </div>
+            <p className="text-green-400 text-sm text-left font-semibold mt-3 mb-1">Còn bàn</p>
           </div>
 
           <div className="mt-3">
+            
             <ButtonComponents
               variant={formData.seating === option.id ? 'selected' : 'filled'}
               size="small"

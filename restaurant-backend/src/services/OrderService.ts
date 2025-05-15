@@ -27,12 +27,12 @@ enum OrderStatus {
 }
 
 class OrderService {
-  
+
   async handleAddress(userId: string, address_id: string | null, address: any, session: any) {
     if (address_id) {
       await OrderValidator.validateAddress(address_id);
       return address_id;
-    } 
+    }
     if (address) {
       const newAddress = new Address({ user_id: userId, ...address });
       const savedAddress = await newAddress.save({ session });
@@ -64,7 +64,7 @@ class OrderService {
       note,
       scheduled_time,
     });
-  
+
     return await newOrder.save({ session });
   }
 
@@ -82,7 +82,7 @@ class OrderService {
         { session }
       );
     });
-  
+
     await Promise.all(updateDishPromises);
   }
 
@@ -104,10 +104,10 @@ class OrderService {
     const { userId, address_id, address, payment_method, delivery_type, items, order_type, delivery_time_type, scheduled_time, note } = input;
     const session = await mongoose.startSession();
     session.startTransaction();
-  
+
     try {
       const finalAddressId = await this.handleAddress(userId, address_id, address, session);
-  
+
       const { orderItems, totalAmount } = await OrderValidator.validateCartAndItems(userId, items, session);
       
       const total_quantity = orderItems.reduce((sum, item) => sum + item.quantity, 0);
@@ -129,7 +129,7 @@ class OrderService {
       if (!savedOrder) {
         throw { statusCode: 500, message: 'Order placement failed' };
       }
-  
+
       // Save order details
       const orderDetailPromises = orderItems.map((item) => {
         const orderDetail = new OrderDetail({
@@ -143,18 +143,18 @@ class OrderService {
         });
         return orderDetail.save({ session });
       });
-  
+
       await Promise.all(orderDetailPromises);
-  
+
       // Update dish counts
       await this.updateDishCounts(orderItems, session);
-  
+
       const orderedDishIds = items.map((item: { dish_id: any; }) => item.dish_id);
       await this.updateCart(userId, orderedDishIds, session);
-  
+
       await session.commitTransaction();
       session.endSession();
-  
+
       return savedOrder;
     } catch (error: any) {
       await session.abortTransaction();

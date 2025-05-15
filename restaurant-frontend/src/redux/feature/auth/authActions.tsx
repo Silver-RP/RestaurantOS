@@ -33,7 +33,6 @@ const apiRequest = async (
   }
 };
 
-// Register
 export const RegisterUser = createAsyncThunk(
   'auth/register',
   async (payload: RegisterPayload, { rejectWithValue }) => {
@@ -53,7 +52,6 @@ export const RegisterUser = createAsyncThunk(
   },
 );
 
-// Login
 export const LoginUser = createAsyncThunk(
   'auth/login',
   async (payload: LoginPayload, { rejectWithValue }) => {
@@ -83,7 +81,6 @@ export const LoginUser = createAsyncThunk(
   },
 );
 
-// Logout
 export const LogoutUser = createAsyncThunk(
   'auth/logout',
   async (_, { rejectWithValue }) => {
@@ -136,10 +133,13 @@ export const LoginWithGoogle = createAsyncThunk(
         user,
         message: 'Đăng nhập Google thành công',
       };
-    } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || 'Lỗi khi đăng nhập Google',
-      );
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        return rejectWithValue(
+          error.response?.data?.message || 'Lỗi khi đăng nhập Google',
+        );
+      }
+      return rejectWithValue('Lỗi khi đăng nhập Google');
     }
   },
 );

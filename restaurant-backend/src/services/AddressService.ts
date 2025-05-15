@@ -84,27 +84,27 @@ class AddressService {
     const addresses = await Address.find({ user_id });
     return addresses;
   }
-async updateAddress(addressId: string, updateData: any): Promise<any> {
-  const currentAddress = await Address.findById(addressId);
-  if (!currentAddress) {
-    throw new Error('Address not found');
+  async updateAddress(addressId: string, updateData: any): Promise<any> {
+    const currentAddress = await Address.findById(addressId);
+    if (!currentAddress) {
+      throw new Error('Address not found');
+    }
+
+    // Nếu muốn set is_default, cần unset các địa chỉ khác
+    if (updateData.is_default === true) {
+      await Address.updateMany(
+        { user_id: currentAddress.user_id, is_default: true },
+        { $set: { is_default: false } },
+      );
+    }
+
+    const updatedAddress = await Address.findByIdAndUpdate(addressId, updateData, {
+      new: true,
+      runValidators: true,
+    });
+
+    return updatedAddress;
   }
-
-  // Nếu muốn set is_default, cần unset các địa chỉ khác
-  if (updateData.is_default === true) {
-    await Address.updateMany(
-      { user_id: currentAddress.user_id, is_default: true },
-      { $set: { is_default: false } }
-    );
-  }
-
-  const updatedAddress = await Address.findByIdAndUpdate(addressId, updateData, {
-    new: true,
-    runValidators: true,
-  });
-
-  return updatedAddress;
-}
 
   async deleteAddress(addressId: string): Promise<any> {
     const deletedAddress = await Address.findByIdAndDelete(addressId);

@@ -1,7 +1,11 @@
 import mongoose from 'mongoose';
 import Roles from '../models/RoleModel';
-import User from '../models/UserModel';
+import User, { IUser } from '../models/UserModel';
+import bcrypt from 'bcryptjs';
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 
+dayjs.extend(customParseFormat);
 interface FilterUserOptions {
   name?: string;
   email?: string;
@@ -14,23 +18,48 @@ interface FilterUserOptions {
   nameSort?: string;
   emailSort?: string;
 }
+interface GetAllUserParams {
+  page?: number;
+  limit?: number;
+  keyword?: string;
+}
 class UserService {
-  async getAllUser(): Promise<any> {
+  getAllUser = async ({ page = 1, limit = 10, keyword = '' }: GetAllUserParams) => {
+    const query: any = {};
+
+    if (keyword) {
+      query.$or = [
+        { username: { $regex: keyword, $options: 'i' } },
+        { email: { $regex: keyword, $options: 'i' } },
+      ];
+    }
+
+    const skip = (page - 1) * limit;
+
     try {
-      const allUser = await User.find({});
+      const [docs, totalDocs] = await Promise.all([
+        User.find(query).skip(skip).limit(limit),
+        User.countDocuments(query),
+      ]);
+
+      const totalPages = Math.ceil(totalDocs / limit);
+
       return {
-        status: 'OK',
-        message: 'getAllUser success',
-        data: allUser,
+        docs,
+        totalDocs,
+        totalPages,
+        page,
+        limit,
       };
     } catch (error: any) {
-      throw new Error(error);
+      console.error('Error in getAllUser:', error.message);
+      throw new Error('Failed to fetch users');
     }
-  }
+  };
 
   async getAllUserByUserRole(page: number = 1, pageSize: number = 10): Promise<any> {
     try {
-      const allUserByUserRole = await User.find();
+      // const allUserByUserRole = await User.find();
       const options = {
         page,
         limit: pageSize,
@@ -203,6 +232,73 @@ class UserService {
       };
     } catch (error: any) {
       throw new Error(`Error filtering users: ${error.message}`);
+    }
+  }
+
+  async updateUserInfo(userId: string, updateData: Partial<IUser>): Promise<any> {
+    try {
+      if (updateData.birthday && typeof updateData.birthday === 'string') {
+        const parsed = dayjs(updateData.birthday, ['DD-MM-YYYY', 'YYYY-MM-DD'], true);
+
+        if (!parsed.isValid()) {
+          throw new Error(`Invalid birthday format: ${updateData.birthday}`);
+        }
+        updateData.birthday = parsed.toDate();
+      }
+
+      const user = await User.findByIdAndUpdate(userId, { $set: updateData }, { new: true }).select(
+        '-password',
+      );
+
+      if (!user) {
+        return {
+          status: 'ERROR',
+          message: 'User not found',
+        };
+      }
+
+      return {
+        status: 'OK',
+        message: 'User updated successfully',
+        data: user,
+      };
+    } catch (error: any) {
+      throw new Error('Failed to update user info: ' + error.message);
+    }
+  }
+
+  async changeUserPassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<any> {
+    try {
+      const user = await User.findById(userId);
+      if (!user || !user.password) {
+        return {
+          status: 'ERROR',
+          message: 'User not found or no password set',
+        };
+      }
+
+      const isMatch = await bcrypt.compare(currentPassword, user.password);
+      if (!isMatch) {
+        return {
+          status: 'ERROR',
+          message: 'Current password is incorrect',
+        };
+      }
+
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      user.password = hashedPassword;
+      await user.save();
+
+      return {
+        status: 'OK',
+        message: 'Password updated successfully',
+      };
+    } catch (error: any) {
+      throw new Error('Failed to change password: ' + error.message);
     }
   }
 }

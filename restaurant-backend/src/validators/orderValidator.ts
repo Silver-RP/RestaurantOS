@@ -93,6 +93,10 @@ class OrderValidator {
         throw new Error(`Dish not found: ${cartItem.dishId._id}`);
       }
 
+      if(dish.status !== 'available') {
+        throw new Error(`Dish "${dish.name}" is not available`);
+      }
+
       if (cartItem.quantity > dish.countInStock) {
         throw new Error(`Only ${dish.countInStock} portions left for "${dish.name}"`);
       }

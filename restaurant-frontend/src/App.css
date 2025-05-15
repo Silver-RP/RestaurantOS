@@ -115,7 +115,6 @@ input:-webkit-autofill:focus {
 .custom-ui button {
   background-color: #FFDEA0; /* secondaryColor */
   color: #0F1C2E; /* headerBackground */
-  border: none;
   padding: 10px 20px;
   border-radius: 8px;
   font-weight: 600;

@@ -2,15 +2,26 @@ import UserService from '../services/UserService';
 import { Request, Response } from 'express';
 
 class UserController {
-  async getAllUser(req: Request, res: Response) {
+  async getAllUser(req: Request, res: Response): Promise<void> {
     try {
-      const getAllUser = await UserService.getAllUser();
-      res.status(200).json(getAllUser);
+      const { page = 1, limit = 10, keyword = '' } = req.query;
+
+      const result = await UserService.getAllUser({
+        page: Number(page),
+        limit: Number(limit),
+        keyword: String(keyword),
+      });
+
+      res.status(200).json({
+        status: 'OK',
+        message: 'Fetched users successfully',
+        data: result, // docs, totalDocs, totalPages, page, limit
+      });
     } catch (error: any) {
-      console.error('Error fetching all users:', error.message);
+      console.error('Error fetching users:', error.message);
       res.status(500).json({
         status: 'ERROR',
-        message: 'Failed to fetch all users',
+        message: 'Failed to fetch users',
         error: error.message || 'Internal Server Error',
       });
     }
@@ -77,6 +88,35 @@ class UserController {
       return res.status(200).json(result);
     } catch (error: any) {
       return res.status(500).json({
+        status: 'ERROR',
+        message: error.message,
+      });
+    }
+  }
+
+  async updateUser(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.params.userId;
+      const updateData = req.body;
+
+      const result = await UserService.updateUserInfo(userId, updateData);
+      res.status(200).json(result); // ❌ không return
+    } catch (error: any) {
+      res.status(500).json({
+        status: 'ERROR',
+        message: error.message,
+      });
+    }
+  }
+
+  async changeUserPassword(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.params.userId;
+      const { currentPassword, newPassword } = req.body;
+      const result = await UserService.changeUserPassword(userId, currentPassword, newPassword);
+      res.status(200).json(result);
+    } catch (error: any) {
+      res.status(500).json({
         status: 'ERROR',
         message: error.message,
       });

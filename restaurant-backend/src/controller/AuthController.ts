@@ -25,7 +25,7 @@ class AuthController {
 
       const { token, refresh_token, user, refreshTokenExpiresIn } = await AuthService.login(
         { email, password, rememberMe },
-        req
+        req,
       );
 
       res.cookie('refreshToken', refresh_token, {
@@ -51,22 +51,25 @@ class AuthController {
   async refreshAccessToken(req: Request, res: Response): Promise<any> {
     try {
       const { refreshToken } = req.cookies;
-      const { newAccessToken, newRefreshToken } = await AuthService.refreshAccessToken(refreshToken, req);
-  
+      const { newAccessToken, newRefreshToken } = await AuthService.refreshAccessToken(
+        refreshToken,
+        req,
+      );
+
       res.cookie('accessToken', newAccessToken, {
         httpOnly: false,
         secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         maxAge: 60 * 60 * 1000,
       });
-  
+
       res.cookie('refreshToken', newRefreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         maxAge: 21 * 24 * 60 * 60 * 1000,
       });
-  
+
       res.status(200).json({ accessToken: newAccessToken });
     } catch (error: any) {
       res.status(400).json({ message: error.message });
@@ -77,36 +80,32 @@ class AuthController {
     try {
       const googleUser = req.body.googleUser;
       const rememberMe = req.body.rememberMe;
-  
+
       if (!googleUser) {
         return res.status(400).json({ message: 'Google user data is missing' });
       }
-  
+
       const { email, name, avatar, sub } = googleUser;
-  
-      const {
-        user,
-        accessToken,
-        refreshToken,
-        refreshTokenExpiresIn,
-      } = await AuthService.googleLogin({
-        id: sub,
-        email,
-        googleId: sub,
-        username: name,
-        avatar,
-        rememberMe,
-      });
-  
+
+      const { user, accessToken, refreshToken, refreshTokenExpiresIn } =
+        await AuthService.googleLogin({
+          id: sub,
+          email,
+          googleId: sub,
+          username: name,
+          avatar,
+          rememberMe,
+        });
+
       res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-        maxAge: refreshTokenExpiresIn * 1000, 
+        maxAge: refreshTokenExpiresIn * 1000,
       });
 
       console.log('Google login refreshTokenExpiresIn:', refreshTokenExpiresIn);
-  
+
       return res.status(200).json({
         message: 'Google login successful',
         user,
@@ -152,7 +151,7 @@ class AuthController {
         secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       });
-      
+
       res.status(200).json({ message: 'Logout successful' });
     } catch (error: any) {
       res.status(400).json({ message: error.message });
@@ -292,6 +291,21 @@ class AuthController {
       return res.status(400).json({ message: error.message });
     }
   }
+  changePasswordProfile = async (req: Request, res: Response): Promise<any> => {
+    try {
+      const { oldPassword, newPassword } = req.body;
+
+      const result = await AuthService.changePasswordProfile(
+        req.user?.id, // Lấy từ token
+        oldPassword,
+        newPassword,
+      );
+
+      return res.status(200).json({ message: result });
+    } catch (error: any) {
+      return res.status(400).json({ message: error.message });
+    }
+  };
 }
 
 export default new AuthController();

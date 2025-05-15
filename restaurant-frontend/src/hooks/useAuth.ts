@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import authApi from '../api/AuthApi';
 
-
+import { changePasswordProfile } from '@/api/AuthApi';
+interface ChangePasswordPayload {
+  oldPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
 export const useSendOtpEmail = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -78,5 +83,26 @@ export const useChangePassword = () => {
 
   return { changePassword, loading, error };
 };
+export const useChangePasswordProfile = () => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  const changePasswordProfile = async (data: ChangePasswordPayload, onSuccess?: () => void) => {
+    setLoading(true);
+    setError(null);
+    setSuccessMessage(null);
 
+    try {
+      const res = await changePasswordProfile(data);
+      setSuccessMessage(res.message);
+      onSuccess?.();
+    } catch (err: any) {
+      setError(err?.response?.data?.message || 'Đã xảy ra lỗi khi đổi mật khẩu');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { changePasswordProfile, loading, error, successMessage };
+};

@@ -91,11 +91,10 @@ class AuthService {
     return populatedUser;
   }
 
-  async login(loginUser: { email: string; password: string, rememberMe: boolean }, req: any) {
+  async login(loginUser: { email: string; password: string; rememberMe: boolean }, req: any) {
     const { email, password, rememberMe } = loginUser;
 
-    const user = await User.findOne({ email })
-      .populate('roles', 'name');
+    const user = await User.findOne({ email }).populate('roles', 'name');
 
     if (!user) {
       throw new Error('Email not registered');
@@ -112,13 +111,13 @@ class AuthService {
     const token = accessToken(
       { id: user._id, roles: user.roles },
       process.env.ACCESS_TOKEN ?? '',
-      accessTokenExpiresIn
+      accessTokenExpiresIn,
     );
 
     const refresh_token = refreshToken(
       { id: user._id, roles: user.roles },
       process.env.REFRESH_TOKEN || '',
-      refreshTokenExpiresIn
+      refreshTokenExpiresIn,
     );
 
     await RefreshToken.create({
@@ -129,8 +128,7 @@ class AuthService {
       ipAddress: req.ip,
     });
 
-
-    return { token, refresh_token, user, refreshTokenExpiresIn, };
+    return { token, refresh_token, user, refreshTokenExpiresIn };
   }
 
   async refreshAccessToken(refreshTokenFromClient: string, req: any) {
@@ -138,40 +136,40 @@ class AuthService {
       if (!refreshTokenFromClient) {
         throw new Error('No refresh token provided');
       }
-  
+
       const oldToken = await RefreshToken.findOne({ token: refreshTokenFromClient });
       if (!oldToken || oldToken.isRevoked) {
         throw new Error('Refresh token is invalid or revoked');
       }
-  
+
       const decode: any = jwt.verify(refreshTokenFromClient, process.env.REFRESH_TOKEN || '');
       const user = await User.findById(decode.id);
       if (!user) throw new Error('User not found');
-  
+
       oldToken.isRevoked = true;
-  
+
       const now = new Date();
       const remainingMs = Math.max(oldToken.expiresAt.getTime() - now.getTime(), 0);
       const remainingSeconds = Math.floor(remainingMs / 1000);
-  
+
       // Nếu thời gian còn lại quá ít (< 1h), cấp lại full thời hạn (có thể tùy chỉnh logic)
       const newRefreshTokenExpiresIn = remainingSeconds > 3600 ? remainingSeconds : 48 * 60 * 60;
-  
+
       const newAccessToken = accessToken(
         { id: user._id, roles: user.roles },
         process.env.ACCESS_TOKEN || '',
-        60 * 60 
+        60 * 60,
       );
-  
+
       const newRefreshToken = refreshToken(
         { id: user._id, roles: user.roles },
         process.env.REFRESH_TOKEN || '',
-        newRefreshTokenExpiresIn
+        newRefreshTokenExpiresIn,
       );
-  
+
       oldToken.replacedByToken = newRefreshToken;
       await oldToken.save();
-  
+
       await RefreshToken.create({
         token: newRefreshToken,
         userId: user._id,
@@ -179,18 +177,17 @@ class AuthService {
         userAgent: req.get('User-Agent'),
         expiresAt: new Date(Date.now() + newRefreshTokenExpiresIn * 1000),
       });
-  
+
       return { newAccessToken, newRefreshToken };
-  
     } catch (error: any) {
       throw new Error(error.message);
     }
   }
-  
+
   async googleLogin(googleUser: GoogleUser & { rememberMe: boolean }) {
     try {
       const { email, googleId, username, avatar, rememberMe } = googleUser;
-  
+
       let user = await User.findOne({ email });
       if (!user) {
         user = new User({
@@ -201,18 +198,18 @@ class AuthService {
         });
         await user.save();
       }
-  
+
       const accessTokenExpiresIn = rememberMe ? 60 * 60 * 2 : 60 * 60;
       const refreshTokenExpiresIn = rememberMe ? 21 * 24 * 60 * 60 : 2 * 24 * 60 * 60;
-  
+
       const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN || '', {
         expiresIn: accessTokenExpiresIn,
       });
-  
+
       const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN || '', {
         expiresIn: refreshTokenExpiresIn,
       });
-  
+
       return {
         user,
         accessToken,
@@ -229,15 +226,15 @@ class AuthService {
       if (!refreshToken) {
         throw new Error('No refresh token provided');
       }
-  
+
       const existingToken = await RefreshToken.findOne({ token: refreshToken });
       if (!existingToken) {
         throw new Error('Refresh token not found');
       }
-  
+
       existingToken.isRevoked = true;
       await existingToken.save();
-  
+
       return { message: 'Logout successful' };
     } catch (error: any) {
       throw new Error(error.message);
@@ -393,7 +390,7 @@ class AuthService {
     await transporter.sendMail(mailOptions);
     return 'Verification email sent successfully';
   }
-  
+
   async verifyEmailVerificationOtp(email: string, otp: string): Promise<string> {
     const user = await User.findOne({ email });
     if (!user) throw new Error('Không tìm thấy người dùng');
@@ -417,5 +414,22 @@ class AuthService {
 
     return 'Xác minh email thành công';
   }
+  changePasswordProfile = async (
+    userId: string,
+    oldPassword: string,
+    newPassword: string,
+  ): Promise<string> => {
+    const user = await User.findById(userId);
+    if (!user) throw new Error('Người dùng không tồn tại');
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password || '');
+    if (!isMatch) throw new Error('Mật khẩu cũ không đúng');
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    return 'Đổi mật khẩu thành công';
+  };
 }
 export default new AuthService();

@@ -16,6 +16,7 @@ export interface FoodDetail {
   createdAt: string; 
   _id: string;
   name: string;
+  category: string;
   slug: string;
   price: number;
   discount_price?: number;

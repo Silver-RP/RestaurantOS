@@ -21,7 +21,6 @@ import connectDB from './config/db';
 import cookieParser from 'cookie-parser';
 import passport from 'passport';
 import cors from 'cors';
-
 const app = express();
 
 // Import file authSwagger để đăng ký metadata
@@ -32,7 +31,6 @@ import './swaggers/CartSwagger';
 import './swaggers/StaffSwagger';
 import './swaggers/UserSwagger';
 import './swaggers/CategorySwagger';
-
 
 dotenv.config();
 connectDB();
@@ -92,7 +90,7 @@ app.get('/', (req, res) => {
 // Định nghĩa routes
 app.use('/api/auth', AuthRoutes);
 app.use('/api/user', UserRoutes);
-app.use('/api/profile', ProfileRoutes);
+app.use('/api/profile', AuthMiddleWare.verifyToken, ProfileRoutes);
 app.use('/api/role', RoleRoutes);
 app.use('/api/permission', PermissionRoutes);
 app.use('/api/category', CateRoutes);
@@ -102,8 +100,8 @@ app.use('/api/search', SearchRoutes);
 app.use(
   '/api/staff',
   AuthMiddleWare.verifyToken,
-  AuthMiddleWare.verifyRole(['superadmin', 'manager',]),
-  StaffRoutes
+  AuthMiddleWare.verifyRole(['superadmin', 'manager']),
+  StaffRoutes,
 );
 
 app.use('/api/food', FoodRoutes);

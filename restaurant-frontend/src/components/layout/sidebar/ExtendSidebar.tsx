@@ -18,7 +18,7 @@ import { BsPersonCheck } from 'react-icons/bs';
 import { Link } from 'react-router-dom';
 import ButtonComponents from '../../common/ButtonComponents';
 import NavExtend from './NavExtend';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { openSearchModal } from '../../../redux/feature/searchModal/searchModalSlice';
 import Cookies from 'js-cookie';
 

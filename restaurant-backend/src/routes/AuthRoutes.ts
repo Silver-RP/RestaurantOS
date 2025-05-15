@@ -4,6 +4,7 @@ import GoogleAuthMiddleWare from '../middleware/GoogleAuthMiddleWare';
 import { loginSchema, registerSchema } from '../schemas/auth.schema';
 import { validateRequest } from '../middleware/ValidateRequest';
 import AuthMiddleWare from '../middleware/AuthMiddleWare';
+import { changePasswordSchema } from '../validators/changePwProfileValidator';
 const router = Router();
 router.post('/register', validateRequest(registerSchema), AuthController.register);
 router.post('/login', validateRequest(loginSchema), AuthController.login);
@@ -16,4 +17,10 @@ router.post('/forgot-password', AuthController.forgotPasswordHandler);
 router.post('/change-password', AuthController.changePassword);
 router.post('/resend-verification', AuthController.resendVerificationEmail);
 router.post('/verify-resend-otpEmail', AuthController.verifyResendOtpEmail);
+router.put(
+  '/change-password-profile',
+  validateRequest(changePasswordSchema),
+  AuthMiddleWare.verifyToken,
+  AuthController.changePasswordProfile,
+);
 export default router;
