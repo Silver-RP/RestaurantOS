@@ -7,7 +7,7 @@ import { Request } from 'express';
 class OrderValidator {
 
   static validatePlaceOrder(req: Request) {
-    const { address_id, address, payment_method, delivery_type, items, order_type, delivery_time_type, scheduled_time } = req.body;
+    const { address_id, address, payment_method, delivery_type, items, order_type, delivery_time_type, scheduled_time, note } = req.body;
 
     if (!address_id && !address) {
       return { valid: false, message: 'Either address_id or address is required.' };
@@ -27,6 +27,17 @@ class OrderValidator {
       return { valid: false, message: 'Scheduled time is required for scheduled deliveries.' };
     }
 
+    if (scheduled_time) {
+      const scheduledDate = new Date(scheduled_time);
+      if (isNaN(scheduledDate.getTime())) {
+        return { valid: false, message: 'Invalid scheduled time format. Use ISO format (e.g. 2023-09-25T15:30:00Z).' };
+      }
+      
+      if (scheduledDate < new Date()) {
+        return { valid: false, message: 'Scheduled time cannot be in the past.' };
+      }
+    }
+
     if (!['CASH', 'BANKING', 'VNPAY', 'MOMO', 'CREDIT_CARD'].includes(payment_method)) {
       return { valid: false, message: 'Invalid payment method.' };
     }
@@ -37,6 +48,10 @@ class OrderValidator {
 
     if (!['DINE_IN', 'ONLINE'].includes(order_type)) {
       return { valid: false, message: 'Invalid order type.' };
+    }
+
+    if (note && typeof note !== 'string') {
+      return { valid: false, message: 'Note must be a string.' };
     }
 
     return { valid: true };

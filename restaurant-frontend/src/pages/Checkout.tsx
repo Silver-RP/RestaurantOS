@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 interface Product {
   image: string;
   name: string;
+  discountedPrice: number;
   price: number;
   quantity: number;
   category?: string;
@@ -39,7 +40,8 @@ const CheckoutPage = () => {
           const formattedProducts: Product[] = selectedItems.map((item: any) => ({
             image: item.imageUrl,
             name: item.name,
-            price: item.discountedPrice || item.price,
+            discountedPrice: item.discountedPrice,
+            price: item.price,
             quantity: item.quantity,
             category: item.category || ""
           }));

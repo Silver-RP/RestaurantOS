@@ -56,6 +56,18 @@ registerSwaggerRoute({
               description: 'Type of the order (e.g., delivery, dine-in)',
               example: 'delivery',
             },
+            delivery_time_type: {
+              type: 'string',
+              description: 'Type of delivery time (IMMEDIATE or SCHEDULED)',
+              enum: ['IMMEDIATE', 'SCHEDULED'],
+              example: 'IMMEDIATE',
+            },
+            scheduled_time: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Scheduled delivery date and time (required if delivery_time_type is SCHEDULED)',
+              example: '2023-09-25T15:30:00Z',
+            },
             items: {
               type: 'array',
               items: {
@@ -67,6 +79,11 @@ registerSwaggerRoute({
                 },
                 required: ['dish_id', 'quantity'],
               },
+            },
+            note: {
+              type: 'string',
+              description: 'Optional note for the entire order',
+              example: 'Giao hàng trước 12h trưa'
             },
           },
           required: ['payment_method', 'delivery_type', 'items'],
@@ -91,6 +108,24 @@ registerSwaggerRoute({
               order: {
                 type: 'object',
                 description: 'Details of the placed order',
+                properties: {
+                  _id: { type: 'string' },
+                  user_id: { type: 'string' },
+                  address_id: { type: 'string' },
+                  payment_method: { type: 'string' },
+                  delivery_type: { type: 'string' },
+                  items_price: { type: 'number', description: 'Price of items before tax' },
+                  vat_amount: { type: 'number', description: '8% VAT on items_price' },
+                  shipping_fee: { type: 'number' },
+                  total_amount: { type: 'number', description: 'Total price: items_price + vat_amount + shipping_fee' },
+                  total_quantity: { type: 'number', description: 'Total quantity of all items in the order' },
+                  is_paid: { type: 'boolean', description: 'Payment status of the order' },
+                  note: { type: 'string', description: 'Note for the entire order' },
+                  scheduled_time: { type: 'string', format: 'date-time', description: 'Scheduled delivery date and time' },
+                  status: { type: 'string' },
+                  createdAt: { type: 'string', format: 'date-time' },
+                  updatedAt: { type: 'string', format: 'date-time' },
+                }
               },
             },
           },
@@ -451,6 +486,10 @@ registerSwaggerRoute({
                   payment_method: { type: 'string', example: 'cash' },
                   delivery_type: { type: 'string', example: 'standard' },
                   total_price: { type: 'number', example: 300000 },
+                  total_quantity: { type: 'number', description: 'Total quantity of all items in the order' },
+                  is_paid: { type: 'boolean', description: 'Payment status of the order' },
+                  note: { type: 'string', description: 'Note for the entire order' },
+                  scheduled_time: { type: 'string', format: 'date-time', description: 'Scheduled delivery date and time' },
                   status: { type: 'string', example: 'processing' },
                   createdAt: { type: 'string', format: 'date-time' },
                   updatedAt: { type: 'string', format: 'date-time' },

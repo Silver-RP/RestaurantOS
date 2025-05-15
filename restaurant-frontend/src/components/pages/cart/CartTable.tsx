@@ -77,7 +77,7 @@ const CartTable: React.FC<CartTableProps> = ({ items, selectedIds, onSelectionCh
               checked={selectedIds.includes(item.id)}
               onChange={() => toggleItem(item.id)}
               className="form-checkbox h-4 w-4 text-secondaryColor"
-            />
+            />  
             <img src={item.imageUrl} alt={item.name} className="w-24 h-24 object-cover rounded" />
             <div className="flex-1 flex flex-col justify-between text-white">
               <div>

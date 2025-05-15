@@ -8,9 +8,11 @@ import VoucherSelector, { Voucher } from './VoucherSelector';
 interface Product {
   image: string;
   name: string;
+  discountedPrice: number;
   price: number;
   quantity: number;
   category?: string;
+  notes?: string;
 }
 
 interface ProductInfoProps {
@@ -111,7 +113,16 @@ const ProductInfoSection = ({
                   </div>
                 </td>
                 <td className="p-2 text-center">
-                  {product.price.toLocaleString()}VND
+                 <div>
+                {product.discountedPrice !== product.price ? (
+                  <div className="text-sm mt-1 flex flex-col">
+                    <span className="line-through text-gray-400">{product.price.toLocaleString()} VND</span>
+                    <span className="text-secondaryColor font-semibold">{product.discountedPrice.toLocaleString()} VND</span>
+                  </div>
+                ) : (
+                  <div className="text-sm mt-1">{product.price.toLocaleString()} VND</div>
+                )}
+              </div>
                 </td>
                 <td className="p-2 text-center">x{product.quantity}</td>
                 <td className="p-2 font-semibold text-right">

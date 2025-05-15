@@ -41,18 +41,28 @@ class OrderService {
     throw { statusCode: 400, message: 'Address is required' };
   }
 
-  async createOrder(userId: string, finalAddressId: string, payment_method: string, delivery_type: string, totalAmount: number, order_type: string, delivery_time_type:string, session: any) {
+// tôi muốn truyền tổng số lượng sản phẩm vào database
+  async createOrder(userId: string, finalAddressId: string, payment_method: string, delivery_type: string, totalAmount: number, order_type: string, delivery_time_type:string, total_quantity: number, note: string, scheduled_time: Date | null, session: any) {
+    const items_price = totalAmount;
+    const vat_amount = items_price * 0.08; 
+    const shipping_fee = 5000;
+    const total_price = items_price + vat_amount + shipping_fee;
+
     const newOrder = new Order({
       user_id: userId,
       address_id: finalAddressId,
       payment_method,
       delivery_type,
-      total_amount: totalAmount,
-      vat_amount: totalAmount * 0.1,
-      shipping_fee: 5000,
+      items_price,
+      vat_amount,
+      shipping_fee,
+      total_price,
+      total_quantity,
       delivery_status: 'PENDING_PICKUP',
       order_type,
       delivery_time_type,
+      note,
+      scheduled_time,
     });
   
     return await newOrder.save({ session });
@@ -91,7 +101,7 @@ class OrderService {
   }
 
   async placeOrder(input: any) {
-    const { userId, address_id, address, payment_method, delivery_type, items, order_type, delivery_time_type, scheduled_time } = input;
+    const { userId, address_id, address, payment_method, delivery_type, items, order_type, delivery_time_type, scheduled_time, note } = input;
     const session = await mongoose.startSession();
     session.startTransaction();
   
@@ -99,8 +109,22 @@ class OrderService {
       const finalAddressId = await this.handleAddress(userId, address_id, address, session);
   
       const { orderItems, totalAmount } = await OrderValidator.validateCartAndItems(userId, items, session);
+      
+      const total_quantity = orderItems.reduce((sum, item) => sum + item.quantity, 0);
   
-      const savedOrder = await this.createOrder(userId, finalAddressId, payment_method, delivery_type, totalAmount, order_type, delivery_time_type, session);
+      const savedOrder = await this.createOrder(
+        userId, 
+        finalAddressId, 
+        payment_method, 
+        delivery_type, 
+        totalAmount, 
+        order_type, 
+        delivery_time_type, 
+        total_quantity,
+        note,
+        scheduled_time,
+        session
+      );
   
       if (!savedOrder) {
         throw { statusCode: 500, message: 'Order placement failed' };
