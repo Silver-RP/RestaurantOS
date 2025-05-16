@@ -138,7 +138,7 @@ const run = async () => {
   //   "Havana_Club_7_Year_Old",
   //   "Bacardi_Reserva_Limitada"
   // ];
-  
+
 
   // const cateIdDelete = new mongoose.Types.ObjectId('6803416bdf9079c175db7957');
   // await Dish.deleteMany({ categories: cateIdDelete });
@@ -152,7 +152,7 @@ const run = async () => {
   //     `dishes/alcoholic/${slug}_2`,
   //     `dishes/alcoholic/${slug}_3`,
   //   ];
-  
+
   //   try {
   //     await cloudinary.api.delete_resources(publicIds);
   //     console.log(`🧹 Deleted images for ${slug}`);
@@ -160,7 +160,7 @@ const run = async () => {
   //     console.error(`❌ Failed to delete images for ${slug}:`, err);
   //   }
   // }));
-  
+
   // console.log('🧼 Cleaned up existing data and images!');
 
   const getRandomFromArray = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
@@ -190,23 +190,23 @@ const run = async () => {
       .replace(/\s+/g, '_');
   };
 
-  // const workbook = XLSX.readFile(path.join(__dirname, 'Alcohon-BeefBeef.xlsx'));
+  // const workbook = XLSX.readFile(path.join(__dirname, 'do_uong_co_con.xlsx'));
   // const sheet = workbook.Sheets[workbook.SheetNames[0]];
   // const data = XLSX.utils.sheet_to_json<any>(sheet);
 
-  const data =[
+  const data = [
     {
-      'Tên món': 'Veuve Clicquot La Grande Dame',
-      'Mô tả ngắn': 'Champagne cao cấp với lịch sử lâu dài, tượng trưng cho sự sang trọng.',
-      'Mô tả': 'Veuve Clicquot La Grande Dame là một loại champagne tinh tế, cao cấp với lịch sử lâu dài. Được làm từ các nho Pinot Noir và Chardonnay, vang này có hương vị phức tạp, mềm mượt và là biểu tượng của sự sang trọng.',
-      'Nguyên liệu': 'Nho (Pinot Noir, Chardonnay)',
-      'Giá (VND)': '6000000',
-      'Loại rượu': 'Champagne',
-      'Xuất xứ': 'Pháp',
-      'Nồng độ cồn': '12',
-      'Thể tích': '750',
+      'Tên món': 'Other Mai Tai',
+      'Mô tả ngắn': 'Cocktail với rum, nước chanh và hương hạnh nhân.',
+      'Mô tả': 'Phiên bản này của Mai Tai mang lại hương vị ngọt ngào và dễ uống, với sự kết hợp giữa rum, nước chanh, siro hạnh nhân và đường. Đây là món cocktail lý tưởng cho những ai yêu thích sự ngọt ngào và mát lạnh.',
+      'Nguyên liệu': 'Rum, nước chanh, siro hạnh nhân, đường',
+      'Giá (VND)': 150000,
+      'Loại rượu': 'Cocktail',
+      'Xuất xứ': 'Hawaii',
+      'Nồng độ cồn': 15,
+      'Thể tích': 300,
     }
-  ]
+  ];
 
   for (const item of data) {
     const name = item['Tên món'];
@@ -224,15 +224,21 @@ const run = async () => {
     // const discount_price =
     //   discountChance > 0.5 ? Math.floor(price * (1 - getRandomInt(5, 30) / 100)) : null;
 
-    const getRandomDiscount = (min: number, max: number): number => {
-      const discountPercentage = getRandomInt(min, max);
-      const discount = price * (discountPercentage / 100);
+    const DISCOUNT_LEVELS = [15, 20, 25, 30, 35, 40];
 
-      const roundedDiscount = Math.floor(discount / 1000) * 1000;
-      return roundedDiscount;
+    const getRandomDiscount = (): number => {
+      const randomIndex = Math.floor(Math.random() * DISCOUNT_LEVELS.length);
+      const discountPercentage = DISCOUNT_LEVELS[randomIndex];
+      const discount = Math.floor(price * (discountPercentage / 100) / 1000) * 1000;
+      return discount;
     };
 
-    const discount_price = discountChance > 0.5 ? getRandomDiscount(15, 40) : null;
+    let discount_price: number | null = null;
+
+    if (discountChance > 0.5) {
+      const discount = getRandomDiscount();
+      discount_price = price - discount;
+    }
 
     const statusPool = ['available', 'available', 'available', 'hidden', 'soldout'];
     const status = getRandomFromArray(statusPool);
@@ -258,16 +264,16 @@ const run = async () => {
     const baseImageName = slug;
     const imagePaths = [
       ...imageExtensions.map((ext) =>
-        path.join(__dirname, 'do_uong_co_con_ancohol', `${baseImageName}${ext}`),
+        path.join(__dirname, 'do_uong_co_con', `${baseImageName}${ext}`),
       ),
       ...imageExtensions.map((ext) =>
-        path.join(__dirname, 'do_uong_co_con_ancohol', `${baseImageName}_1${ext}`),
+        path.join(__dirname, 'do_uong_co_con', `${baseImageName}_1${ext}`),
       ),
       ...imageExtensions.map((ext) =>
-        path.join(__dirname, 'do_uong_co_con_ancohol', `${baseImageName}_2${ext}`),
+        path.join(__dirname, 'do_uong_co_con', `${baseImageName}_2${ext}`),
       ),
       ...imageExtensions.map((ext) =>
-        path.join(__dirname, 'do_uong_co_con_ancohol', `${baseImageName}_3${ext}`),
+        path.join(__dirname, 'do_uong_co_con', `${baseImageName}_3${ext}`),
       ),
     ];
 

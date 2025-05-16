@@ -50,13 +50,6 @@ const AdminLayout: React.FC = () => {
               label="Trang chủ"
               expanded={isSidebarOpen}
             />
-
-            <NavItem
-              href="/admin/users"
-              icon={<FaUser />}
-              label="Người dùng"
-              expanded={isSidebarOpen}
-            />
             <NavItem
               href="/admin/foods"
               icon={<FaUtensils />}
@@ -75,12 +68,19 @@ const AdminLayout: React.FC = () => {
               label="Bài viết"
               expanded={isSidebarOpen}
             />
+              <NavItem
+              href="/admin/users"
+              icon={<FaUser />}
+              label="Người dùng"
+              expanded={isSidebarOpen}
+            />
             <NavItem
               href="/admin/about"
               icon={<FaInfoCircle />}
               label="Giới thiệu"
               expanded={isSidebarOpen}
             />
+            
             <NavItem
               href="/admin/contact"
               icon={<FaEnvelope />}

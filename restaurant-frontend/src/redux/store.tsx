@@ -4,13 +4,15 @@ import quickViewReducer from './feature/quickView/quickViewSlice';
 import searchModalReducer from './feature/searchModal/searchModalSlice';
 import userReducer from './feature/user/userSlice';
 import uiReducer from './feature/loadingUI/uiSlice';
+import favoriteReducer from './feature/favorite/favoriteSlice';
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     quickView: quickViewReducer,
     searchModal: searchModalReducer,
     ui: uiReducer,
-    user: userReducer
+    user: userReducer,
+    favorite: favoriteReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

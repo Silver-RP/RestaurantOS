@@ -425,6 +425,10 @@ class AuthService {
     const isMatch = await bcrypt.compare(oldPassword, user.password || '');
     if (!isMatch) throw new Error('Mật khẩu cũ không đúng');
 
+    if (oldPassword === newPassword) {
+      throw new Error('Mật khẩu mới không được trùng với mật khẩu cũ');
+    }
+
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
     await user.save();

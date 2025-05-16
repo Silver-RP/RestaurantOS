@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import UserController from '../controller/UserController';
 import AuthMiddleWare from '../middleware/AuthMiddleWare';
+
 const router = Router();
 
 router.get('/getAllUser', AuthMiddleWare.verifyToken, UserController.getAllUser);
@@ -20,5 +21,11 @@ router.get('/filterUser', async (req, res) => {
     res.status(500).json({ message: 'Error filtering users' });
   }
 });
+router.post(
+  '/addUser',
+  AuthMiddleWare.verifyToken,
+  AuthMiddleWare.verifyRole(['superadmin']),
+  UserController.addUser,
+);
 
 export default router;

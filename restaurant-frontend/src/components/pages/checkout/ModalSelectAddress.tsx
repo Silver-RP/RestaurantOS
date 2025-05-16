@@ -1,25 +1,27 @@
-import React from "react";
-import { Dialog } from "@headlessui/react";
-import { IoClose } from "react-icons/io5";
+import React from 'react';
+import { Dialog } from '@headlessui/react';
+import { IoClose } from 'react-icons/io5';
 
 export interface Address {
-  id: number;
-  name: string;
+  id: string;
+  full_name: string;
   phone: string;
-  address: string;
-  street?: string;
-  ward?: string;
-  district?: string;
-  city?: string;
-  isDefault?: boolean;
+  province: string;
+  district: string;
+  ward: string;
+  street_address: string;
+  is_default?: boolean;
+  address_type?: string;
+  lat?: number;
+  lon?: number;
 }
 
 interface ModalSelectAddressProps {
   isOpen: boolean;
   onClose: () => void;
   addresses: Address[];
-  selectedId: number;
-  onSelect: (id: number) => void;
+  selectedId: string;
+  onSelect: (id: string) => void;
   onAddAddress: () => void;
 }
 
@@ -31,17 +33,13 @@ const ModalSelectAddress = ({
   onSelect,
   onAddAddress,
 }: ModalSelectAddressProps) => {
-  // Format address string from address object parts if they exist
   const getFormattedAddress = (address: Address) => {
-    // Check if address has street, ward, district, city format
-    if ('street' in address && address.street && 
-        'ward' in address && address.ward && 
-        'district' in address && address.district && 
-        'city' in address && address.city) {
-      return `${address.street}, ${address.ward}, ${address.district}, ${address.city}`;
-    }
-    // Otherwise return the address string
-    return address.address;
+    return [
+      address.street_address,
+      address.ward,
+      address.district,
+      address.province,
+    ].filter(Boolean).join(', ');
   };
 
   return (
@@ -60,7 +58,9 @@ const ModalSelectAddress = ({
 
           <div className="space-y-4 max-h-96 overflow-y-auto">
             {addresses.length === 0 ? (
-              <p className="text-sm text-secondaryColor">Chưa có địa chỉ nào.</p>
+              <p className="text-sm text-secondaryColor">
+                Chưa có địa chỉ nào.
+              </p>
             ) : (
               addresses.map((addr) => (
                 <div
@@ -68,14 +68,14 @@ const ModalSelectAddress = ({
                   onClick={() => onSelect(addr.id)}
                   className={`cursor-pointer border p-4 rounded-lg ${
                     selectedId === addr.id
-                      ? "border-primary bg-headerBackground"
-                      : "border-gray-300"
+                      ? 'border-primary bg-headerBackground'
+                      : 'border-gray-300'
                   }`}
                 >
-                  <p className="font-semibold text-white">{addr.name}</p>
+                  <p className="font-semibold text-white">{addr.full_name}</p>
                   <p className="text-gray-300">{addr.phone}</p>
                   <p className="text-gray-300">{getFormattedAddress(addr)}</p>
-                  {addr.isDefault && (
+                  {addr.is_default && (
                     <span className="text-xs text-primary">[Mặc định]</span>
                   )}
                 </div>
@@ -83,7 +83,6 @@ const ModalSelectAddress = ({
             )}
           </div>
 
-          {/* Add Address Link */}
           <div className="mt-6 text-center">
             <span
               onClick={onAddAddress}

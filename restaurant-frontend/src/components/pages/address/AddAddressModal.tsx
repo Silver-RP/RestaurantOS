@@ -23,9 +23,8 @@ interface AddAddressModalProps {
     lon: number,
     phone: string,
     addressType: string,
-    
   ) => void;
-  total: number; 
+  total: number;
 }
 
 interface FormValues {
@@ -60,6 +59,7 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
   const [selectedWard, setSelectedWard] = useState('');
   const [isDuplicate, setIsDuplicate] = useState(false);
   const [locationError, setLocationError] = useState('');
+  const [isSearchingLocation, setIsSearchingLocation] = useState(false);
 
   const {
     control,
@@ -94,7 +94,7 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
       setLon(0);
       setIsDuplicate(false);
       setLocationError('');
-      reset(); // Reset toàn bộ form
+      reset();
     }
   }, [isOpen]);
   const normalizeStreet = (input: string): string => {
@@ -115,6 +115,7 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
       const street = normalizeStreet(watchedAddress);
 
       if (street.length > 5 && selectedDistrict && selectedWard) {
+        setIsSearchingLocation(true);
         const fullAddress = `${street}, ${selectedWard}, ${selectedDistrict}, ${selectedCity}`;
 
         try {
@@ -137,7 +138,7 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
         setLat(0);
         setLon(0);
       }
-    }, 600);
+    }, 2000);
 
     return () => clearTimeout(timeout);
   }, [watchedAddress, selectedDistrict, selectedWard]);
@@ -485,6 +486,7 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
               Không tìm thấy vị trí phù hợp. Vui lòng kiểm tra lại tên đường.
             </p>
           )}
+          
 
           {/* Address Type */}
           <div>

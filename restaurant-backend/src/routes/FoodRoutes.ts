@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import FoodController from '../controller/FoodController';
+import SearchController from '../controller/SearchController';
 import multer from 'multer';
 import AuthMiddleWare from '../middleware/AuthMiddleWare';
 
@@ -22,13 +23,14 @@ router.delete('/deletefood/:id', FoodController.deleteFood);
 router.get('/getFoodByCategory', FoodController.getFoodByCategory);
 router.get('/getFoodNewest', FoodController.getFoodByNewest);
 router.get('/getFoodBest4', FoodController.getFoodBest4);
-router.get('/getFoodBySearch', FoodController.getFoodBySearch);
+// router.get('/getFoodBySearch', FoodController.getFoodBySearch);
 router.get('/getFoodByPrice', FoodController.getFoodByPrice);
 router.get('/getFoodByRating', FoodController.getFoodByRating);
 router.get('/getFoodByFavorites', FoodController.getFoodByFavorites);
-router.get('/searchfood', FoodController.SearchFood);
 router.post('/favorite', AuthMiddleWare.verifyToken, FoodController.toggleFavorite);
 router.get('/getFavoriteFoods', AuthMiddleWare.verifyToken, FoodController.getFavoriteFoods);
 router.post('/countFoodView/:foodId', FoodController.countFoodView);
+
+router.get('/getFoodBySearch', AuthMiddleWare.verifyToken, SearchController.searchFoods);
 
 export default router;

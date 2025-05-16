@@ -3,6 +3,8 @@ import { FaHeart, FaStar, FaStarHalfAlt } from 'react-icons/fa';
 import ButtonComponents from '../../common/ButtonComponents';
 import { useAddToCart } from '@hooks/useCart';
 import { useFavorites } from '@/hooks/useFavorites';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/redux/store';
 interface ProductInfoProps {
   id: string;
   name: string;
@@ -29,11 +31,22 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
   categories,
 }) => {
   const [quantity, setQuantity] = useState(1);
-  const [wishlisted, setWishlisted] = useState(false);
   const [screenWidth, setScreenWidth] = useState(0);
   const { addToFavorites } = useFavorites(); 
   const { mutate: addToCart } = useAddToCart();
+  const favorites = useSelector((state: RootState) => state.favorite.items);
+  const isFavorited = favorites.some((item) => item.dishId._id === id);
+  const { removeFromFavorites } = useFavorites();
 
+const handleToggleFavorite = () => {
+  const favoriteItem = favorites.find((item) => item.dishId._id === id);
+
+  if (favoriteItem) {
+    removeFromFavorites(favoriteItem._id); 
+  } else {
+    addToFavorites(id);
+  }
+};
   useEffect(() => {
     const handleResize = () => {
       setScreenWidth(window.innerWidth);
@@ -132,18 +145,13 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
           THÊM GIỎ HÀNG
         </ButtonComponents>
         <button
-          className={`flex items-center justify-center gap-2 px-4 py-2 hover:text-secondaryColor rounded transition duration-300 text-sm ${
-            wishlisted ? 'text-secondaryColor' : 'text-white'
-          }`}
-          onClick={() => {
-            addToFavorites(id);
-            setWishlisted(true);
-          }}
-        >
-          <FaHeart/>
-          {/* {wishlisted ? <FaHeart /> : <FaRegHeart />}
-          {wishlisted ? 'Đã yêu thích' : 'Yêu thích'} */}
-        </button>
+  className={`flex items-center justify-center gap-2 px-4 py-2 rounded transition duration-300 text-sm ${
+    isFavorited ? 'text-red-500' : 'text-white hover:text-red-400'
+  }`}
+  onClick={handleToggleFavorite}
+>
+  <FaHeart className={`w-5 h-5 ${isFavorited ? 'text-red-500' : ''}`} />
+</button>
       </div>
       <hr className="my-6 bg-hr h-[1px] border-0" />
     </div>
