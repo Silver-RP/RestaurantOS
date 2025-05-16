@@ -1,13 +1,18 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useLocation, Outlet } from 'react-router-dom';
 import Footer from '../components/layout/footer/Footer';
 import ExtendSidebar from '../components/layout/sidebar/ExtendSidebar';
 import PrimarySidebar from '../components/layout/sidebar/PrimarySidebar';
 import MobileSidebar from '../components/layout/sidebar/MobileSidebar';
 import { SidebarProvider, useSidebar } from '../contexts/SidebarContext';
+import { useFetchFavorites } from '@/hooks/useFetchFavorites'; 
 const LayoutContent: React.FC = () => {
   const location = useLocation();
+  const { fetchFavorites } = useFetchFavorites();
 
+  useEffect(() => {
+    fetchFavorites();
+  }, [fetchFavorites]);
   const hideSidebarFooter = [
     '/login',
     '/register',

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import { Link } from 'react-router-dom';
 import ButtonComponents from '@components/common/ButtonComponents';
@@ -52,7 +53,7 @@ const CartSummary: React.FC<CartSummaryProps> = ({
 
       <Link to="/checkout" onClick={handleCheckout}>
         <ButtonComponents variant="filled" size="small" className="w-full mt-4 py-2 sm:py-3">
-          TIẾN HÀNH THANH TOÁN
+          TIẾN HÀNH ĐẶT HÀNG
         </ButtonComponents>
       </Link>
     </div>

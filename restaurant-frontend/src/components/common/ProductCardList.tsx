@@ -1,9 +1,13 @@
 import React from 'react';
 import { FiShoppingCart, FiEye, FiHeart, FiCheckSquare } from 'react-icons/fi';
+import { FaHeart } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { ProductCardProps } from '../../types/ProductCard.types';
 import { useAppDispatch } from '../../redux/hook';
 import { openQuickView } from '../../redux/feature/quickView/quickViewSlice';
+import { useFavorites } from '@/hooks/useFavorites';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/redux/store';
 
 const formatNumberShort = (num: number): string => {
   if (num >= 1_000_000)
@@ -30,10 +34,12 @@ const ProductCardList: React.FC<ProductCardProps> = ({
   rating,
   rating_count,
   createdAt,
-  onAddToFavorite,
 }) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const { toggleFavorite } = useFavorites();
+  const favoriteItems = useSelector((state: RootState) => state.favorite.items);
+  const isFavorited = favoriteItems.some((fav) => fav.dishId && fav.dishId._id === id);
 
   const handleNavigateToDetail = () => {
     navigate(`/foods/${slug}`);
@@ -72,6 +78,7 @@ const ProductCardList: React.FC<ProductCardProps> = ({
 
   const handleAddToFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
+    toggleFavorite(id);
   };
 
   return (
@@ -111,8 +118,7 @@ const ProductCardList: React.FC<ProductCardProps> = ({
             <FiEye className="w-3 h-3" /> {formatNumberShort(views ?? 0)}
           </span>
           <span className="min-w-[56px] justify-center bg-secondaryColor text-black text-[10px] font-semibold px-2 py-1 rounded-sm flex items-center gap-1">
-            <FiCheckSquare className="w-3 h-3" />{' '}
-            {formatNumberShort(ordered_count ?? 0)}
+            <FiCheckSquare className="w-3 h-3" /> {formatNumberShort(ordered_count ?? 0)}
           </span>
         </div>
 
@@ -145,17 +151,17 @@ const ProductCardList: React.FC<ProductCardProps> = ({
 
           <div className="relative group/tooltip">
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onAddToFavorite();
-              }}
-              className="p-1.5 sm:p-2 bg-white text-[#002B40] rounded-full shadow-md 
-         hover:bg-secondaryColor hover:text-white hover:-translate-y-1 transition-all duration-300"
+              onClick={handleAddToFavorite}
+              className="p-1.5 sm:p-2 bg-white rounded-full shadow-md hover:bg-secondaryColor hover:text-white hover:-translate-y-1 transition-all duration-300"
             >
-              <FiHeart size={18} />
+              {isFavorited ? (
+                <FaHeart size={18} className="text-red-500" />
+              ) : (
+                <FiHeart size={18} className="text-black" />
+              )}
             </button>
             <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover/tooltip:opacity-100 transition-all duration-300 z-20 pointer-events-none">
-              Yêu thích
+              {isFavorited ? 'Đã yêu thích' : 'Yêu thích'}
               <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-black rotate-45"></div>
             </div>
           </div>
