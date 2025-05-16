@@ -89,13 +89,17 @@ class OrderController {
       if (!req.user) {
         return res.status(401).json({ message: 'Unauthorized' });
       }
+
       const userId = (req.user as IUser).id as Types.ObjectId;
-      const status = typeof req.query.status === 'string' ? req.query.status : null;
-      const orders = await OrderService.getUserOrders(userId, status);
+      const deliveryStatus = typeof req.query.delivery_status === 'string' ? req.query.delivery_status : null;
+      const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
+      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 5;
+
+      const result = await OrderService.getUserOrders(userId, deliveryStatus, page, limit);
 
       return res.status(200).json({
         message: 'Orders retrieved successfully',
-        orders,
+        ...result, // gồm orders, totalItems, totalPages, currentPage
       });
     } catch (error: any) {
       console.error('Error retrieving orders:', error.message);

@@ -1,29 +1,40 @@
-'use client';
-
-import React, { useEffect, useState } from 'react';
-import NavigationOrder from '../components/pages/order/NavigationOrder';
-import OrderItem from '../components/pages/order/OrderItem';
+import React, { useState, useEffect } from 'react';
+import NavigationOrder, { deliveryStatusMapping } from '../components/pages/order/NavigationOrder';
 import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
-import { FaHome, FaUserCircle } from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight, FaHome, FaUserCircle } from 'react-icons/fa';
 import { useOrders } from '@/hooks/useOrder';
 import { toast } from 'react-toastify';
+import OrderItemComponent from '../components/pages/order/OrderItem';
+import { DeliveryStatus } from '@/types/Order.type';
 
 const OrderPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('Tất cả đơn hàng');
   const [page, setPage] = useState(1);
-  const limit = 5;
+  const [limit, setLimit] = useState(5);
 
-  const { data, isLoading, isError } = useOrders({ page, limit });
+  const delivery_status_raw = deliveryStatusMapping[activeTab]?.delivery_status;
+
+  const delivery_status = delivery_status_raw as DeliveryStatus | DeliveryStatus[] | undefined;
+
+  const { data, isLoading, isError } = useOrders({
+    delivery_status,
+    page,
+    limit,
+  });
+
+
   const orders = data?.orders || [];
-  console.log("orders:", orders);
-  
-  const totalPages = data?.totalPages || 1;
 
   useEffect(() => {
-    if (isError) {
-      toast.error('Lỗi khi tải danh sách đơn hàng');
-    }
+    if (isError) toast.error('Lỗi khi tải danh sách đơn hàng');
   }, [isError]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [activeTab]);
+
+  const totalItems = data?.totalItems ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalItems / limit));
 
   return (
     <>
@@ -32,67 +43,83 @@ const OrderPage: React.FC = () => {
       <div className="flex py-10 bg-bodyBackground min-h-auto text-white">
         <div className="w-11/12 md:w-container95 lg:w-container95 xl:w-container95 2xl:w-mainContainer mx-auto space-y-6">
           
-          {/* Navigation Tabs */}
           <NavigationOrder activeTab={activeTab} onTabChange={setActiveTab} />
 
-          {/* Loading State */}
           {isLoading && <p>Đang tải đơn hàng...</p>}
 
-          {/* Empty State */}
           {!isLoading && orders.length === 0 && (
             <p className="text-white/70">Bạn chưa có đơn hàng nào.</p>
           )}
 
-          {/* Order List */}
-          {!isLoading &&
-            orders.map((order) => (
-              <OrderItem
-                key={order._id}
-                reviewDate={order.delivered_at ?? order.createdAt}
-                items={order.items || []}
-              />
-            ))}
+          {!isLoading && orders.map(order => (
+            <OrderItemComponent
+              key={order._id}
+              reviewDate={order.delivered_at ?? order.createdAt}
+              order={order}
+            />
+          ))}
 
           {/* Pagination */}
           {!isLoading && totalPages > 1 && (
-            <div className="flex justify-center items-center gap-3 pt-6">
-              <button
-                disabled={page === 1}
-                onClick={() => setPage(page - 1)}
-                className={`px-3 py-1 border rounded ${
-                  page === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white/10'
-                }`}
-              >
-                Trước
-              </button>
-              <span>
-                Trang {page} / {totalPages}
-              </span>
-              <button
-                disabled={page === totalPages}
-                onClick={() => setPage(page + 1)}
-                className={`px-3 py-1 border rounded ${
-                  page === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white/10'
-                }`}
-              >
-                Sau
-              </button>
+            <div className="flex items-center justify-between gap-4 py-6 w-full">
+              {/* Hiển thị */}
+              <div className="flex items-center gap-2 text-base">
+                <span>Hiển thị</span>
+                <span className="font-bold">5 / {totalItems}</span>
+                <span>đơn hàng</span>
+              </div>
+
+              {/* Số trang */}
+              <div className="flex items-center gap-3">
+                {/* Trang trước - chỉ hiển thị khi không ở trang đầu tiên */}
+                {page > 1 && (
+                  <button
+                    className="flex items-center justify-center"
+                    onClick={() => setPage(page - 1)}
+                  >
+                    <span className="text-xl"><FaChevronLeft /></span>
+                  </button>
+                )}
+                
+                {/* Các số trang */}
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                  <button
+                    key={p}
+                    className={`w-8 h-8 flex items-center justify-center rounded-full ${
+                      p === page 
+                        ? 'border border-secondaryColor text-secondaryColor font-bold' 
+                        : 'text-white hover:text-secondaryColor'
+                    }`}
+                    onClick={() => setPage(p)}
+                  >
+                    {p}
+                  </button>
+                ))}
+                
+                {/* Trang tiếp - chỉ hiển thị khi không ở trang cuối cùng */}
+                {page < totalPages && (
+                  <button
+                    className="flex items-center justify-center"
+                    onClick={() => setPage(page + 1)}
+                  >
+                    <span className="text-xl"><FaChevronRight /></span>
+                  </button>
+                )}
+              </div>
+
+              {/* Trang X / Y */}
+              <div className="text-base text-white/90">
+                Trang <span className="text-secondaryColor font-bold">{page} / {totalPages}</span> 
+              </div>
             </div>
           )}
 
-          {/* Footer Navigation */}
           <div className="flex items-center gap-6 py-4 text-sm">
-            <a
-              href="/account"
-              className="flex items-center gap-2 hover:underline text-white/70"
-            >
+            <a href="/account" className="flex items-center gap-2 hover:underline text-white/70">
               <FaUserCircle />
               <span>Quay lại Tài khoản</span>
             </a>
-            <a
-              href="/"
-              className="flex items-center gap-2 hover:underline text-white/70"
-            >
+            <a href="/" className="flex items-center gap-2 hover:underline text-white/70">
               <FaHome />
               <span>Trang chủ</span>
             </a>
