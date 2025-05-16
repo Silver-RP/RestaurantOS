@@ -3,8 +3,9 @@ import { useFoods } from '../../../../hooks/useFoods';
 import React, { useState, useEffect } from 'react';
 import AdminPagination from '../AdminPagination';
 import { useNavigate } from 'react-router-dom';
-import { FaSort, FaArrowUp, FaArrowDown } from 'react-icons/fa';
+import { FaSort, FaArrowUp, FaArrowDown, FaSearch } from 'react-icons/fa';
 import AdvancedFilterPanel from './AdvancedFilterPanel';
+
 
 type SortField =
   | 'name'
@@ -28,12 +29,7 @@ const MenuTable: React.FC = () => {
 
   const [search, setSearch] = useState('');
   const navigate = useNavigate();
-
-  const handleEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && search.trim()) {
-      navigate(`/admin/foods/search?query=${search.trim()}`);
-    }
-  };
+  
   useEffect(() => {
     const newParams = new URLSearchParams(searchParams.toString());
     newParams.set('keyword', search);
@@ -76,6 +72,16 @@ const MenuTable: React.FC = () => {
     });
   };
 
+  const handleEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && search.trim()) {
+      navigate(`/admin/foods/search?query=${search.trim()}`);
+    }
+  };
+
+  const handleClick = () => {
+    navigate(`/admin/foods/search?query=${search.trim()}`);
+  };
+
   const getSortIcon = (field: SortField) => {
     if (sortField === field) {
       return sortDirection === 'asc' ? <FaArrowUp /> : <FaArrowDown />;
@@ -87,7 +93,7 @@ const MenuTable: React.FC = () => {
     <div>
       <div className="flex flex-wrap gap-4 mb-4 items-center justify-between">
         <div className="flex gap-4 ">
-          <div className="w-96">
+          <div className="w-96  relative">
             <input
               type="text"
               placeholder="Tìm món..."
@@ -96,6 +102,14 @@ const MenuTable: React.FC = () => {
               onKeyDown={handleEnter}
               className="px-4 py-2 border rounded-md w-full"
             />
+            <button
+            onClick={handleClick}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-900"
+            aria-label="Search"
+            type="button"
+          >
+            <FaSearch size={18} />
+          </button>
           </div>
         </div>
 
