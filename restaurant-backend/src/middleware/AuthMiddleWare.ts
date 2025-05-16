@@ -32,7 +32,6 @@ class AuthMiddleWare {
       }
 
       const decoded = jwt.verify(token, process.env.REFRESH_TOKEN as string) as any;
-      console.log('Decoded refresh token:', decoded);
 
       const storedToken = await RefreshToken.findOne({ token });
       if (!storedToken) {

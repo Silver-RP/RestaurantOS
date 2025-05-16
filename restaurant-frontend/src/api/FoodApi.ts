@@ -10,6 +10,7 @@ export interface FetchFoodsParams {
   category?: string;
   search?: string;
 }
+
 export const fetchAllFoods = async (
   params: FetchFoodsParams,
 ): Promise<FoodResponse> => {
@@ -30,7 +31,6 @@ export const fetchAllFoods = async (
   const res = await api.get<{ data: FoodResponse }>(
     `/food/getallfood?${queryString.toString()}`,
   );
-  console.log(res.data);
   return res.data.data;
 };
 
@@ -79,3 +79,20 @@ export const countFoodView = async (foodId: string): Promise<void> => {
     console.error('Error counting food view:', error);
   }
 };
+
+export const fetchFoodBySearch = async ({ search, page, limit }: FetchFoodsParams): Promise<FoodResponse> => {
+  const res = await api.get<{ data: FoodResponse }>(
+    `/food/getFoodBySearch`,
+    {
+      params: {
+        keyword: search,
+        page,
+        limit
+      },
+    }
+  );
+  console.log('res', res);
+  return res.data.data;
+};
+
+

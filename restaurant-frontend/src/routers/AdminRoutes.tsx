@@ -1,5 +1,4 @@
 // src/routes/AdminRoutes.tsx
-import React from "react";
 import { Navigate } from "react-router-dom";
 
 import FoodList from "../components/pages/admin/food/index";
@@ -14,6 +13,7 @@ import CreateCategoryPage from "@components/pages/admin/category/Create";
 import EditCategoryPage from "@components/pages/admin/category/Edit";
 import UserIndexPage from "@/components/pages/admin/user";
 import CreateUserPage from "@/components/pages/admin/user/CreateUserPage";
+import SearchResults from "@/components/pages/admin/food/SearchResults";
 
 
 const adminRoutes = [
@@ -29,6 +29,7 @@ const adminRoutes = [
       { path: "foods", element: <FoodList /> },
       { path: "foods/create", element: <FoodCreatePage /> },
       { path: "foods/edit/:slug", element: <FoodEditPage /> },
+      { path: "foods/search", element: <SearchResults /> },
       { path: 'categories', element: <CategoriesPage />},
       { path: "categories/create", element: <CreateCategoryPage /> },
       { path: "categories/edit/:id", element: <EditCategoryPage /> },
