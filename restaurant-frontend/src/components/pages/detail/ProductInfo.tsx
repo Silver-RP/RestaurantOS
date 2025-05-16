@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { FaHeart, FaStar, FaStarHalfAlt } from 'react-icons/fa';
+import { FaHeart } from 'react-icons/fa';
 import ButtonComponents from '../../common/ButtonComponents';
 import { useAddToCart } from '@hooks/useCart';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
+import { FilledStar, HalfStar, EmptyStar } from '../../common/StarIcons'; 
 interface ProductInfoProps {
   id: string;
   name: string;
@@ -65,13 +66,17 @@ const handleToggleFavorite = () => {
   const renderStars = () => {
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating - fullStars >= 0.5;
-
+    const totalStars = 5;
+  
     return (
       <>
         {[...Array(fullStars)].map((_, i) => (
-          <FaStar key={i} />
+          <FilledStar key={`full-${i}`} />
         ))}
-        {hasHalfStar && <FaStarHalfAlt />}
+        {hasHalfStar && <HalfStar key="half" />}
+        {[...Array(totalStars - fullStars - (hasHalfStar ? 1 : 0))].map((_, i) => (
+          <EmptyStar key={`empty-${i}`} />
+        ))}
       </>
     );
   };

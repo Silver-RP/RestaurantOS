@@ -132,9 +132,10 @@ export const useFoodNewest = () => {
 };
 
 export const useFoodBest4 = (categoryId: string) => {
-  return useQuery<FoodResponse>({
+  return useQuery({
     queryKey: ['foodBest4', categoryId],
     queryFn: () => fetchFoodBest4(categoryId),
+    enabled: !!categoryId, // chỉ gọi khi có categoryId
     refetchOnWindowFocus: false,
   });
 };

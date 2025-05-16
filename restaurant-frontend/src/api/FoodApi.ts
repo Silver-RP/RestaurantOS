@@ -48,11 +48,9 @@ export const fetchFoodNewest = async (): Promise<FoodResponse> => {
 
 export const fetchFoodBest4 = async (
   categoryId: string,
-): Promise<FoodResponse> => {
-  const res = await api.get<{ data: FoodResponse }>(
-    `/food/getFoodBest4?category=${categoryId}`,
-  );
-  return res.data.data;
+): Promise<FoodDetail[]> => {
+  const res = await api.get(`/food/getFoodBest4?category=${categoryId}`);
+  return res.data?.data || [];
 };
 
 export const fetchFoodByFavorite = async (
