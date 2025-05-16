@@ -3,16 +3,22 @@
 import { toastService } from '@/utils/toastService';
 import { addToFavorites as addFavoriteApi, removeFavorite as removeFavoriteApi } from '@/api/FavoriteApi';
 import { FavoriteItem } from '@/types/Dish.types';
-import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '@/redux/store';
+import {
+  addFavorite,
+  removeFavoriteSuccess,
+} from '@/redux/feature/favorite/favoriteSlice';
 
 export const useFavorites = () => {
-  const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
+  const dispatch = useDispatch();
+  const favorites = useSelector((state: RootState) => state.favorite.items);
 
   const addToFavorites = async (dishId: string) => {
     try {
       const response = await addFavoriteApi(dishId);
       const addedItem = response.data;
-      setFavorites((prev) => [...prev, addedItem]);
+      dispatch(addFavorite(addedItem));
       toastService.success('Đã thêm vào danh sách yêu thích');
     } catch (err: any) {
       if (err?.response?.status === 409) {
@@ -26,7 +32,7 @@ export const useFavorites = () => {
   const removeFromFavorites = async (favoriteId: string) => {
     try {
       await removeFavoriteApi(favoriteId);
-      setFavorites((prev) => prev.filter((item) => item._id !== favoriteId));
+      dispatch(removeFavoriteSuccess(favoriteId));
       toastService.success('Đã xoá khỏi danh sách yêu thích');
     } catch {
       toastService.error('Xoá khỏi danh sách yêu thích thất bại');
@@ -35,7 +41,6 @@ export const useFavorites = () => {
 
   return {
     favorites,
-    setFavorites,
     addToFavorites,
     removeFromFavorites,
   };
