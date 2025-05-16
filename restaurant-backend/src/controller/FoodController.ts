@@ -1,8 +1,6 @@
 import FoodService from '../services/FoodService';
 import { Request, Response } from 'express';
 import UploadImage from '../services/UploadImage';
-import { Dish } from '../models/DishModel';
-import SearchService from '../services/SearchService';
 import mongoose from 'mongoose';
 import { Types } from 'mongoose';
 import { IUser } from '../models/UserModel';
@@ -146,7 +144,7 @@ class FoodController {
       const foodId = String(req.params.id);
       const food = await FoodService.getFoodById(foodId);
       res.status(200).json(food);
-    } catch (error) {
+    } catch {
       throw new Error('Error getting food by id');
     }
   }
@@ -173,7 +171,7 @@ class FoodController {
       const { id } = req.params;
       const updatedFood = await FoodService.updateFood(id, req.body);
       res.status(200).json(updatedFood);
-    } catch (error) {
+    } catch {
       throw new Error('Error updating food');
     }
   }
@@ -183,7 +181,7 @@ class FoodController {
       const { id } = req.params;
       const deletedFood = await FoodService.deleteFood(id);
       res.status(200).json(deletedFood);
-    } catch (error) {
+    } catch {
       throw new Error('Error deleting food');
     }
   }
@@ -204,7 +202,7 @@ class FoodController {
       const { search } = req.query;
       const food = await FoodService.getFoodBySearch(String(search));
       res.status(200).json(food);
-    } catch (error) {
+    } catch {
       throw new Error('Error getting food by search');
     }
   }
@@ -214,7 +212,7 @@ class FoodController {
       const { min, max } = req.query;
       const food = await FoodService.getFoodByPrice(Number(min), Number(max));
       res.status(200).json(food);
-    } catch (error) {
+    } catch {
       throw new Error('Error getting food by price');
     }
   }
@@ -224,7 +222,7 @@ class FoodController {
       const { rating } = req.query;
       const food = await FoodService.getFoodByRating(Number(rating));
       res.status(200).json(food);
-    } catch (error) {
+    } catch {
       throw new Error('Error getting food by rating');
     }
   }

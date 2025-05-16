@@ -41,8 +41,8 @@ export const fetchFoodBySlug = async (slug: string): Promise<FoodDetail> => {
   return res.data.data;
 };
 
-export const fetchFoodNewest = async (): Promise<FoodResponse> => {
-  const res = await api.get<{ data: FoodResponse }>('/food/getFoodNewest');
+export const fetchFoodNewest = async (): Promise<FoodDetail[]> => {
+  const res = await api.get<{ data: FoodDetail[] }>('/food/getFoodNewest');
   return res.data.data;
 };
 
@@ -63,6 +63,7 @@ export const fetchFoodByFavorite = async (
         params: { type },
       },
     );
+    console.log(res.data.data)
     return res.data.data;
   } catch (error) {
     console.error('Error fetching food by favorite:', error);

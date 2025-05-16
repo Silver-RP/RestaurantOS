@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import TabNavigation from "./TabNavigation";
 import MenuGrid from "./MenuGrid";
 import { useDishByFavoriteCategory } from "@hooks/useFoods";
+import Container from "@/components/common/Container";
 
 const BestOffersSection: React.FC = () => {
   const tabs = ["Đồ ăn", "Đồ uống"];
@@ -10,7 +11,7 @@ const BestOffersSection: React.FC = () => {
   const { data, isLoading, isError } = useDishByFavoriteCategory(cateTypes[activeTab]);
   return (
     <section className="w-full bg-bodyBackground py-16">
-      <div className="w-11/12 md:w-container95 lg:w-mainContainer xl:w-container95 2xl:w-mainContainer mx-auto">
+      <Container>
         <img src="/assets/images/home/IconOnline.svg" alt="Icon" className="mx-auto mb-8" />
         <h2 className="text-3xl sm:text-4xl md:text-5xl font-restora justify-center text-white flex font-thin mb-4">
           Món ăn yêu thích nhất
@@ -48,7 +49,7 @@ const BestOffersSection: React.FC = () => {
             XEM THỰC ĐƠN
           </button>
         </div>
-      </div>
+      </Container>
     </section>
   );
 };

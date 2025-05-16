@@ -12,7 +12,7 @@ const ContactCard = () => {
       </div>
 
       <div className="w-full lg:w-1/2 flex items-center justify-center px-4 py-8 lg:py-20">
-        <div className="relative w-full max-w-[447px]">
+        <div className="relative w-full md:max-w-[360px] lg:max-w-[447px]">
           <div className="absolute hidden lg:block inset-0 border-2 translate-x-2 translate-y-2 border-secondaryColor"></div>
 
           <div className="relative bg-transparent border-2 border-secondaryColor px-6 py-8 lg:px-12 lg:py-16 text-center shadow-lg">
