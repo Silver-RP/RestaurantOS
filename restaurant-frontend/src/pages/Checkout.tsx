@@ -196,9 +196,6 @@ const CheckoutPage = () => {
 
   const selectedAddress = addresses.find((addr) => addr.id === selectedId);
 
-  // 1. Pickup: Always 0 VND (free)
-  // 2. Delivery with immediate time: 25,000 VND
-  // 3. Delivery with scheduled time: 35,000 VND (premium fee)
   useEffect(() => {
     if (deliveryMethod === 'pickup') {
       setShippingFee(0);
