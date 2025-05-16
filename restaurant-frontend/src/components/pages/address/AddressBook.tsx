@@ -17,7 +17,6 @@ interface Address {
 
 const AddressBook: React.FC = () => {
   const { data, error, refetch } = useUserAddresses();
-  console.log('📦 Address data:', data);
 
   const [defaultForm, setDefaultForm] = useState<Address>({
     name: '',

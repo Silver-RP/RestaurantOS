@@ -1,52 +1,68 @@
-import React, { useState } from "react";
-import ModalSelectAddress, { Address } from "./ModalSelectAddress";
-import { AddAddressModal } from "../address/AddAddressModal";
+import React, { useEffect, useState } from 'react';
+import ModalSelectAddress, { Address } from './ModalSelectAddress';
+import { AddAddressModal } from '../address/AddAddressModal';
 import ModalSelectDeliveryTime, {
   DeliveryTime,
-} from "./ModalSelectDeliveryTime";
+} from './ModalSelectDeliveryTime';
+
 
 interface Props {
   addresses: Address[];
-  selectedId: number | null;
-  onSelect: (id: number) => void;
-  onAdd: (newAddr: Omit<Address, "id">) => void;
+  selectedId: string | null;
+  onSelect: (id: string) => void;
+  onAdd: (newAddr: Omit<Address, 'id'>) => void;
   onDeliveryTimeChange?: (deliveryTime: DeliveryTime) => void;
   initialDeliveryTime?: DeliveryTime;
-  deliveryMethod?: "delivery" | "pickup";
-  onDeliveryMethodChange?: (method: "delivery" | "pickup") => void;
+  deliveryMethod?: 'delivery' | 'pickup';
+  onDeliveryMethodChange?: (method: 'delivery' | 'pickup') => void;
+  refetch: () => void; 
 }
-
-// Define delivery methods
-type DeliveryMethod = "delivery" | "pickup";
 
 const ShippingAddressSection = ({
   addresses,
   selectedId,
   onSelect,
   onAdd,
-  onDeliveryTimeChange = () => { },
-  initialDeliveryTime = { type: "now" },
-  deliveryMethod = "delivery",
-  onDeliveryMethodChange = () => { },
+  onDeliveryTimeChange = () => {},
+  initialDeliveryTime = { type: 'now' },
+  deliveryMethod = 'delivery',
+  onDeliveryMethodChange = () => {},
 }: Props) => {
+
+
+ 
   const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isDeliveryTimeModalOpen, setIsDeliveryTimeModalOpen] = useState(false);
-  const [deliveryTime, setDeliveryTime] = useState<DeliveryTime>(initialDeliveryTime);
+  const [deliveryTime, setDeliveryTime] =
+    useState<DeliveryTime>(initialDeliveryTime);
 
-  const selected = addresses.find((addr) => addr.id === selectedId);
+const selected = addresses.find((addr) => addr.id === String(selectedId));
+
+  useEffect(() => {
+    if (!selectedId && addresses.length > 0) {
+      const defaultAddr = addresses.find((a) => a.is_default);
+      if (defaultAddr) {
+        console.log('✅ Auto-select default:', defaultAddr.id);
+        onSelect(defaultAddr.id); // 👈 đúng ID từ API
+      }
+    }
+  }, [addresses, selectedId]);
 
   const getFormattedAddress = (address: Address) => {
-    if ('street' in address && 'ward' in address && 'district' in address && 'city' in address) {
-      return `${address.street}, ${address.ward}, ${address.district}, ${address.city}`;
-    }
-    // Return the address string if it's already formatted
-    return address.address;
+    return [
+      address.street_address,
+      address.ward,
+      address.district,
+      address.province,
+    ]
+      .filter(Boolean)
+      .join(', ');
   };
 
   const handleOpenAddModal = () => {
-    setIsSelectModalOpen(false); // Close select modal if open
-    setIsAddModalOpen(true); // Open add modal
+    setIsSelectModalOpen(false);
+    setIsAddModalOpen(true);
   };
 
   const handleSaveAddress = (
@@ -55,15 +71,22 @@ const ShippingAddressSection = ({
     lon: number,
     name: string,
     phone: string,
-    addressType: string
+    addressType: string,
   ) => {
     onAdd({
-      name,
+      address_type: addressType,
+      full_name: name,
       phone,
-      address,
-      isDefault: addresses.length === 0,
+      province: address,
+      district: address,
+      ward: address,
+      street_address: address,
+      lat,
+      lon,
+      is_default: addresses.length === 0,
     });
     setIsAddModalOpen(false);
+    refetch();
   };
 
   const handleDeliveryTimeSelect = (selectedTime: DeliveryTime) => {
@@ -71,40 +94,34 @@ const ShippingAddressSection = ({
     onDeliveryTimeChange(selectedTime);
   };
 
-  // Format delivery time for display
   const getFormattedDeliveryTime = () => {
-    if (deliveryTime.type === "now") {
-      return "Giao hàng ngay khi chuẩn bị xong";
-    } else if (deliveryTime.type === "scheduled" && deliveryTime.scheduledTime) {
-      const options: Intl.DateTimeFormatOptions = {
-        weekday: "long",
-        day: "numeric",
-        month: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      };
-      return `Giao vào ${deliveryTime.scheduledTime.toLocaleString("vi-VN", options)}`;
+    if (deliveryTime.type === 'now') return 'Giao hàng ngay khi chuẩn bị xong';
+    if (deliveryTime.type === 'scheduled' && deliveryTime.scheduledTime) {
+      return `Giao vào ${deliveryTime.scheduledTime.toLocaleString('vi-VN', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })}`;
     }
-    return "Chưa chọn thời gian giao hàng";
+    return 'Chưa chọn thời gian giao hàng';
   };
-
-  // Store locations (example data)
-  const storeLocations = [
-    { id: 1, name: "Nhà Hàng BeefBeef", address: "161 đường Quốc Hương, Thảo Điền, Quận 2", phone: "055 1234 5678" },
-  ];
 
   return (
     <div className="border border-hr rounded-lg p-4 shadow-sm">
-      <h2 className="font-semibold text-lg text-white mb-3">Phương Thức Nhận Hàng</h2>
+      <h2 className="font-semibold text-lg text-white mb-3">
+        Phương Thức Nhận Hàng
+      </h2>
 
-      {/* Delivery method selection */}
+      {/* Delivery method */}
       <div className="flex gap-4 mb-4">
         <label className="flex items-center cursor-pointer">
           <input
             type="radio"
             name="deliveryMethod"
-            checked={deliveryMethod === "delivery"}
-            onChange={() => onDeliveryMethodChange("delivery")}
+            checked={deliveryMethod === 'delivery'}
+            onChange={() => onDeliveryMethodChange('delivery')}
             className="mr-2"
           />
           <span>Giao hàng tận nơi</span>
@@ -113,24 +130,23 @@ const ShippingAddressSection = ({
           <input
             type="radio"
             name="deliveryMethod"
-            checked={deliveryMethod === "pickup"}
-            onChange={() => onDeliveryMethodChange("pickup")}
+            checked={deliveryMethod === 'pickup'}
+            onChange={() => onDeliveryMethodChange('pickup')}
             className="mr-2"
           />
           <span>Đến lấy tại cửa hàng</span>
         </label>
       </div>
 
-      {/* Show different content based on delivery method */}
-      {deliveryMethod === "delivery" ? (
+      {deliveryMethod === 'delivery' ? (
         <>
           <h3 className="font-semibold text-white mb-2">Địa Chỉ Nhận Hàng</h3>
-          {addresses.length === 0 ? (
+          {addresses.length === 0 || !selected ? (
             <div className="text-sm text-white/50">
-              Bạn chưa có địa chỉ nhận hàng.{" "}
+              Bạn chưa có địa chỉ nhận hàng.
               <span
-                className="text-blue-500 underline cursor-pointer"
-                onClick={() => setIsAddModalOpen(true)}
+                className="text-blue-500 underline cursor-pointer ml-1"
+                onClick={handleOpenAddModal}
               >
                 Thêm địa chỉ mới
               </span>
@@ -138,11 +154,11 @@ const ShippingAddressSection = ({
           ) : (
             <>
               <p className="font-medium">
-                {selected?.name} ({selected?.phone})
+                {selected.full_name} ({selected.phone})
               </p>
               <p className="text-sm text-white/50">
-                {selected && getFormattedAddress(selected)}
-                {selected?.isDefault && (
+                {getFormattedAddress(selected)}
+                {selected.is_default && (
                   <span className="ml-2 px-1 text-red-500 border border-red-500 text-xs">
                     Mặc Định
                   </span>
@@ -157,9 +173,11 @@ const ShippingAddressSection = ({
             </>
           )}
 
-          {/* Delivery Time Section */}
+          {/* Delivery time */}
           <div className="mt-4 pt-4 border-t border-white/10">
-            <h3 className="font-semibold text-white mb-2">Thời Gian Giao Hàng</h3>
+            <h3 className="font-semibold text-white mb-2">
+              Thời Gian Giao Hàng
+            </h3>
             <div className="flex items-center">
               <p className="text-sm text-white/70">
                 {getFormattedDeliveryTime()}
@@ -176,26 +194,19 @@ const ShippingAddressSection = ({
       ) : (
         <>
           <h3 className="font-semibold text-white mb-2">Nhà Hàng Nhận Hàng</h3>
-          <div className="space-y-4">
-            {storeLocations.map((store) => (
-              <div
-                key={store.id}
-                className=""
-              >
-                <p className="font-medium">{store.name}</p>
-                <p className="text-sm text-white/50">{store.address} ({store.phone})</p>
-              </div>
-            ))}
+          <div className="text-white text-sm">
+            Nhà Hàng BeefBeef – 161 Quốc Hương, Thảo Điền, Quận 2 (055 1234
+            5678)
           </div>
         </>
       )}
 
-      {/* Modal for selecting an address */}
+      {/* Modals */}
       <ModalSelectAddress
         isOpen={isSelectModalOpen}
         onClose={() => setIsSelectModalOpen(false)}
         addresses={addresses}
-        selectedId={selectedId ?? -1}
+        selectedId={selectedId ?? ''}
         onSelect={(id) => {
           onSelect(id);
           setIsSelectModalOpen(false);
@@ -203,7 +214,6 @@ const ShippingAddressSection = ({
         onAddAddress={handleOpenAddModal}
       />
 
-      {/* Modal for selecting delivery time */}
       <ModalSelectDeliveryTime
         isOpen={isDeliveryTimeModalOpen}
         onClose={() => setIsDeliveryTimeModalOpen(false)}
@@ -211,7 +221,6 @@ const ShippingAddressSection = ({
         currentSelection={deliveryTime}
       />
 
-      {/* Modal for adding a new address */}
       <AddAddressModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
