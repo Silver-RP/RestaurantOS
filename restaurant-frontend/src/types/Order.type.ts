@@ -33,29 +33,54 @@ export type DeliveryTimeType =
   | 'ASAP' 
   | 'SCHEDULED';
 
-export interface OrderItem {
+export interface Dish {
   _id: string;
-  product_id: string;
-  order_id: string;
   name: string;
+  shortDescription: string;
+  description: string;
+  ingredients: string;
   price: number;
   discount_price?: number;
+  slug: string;
+  images: string[];
+  status: string;
+  views: number;
+  ordered_count: number;
+  average_rating: number;
+  rating_count: number;
+  favorites_count: number;
+  rating: number;
+  categories: string[];
+  countInStock: number;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+  discountUntil?: string | null;
+  isNew: boolean;
+  newUntil?: string | null;
+  totalSoldQuantity: number;
+  recommend: boolean;
+}
+
+export interface OrderItem {
+  _id: string;
+  order_id: string;
+  dish_id: Dish; // Tham chiếu object Dish đầy đủ
+  dish_name: string;
+  unit_price: number;
   quantity: number;
-  note?: string;
-  image?: string;
-  category?: string;
-  options?: Array<{
-    name: string;
-    value: string;
-    price?: number;
-  }>;
+  total_amount: number;
+  note?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
 }
 
 export interface Order {
   _id: string;
   user_id: string;
   cashier_order_id: string | null;
-  address_id: string;
+  address_id: string | null;
   payment_method: PaymentMethod;
   delivery_type: DeliveryType;
   delivery_status: DeliveryStatus;
@@ -78,9 +103,9 @@ export interface Order {
   __v: number;
   delivery_time_type: DeliveryTimeType;
   scheduled_time: string | null;
-  items?: OrderItem[];
-  
-  // Additional fields that might be populated
+  order_items?: OrderItem[];
+
+  // Additional optional fields
   address?: {
     address: string;
     name: string;
@@ -89,10 +114,11 @@ export interface Order {
 }
 
 export interface OrdersResponse {
+  message: string;
   orders: Order[];
-  totalOrders: number;
-  currentPage: number;
-  totalPages: number;
+  totalOrders?: number;
+  currentPage?: number;
+  totalPages?: number;
 }
 
 export interface OrderDetailResponse {

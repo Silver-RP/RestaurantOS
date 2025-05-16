@@ -2,28 +2,32 @@
 
 import React, { useEffect, useState } from 'react';
 import NavigationOrder from '../components/pages/order/NavigationOrder';
-import OrderItem from '../components/pages/order/OrderItem';
 import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
 import { FaHome, FaUserCircle } from 'react-icons/fa';
 import { useOrders } from '@/hooks/useOrder';
 import { toast } from 'react-toastify';
+import OrderItemComponent from '../components/pages/order/OrderItem';
 
 const OrderPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('Tất cả đơn hàng');
   const [page, setPage] = useState(1);
   const limit = 5;
 
-  const { data, isLoading, isError } = useOrders({ page, limit });
-  const orders = data?.orders || [];
-  console.log("orders:", orders);
+  // Gọi hook mà không truyền page và limit, giả sử hook fetch toàn bộ đơn hàng 1 lần
+  const { data, isLoading, isError } = useOrders({});
+  const allOrders = data?.orders || [];
   
-  const totalPages = data?.totalPages || 1;
-
   useEffect(() => {
     if (isError) {
       toast.error('Lỗi khi tải danh sách đơn hàng');
     }
   }, [isError]);
+
+  // Tính tổng trang theo số lượng đơn hàng toàn bộ
+  const totalPages = Math.ceil(allOrders.length / limit);
+
+  // Lấy danh sách đơn hàng phân trang tại FE
+  const pagedOrders = allOrders.slice((page - 1) * limit, page * limit);
 
   return (
     <>
@@ -31,7 +35,7 @@ const OrderPage: React.FC = () => {
 
       <div className="flex py-10 bg-bodyBackground min-h-auto text-white">
         <div className="w-11/12 md:w-container95 lg:w-container95 xl:w-container95 2xl:w-mainContainer mx-auto space-y-6">
-          
+
           {/* Navigation Tabs */}
           <NavigationOrder activeTab={activeTab} onTabChange={setActiveTab} />
 
@@ -39,19 +43,18 @@ const OrderPage: React.FC = () => {
           {isLoading && <p>Đang tải đơn hàng...</p>}
 
           {/* Empty State */}
-          {!isLoading && orders.length === 0 && (
+          {!isLoading && pagedOrders.length === 0 && (
             <p className="text-white/70">Bạn chưa có đơn hàng nào.</p>
           )}
 
           {/* Order List */}
-          {!isLoading &&
-            orders.map((order) => (
-              <OrderItem
-                key={order._id}
-                reviewDate={order.delivered_at ?? order.createdAt}
-                items={order.items || []}
-              />
-            ))}
+          {!isLoading && pagedOrders.map((order) => (
+            <OrderItemComponent
+              key={order._id}
+              reviewDate={order.delivered_at ?? order.createdAt}
+              order={order}
+            />
+          ))}
 
           {/* Pagination */}
           {!isLoading && totalPages > 1 && (
