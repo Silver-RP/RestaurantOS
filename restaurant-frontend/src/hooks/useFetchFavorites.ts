@@ -1,31 +1,29 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from 'react';
-import { FavoriteItem } from '@/types/Dish.types';
+import { useState, useCallback } from 'react';
 import { getFavorites } from '@/api/FavoriteApi';
 import { toastService } from '@/utils/toastService';
+import { useDispatch } from 'react-redux';
+import { setFavorites } from '@/redux/feature/favorite/favoriteSlice';
 
 export const useFetchFavorites = () => {
-  const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const dispatch = useDispatch();
 
-  const fetchFavorites = async () => {
+  const fetchFavorites = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       const data = await getFavorites();
-      setFavorites(data);
+      dispatch(setFavorites(data));
     } catch {
       setError('Tải danh sách yêu thích thất bại');
       toastService.error('Tải danh sách yêu thích thất bại');
     } finally {
       setLoading(false);
     }
-  };
+  }, [dispatch]);
 
   return {
-    favorites,
-    setFavorites,
     loading,
     error,
     fetchFavorites,

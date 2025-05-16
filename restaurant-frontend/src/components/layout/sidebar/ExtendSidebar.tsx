@@ -21,7 +21,8 @@ import NavExtend from './NavExtend';
 import { useDispatch } from 'react-redux';
 import { openSearchModal } from '../../../redux/feature/searchModal/searchModalSlice';
 import Cookies from 'js-cookie';
-
+import { useSelector } from 'react-redux';
+import { RootState } from '@/redux/store';
 interface SidebarProps {
   isOpen: boolean;
   toggleSidebar: () => void;
@@ -32,7 +33,9 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
   const { data: cart } = useGetCart();
   const isLoggedIn = checkIsLoggedIn();
   const countCart = cart?.items?.length || 0;
-
+  const favoriteCount = useSelector(
+    (state: RootState) => state.favorite.items.length,
+  );
   const dispatch = useDispatch();
   useEffect(() => {
     const handleResize = () => {
@@ -86,28 +89,27 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
           <div className="flex flex-col items-center space-y-4 sm:space-y-6 md:space-y-8 mt-6">
             <div className="flex space-x-6 sm:space-x-8 text-lg sm:text-xl">
               {user ? (
-              <Link to="/profile" aria-label="Login">
-                <BsPersonCheck
-                  className={`text-white hover:text-secondaryColor ${iconSize}`}
-                />
-              </Link>
+                <Link to="/profile" aria-label="Login">
+                  <BsPersonCheck
+                    className={`text-white hover:text-secondaryColor ${iconSize}`}
+                  />
+                </Link>
               ) : (
-              <Link to="/login" aria-label="Login">
-                <FiUser
-                  className={`text-white hover:text-secondaryColor ${iconSize}`}
-                />
-              </Link>
+                <Link to="/login" aria-label="Login">
+                  <FiUser
+                    className={`text-white hover:text-secondaryColor ${iconSize}`}
+                  />
+                </Link>
               )}
               <div className="relative">
-              <Link to="/favorites" aria-label="Favorites">
-              <FiHeart
-                  className={`text-white hover:text-secondaryColor ${iconSize}`}
-                  aria-label="Favorites"
-                />
-              </Link>
-               
+                <Link to="/favorites" aria-label="Favorites">
+                  <FiHeart
+                    className={`text-white hover:text-secondaryColor ${iconSize}`}
+                    aria-label="Favorites"
+                  />
+                </Link>
                 <span className="absolute -top-1 -right-2 bg-secondaryColor text-black text-xs rounded-full px-1">
-                  0
+                  {favoriteCount > 0 ? favoriteCount : 0}
                 </span>
               </div>
               <div className="relative">
