@@ -99,6 +99,7 @@ export const useChangePasswordProfile = () => {
       onSuccess?.();
     } catch (err: any) {
       setError(err?.response?.data?.message || 'Đã xảy ra lỗi khi đổi mật khẩu');
+      throw err; 
     } finally {
       setLoading(false);
     }

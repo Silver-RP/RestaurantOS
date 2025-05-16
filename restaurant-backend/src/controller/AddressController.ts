@@ -217,14 +217,14 @@ class AddressController {
           addressdetails: 1,
           countrycodes: 'vn',
           limit,
-          bounded: 1, // ✅ chỉ tìm trong khung tọa độ bên dưới
-          viewbox: '106.3656,10.8301,106.7227,10.7081', // ✅ giới hạn phạm vi TP.HCM
+          bounded: 1,
+          viewbox: '106.3,10.95,107.0,10.6',
         },
         headers: {
           'User-Agent': 'beefbeef-restaurant/1.0 (nguyenngocmy1311@gmail.com)',
           'Accept-Language': 'vi',
         },
-        timeout: 5000,
+        timeout: 10000,
         httpsAgent: agent,
       });
 

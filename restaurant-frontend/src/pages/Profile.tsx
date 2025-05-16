@@ -98,7 +98,6 @@ const ProfilePage = () => {
 
     const updatedErrors = { ...passwordErrors };
 
-    // Tự động validate mỗi trường riêng lẻ:
     if (name === 'password') {
       updatedErrors.password = value.trim()
         ? ''
@@ -186,12 +185,25 @@ const ProfilePage = () => {
         confirmPassword: '',
       });
     } catch (e: any) {
-      const errorMessage =
-        e?.response?.data?.message || 'Đổi mật khẩu thất bại!';
-      setPasswordErrors((prev) => ({
-        ...prev,
-        password: errorMessage,
-      }));
+      const msg = e?.response?.data?.message || 'Đổi mật khẩu thất bại!';
+
+      if (msg === 'Mật khẩu cũ không đúng') {
+        setTouchedFields((prev) => ({ ...prev, password: true }));
+        setPasswordErrors((prev) => ({
+          ...prev,
+          password: msg,
+        }));
+
+        // Optional: focus lại vào input
+        setTimeout(() => {
+          const input = document.querySelector<HTMLInputElement>(
+            'input[name="password"]',
+          );
+          input?.focus();
+        }, 100);
+      } else {
+        toast.error(msg);
+      }
     }
   };
 

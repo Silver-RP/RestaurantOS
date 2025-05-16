@@ -122,5 +122,18 @@ class UserController {
       });
     }
   }
+  async addUser(req: Request, res: Response): Promise<void> {
+    try {
+      const userData = req.body;
+      const result = await UserService.addUser(userData);
+      res.status(200).json(result);
+    } catch (error: any) {
+      res.status(500).json({
+        status: 'ERROR',
+        message: error.message,
+      });
+    }
+  }
 }
+
 export default new UserController();
