@@ -35,6 +35,6 @@ export const ToastConfigAdmin = () => (
     theme="dark"
     toastClassName="bg-headerBackground text-white border border-secondaryColor rounded-md shadow-md"
     progressClassName="bg-secondaryColor"
-    style={{ marginTop: '70px' }} // ✅ thêm khoảng cách để không che header
+    style={{ marginTop: '70px' }}
   />
 );

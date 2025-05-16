@@ -10,9 +10,10 @@ export const breadcrumbConfig: Record<string, string> = {
     "/menu": "Thực đơn",
     "/profile/address": "Sổ địa chỉ",
     "/posts": "Bài viết",
-    "/order": "Đơn hàng của tôi",
+    "/profile/orders": "Đơn hàng của tôi",
     "/cart": "Giỏ hàng",
     "/contact": "Liên hệ",
-    "/reservation" : "Đặt bàn"
+    "/reservation" : "Đặt bàn",
+    "/favorites" : "Danh sách yêu thích",
   };
   

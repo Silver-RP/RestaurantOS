@@ -300,7 +300,7 @@ class AuthController {
         oldPassword,
         newPassword,
       );
-
+      console.log('🔐 req.user:', req.user);
       return res.status(200).json({ message: result });
     } catch (error: any) {
       return res.status(400).json({ message: error.message });

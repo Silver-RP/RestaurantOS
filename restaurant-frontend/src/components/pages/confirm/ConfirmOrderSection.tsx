@@ -1,128 +1,344 @@
-import ButtonComponents from "../../../components/common/ButtonComponents";
-import Header from "./Header";
-import OrderDetails from "./OrderDetails";
-import { FaUser, FaPhoneAlt, FaMapMarkerAlt, FaClock } from 'react-icons/fa';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import ButtonComponents from '@components/common/ButtonComponents';
+import { FiMenu, FiX, FiHome, FiBook, FiCalendar, FiPhone, FiInfo } from "react-icons/fi";
+import { usePlaceDirectOrder } from "@/hooks/useOrder";
+import { PlaceOrderRequest } from "@/types/Order.type";
+import { toast } from "react-toastify";
+// import { motion } from "framer-motion";
 
-const ConfirmOrderSection = () => (
-  <section className="text-white w-full px-4 sm:px-6 py-8 sm:py-10 bg-[#012B40]">
-    <Header />
-    <OrderDetails />
+// Define the expected order data structure from localStorage
+interface OrderItem {
+  dish_id: string;
+  quantity: number;
+  note?: string;
+  name?: string;
+  image?: string;
+  price?: number;
+  discountedPrice?: number;
+}
 
-    <div className="bg-[#012B40] shadow-xl w-full max-w-3xl mx-auto p-6 sm:p-8 border border-[#FFDEA0] rounded-lg space-y-8">
-      
-      {/* Sản phẩm đã đặt */}
-      <div>
-        <h2 className="text-xl sm:text-2xl font-restora font-light mb-4 sm:mb-6 text-[#FFDEA0]">Sản phẩm đã đặt</h2>
-        <div className="space-y-4">
-          {/* Một món */}
-          <div className="grid grid-cols-1 sm:grid-cols-[auto_1fr_auto_auto_auto] gap-y-2 sm:gap-x-6 py-4 border-b border-[#FFDEA0]">
-            <div className="flex justify-center">
-              <img
-                src="/assets/images/confirm/image.svg"
-                alt="Bò bít tết nướng"
-                className="w-20 h-20 object-cover mx-auto"
-              />
-            </div>
-            <div className="text-white font-medium text-sm sm:text-base">Bò bít tết nướng</div>
-            <div className="text-white text-sm text-right sm:text-left">Giá: 500.000đ</div>
-            <div className="text-white text-sm">×&nbsp;2</div>
-            <div className="text-white font-medium text-sm text-right sm:text-left">Tổng: 1.000.000đ</div>
-          </div>
+interface OrderData {
+  address_id?: string;
+  address?: {
+    full_name: string;
+    phone: string;
+    street_address: string;
+    ward: string;
+    district: string;
+    province: string;
+  };
+  payment_method: string;
+  delivery_type: "DELIVERY" | "PICKUP";
+  items: OrderItem[];
+  order_type: "ONLINE";
+  delivery_time_type: "ASAP" | "SCHEDULED";
+  scheduled_time?: string;
+  note?: string;
+  shipping_fee: number;
+  items_price: number;
+  vat_amount: number;
+  total_price: number;
+  total_quantity: number;
+}
 
-          {/* Món thứ hai */}
-          <div className="grid grid-cols-1 sm:grid-cols-[auto_1fr_auto_auto_auto] gap-y-2 sm:gap-x-6 py-4 border-b border-[#FFDEA0]">
-            <div className="flex justify-center">
-              <img
-                src="/assets/images/confirm/image 9.svg"
-                alt="Tôm hùm hấp"
-                className="w-20 h-20 object-cover mx-auto"
-              />
-            </div>
-            <div className="text-white font-medium text-sm sm:text-base">Tôm hùm hấp</div>
-            <div className="text-white text-sm text-right sm:text-left">Giá: 700.000đ</div>
-            <div className="text-white text-sm">×&nbsp;1</div>
-            <div className="text-white font-medium text-sm text-right sm:text-left">Tổng: 700.000đ</div>
-          </div>
-        </div>
-      </div>
+const OrderConfirmation = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [orderData, setOrderData] = useState<OrderData | null>(null);
+  const [orderItems, setOrderItems] = useState<any[]>([]);
+  const navigate = useNavigate();
+  const placeDirectOrderMutation = usePlaceDirectOrder();
 
-      {/* Ghi chú và các khoản tiền */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-        {/* Ghi chú */}
-        <div className="flex flex-col space-y-2">
-          <label htmlFor="orderNote" className="text-[#FFDEA0] text-sm sm:text-base font-light">Ghi chú</label>
-          <textarea
-            id="orderNote"
-            placeholder="Thêm ghi chú cho đơn hàng"
-            className="p-3 sm:p-4 bg-[#013C5A] text-white border border-[#FFDEA0] rounded-md resize-none h-auto text-xs sm:text-sm"
-            defaultValue="Ít ớt và không cho rau"
-          />
-        </div>
+  useEffect(() => {
+    // Retrieve order data from localStorage
+    const storedOrderData = localStorage.getItem('orderConfirmationData');
+    const storedCartItems = localStorage.getItem('selectedCartItems');
 
-        {/* Tổng tiền và các khoản */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="text-white text-xs sm:text-sm">Tổng tiền</div>
-            <div className="text-white text-xs sm:text-sm text-right">1.700.000đ</div>
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="text-white text-xs sm:text-sm">Tiền ship</div>
-            <div className="text-white text-xs sm:text-sm text-right">30.000đ</div>
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="text-white text-xs sm:text-sm">Voucher</div>
-            <div className="text-white text-xs sm:text-sm text-right">-50.000đ</div>
-          </div>
-          <div className="flex items-center justify-between border-t border-[#FFDEA0] pt-2">
-            <div className="text-white font-medium text-xs sm:text-sm">Tổng tất cả</div>
-            <div className="text-white font-medium text-xs sm:text-sm text-right">1.680.000đ</div>
-          </div>
-        </div>
-      </div>
+    if (!storedOrderData) {
+      // If no order data is found, redirect to checkout
+      navigate('/checkout');
+      return;
+    }
 
-      {/* Địa chỉ giao hàng */}
-      <div className="space-y-6">
-        <h2 className="text-xl sm:text-2xl font-restora font-light mb-4 sm:mb-6 text-[#FFDEA0]">Địa chỉ giao hàng</h2>
-        <div className="bg-[#013C5A] p-4 sm:p-6 rounded-lg shadow-lg text-xs sm:text-sm">
-          {/* Căn chỉnh Thời gian giao hàng và Địa chỉ */}
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2">
-              <FaUser className="text-[#FFDEA0]" size={16} />
-              <span className="font-semibold text-[#FFDEA0]">Họ và tên:</span>
-              <span className="text-white">Nguyễn Ngọc Mỹ</span>
-            </div>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2">
-              <FaPhoneAlt className="text-[#FFDEA0]" size={16} />
-              <span className="font-semibold text-[#FFDEA0]">SĐT:</span>
-              <span className="text-white">0378217272</span>
-            </div>
+    try {
+      const parsedOrderData = JSON.parse(storedOrderData) as OrderData;
+      setOrderData(parsedOrderData);
 
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2">
-              <FaMapMarkerAlt className="text-[#FFDEA0]" size={16} />
-              <span className="font-semibold text-[#FFDEA0]">Địa chỉ:</span>
-              <span className="text-white">Đối diện Lotte Lê Văn Lương, Gò Vấp</span>
-            </div>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2">
-              <FaClock className="text-[#FFDEA0]" size={16} />
-              <span className="font-semibold text-[#FFDEA0]">Thời gian giao hàng:</span>
-              <span className="text-white">Dự kiến 30 phút</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      if (storedCartItems) {
+        const cartItems = JSON.parse(storedCartItems);
 
-      {/* Nút Xem đơn hàng */}
-      <div className="flex justify-center pt-4 sm:pt-6">
-        <ButtonComponents
-          variant="filled"
-          size="large"
-          className="px-6 sm:px-8 py-3 rounded-none text-sm sm:text-base"
+        // Create enhanced order items with product details
+        const enhancedItems = parsedOrderData.items.map((item) => {
+          const cartItem = cartItems.find((ci: any) => ci.id === item.dish_id);
+          return {
+            ...item,
+            name: cartItem?.name || "Unknown Product",
+            image: cartItem?.imageUrl || "https://via.placeholder.com/150",
+            price: cartItem?.price || 0,
+            discountedPrice: cartItem?.discountedPrice || cartItem?.price || 0,
+            category: cartItem?.category || "Món chính"
+          };
+        });
+
+        setOrderItems(enhancedItems);
+      }
+    } catch (error) {
+      console.error("Error parsing order data:", error);
+      navigate('/checkout');
+    }
+  }, [navigate]);
+
+  // Get display values
+  const getDeliveryMethodDisplay = () => {
+    if (!orderData) return "";
+    return orderData.delivery_type === "DELIVERY" ? "Giao hàng tận nơi" : "Đến lấy tại cửa hàng ";
+  };
+
+  const getPaymentMethodDisplay = () => {
+    if (!orderData) return "";
+
+    const paymentMethodMap: Record<string, string> = {
+      "CASH": "Thanh toán khi nhận hàng",
+      "BANKING": "Chuyển khoản ngân hàng",
+      "VNPAY": "Thanh toán qua VNPAY",
+      "MOMO": "Thanh toán qua MOMO",
+      "CREDIT_CARD": "Thanh toán bằng thẻ tín dụng"
+    };
+
+    return paymentMethodMap[orderData.payment_method] || orderData.payment_method;
+  };
+
+  const getAddressDisplay = () => {
+    if (!orderData || !orderData.address) return "";
+
+    const addr = orderData.address;
+    return `${addr.street_address}, ${addr.ward}, ${addr.district}, ${addr.province}`;
+  };
+
+  const getScheduledTimeDisplay = () => {
+    if (!orderData || !orderData.scheduled_time) {
+      return orderData?.delivery_time_type === "ASAP" ?
+        "Giao hàng ngay khi chuẩn bị xong" : "";
+    }
+
+    const scheduledDate = new Date(orderData.scheduled_time);
+    return scheduledDate.toLocaleString('vi-VN', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const handlePlaceOrder = async () => {
+    if (!orderData || isSubmitting) return;
+
+    setIsSubmitting(true);
+
+    try {
+      // Prepare the order data according to the API requirements
+      const apiOrderData: PlaceOrderRequest = {
+        payment_method: orderData.payment_method as any,
+        delivery_type: orderData.delivery_type,
+        order_type: orderData.order_type,
+        delivery_time_type: orderData.delivery_time_type,
+        items: orderData.items.map(item => ({
+          dish_id: item.dish_id,
+          quantity: item.quantity,
+          note: item.note
+        })),
+        note: orderData.note
+      };
+
+      // Add address if delivery type is DELIVERY
+      if (orderData.delivery_type === "DELIVERY" && orderData.address) {
+        apiOrderData.address = {
+          full_name: orderData.address.full_name,
+          phone: orderData.address.phone,
+          street_address: orderData.address.street_address,
+          ward: orderData.address.ward,
+          district: orderData.address.district,
+          province: orderData.address.province
+        };
+      }
+
+      // Add scheduled time if delivery time type is SCHEDULED
+      if (orderData.delivery_time_type === "SCHEDULED" && orderData.scheduled_time) {
+        apiOrderData.scheduled_time = orderData.scheduled_time;
+      }
+
+      console.log("Submitting order to API:", apiOrderData);
+
+      // Call the API through our hook
+      const response = await placeDirectOrderMutation.mutateAsync(apiOrderData);
+
+      console.log("Order placed successfully:", response);
+
+      // Set a flag in session storage to indicate a successful order
+      sessionStorage.setItem('recentOrderSuccess', 'true');
+
+      // Clear order data from localStorage after successful order
+      localStorage.removeItem('orderConfirmationData');
+      localStorage.removeItem('selectedCartItems');
+
+
+      toast.success("Đặt hàng thành công!");
+
+      // Navigate to success page
+      navigate('/order-success');
+    } catch (error) {
+      console.error("Error placing order:", error);
+      toast.error("Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (!orderData) {
+    return <div className="min-h-screen bg-[#012B40] text-white flex items-center justify-center">
+      <p>Đang tải thông tin đơn hàng...</p>
+    </div>;
+  }
+
+  return (
+    <div className="min-h-screen bg-[#012B40] text-white">
+
+      {/* Main Content */}
+      <main className=" mx-auto pt-10 pb-12">
+        <h1
+          className="text-4xl font-bold text-center mb-12"
         >
-          Xem đơn hàng
-        </ButtonComponents>
-      </div>
+          Xác nhận đơn hàng
+        </h1>
+
+        {/* User Information */}
+        <section className="border text-white placeholder:text-gray-400 border-[#074b6b] rounded p-6 mb-8">
+          <h2 className="text-2xl font-semibold mb-4">Thông tin khách hàng</h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            {orderData.address && (
+              <>
+                <InfoItem label="Họ tên" value={orderData.address.full_name} />
+                <InfoItem label="Số điện thoại" value={orderData.address.phone} />
+                <InfoItem label="Địa chỉ" value={getAddressDisplay()} />
+              </>
+            )}
+            {/* {orderData.delivery_time_type === "SCHEDULED" && (
+              <InfoItem label="Thời gian giao hàng" value={getScheduledTimeDisplay()} />
+            )} */}
+          </div>
+        </section>
+
+        {/* Order Items */}
+        <section className="border text-white placeholder:text-gray-400 border-[#074b6b] rounded p-6 mb-8">
+          <h2 className="text-2xl font-semibold mb-4">Món ăn đã chọn</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-white/20">
+                  <th className="text-left py-4">Món ăn</th>
+                  <th className="text-center py-4">Số lượng</th>
+                  <th className="text-right py-4">Đơn giá</th>
+                  <th className="text-right py-4">Thành tiền</th>
+                </tr>
+              </thead>
+              <tbody>
+                {orderItems.map((item, index) => (
+                  <tr key={index} className="border-b border-white/20">
+                    <td className="py-4">
+                      <div className="flex items-center space-x-4 w-full">
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-16 h-16 object-cover"
+                        />
+                        <div className="flex flex-col flex-grow">
+                          <span className="font-medium">{item.name}</span>
+                          <span className="text-sm text-gray-300">Phân loại: {item.category}</span>
+                          <span className="text-sm italic text-gray-400 mt-1">Ghi chú: {item.note || 'Không có ghi chú'}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="text-center">{item.quantity}</td>
+                    <td className="text-right"> <div>
+                      {item.discountedPrice !== item.price ? (
+                        <div className="text-sm mt-1 flex flex-col">
+                          <span className="line-through text-gray-400">{item.price?.toLocaleString()} VNĐ</span>
+                          <span className="text-secondaryColor font-semibold">{item.discountedPrice?.toLocaleString()} VNĐ</span>
+                        </div>
+                      ) : (
+                        <div className="text-sm mt-1">{item.price?.toLocaleString()} VNĐ</div>
+                      )}
+                    </div>
+                    </td>
+                    <td className="text-right">
+                      {((item.discountedPrice || item.price) * item.quantity).toLocaleString()} VNĐ
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        {/* Order Details */}
+        <section className="border text-white placeholder:text-gray-400 border-[#074b6b] rounded p-6 mb-8">
+          <h2 className="text-2xl font-semibold mb-4">Chi tiết đơn hàng</h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            <InfoItem label="Phương thức giao hàng" value={getDeliveryMethodDisplay()} />
+            <InfoItem label="Phương thức thanh toán" value={getPaymentMethodDisplay()} />
+            {orderData.note && <InfoItem label="Ghi chú" value={orderData.note} />}
+            {orderData.delivery_time_type === "SCHEDULED" && (
+              <InfoItem label="Thời gian giao hàng" value={getScheduledTimeDisplay()} />
+            )}
+          </div>
+        </section>
+
+        {/* Price Summary */}
+        <section className="border text-white placeholder:text-gray-400 border-[#074b6b] rounded p-6 mb-8">
+          <div className="space-y-4">
+            <div className="flex justify-between">
+              <span>Tạm tính:</span>
+              <span>{orderData.items_price.toLocaleString()} VNĐ</span>
+            </div>
+            <div className="flex justify-between">
+              <span>VAT (8%):</span>
+              <span>{orderData.vat_amount.toLocaleString()} VNĐ</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Phí giao hàng:</span>
+              <span>{orderData.shipping_fee.toLocaleString()} VNĐ</span>
+            </div>
+            <div className="flex justify-between text-xl font-bold pt-4 border-t border-white/20">
+              <span>Tổng cộng:</span>
+              <span className="text-secondaryColor">{orderData.total_price.toLocaleString()} VNĐ</span>
+            </div>
+          </div>
+        </section>
+
+        {/* Confirmation Button */}
+        <div className="text-center">
+          <ButtonComponents
+            variant="filled"
+            size="large"
+            className="mt-2"
+            onClick={handlePlaceOrder}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Đang xử lý..." : "Xác nhận đặt hàng"}
+          </ButtonComponents>
+        </div>
+      </main>
     </div>
-  </section>
+  );
+};
+
+const InfoItem: React.FC<{ label: string; value: string }> = ({ label, value }) => (
+  <div>
+    <span className="text-gray-300">{label}:</span>
+    <p className="font-medium">{value}</p>
+  </div>
 );
 
-export default ConfirmOrderSection;
+export default OrderConfirmation;

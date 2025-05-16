@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { FaHeart, FaRegHeart, FaStar, FaStarHalfAlt } from 'react-icons/fa';
+import { FaHeart, FaStar, FaStarHalfAlt } from 'react-icons/fa';
 import ButtonComponents from '../../common/ButtonComponents';
 import { useAddToCart } from '@hooks/useCart';
-
+import { useFavorites } from '@/hooks/useFavorites';
 interface ProductInfoProps {
   id: string;
   name: string;
@@ -26,14 +26,12 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
   rating,
   reviews,
   description,
-  // brand,
   categories,
-  // sku,
 }) => {
   const [quantity, setQuantity] = useState(1);
   const [wishlisted, setWishlisted] = useState(false);
   const [screenWidth, setScreenWidth] = useState(0);
-
+  const { addToFavorites } = useFavorites(); 
   const { mutate: addToCart } = useAddToCart();
 
   useEffect(() => {
@@ -91,18 +89,10 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
       </div>
 
       <div className="text-sm my-4 space-y-2 ">
-        {/* <p>
-          <span className="text-gray-400">Thương hiệu:</span>{' '}
-          <span className="text-white">{brand}</span>
-        </p> */}
         <p>
           <span className="text-gray-400"> Danh mục:</span>{' '}
           <span className="text-white">{categories.join(', ')}</span>
         </p>
-        {/* <p>
-          <span className="text-gray-400">SKU:</span>{' '}
-          <span className="text-white">{sku}</span>
-        </p> */}
       </div>
 
       <p className="text-sm text-gray-400 mb-4">{description}</p>
@@ -145,10 +135,14 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
           className={`flex items-center justify-center gap-2 px-4 py-2 hover:text-secondaryColor rounded transition duration-300 text-sm ${
             wishlisted ? 'text-secondaryColor' : 'text-white'
           }`}
-          onClick={() => setWishlisted(!wishlisted)}
+          onClick={() => {
+            addToFavorites(id);
+            setWishlisted(true);
+          }}
         >
-          {wishlisted ? <FaHeart /> : <FaRegHeart />}
-          {wishlisted ? 'Đã yêu thích' : 'Yêu thích'}
+          <FaHeart/>
+          {/* {wishlisted ? <FaHeart /> : <FaRegHeart />}
+          {wishlisted ? 'Đã yêu thích' : 'Yêu thích'} */}
         </button>
       </div>
       <hr className="my-6 bg-hr h-[1px] border-0" />

@@ -1,9 +1,15 @@
+import { Address } from "./Address.type";
+
 export type DeliveryStatus = 
   | 'PENDING_PICKUP' 
   | 'PICKED_UP' 
   | 'IN_TRANSIT' 
   | 'DELIVERED' 
-  | 'FAILED';
+  | 'FAILED'
+  | 'CANCELLED'
+  | 'DELIVERY_FAILED'
+  | 'RETURN_REQUESTED'
+  | 'RETURNED';
 
 export type OrderStatus = 
   | 'PENDING' 
@@ -12,7 +18,8 @@ export type OrderStatus =
   | 'READY' 
   | 'COMPLETED' 
   | 'CANCELLED' 
-  | 'RETURNED';
+  | 'RETURNED'
+  | 'SHIPPING';
 
 export type PaymentMethod = 
   | 'CASH' 
@@ -65,8 +72,10 @@ export interface Dish {
 export interface OrderItem {
   _id: string;
   order_id: string;
-  dish_id: Dish; // Tham chiếu object Dish đầy đủ
+  dish_id: Dish;
   dish_name: string;
+  dish_images: string[];
+  categories: string[];
   unit_price: number;
   quantity: number;
   total_amount: number;
@@ -80,11 +89,11 @@ export interface Order {
   _id: string;
   user_id: string;
   cashier_order_id: string | null;
-  address_id: string | null;
-  payment_method: PaymentMethod;
-  delivery_type: DeliveryType;
-  delivery_status: DeliveryStatus;
-  status: OrderStatus;
+  address_id: Address | null;
+  payment_method: PaymentMethod | string;
+  delivery_type: DeliveryType | string;
+  delivery_status: DeliveryStatus | string;
+  status: OrderStatus | string;
   shipping_fee: number;
   vat_amount: number;
   items_price: number;
@@ -104,21 +113,14 @@ export interface Order {
   delivery_time_type: DeliveryTimeType;
   scheduled_time: string | null;
   order_items?: OrderItem[];
-
-  // Additional optional fields
-  address?: {
-    address: string;
-    name: string;
-    phone: string;
-  };
 }
 
 export interface OrdersResponse {
   message: string;
   orders: Order[];
-  totalOrders?: number;
-  currentPage?: number;
-  totalPages?: number;
+  totalItems: number; 
+  currentPage: number;
+  totalPages: number;
 }
 
 export interface OrderDetailResponse {
@@ -153,9 +155,32 @@ export interface OrderQueryParams {
   page?: number;
   limit?: number;
   status?: OrderStatus;
-  delivery_status?: DeliveryStatus;
+  delivery_status?: DeliveryStatus | DeliveryStatus[]; 
   startDate?: string;
   endDate?: string;
   sort?: 'createdAt' | 'total_price' | 'updatedAt';
   order?: 'asc' | 'desc';
+}
+
+export interface PlaceOrderRequest {
+  payment_method: 'CASH' | 'BANKING' | 'VNPAY' | 'MOMO' | 'CREDIT_CARD';
+  delivery_type: DeliveryType;
+  order_type: OrderType;
+  delivery_time_type: DeliveryTimeType;
+  address?: {
+    full_name: string;
+    phone: string;
+    ward: string;
+    province: string;
+    district: string;
+    street_address: string;
+  };
+  address_id?: string;
+  note?: string;
+  scheduled_time?: string;
+  items: Array<{
+    dish_id: string;
+    quantity: number;
+    note?: string;
+  }>;
 }

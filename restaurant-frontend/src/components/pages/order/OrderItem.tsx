@@ -1,97 +1,113 @@
 import React, { useState } from 'react';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { Order, OrderItem } from '@/types/Order.type';
+import { deliveryStatusMapping } from './NavigationOrder';
+import OrderDetailModal from './OrderDetailModal';
 
 interface OrderItemProps {
   order: Order;
   reviewDate: string;
 }
 
-const OrderItemComponent: React.FC<OrderItemProps> = ({ order, reviewDate }) => {
+const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
   const [showMore, setShowMore] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const items = order.order_items || [];
 
-  const orderItems = order.order_items ?? [];
-
-  if (orderItems.length === 0) {
+  if (!items.length) {
     return <div className="text-white">Không có sản phẩm trong đơn hàng này.</div>;
   }
-  const normalizeItem = (item: OrderItem) => {
-    return {
-      _id: item._id,
-      name: item.dish_id.name,
-      image: item.dish_id.images?.[0] || '',  
-      category: item.dish_id.categories?.[0] || '', 
-      quantity: item.quantity,
-      price: item.unit_price,
-      discount_price: item.dish_id.discount_price ?? null,
-    };
+
+  const orderCode = (order._id?.slice(-6) || '000000').toUpperCase();  
+
+  const getStatusTabName = (status: string | null | undefined): string => {
+    for (const [tabName, config] of Object.entries(deliveryStatusMapping)) {
+      const statusConfig = config.delivery_status;
+      if (statusConfig === null) continue;
+
+      if (Array.isArray(statusConfig)) {
+        if (status && statusConfig.includes(status)) return tabName;
+      } else {
+        if (status === statusConfig) return tabName;
+      }
+    }
+    return 'Tất cả đơn hàng';
   };
 
-  const normalizedItems = orderItems.map(normalizeItem);
-  const [firstItem, ...remainingItems] = normalizedItems;
+  const statusText = getStatusTabName(order.delivery_status);
 
-  const totalPrice = normalizedItems.reduce(
-    (sum, item) => sum + (item.discount_price ?? item.price) * item.quantity,
-    0
-  );
+  const normalizeItem = (item: OrderItem) => ({
+    _id: item._id,
+    name: item.dish_name,
+    image: item.dish_images?.[0] || '/placeholder-image.jpg',
+    category: item.categories?.[0] || 'Không phân loại',
+    quantity: item.quantity,
+    price: item.unit_price,
+    total: item.total_amount,
+  });
+
+  const normalized = items.map(normalizeItem);
+  const [firstItem, ...others] = normalized;
+
+  const calcTotal = order.total_price;
 
   return (
-    <div className="relative text-white p-4 md:p-6 border border-white/10 rounded-md bg-[#0a1e2d]">
-      {/* Trạng thái đơn */}
-      <div className="flex justify-end text-xs md:text-sm mb-2 space-x-4">
-        <span className="text-green-400">{order.delivery_status}</span>
-        <span className="text-secondaryColor font-semibold">{order.status}</span>
+    <div className="relative text-white p-4 md:p-6 border border-white/10 rounded-md">
+      {/* Mã đơn + Trạng thái */}
+      <div className="flex justify-between md:text-sm mb-2">
+        <span className="text-white/80 text-lg">Mã đơn: <span className="font-medium">{orderCode}</span></span>
+        <span className="text-secondaryColor font-semibold">{statusText}</span>
       </div>
 
       {/* Sản phẩm đầu tiên */}
       <div className="border-y border-white/20 py-4 flex items-center justify-between gap-4">
         <div className="flex items-center min-w-0 flex-grow">
-          <img
-            src={firstItem.image}
-            alt={firstItem.name}
-            className="w-20 h-20 md:w-24 md:h-24 lg:w-32 lg:h-32 object-cover rounded-md"
+          <img 
+            src={firstItem.image} 
+            alt={firstItem.name} 
+            className="w-20 h-20 object-cover rounded-md"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = '/placeholder-image.jpg';
+            }}
           />
           <div className="ml-4 min-w-0">
-            <h2 className="font-bold text-sm md:text-lg lg:text-xl line-clamp-2 lg:line-clamp-1">
-              {firstItem.name}
-            </h2>
-            <p className="text-xs md:text-sm mt-1">Phân loại: {firstItem.category}</p>
-            <p className="text-xs md:text-sm mt-1">x{firstItem.quantity}</p>
+            <h2 className="font-bold text-sm md:text-lg line-clamp-2">{firstItem.name}</h2>
+            <p className="text-xs mt-1">Phân loại: {firstItem.category}</p>
+            <p className="text-xs mt-1">x{firstItem.quantity}</p>
           </div>
         </div>
         <div className="text-right whitespace-nowrap">
-          <p className="text-xs md:text-sm line-through text-white/60">
-            {(firstItem.price * firstItem.quantity).toLocaleString()} VND
-          </p>
-          <p className="text-secondaryColor text-sm md:text-lg font-bold">
-            {((firstItem.discount_price ?? firstItem.price) * firstItem.quantity).toLocaleString()} VND
+          <p className="text-secondaryColor text-sm font-bold">
+            {firstItem.total.toLocaleString()} VND
           </p>
         </div>
       </div>
 
       {/* Các sản phẩm còn lại */}
-      {showMore && remainingItems.length > 0 && (
+      {showMore && others.length > 0 && (
         <div className="mt-4 space-y-4">
-          {remainingItems.map((item) => (
+          {others.map((item) => (
             <div key={item._id} className="flex justify-between items-center border-b border-white/10 pb-2 gap-4">
               <div className="flex items-center flex-grow min-w-0">
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-cover rounded-md"
+                <img 
+                  src={item.image} 
+                  alt={item.name} 
+                  className="w-16 h-16 object-cover rounded-md"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = '/placeholder-image.jpg';
+                  }}
                 />
                 <div className="ml-3 min-w-0">
-                  <h3 className="font-semibold text-xs md:text-sm line-clamp-2">{item.name}</h3>
-                  <p className="text-[10px] md:text-xs mt-1">Phân loại: {item.category}</p>
-                  <p className="text-[10px] md:text-xs mt-1">x{item.quantity}</p>
+                  <h3 className="font-semibold text-xs line-clamp-2">{item.name}</h3>
+                  <p className="text-[10px] mt-1">Phân loại: {item.category}</p>
+                  <p className="text-[10px] mt-1">x{item.quantity}</p>
                 </div>
               </div>
               <div className="text-right whitespace-nowrap">
-                <p className="text-[10px] md:text-xs line-through text-white/60">
-                  {(item.price * item.quantity).toLocaleString()} VND
-                </p>
-                <p className="text-secondaryColor text-xs md:text-sm font-bold">
-                  {((item.discount_price ?? item.price) * item.quantity).toLocaleString()} VND
+                <p className="text-secondaryColor text-xs font-bold">
+                  {item.total.toLocaleString()} VND
                 </p>
               </div>
             </div>
@@ -99,42 +115,57 @@ const OrderItemComponent: React.FC<OrderItemProps> = ({ order, reviewDate }) => 
         </div>
       )}
 
-      {/* Nút "Xem thêm"/"Thu gọn" */}
-      {remainingItems.length > 0 && (
+      {/* Toggle nút Xem thêm / Thu gọn */}
+      {others.length > 0 && (
         <div className="flex justify-center mt-4">
           <button
             onClick={() => setShowMore(!showMore)}
             className="flex items-center text-xs text-white/70 hover:underline"
           >
-            {showMore ? 'Thu gọn' : 'Xem thêm'}
+            {showMore ? 'Thu gọn' : 'Xem thêm'}{" "}
             {showMore ? <FaChevronUp className="ml-1" /> : <FaChevronDown className="ml-1" />}
           </button>
         </div>
       )}
 
-      {/* Tổng tiền + Nút thao tác */}
-      <div className="mt-4 flex flex-col gap-3">
-        <div className="flex justify-between gap-2 w-full">
-          <p className="text-xs text-white/50">
-            Đánh giá đơn hàng trước: <span className="underline">{reviewDate}</span>
-          </p>
-          <p className="text-sm md:text-lg text-right">
-            Thành tiền:{' '}
-            <span className="text-secondaryColor font-bold">{totalPrice.toLocaleString()} VND</span>
-          </p>
-        </div>
-        <div className="flex justify-end gap-2">
-          <button className="bg-[#083344] hover:bg-[#0f4a5c] px-3 py-2 rounded text-white text-xs md:text-sm">
-            Đánh Giá
-          </button>
-          <button className="bg-[#1f2937] hover:bg-[#374151] px-3 py-2 rounded text-white text-xs md:text-sm">
-            Liên Hệ Người Bán
-          </button>
-          <button className="bg-[#1f2937] hover:bg-[#374151] px-3 py-2 rounded text-white text-xs md:text-sm">
-            Mua Lại
-          </button>
-        </div>
+      {/* Tổng tiền */}
+      <div className="mt-4 text-right">
+        <span className="text-sm md:text-base font-medium">Tổng tiền: </span>
+        <span className="text-secondaryColor text-base md:text-lg font-bold">
+          {calcTotal.toLocaleString()} VND
+        </span>
       </div>
+
+      {/* Các nút hành động */}
+      <div className="mt-3 flex justify-end flex-wrap gap-2">
+        <button
+          className="px-4 py-1.5 text-xs font-medium bg-transparent border border-secondaryColor text-white font-normal font-sans hover:bg-secondaryColor hover:text-headerBackground focus:ring-bodyBackground active:bg-secondaryColor/90 active:text-headerBackground"
+          onClick={() => alert('Đánh giá đơn hàng')}
+        >
+          Đánh giá
+        </button>
+
+        <button
+          className="px-4 py-1.5 text-xs bg-transparent border border-secondaryColor text-white font-normal font-sans hover:bg-secondaryColor hover:text-headerBackground focus:ring-bodyBackground active:bg-secondaryColor/90 active:text-headerBackground"
+          onClick={() => alert('Mua lại đơn hàng')}
+        >
+          Mua lại
+        </button>
+
+        <button
+          className="px-4 py-1.5 text-xs bg-transparent border border-secondaryColor text-white font-normal font-sans hover:bg-secondaryColor hover:text-headerBackground focus:ring-bodyBackground active:bg-secondaryColor/90 active:text-headerBackground"
+          onClick={() => setIsModalOpen(true)}
+        >
+          Xem chi tiết
+        </button>
+      </div>
+
+      {/* Modal chi tiết đơn hàng */}
+      <OrderDetailModal
+        isOpen={isModalOpen}
+        orderId={order._id}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 };

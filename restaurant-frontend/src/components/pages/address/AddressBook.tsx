@@ -6,6 +6,7 @@ import { deleteAddress } from '@api/AddressApi';
 import { UpdateAddressModal } from './UpdateAddressModal';
 import { toast } from 'react-toastify';
 
+const LIMIT_TOAST_ID = 'limit-toast';
 
 interface Address {
   name: string;
@@ -27,10 +28,9 @@ const AddressBook: React.FC = () => {
   const [selectedAddress, setSelectedAddress] = useState<any | null>(null);
   const [otherForms, setOtherForms] = useState<Address[]>([]);
   const [isEditingDefault] = useState(false);
-  const [editingOtherIndex] = useState<number | null>(
-    null,
-  );
+  const [editingOtherIndex] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const totalAddresses = Array.isArray(data) ? data.length : 0;
 
   useEffect(() => {
     if (!data || data.length === 0) return;
@@ -43,7 +43,7 @@ const AddressBook: React.FC = () => {
         name: defaultAddr.full_name,
         phone: defaultAddr.phone,
         street_address: `${defaultAddr.street_address}, ${defaultAddr.ward}, ${defaultAddr.district}, ${defaultAddr.province}`,
-        id: defaultAddr.id, 
+        id: defaultAddr.id,
       });
     }
 
@@ -51,7 +51,7 @@ const AddressBook: React.FC = () => {
       name: addr.full_name,
       phone: addr.phone,
       street_address: `${addr.street_address}, ${addr.ward}, ${addr.district}, ${addr.province}`,
-      id: addr.id, 
+      id: addr.id,
     }));
 
     setOtherForms(formattedOthers);
@@ -73,9 +73,8 @@ const AddressBook: React.FC = () => {
     setOtherForms(newAddresses);
   };
 
- 
   const showDeleteConfirmToast = (onConfirm: () => void) => {
-    toast.dismiss(); 
+    toast.dismiss();
 
     toast.info(
       ({ closeToast }) => (
@@ -108,7 +107,7 @@ const AddressBook: React.FC = () => {
         </div>
       ),
       {
-        icon: false, 
+        icon: false,
         position: 'top-center',
         autoClose: false,
         closeButton: false,
@@ -147,7 +146,16 @@ const AddressBook: React.FC = () => {
         </h2>
         <p className="text-gray-400 italic">Hiện chưa có địa chỉ nào.</p>
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => {
+            if (totalAddresses >= 5) {
+              if (!toast.isActive(LIMIT_TOAST_ID)) {
+                toast.warn('Bạn chỉ có thể lưu tối đa 5 địa chỉ!', {
+                  toastId: LIMIT_TOAST_ID,
+                });
+              }
+              return;
+            }
+          }}
           className="mt-6 px-6 py-2 border border-secondaryColor hover:text-secondaryColor bg-secondaryColor hover:bg-bodyBackground text-headerBackground transition uppercase text-sm md:text-base"
         >
           Thêm địa chỉ mới
@@ -161,6 +169,7 @@ const AddressBook: React.FC = () => {
             refetch();
             setIsModalOpen(false);
           }}
+          total={totalAddresses}
         />
       </div>
     );
@@ -173,7 +182,16 @@ const AddressBook: React.FC = () => {
           Sổ địa chỉ
         </h2>
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => {
+            if (totalAddresses >= 5) {
+              if (!toast.isActive(LIMIT_TOAST_ID)) {
+                toast.warn('Bạn chỉ có thể lưu tối đa 5 địa chỉ!', {
+                  toastId: LIMIT_TOAST_ID,
+                });
+              }
+              return;
+            }
+          }}
           className="w-7/12 px-1 py-2 lg:w-auto lg:px-8 md:px-2 border border-secondaryColor hover:text-secondaryColor bg-secondaryColor hover:bg-bodyBackground text-headerBackground transition uppercase text-sm md:text-base"
         >
           Thêm địa chỉ mới
@@ -223,9 +241,12 @@ const AddressBook: React.FC = () => {
               onSelectLocation={(lat, lon, street_address) =>
                 setDefaultForm({ ...defaultForm, street_address })
               }
-                district={defaultForm.street_address.split(',')[2]?.trim() || ''}
+              district={defaultForm.street_address.split(',')[2]?.trim() || ''}
               ward={defaultForm.street_address.split(',')[1]?.trim() || ''}
-              province={defaultForm.street_address.split(',')[3]?.trim() || 'TP. Hồ Chí Minh'}
+              province={
+                defaultForm.street_address.split(',')[3]?.trim() ||
+                'TP. Hồ Chí Minh'
+              }
             />
           ) : (
             <p className="font-medium">{defaultForm.street_address}</p>
@@ -244,7 +265,7 @@ const AddressBook: React.FC = () => {
                 ward,
                 district,
                 province,
-                is_default: true, 
+                is_default: true,
               });
 
               setIsUpdateModalOpen(true);
@@ -253,7 +274,7 @@ const AddressBook: React.FC = () => {
           >
             Cập nhật
           </button>
-         <span className="text-xs md:text-sm text-red-500 border border-red-500 rounded px-2 h-10 flex items-center justify-center ml-1">
+          <span className="text-xs md:text-sm text-red-500 border border-red-500 rounded px-2 h-10 flex items-center justify-center ml-1">
             Mặc định
           </span>
           {data.length === 1 && (
@@ -321,9 +342,14 @@ const AddressBook: React.FC = () => {
                     };
                     setOtherForms(newAddresses);
                   }}
-                    district={defaultForm.street_address.split(',')[2]?.trim() || ''}
-                    ward={defaultForm.street_address.split(',')[1]?.trim() || ''}
-                    province={defaultForm.street_address.split(',')[3]?.trim() || 'TP. Hồ Chí Minh'}
+                  district={
+                    defaultForm.street_address.split(',')[2]?.trim() || ''
+                  }
+                  ward={defaultForm.street_address.split(',')[1]?.trim() || ''}
+                  province={
+                    defaultForm.street_address.split(',')[3]?.trim() ||
+                    'TP. Hồ Chí Minh'
+                  }
                 />
               ) : (
                 <p className="font-medium">{addr.street_address}</p>
@@ -372,6 +398,7 @@ const AddressBook: React.FC = () => {
           refetch();
           setIsModalOpen(false);
         }}
+        total={totalAddresses}
       />
 
       {selectedAddress && (

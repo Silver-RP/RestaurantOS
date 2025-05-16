@@ -25,7 +25,7 @@ export interface IDish extends mongoose.Document {
   alcohol_type?: string; // Loại rượu
   origin?: string; // Xuất xứ
   alcohol_content?: number; // Nồng độ cồn
-  volume?: number; 
+  volume?: number;
 }
 
 const dishSchema = new mongoose.Schema(
@@ -61,9 +61,9 @@ const dishSchema = new mongoose.Schema(
     newUntil: { type: Date },
     totalSoldQuantity: { type: Number, default: 0 },
     discountUntil: { type: Date },
-    alcohol_type: { type: String }, 
-    origin: { type: String }, 
-    alcohol_content: { type: Number, min: 0 }, 
+    alcohol_type: { type: String },
+    origin: { type: String },
+    alcohol_content: { type: Number, min: 0 },
     volume: { type: Number, min: 0 }, // Thể tích (ml)
   },
   {

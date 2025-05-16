@@ -47,3 +47,18 @@ export interface FoodResponse {
   nextPage: number | null;
   prevPage: number | null;
 }
+export interface FavoriteItem {
+  _id: string;
+  userId: string;
+  dishId: {
+    _id: string;
+    name: string;
+    price: number;
+    discount_price?: number;
+    images: string[];
+    categories?: {
+      _id: string;
+      Cate_name: string;
+    }[];
+  };
+}
