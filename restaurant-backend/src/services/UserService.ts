@@ -301,5 +301,78 @@ class UserService {
       throw new Error('Failed to change password: ' + error.message);
     }
   }
+  async addUser(userData: Partial<IUser>): Promise<any> {
+    try {
+      const {
+        username,
+        email,
+        password,
+        phone,
+        birthday,
+        gender,
+        isEmailVerified = false,
+        status = 'inactive',
+        roles = [],
+      } = userData;
+
+      // Kiểm tra input cơ bản
+      if (!username || !email || !password) {
+        return {
+          status: 'ERROR',
+          message: 'Vui lòng nhập đầy đủ username, email và password',
+        };
+      }
+
+      // Kiểm tra username hoặc email đã tồn tại
+      const existingEmail = await User.findOne({ email });
+      if (existingEmail) {
+        return {
+          status: 'ERROR',
+          message: 'Email đã tồn tại',
+        };
+      }
+
+      const existingUsername = await User.findOne({ username });
+      if (existingUsername) {
+        return {
+          status: 'ERROR',
+          message: 'Username đã tồn tại',
+        };
+      }
+
+      // Băm mật khẩu
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Resolve roles
+      const resolvedRoles = await Roles.find({ _id: { $in: roles } });
+
+      // Tạo người dùng mới
+      const newUser = new User({
+        username,
+        email,
+        password: hashedPassword,
+        phone,
+        birthday,
+        gender,
+        isEmailVerified,
+        status,
+        roles: resolvedRoles.map((r) => r._id),
+      });
+
+      const savedUser = await newUser.save();
+
+      return {
+        status: 'OK',
+        message: 'Tạo người dùng thành công',
+        data: savedUser,
+      };
+    } catch (error: any) {
+      console.error('Error creating user:', error);
+      return {
+        status: 'ERROR',
+        message: 'Không thể tạo người dùng',
+      };
+    }
+  }
 }
 export default new UserService();

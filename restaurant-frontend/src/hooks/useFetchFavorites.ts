@@ -1,3 +1,4 @@
+// hooks/useFetchFavorites.ts
 import { useState, useCallback } from 'react';
 import { getFavorites } from '@/api/FavoriteApi';
 import { toastService } from '@/utils/toastService';
@@ -13,8 +14,18 @@ export const useFetchFavorites = () => {
     try {
       setLoading(true);
       setError(null);
+
+      // Ưu tiên lấy từ localStorage trước
+      const local = localStorage.getItem('favorites');
+      if (local) {
+        const parsed = JSON.parse(local);
+        dispatch(setFavorites(parsed));
+      }
+
+      // Sau đó gọi API để cập nhật lại danh sách mới nhất
       const data = await getFavorites();
       dispatch(setFavorites(data));
+      localStorage.setItem('favorites', JSON.stringify(data));
     } catch {
       setError('Tải danh sách yêu thích thất bại');
       toastService.error('Tải danh sách yêu thích thất bại');

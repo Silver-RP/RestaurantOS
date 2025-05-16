@@ -55,3 +55,10 @@ export const updateUserInfoAPI = async (
   const res = await axiosInstance.put(`/user/updateUser/${userId}`, data);
   return res.data;
 };
+
+export const addUser = async (
+  formData: FormData)
+  : Promise<{ status: string; message: string; data: User }> => {
+  const res = await axiosInstance.post('/user/addUser', formData);  
+  return res.data;
+}

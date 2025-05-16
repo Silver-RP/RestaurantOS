@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { User } from 'types/User.type';
 import { useSearchParams } from 'react-router-dom';
 import { getAllUsers, UserQueryParams } from '@/api/UserApi';
+import { addUser } from '@/api/UserApi';
 
 export const useUsers = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -49,5 +50,43 @@ export const useUsers = () => {
     error,
     searchParams,
     setSearchParams,
+  };
+};
+
+
+
+export const useAddUser = () => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const createUser = async (
+    formData: FormData,
+    onSuccess?: (data: User) => void
+  ) => {
+    setLoading(true);
+    setError(null);
+    setSuccessMessage(null);
+
+    try {
+      const res = await addUser(formData);
+      if (res.status === 'OK') {
+        setSuccessMessage(res.message);
+        onSuccess?.(res.data);
+      } else {
+        setError(res.message);
+      }
+    } catch (err: any) {
+      setError(err?.response?.data?.message || 'Lỗi khi tạo người dùng');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return {
+    createUser,
+    loading,
+    error,
+    successMessage,
   };
 };
