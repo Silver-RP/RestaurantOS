@@ -1,59 +1,84 @@
 import React from 'react';
 import { FavoriteItem } from '@/types/Dish.types';
 import ButtonComponents from '@/components/common/ButtonComponents';
+import { useAddToCart } from '@/hooks/useCart';
+import { FiShoppingCart, FiTrash } from 'react-icons/fi';
 
 interface Props {
   item: FavoriteItem;
   onRemove: () => void;
-  onAddToCart: () => void;
 }
 
-const FavoriteItemCard: React.FC<Props> = ({
-  item,
-  onRemove,
-  onAddToCart,
-}) => {
+const FavoriteItemCard: React.FC<Props> = ({ item, onRemove }) => {
+  const dish = item.dishId;
+  const { mutate: addToCart } = useAddToCart();
+
+  if (!dish) return null;
+
   return (
-    <div className="flex flex-col md:flex-row items-center gap-4 rounded-lg p-4 shadow-2xl hover:shadow-[0_12px_32px_rgba(0,0,0,0.4)] transition duration-300">
-      <img
-  src={item.images?.[0] || '/fallback-image.jpg'} 
-  alt={item.name}
-  className="w-32 h-32 object-cover rounded"
-/>
+    <div className="flex flex-row items-center gap-4 rounded-lg px-0 py-4 sm:p-4 shadow-2xl hover:shadow-[0_12px_32px_rgba(0,0,0,0.4)] transition duration-300 h-[200px]">
+      <div className="h-full w-28 sm:w-32 flex-shrink-0 rounded overflow-hidden">
+        <img
+          src={dish.images?.[0] || '/fallback-image.jpg'}
+          alt={dish.name}
+          className="h-full w-full object-cover"
+        />
+      </div>
 
-      <div className="flex-1 text-white">
-        <h2 className="text-lg font-semibold">{item.name}</h2>
+      <div className="flex-1 text-white flex flex-col justify-between h-full overflow-hidden">
+        <div>
+          <h2 className="text-lg leading-tight line-clamp-2 h-[48px]">
+            {dish.name}
+          </h2>
 
-        <p className="text-sm text-gray-400 mb-1">Danh mục: {item.category}</p>
+          <p className="text-sm text-gray-400 mb-2">
+            {' '}
+            {Array.isArray(dish.categories) && dish.categories.length > 0
+              ? dish.categories
+                  .map((cat) => (typeof cat === 'object' ? cat.Cate_name : ''))
+                  .join(', ')
+              : 'Không rõ'}
+          </p>
 
-        <div className="flex gap-2 items-center text-base font-medium mb-2">
-          <span className="text-secondaryColor">
-            {item.price.toLocaleString()} VNĐ
-          </span>
-          {item.discountPrice && (
-            <span className="line-through text-sm text-gray-400">
-              {item.discountPrice.toLocaleString()} VNĐ
-            </span>
-          )}
+          <div className="flex flex-col justify-between text-base font-medium min-h-[44px] leading-snug">
+            {typeof dish.discount_price === 'number' ? (
+              <>
+                <span className="line-through text-sm text-gray-400">
+                  {dish.price.toLocaleString()} VNĐ
+                </span>
+                <span className="text-secondaryColor text-base">
+                  {dish.discount_price.toLocaleString()} VNĐ
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="invisible text-sm">Giá gốc placeholder</span>
+                <span className="text-secondaryColor text-base">
+                  {dish.price.toLocaleString()} VNĐ
+                </span>
+              </>
+            )}
+          </div>
         </div>
 
-        {/* Action buttons */}
         <div className="flex items-center gap-2 mt-3">
           <ButtonComponents
             size="small"
             variant="filled"
-            onClick={onAddToCart}
-            className="text-sm px-3 py-1"
+            onClick={() => addToCart({ dishId: dish._id, quantity: 1 })}
+            className="min-w-[64px] sm:min-w-[72px] lg:min-w-[90px] h-[28px] sm:h-[32px] lg:h-[36px] flex items-center justify-center gap-1 text-[11px] sm:text-xs lg:text-sm"
           >
-            Thêm vào giỏ hàng
+            <FiShoppingCart className="w-4 h-4" />
+            <span className="hidden sm:inline">+</span>
           </ButtonComponents>
+
           <ButtonComponents
             onClick={onRemove}
             size="small"
             variant="outline"
-            className="text-sm px-3 py-1"
+            className="min-w-[64px] sm:min-w-[72px] lg:min-w-[90px] h-[28px] sm:h-[32px] lg:h-[36px] flex items-center justify-center text-red-400 hover:text-white hover:bg-red-500 transition text-[11px] sm:text-xs lg:text-sm"
           >
-            Xoá
+            <FiTrash className="w-4 h-4" />
           </ButtonComponents>
         </div>
       </div>

@@ -8,6 +8,5 @@ router.get('/getFavorites', FavoriteController.list);
 
 router.post('/add', FavoriteController.add);
 
-router.delete('/item/:dishId', FavoriteController.remove);
-
+router.delete('/item/:id', FavoriteController.remove);
 export default router;

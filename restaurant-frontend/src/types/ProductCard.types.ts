@@ -18,4 +18,5 @@ export interface ProductCardProps {
   rating_count?: number;
   createdAt?: string;
   categories?: Category[];
+  onAddToFavorite: () => void; 
 }

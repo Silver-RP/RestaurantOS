@@ -36,7 +36,7 @@ const CartPage = () => {
     discountedPrice: item.dishId.discount_price || item.dishId.price,
     quantity: item.quantity,
     imageUrl: item.dishId.images[0],
-    category: item.dishId.categories?.[0]?.Cate_name || "",
+    category: item.dishId.categories?.[0]?.Cate_name || '',
   }));
 
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -77,30 +77,36 @@ const CartPage = () => {
         <div className="w-full mx-auto pb-10 py-10">
           <h1 className="text-3xl mb-8 text-center lg:text-left">Giỏ hàng</h1>
 
-
           {isCartEmpty ? (
             <div className="text-center py-20 text-white/70">
               <h2 className="text-xl mb-4">
                 Không có sản phẩm nào trong giỏ hàng
               </h2>
-              <ButtonComponents variant="filled" size="small" className="mt-2" onClick={handleClick}>
+              <ButtonComponents
+                variant="filled"
+                size="small"
+                className="mt-2"
+                onClick={handleClick}
+              >
                 Mua sắm ngay
               </ButtonComponents>
             </div>
           ) : (
-            <div className="flex flex-col 2xl:flex-row gap-10">
-              <div className="flex-1 overflow-x-auto">
+            <div className="flex flex-col lg:flex-row gap-2">
+              <div className="flex-1 min-w-0 overflow-x-auto">
                 <CartTable
                   items={cartItems}
                   selectedIds={selectedIds}
                   onSelectionChange={handleSelectionChange}
                 />
               </div>
-              <CartSummary
-                originalTotal={originalTotal}
-                discountedTotal={discountedTotal}
-                selectedItems={filteredItems}
-              />
+              <div className="w-full lg:w-[350px] shrink-0">
+                <CartSummary
+                  originalTotal={originalTotal}
+                  discountedTotal={discountedTotal}
+                  selectedItems={filteredItems}
+                />
+              </div>
             </div>
           )}
         </div>

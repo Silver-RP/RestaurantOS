@@ -34,7 +34,6 @@ const App = () => {
           <SearchModal/>
         </Router>
       </QueryClientProvider>
-     
     </Provider>
     </GoogleOAuthProvider>
   );
