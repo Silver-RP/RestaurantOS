@@ -1,68 +1,67 @@
 import { Model } from 'mongoose';
 import User from '../models/UserModel';
+import { Dish } from '../models/DishModel';
 
 class SearchService {
-  async search(model: Model<any>, query: any, searchFields: string[]): Promise<any> {
-    const { search = '', minPrice, maxPrice } = query;
 
-    const searchQuery: any = {};
+  async searchModel(
+    model: Model<any>,
+    queryParams: any,
+    searchFields: string[] = [],
+    selectFields: string = '',
+    sortBy: any = {},
+  ) {
+    const {
+      keyword = '',
+      page = 1,
+      limit = 12,
+    } = queryParams;
 
-    if (search) {
-      searchQuery.$or = searchFields.map((field) => ({
-        [field]: { $regex: search, $options: 'i' },
+    const query: any = {};
+
+    // Search keyword
+    if (keyword && searchFields.length > 0) {
+      query.$or = searchFields.map((field) => ({
+        [field]: { $regex: keyword, $options: 'i' },
       }));
     }
 
-    if (minPrice || maxPrice) {
-      searchQuery.price = {};
-      if (minPrice) searchQuery.price.$gte = parseFloat(minPrice);
-      if (maxPrice) searchQuery.price.$lte = parseFloat(maxPrice);
-    }
+    const skip = (page - 1) * limit;
 
-    const data = await model.find(searchQuery);
-
-    if (data.length === 0) {
-      return { message: 'No data found!' };
-    }
+    const [data, total] = await Promise.all([
+      model.find(query).select(selectFields).sort(sortBy).skip(skip).limit(limit),
+      model.countDocuments(query),
+    ]);
 
     return {
-      total: data.length,
-      data,
+      status: 'SUCCESS',
+      docs: data,
+      totalDocs: total,
+      limit: Number(limit),
+      page: Number(page),
+      totalPages: Math.ceil(total / limit),
     };
+    
   }
 
-  async searchUsers(keyword: string, page: number, pageSize: number) {
-    try {
-      const query = {
-        $or: [
-          { userName: { $regex: keyword, $options: 'i' } },
-          { email: { $regex: keyword, $options: 'i' } },
-          { phoneNumber: { $regex: keyword, $options: 'i' } },
-        ],
-      };
+  async searchUsers(queryParams: any) {
+    return this.searchModel(
+      User,
+      queryParams,
+      ['userName', 'email', 'phoneNumber'],
+      '-password',
+      { userName: 1 }
+    );
+  }
 
-      const skip = (page - 1) * pageSize;
-
-      const [users, totalDocuments] = await Promise.all([
-        User.find(query).select('-password').sort({ userName: 1 }).skip(skip).limit(pageSize),
-        User.countDocuments(query),
-      ]);
-
-      return {
-        status: 'SUCCESS',
-        data: {
-          users,
-          metadata: {
-            total: totalDocuments,
-            page: page,
-            pageSize: pageSize,
-            totalPages: Math.ceil(totalDocuments / pageSize),
-          },
-        },
-      };
-    } catch (error: any) {
-      throw new Error(`Error searching users: ${error.message}`);
-    }
+  async searchFoods(queryParams: any) {
+    return this.searchModel(
+      Dish,
+      queryParams,
+      ['name', 'description', 'shortDescription', 'ingredients'],
+      '-image',
+      { name: 1 },
+    );
   }
 }
 

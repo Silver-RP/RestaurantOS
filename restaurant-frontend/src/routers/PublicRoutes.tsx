@@ -45,7 +45,7 @@ const PublicRoutes = [
       { path: 'contact', element: <ContactUsPage /> },
       { path: 'profile/faqs', element: <FAQsCompoent /> },
       { path: 'posts', element: <PostPage /> },
-      { path: 'order', element: <OrderPage /> },
+      { path: 'profile/orders', element: <OrderPage /> },
       { path: 'cart', element: <CartPage /> },
       { path: 'checkout', element: <CheckoutPage /> },
       { path: 'reservation', element: <ReservationPage /> },

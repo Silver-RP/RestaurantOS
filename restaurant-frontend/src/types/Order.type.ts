@@ -1,9 +1,15 @@
+import { Address } from "./Address.type";
+
 export type DeliveryStatus = 
   | 'PENDING_PICKUP' 
   | 'PICKED_UP' 
   | 'IN_TRANSIT' 
   | 'DELIVERED' 
-  | 'FAILED';
+  | 'FAILED'
+  | 'CANCELLED'
+  | 'DELIVERY_FAILED'
+  | 'RETURN_REQUESTED'
+  | 'RETURNED';
 
 export type OrderStatus = 
   | 'PENDING' 
@@ -12,7 +18,8 @@ export type OrderStatus =
   | 'READY' 
   | 'COMPLETED' 
   | 'CANCELLED' 
-  | 'RETURNED';
+  | 'RETURNED'
+  | 'SHIPPING';
 
 export type PaymentMethod = 
   | 'CASH' 
@@ -33,33 +40,60 @@ export type DeliveryTimeType =
   | 'ASAP' 
   | 'SCHEDULED';
 
-export interface OrderItem {
+export interface Dish {
   _id: string;
-  product_id: string;
-  order_id: string;
   name: string;
+  shortDescription: string;
+  description: string;
+  ingredients: string;
   price: number;
   discount_price?: number;
+  slug: string;
+  images: string[];
+  status: string;
+  views: number;
+  ordered_count: number;
+  average_rating: number;
+  rating_count: number;
+  favorites_count: number;
+  rating: number;
+  categories: string[];
+  countInStock: number;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+  discountUntil?: string | null;
+  isNew: boolean;
+  newUntil?: string | null;
+  totalSoldQuantity: number;
+  recommend: boolean;
+}
+
+export interface OrderItem {
+  _id: string;
+  order_id: string;
+  dish_id: Dish;
+  dish_name: string;
+  dish_images: string[];
+  categories: string[];
+  unit_price: number;
   quantity: number;
-  note?: string;
-  image?: string;
-  category?: string;
-  options?: Array<{
-    name: string;
-    value: string;
-    price?: number;
-  }>;
+  total_amount: number;
+  note?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
 }
 
 export interface Order {
   _id: string;
   user_id: string;
   cashier_order_id: string | null;
-  address_id: string;
-  payment_method: PaymentMethod;
-  delivery_type: DeliveryType;
-  delivery_status: DeliveryStatus;
-  status: OrderStatus;
+  address_id: Address | null;
+  payment_method: PaymentMethod | string;
+  delivery_type: DeliveryType | string;
+  delivery_status: DeliveryStatus | string;
+  status: OrderStatus | string;
   shipping_fee: number;
   vat_amount: number;
   items_price: number;
@@ -78,19 +112,13 @@ export interface Order {
   __v: number;
   delivery_time_type: DeliveryTimeType;
   scheduled_time: string | null;
-  items?: OrderItem[];
-  
-  // Additional fields that might be populated
-  address?: {
-    address: string;
-    name: string;
-    phone: string;
-  };
+  order_items?: OrderItem[];
 }
 
 export interface OrdersResponse {
+  message: string;
   orders: Order[];
-  totalOrders: number;
+  totalItems: number; 
   currentPage: number;
   totalPages: number;
 }
@@ -127,7 +155,7 @@ export interface OrderQueryParams {
   page?: number;
   limit?: number;
   status?: OrderStatus;
-  delivery_status?: DeliveryStatus;
+  delivery_status?: DeliveryStatus | DeliveryStatus[]; 
   startDate?: string;
   endDate?: string;
   sort?: 'createdAt' | 'total_price' | 'updatedAt';

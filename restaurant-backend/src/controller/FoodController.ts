@@ -291,15 +291,6 @@ class FoodController {
     }
   }
 
-  async SearchFood(req: Request, res: Response): Promise<any> {
-    try {
-      const result = await SearchService.search(Dish, req.query, ['name']);
-      return res.status(200).json(result);
-    } catch (error) {
-      return res.status(500).json({ message: 'An error occurred', error });
-    }
-  }
-
   async toggleFavorite(req: Request, res: Response): Promise<any> {
     try {
       if (!req.user) {

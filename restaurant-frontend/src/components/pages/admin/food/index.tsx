@@ -21,12 +21,19 @@ type SortDirection = 'asc' | 'desc';
 
 const MenuTable: React.FC = () => {
   const { foods, loading, error, searchParams, setSearchParams } = useFoods();
-  const navigate = useNavigate();
-  const [search, setSearch] = useState(searchParams.get('keyword') || '');
   const [sortOrder] = useState<'asc' | 'desc' | ''>('');
   const [sortField, setSortField] = useState<SortField>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [showFilterPanel, setShowFilterPanel] = useState(false);
+
+  const [search, setSearch] = useState('');
+  const navigate = useNavigate();
+
+  const handleEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && search.trim()) {
+      navigate(`/admin/foods/search?query=${search.trim()}`);
+    }
+  };
   useEffect(() => {
     const newParams = new URLSearchParams(searchParams.toString());
     newParams.set('keyword', search);
@@ -86,6 +93,7 @@ const MenuTable: React.FC = () => {
               placeholder="Tìm món..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={handleEnter}
               className="px-4 py-2 border rounded-md w-full"
             />
           </div>
@@ -108,38 +116,42 @@ const MenuTable: React.FC = () => {
       </div>
       {showFilterPanel && (
         <AdvancedFilterPanel
-        onApply={(filters) => {
-          const newParams = new URLSearchParams(searchParams.toString());
-      
-          newParams.set('keyword', search);
-      
-          filters.category && newParams.set('category', filters.category);
-          filters.status && newParams.set('status', filters.status);
-      
-          filters.priceMin && newParams.set('priceMin', filters.priceMin);
-          filters.priceMax && newParams.set('priceMax', filters.priceMax);
-      
-          filters.discountMin && newParams.set('discountMin', filters.discountMin);
-          filters.discountMax && newParams.set('discountMax', filters.discountMax);
-      
-          filters.stockMin && newParams.set('stockMin', filters.stockMin);
-          filters.stockMax && newParams.set('stockMax', filters.stockMax);
-      
-          filters.viewsMin && newParams.set('viewsMin', filters.viewsMin);
-          filters.viewsMax && newParams.set('viewsMax', filters.viewsMax);
-      
-          filters.orderedMin && newParams.set('orderedMin', filters.orderedMin);
-          filters.orderedMax && newParams.set('orderedMax', filters.orderedMax);
-      
-          filters.ratingMin && newParams.set('ratingMin', filters.ratingMin);
-          filters.ratingMax && newParams.set('ratingMax', filters.ratingMax);
-      
-          newParams.set('page', '1');
+          onApply={(filters) => {
+            const newParams = new URLSearchParams(searchParams.toString());
 
-          setSearchParams(newParams);
-          setShowFilterPanel(false);
-        }}
-      />
+            newParams.set('keyword', search);
+
+            filters.category && newParams.set('category', filters.category);
+            filters.status && newParams.set('status', filters.status);
+
+            filters.priceMin && newParams.set('priceMin', filters.priceMin);
+            filters.priceMax && newParams.set('priceMax', filters.priceMax);
+
+            filters.discountMin &&
+              newParams.set('discountMin', filters.discountMin);
+            filters.discountMax &&
+              newParams.set('discountMax', filters.discountMax);
+
+            filters.stockMin && newParams.set('stockMin', filters.stockMin);
+            filters.stockMax && newParams.set('stockMax', filters.stockMax);
+
+            filters.viewsMin && newParams.set('viewsMin', filters.viewsMin);
+            filters.viewsMax && newParams.set('viewsMax', filters.viewsMax);
+
+            filters.orderedMin &&
+              newParams.set('orderedMin', filters.orderedMin);
+            filters.orderedMax &&
+              newParams.set('orderedMax', filters.orderedMax);
+
+            filters.ratingMin && newParams.set('ratingMin', filters.ratingMin);
+            filters.ratingMax && newParams.set('ratingMax', filters.ratingMax);
+
+            newParams.set('page', '1');
+
+            setSearchParams(newParams);
+            setShowFilterPanel(false);
+          }}
+        />
       )}
       <div className="text-sm text-gray-700">
         Hiển thị <strong>{foodList.length}</strong> trên tổng{' '}
