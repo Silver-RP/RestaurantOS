@@ -39,15 +39,15 @@ export const getAllUsers = async (
   };
 };
 // hàm này chưa đúng
-export const createUser = async (formData: FormData): Promise<User> => {
-  const response = await axiosInstance.post<{
-    status: string;
-    message: string;
-    data: User;
-  }>('/user/createUser', formData);
+// export const createUser = async (formData: FormData): Promise<User> => {
+//   const response = await axiosInstance.post<{
+//     status: string;
+//     message: string;
+//     data: User;
+//   }>('/user/createUser', formData);
 
-  return response.data.data;
-};
+//   return response.data.data;
+// };
 export const updateUserInfoAPI = async (
   userId: string,
   data: Partial<User>
@@ -57,8 +57,8 @@ export const updateUserInfoAPI = async (
 };
 
 export const addUser = async (
-  formData: FormData)
-  : Promise<{ status: string; message: string; data: User }> => {
-  const res = await axiosInstance.post('/user/addUser', formData);  
+  userData: Partial<User>
+): Promise<{ status: string; message: string; data: User }> => {
+  const res = await axiosInstance.post('/user/addUser', userData);
   return res.data;
-}
+};

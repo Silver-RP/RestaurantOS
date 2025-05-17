@@ -8,6 +8,7 @@ import CateRoutes from './routes/CategoryRoutes';
 import ReservationContactRoutes from './routes/ReservationContactRoutes';
 import ReservationDetailContactRoutes from './routes/ReservationDetailContactRoutes';
 import ProfileRoutes from './routes/ProfileRoutes';
+
 import StaffRoutes from './routes/StaffRoutes';
 import FoodRoutes from './routes/FoodRoutes';
 import PermissionRoutes from './routes/PermissionRoutes';

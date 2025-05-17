@@ -11,12 +11,12 @@ interface RoleOption {
 
 interface CreateUserFormProps {
   roles: { _id: string; name: string }[];
-  onSubmit: (formData: FormData) => void;
+  onSubmit: (data: any) => void;
 }
 
-const CreateUserForm: React.FC<CreateUserFormProps> = ({ roles = [] }) => {
+const CreateUserForm: React.FC<CreateUserFormProps> = ({ roles = [], onSubmit }) => {
   const navigate = useNavigate();
-  const { createUser, loading, error } = useAddUser();
+  const { loading, error } = useAddUser();
 
   const roleOptions: RoleOption[] = roles.map((role) => ({
     value: role._id,
@@ -40,50 +40,47 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ roles = [] }) => {
   }, [error]);
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setPasswordError('');
+  e.preventDefault();
+  setPasswordError('');
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    // VALIDATION
-    if (!username.trim() || !email.trim() || !password) {
-      toast.error('Vui lòng nhập đầy đủ username, email và mật khẩu');
-      return;
-    }
+  if (!username.trim() || !email.trim() || !password) {
+    toast.error('Vui lòng nhập đầy đủ username, email và mật khẩu');
+    return;
+  }
 
-    if (!emailRegex.test(email.trim())) {
-      toast.error('Email không hợp lệ');
-      return;
-    }
+  if (!emailRegex.test(email.trim())) {
+    toast.error('Email không hợp lệ');
+    return;
+  }
 
-    if (password !== confirmPassword) {
-      setPasswordError('Mật khẩu xác nhận không đúng');
-      return;
-    }
+  if (password !== confirmPassword) {
+    setPasswordError('Mật khẩu xác nhận không đúng');
+    return;
+  }
 
-    if (selectedRoles.length === 0) {
-      toast.error('Bạn cần chọn ít nhất 1 vai trò');
-      return;
-    }
+  if (selectedRoles.length === 0) {
+    toast.error('Bạn cần chọn ít nhất 1 vai trò');
+    return;
+  }
 
-    // GỬI FORM
-    const formData = new FormData();
-    formData.append('username', username.trim());
-    formData.append('email', email.trim());
-    formData.append('password', password);
-    formData.append('phone', phone);
-    formData.append('birthday', birthday);
-    formData.append('gender', gender);
-    formData.append('status', status);
-    formData.append('isEmailVerified', isEmailVerified.toString());
-    selectedRoles.forEach((roleId) => formData.append('roles', roleId));
-    console.log("formData", formData);
-    
-    createUser(formData, () => {
-      toast.success('Thêm người dùng thành công!');
-      navigate('/admin/users');
-    });
+  const data = {
+    username: username.trim(),
+    email: email.trim(),
+    password,
+    phone,
+    birthday,
+    gender,
+    status,
+    isEmailVerified,
+    roles: selectedRoles,
   };
+
+  console.log('data gửi đi:', data);
+
+  onSubmit(data);
+};
 
   return (
     <div className="p-6 bg-white shadow-md rounded-md max-w-3xl mx-auto">
@@ -221,7 +218,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ roles = [] }) => {
             isMulti
             options={roleOptions}
             value={roleOptions.filter((opt) =>
-              selectedRoles.includes(opt.value)
+              selectedRoles.includes(opt.value),
             )}
             onChange={(selected) => {
               const roleIds = selected.map((opt) => opt.value);

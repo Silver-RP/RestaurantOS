@@ -8,6 +8,7 @@ export interface User {
   gender?: string;
   isVerified?: boolean;
   isEmailVerified: boolean;
+  status: 'ERROR' | 'OK'; 
   googleId?: string;
   isActive?: boolean;
   roles: { _id: string; name: string }[];
