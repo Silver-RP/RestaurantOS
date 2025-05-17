@@ -62,3 +62,18 @@ export const addUser = async (
   const res = await axiosInstance.post('/user/addUser', userData);
   return res.data;
 };
+
+export const checkUserPassword = async (
+  userId: string,
+  password: string
+): Promise<{
+  status: string;
+  message: string;
+  match: boolean;
+}> => {
+  const response = await axiosInstance.post(`/user/check-password/${userId}`, {
+    password,
+  });
+
+  return response.data;
+};

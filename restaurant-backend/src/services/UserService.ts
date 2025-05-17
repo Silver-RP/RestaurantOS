@@ -374,5 +374,39 @@ class UserService {
       };
     }
   }
+
+  async checkUserPassword(userId: string, passwordToCheck: string): Promise<any> {
+    try {
+      const user = await User.findById(userId);
+      if (!user || !user.password) {
+        return {
+          status: 'ERROR',
+          message: 'User not found or password not set',
+        };
+      }
+
+      const isMatch = await bcrypt.compare(passwordToCheck, user.password);
+      if (!isMatch) {
+        return {
+          status: 'ERROR',
+          message: 'Password does not match',
+          match: false,
+        };
+      }
+
+      return {
+        status: 'OK',
+        message: 'Password matches',
+        match: true,
+      };
+    } catch (error: any) {
+      console.error('Error checking password:', error);
+      return {
+        status: 'ERROR',
+        message: 'Failed to check password',
+        match: false,
+      };
+    }
+  }
 }
 export default new UserService();

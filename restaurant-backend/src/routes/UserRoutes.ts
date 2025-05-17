@@ -10,6 +10,11 @@ router.get('/getUserById/:userId', UserController.getUserById);
 router.post('/blockUser/:userId', UserController.blockUser);
 router.put('/updateUser/:userId', AuthMiddleWare.verifyToken, UserController.updateUser);
 router.post(
+  '/check-password/:userId',
+  AuthMiddleWare.verifyToken,
+  UserController.checkUserPassword,
+);
+router.post(
   '/changePassword/:userId',
   AuthMiddleWare.verifyToken,
   UserController.changeUserPassword,

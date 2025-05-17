@@ -29,15 +29,11 @@ class FoodService {
   }
 
   async getAllFood(filters: FoodFilter) {
-    const {
-      page = 1,
-      limit = 10,
-      sort = 'newest',
-    } = filters;
-  
+    const { page = 1, limit = 10, sort = 'newest' } = filters;
+
     const query = await buildQuery(filters);
     const sortQuery = getSortQuery(sort);
-  
+
     const options = {
       page,
       limit,
@@ -48,7 +44,7 @@ class FoodService {
         select: 'Cate_name',
       },
     };
-  
+
     try {
       return await Dish.paginate(query, options);
     } catch (error) {

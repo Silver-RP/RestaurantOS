@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from 'react';
 import { User } from 'types/User.type';
 import { useSearchParams } from 'react-router-dom';
 import { getAllUsers, UserQueryParams } from '@/api/UserApi';
 import { addUser } from '@/api/UserApi';
-
+import { checkUserPassword as checkPasswordAPI } from '@/api/UserApi';
 export const useUsers = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [totalDocs, setTotalDocs] = useState(0);
@@ -90,5 +91,39 @@ export const useAddUser = () => {
     loading,
     error,
     successMessage,
+  };
+};
+
+export const useCheckPassword = () => {
+  const [loading, setLoading] = useState(false);
+  const [match, setMatch] = useState<boolean | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const checkPassword = async (
+    userId: string,
+    password: string,
+    onSuccess?: (match: boolean) => void
+  ) => {
+    setLoading(true);
+    setError(null);
+    setMatch(null);
+
+    try {
+      const res = await checkPasswordAPI(userId, password);
+      setMatch(res.match);
+      onSuccess?.(res.match);
+    } catch (err: any) {
+      console.error(err);
+      setError(err?.response?.data?.message || 'Lỗi kiểm tra mật khẩu');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return {
+    checkPassword,
+    match,
+    loading,
+    error,
   };
 };

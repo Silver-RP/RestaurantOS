@@ -245,6 +245,6 @@ export const useFoodBest4 = (categoryId: string) => {
   });
 };
 
-function useDebounce(search: any, arg1: number) {
-  throw new Error('Function not implemented.');
-}
+// function useDebounce(search: any, arg1: number) {
+//   throw new Error('Function not implemented.');
+// }
