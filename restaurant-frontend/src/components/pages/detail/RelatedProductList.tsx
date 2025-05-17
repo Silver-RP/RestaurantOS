@@ -2,42 +2,43 @@ import React, { useEffect, useState } from 'react';
 import ProductCardGrid from '../../common/ProductCardGrid';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { useFoodBest4 } from '@hooks/useFoods';
-
+import { ProductCardProps } from '@/types/ProductCard.types';
 interface RelatedProductListProps {
   categories: string[];
 }
 
-const RelatedProductList: React.FC<RelatedProductListProps> = ({
-  categories,
-}) => {
+const RelatedProductList: React.FC<RelatedProductListProps> = ({ categories }) => {
+  const categoryId = categories?.[0];
+
+  if (!categoryId) return null;
+
+  const { data: foods = [] } = useFoodBest4(categoryId);
   const [slideIndex, setSlideIndex] = useState(0);
   const [itemsPerSlide, setItemsPerSlide] = useState(1);
-  const { data: foods, isLoading, error } = useFoodBest4(categories.join(','));
 
-
-  const products: Product[] =
-    foods?.map((food) => ({
-      id: food._id,
-      name: food.name,
-      price: food.discount_price || food.price,
-      originalPrice: food.discount_price ? food.price : undefined,
-      imageUrl: food.images[0] || '',
-      hoverImage: food.images[1] || '',
-      isNew: true,
-      discount: food.discount_price
-        ? `${Math.round(((food.price - food.discount_price) / food.price) * 100)}% OFF`
-        : undefined,
-      slug: food.slug,
-      description: food.description || '',
-      views: food.views || 0,
-      categories: food.categories || [],
-      cate: food.categories?.[0]?.Cate_name,
-      ordered_count: food.ordered_count || 0,
-      rating_count: food.rating_count || 0,
-      rating: food.average_rating || 4,
-      favorites_count: food.favorites_count || 0,
-      countInStock: food.countInStock || 10,
-    })) || [];
+  const products: ProductCardProps[] = foods.map((food) => ({ 
+  id: food._id,
+  name: food.name,
+  price: food.discount_price || food.price,
+  originalPrice: food.discount_price ? food.price : undefined,
+  imageUrl: food.images?.[0] || '',
+  hoverImage: food.images?.[1] || '',
+  isNew: true,
+  discount: food.discount_price
+    ? `${Math.round(((food.price - food.discount_price) / food.price) * 100)}% OFF`
+    : undefined,
+  slug: food.slug,
+  description: food.description || '',
+  views: food.views || 0,
+  categories: food.categories || [],
+  cate: food.categories?.[0]?.Cate_name,
+  ordered_count: food.ordered_count || 0,
+  rating_count: food.rating_count || 0,
+  rating: food.average_rating || 4,
+  favorites_count: food.favorites_count || 0,
+  countInStock: food.countInStock || 10,
+  onAddToFavorite: () => {},
+}));
 
   useEffect(() => {
     const updateItemsPerSlide = () => {
@@ -57,10 +58,6 @@ const RelatedProductList: React.FC<RelatedProductListProps> = ({
   const handlePrev = () => setSlideIndex((prev) => Math.max(prev - 1, 0));
   const handleNext = () =>
     setSlideIndex((prev) => Math.min(prev + 1, maxSlideIndex));
-
-  // Loading và lỗi
-  if (isLoading) return <p>Loading...</p>;
-  if (error) return <p>Error loading products.</p>;
 
   return (
     <div className="py-10 relative">

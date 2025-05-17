@@ -229,17 +229,18 @@ export const useDishByFavoriteCategory = (cateType: string) => {
 };
 
 export const useFoodNewest = () => {
-  return useQuery<FoodResponse>({
+  return useQuery<FoodDetail[]>({
     queryKey: ['foodNewest'],
-    queryFn: () => fetchFoodNewest(),
+    queryFn: fetchFoodNewest,
     refetchOnWindowFocus: false,
   });
 };
 
 export const useFoodBest4 = (categoryId: string) => {
-  return useQuery<FoodResponse>({
+  return useQuery({
     queryKey: ['foodBest4', categoryId],
     queryFn: () => fetchFoodBest4(categoryId),
+    enabled: !!categoryId,
     refetchOnWindowFocus: false,
   });
 };

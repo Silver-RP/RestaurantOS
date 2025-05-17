@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from 'react';
 import { Category, CategoryResponse, CategoryCreatePayload  } from '../types/Category.type';
 import { AxiosError } from 'axios';
@@ -95,7 +96,7 @@ export const useAddCategory = () => {
       }
 
       const res = await addCategory(formData);
-      setSuccessMessage(res.message || null); 
+      setSuccessMessage(res.message ?? null);
       onSuccess?.();
     } catch (err: any) {
       const message =

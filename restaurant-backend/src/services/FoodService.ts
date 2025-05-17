@@ -11,7 +11,7 @@ class FoodService {
     const newfood = new Dish(food);
     try {
       return await newfood.save();
-    } catch (error) {
+    } catch {
       throw new Error('Error creating food');
     }
   }
@@ -23,7 +23,7 @@ class FoodService {
         return { message: 'No food found' };
       }
       return food;
-    } catch (error) {
+    } catch {
       throw new Error('Error getting top favorite food');
     }
   }
@@ -78,7 +78,7 @@ class FoodService {
     try {
       const food = await Dish.findById(id).populate('categories');
       return food;
-    } catch (error) {
+    } catch {
       throw new Error('Error getting food by id');
     }
   }
@@ -86,7 +86,7 @@ class FoodService {
   async updateFood(id: string, food: any) {
     try {
       return await Dish.findByIdAndUpdate(id, food, { new: true });
-    } catch (error) {
+    } catch {
       throw new Error('Error updating food');
     }
   }
@@ -94,7 +94,7 @@ class FoodService {
   async deleteFood(id: string) {
     try {
       return await Dish.findByIdAndDelete(id);
-    } catch (error) {
+    } catch {
       throw new Error('Error deleting food');
     }
   }
@@ -109,7 +109,7 @@ class FoodService {
       const food = await Dish.find({ categories: { $in: categoryIds } });
 
       return food;
-    } catch (error) {
+    } catch {
       throw new Error('Error getting food by category type');
     }
   }
@@ -117,7 +117,7 @@ class FoodService {
   async getFoodBySearch(search: string) {
     try {
       return await Dish.find({ $text: { $search: search } });
-    } catch (error) {
+    } catch {
       throw new Error('Error getting food by search');
     }
   }
@@ -127,7 +127,7 @@ class FoodService {
       return await Dish.find({
         price: { $gte: pricemin, $lte: pricemax },
       });
-    } catch (error) {
+    } catch {
       throw new Error('Error getting food by price');
     }
   }
@@ -135,11 +135,10 @@ class FoodService {
   async getFoodByRating(rating: number) {
     try {
       return await Dish.find({ rating: rating });
-    } catch (error) {
+    } catch {
       throw new Error('Error getting food by rating');
     }
   }
-
 
   async getFoodBest4(categoryId: string) {
     try {
@@ -147,22 +146,22 @@ class FoodService {
 
       const foodNewest = await Dish.aggregate([
         {
-          $match: { categories: { $in: [objectId] } }
+          $match: { categories: { $in: [objectId] } },
         },
         {
-          $sort: { favorites_count: -1 }
+          $sort: { favorites_count: -1 },
         },
         {
-          $limit: 20
+          $limit: 20,
         },
         {
           $lookup: {
             from: 'categories',
             localField: 'categories',
             foreignField: '_id',
-            as: 'categories'
-          }
-        }
+            as: 'categories',
+          },
+        },
       ]);
 
       return foodNewest;
@@ -171,7 +170,6 @@ class FoodService {
       throw new Error('Error fetching food by category');
     }
   }
-
 
   async getFoodByFavorites(favorites: number, type: string) {
     try {
@@ -200,6 +198,8 @@ class FoodService {
             images: 1,
             favorites_count: 1,
             rating: 1,
+            rating_count: 1,
+            average_rating: 1,
             categories: 1,
             slug: 1,
           },

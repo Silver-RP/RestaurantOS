@@ -1,6 +1,28 @@
 import React from 'react';
 
-const tabs = ['Tất cả đơn hàng', 'Chưa xử lý', 'Đã xử lý', 'Đang giao hàng', 'Đã giao hàng', 'Đã hủy'];
+export const tabs = [
+  'Tất cả đơn hàng',
+  'Chờ xác nhận',
+  'Đang chuẩn bị',
+  'Đang giao hàng',
+  'Đã giao hàng',
+  'Đã hủy',
+  'Đã trả hàng',
+];
+
+export type DeliveryStatusMapping = {
+  delivery_status: string | string[] | null;
+};
+
+export const deliveryStatusMapping: Record<string, DeliveryStatusMapping> = {
+  'Tất cả đơn hàng': { delivery_status: null },
+  'Chờ xác nhận': { delivery_status: 'PENDING_CONFIRMATION' },
+  'Đang chuẩn bị': { delivery_status: 'PENDING_PICKUP' },
+  'Đang giao hàng': { delivery_status: 'IN_TRANSIT' },
+  'Đã giao hàng': { delivery_status: 'DELIVERED' },
+  'Đã hủy': { delivery_status: 'CANCELLED' },
+  'Đã trả hàng': { delivery_status: 'RETURNED' },
+};
 
 interface NavigationOrderProps {
   activeTab: string;
@@ -11,16 +33,13 @@ const NavigationOrder: React.FC<NavigationOrderProps> = ({ activeTab, onTabChang
   return (
     <div className="text-white px-2 md:px-4 py-4">
       <h1 className="text-xl md:text-2xl font-semibold mb-4">Đơn hàng của tôi</h1>
-
       <div className="overflow-x-auto">
         <div className="flex text-xs lg:justify-between md:text-base whitespace-nowrap space-x-4 md:justify-between pb-4 border-b border-white/20">
           {tabs.map((tab) => (
             <button
               key={tab}
               onClick={() => onTabChange(tab)}
-              className={`hover:underline transition ${
-                activeTab === tab ? 'underline text-secondaryColor' : ''
-              }`}
+              className={`hover:underline transition ${activeTab === tab ? 'underline text-secondaryColor' : ''}`}
             >
               {tab}
             </button>

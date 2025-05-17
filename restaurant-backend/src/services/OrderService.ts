@@ -212,16 +212,27 @@ class OrderService {
     };
   }
 
-  async getUserOrders(userId: mongoose.Types.ObjectId, status: string | null) {
+  async getUserOrders(
+    userId: mongoose.Types.ObjectId,
+    deliveryStatus: string | null,
+    page: number = 1,
+    limit: number = 5
+  ) {
     try {
       const query: any = { user_id: userId };
-      if (status) {
-        query.status = status;
+
+      if (deliveryStatus) {
+        query.delivery_status = deliveryStatus;
       }
+
+      const totalItems = await Order.countDocuments(query);
+      const totalPages = Math.ceil(totalItems / limit);
 
       const orders = await Order.find(query)
         .populate('address_id')
         .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
         .lean();
 
       const orderIds = orders.map((order) => order._id);
@@ -231,6 +242,7 @@ class OrderService {
       })
         .populate({
           path: 'dish_id',
+          select: 'name images categories',
           populate: {
             path: 'categories',
             model: 'categories',
@@ -261,6 +273,7 @@ class OrderService {
             ...detail,
             dish_id: dish?._id,
             dish_name: dish?.name,
+            dish_images: dish?.images || [],
             categories: categoryNames,
           };
         });
@@ -271,7 +284,12 @@ class OrderService {
         };
       });
 
-      return ordersWithDetails;
+      return {
+        orders: ordersWithDetails,
+        totalItems,
+        totalPages,
+        currentPage: page,
+      };
     } catch (error: any) {
       throw {
         statusCode: error.statusCode || 500,
@@ -279,6 +297,8 @@ class OrderService {
       };
     }
   }
+
+
 
 
   async getOrderById(orderId: mongoose.Types.ObjectId) {

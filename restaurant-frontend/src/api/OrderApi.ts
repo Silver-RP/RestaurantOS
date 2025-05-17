@@ -17,6 +17,7 @@ export async function getOrders(params?: OrderQueryParams): Promise<OrdersRespon
 
 export async function getOrderById(orderId: string): Promise<OrderDetailResponse> {
   const res = await api.get(`/order/${orderId}`);
+  console.log(res.data);  
   return res.data;
 }
 

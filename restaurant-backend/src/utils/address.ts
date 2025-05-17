@@ -1268,22 +1268,16 @@ export const HCM_ADDRESS_DATA = {
       ],
     },
     'Huyện Nhà Bè': {
-  wards: [
-    'Thị trấn Nhà Bè',
-    'Xã Hiệp Phước',
-    'Xã Long Thới',
-    'Xã Nhơn Đức',
-    'Xã Phú Xuân',
-    'Xã Phước Kiển',
-    'Xã Phước Lộc'
-  ],
-  streets: [
-    'Nguyễn Hữu Thọ',
-    'Huỳnh Tấn Phát',
-    'Lê Văn Lương',
-    'Nguyễn Bình',
-    'Phạm Hữu Lầu'
-  ]
-}
+      wards: [
+        'Thị trấn Nhà Bè',
+        'Xã Hiệp Phước',
+        'Xã Long Thới',
+        'Xã Nhơn Đức',
+        'Xã Phú Xuân',
+        'Xã Phước Kiển',
+        'Xã Phước Lộc',
+      ],
+      streets: ['Nguyễn Hữu Thọ', 'Huỳnh Tấn Phát', 'Lê Văn Lương', 'Nguyễn Bình', 'Phạm Hữu Lầu'],
+    },
   },
 } as const;
