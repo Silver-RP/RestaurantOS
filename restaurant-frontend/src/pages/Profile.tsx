@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 import ProfileSidebar from '../components/pages/proflie/ProfileSidebar';
 import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
@@ -9,6 +10,7 @@ import { AppDispatch } from '@/redux/store';
 import { updateUserInfo } from '@/redux/feature/user/userAction';
 import { toast } from 'react-toastify';
 import { useChangePasswordProfile } from '@/hooks/useAuth';
+import { useCheckPassword } from '@/hooks/useUsers'; 
 
 const ProfilePage = () => {
   const [touchedFields, setTouchedFields] = useState({
@@ -16,6 +18,9 @@ const ProfilePage = () => {
     newPassword: false,
     confirmPassword: false,
   });
+  const { checkPassword } = useCheckPassword();
+  const [isCheckingPassword, setIsCheckingPassword] = useState(false);
+  const [, setIsPasswordValid] = useState<boolean | null>(null);
   const dispatch = useDispatch<AppDispatch>();
   const { changePasswordProfile, loading: changingPassword } =
     useChangePasswordProfile();
@@ -43,6 +48,37 @@ const ProfilePage = () => {
     newPassword: '',
     confirmPassword: '',
   });
+
+  useEffect(() => {
+    const delayDebounce = setTimeout(() => {
+      const check = async () => {
+        if (accountInfo.password.trim() && user?._id) {
+          setIsCheckingPassword(true);
+          try {
+            await checkPassword(user._id, accountInfo.password, (isMatch) => {
+              setIsPasswordValid(isMatch);
+              setPasswordErrors((prev) => ({
+                ...prev,
+                password: isMatch ? '' : 'Mật khẩu hiện tại không chính xác',
+              }));
+            });
+          } catch {
+            setPasswordErrors((prev) => ({
+              ...prev,
+              password: 'Lỗi khi kiểm tra mật khẩu',
+            }));
+          } finally {
+            setIsCheckingPassword(false);
+          }
+        }
+      };
+  
+      check();
+    }, 500);
+  
+    return () => clearTimeout(delayDebounce);
+  }, [accountInfo.password, user?._id]);
+
   useEffect(() => {
     if (user) {
       let birthdayFormattedForInput = '';
@@ -258,11 +294,6 @@ const ProfilePage = () => {
     setPersonalInfo((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleAccountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setAccountInfo((prev) => ({ ...prev, [name]: value }));
-  };
-
   return (
     <div className="flex flex-col bg-bodyBackground text-white font-sans">
       <BreadCrumbComponents />
@@ -391,11 +422,11 @@ const ProfilePage = () => {
                         placeholder="Nhập mật khẩu hiện tại"
                         className="w-full bg-transparent border-b border-gray-500 text-white placeholder-gray-500 focus:outline-none focus:border-secondaryColor py-2"
                       />
-                      {touchedFields.password && passwordErrors.password && (
-                        <span className="text-red-400 text-sm mt-1">
-                          {passwordErrors.password}
-                        </span>
-                      )}
+                      {touchedFields.password && (
+  <span className="text-red-400 text-sm mt-1">
+    {isCheckingPassword ? 'Đang kiểm tra...' : passwordErrors.password}
+  </span>
+)}
                     </div>
 
                     <p className="text-gray-400">Mật khẩu mới</p>

@@ -134,6 +134,28 @@ class UserController {
       });
     }
   }
+
+  async checkUserPassword(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.params.userId;
+      const { password } = req.body;
+
+      if (!password) {
+        return res.status(400).json({
+          status: 'ERROR',
+          message: 'Missing password to check',
+        });
+      }
+
+      const result = await UserService.checkUserPassword(userId, password);
+      res.status(200).json(result);
+    } catch (error: any) {
+      res.status(500).json({
+        status: 'ERROR',
+        message: error.message || 'Failed to check user password',
+      });
+    }
+  }
 }
 
 export default new UserController();

@@ -60,11 +60,7 @@ class FoodService {
   }
 
   async getAllFood(filters: FoodFilter) {
-    const {
-      page = 1,
-      limit = 10,
-      sort = 'newest',
-    } = filters;
+    const { page = 1, limit = 10, sort = 'newest' } = filters;
 
     const query = await buildQuery(filters);
     const sortQuery = getSortQuery(sort);

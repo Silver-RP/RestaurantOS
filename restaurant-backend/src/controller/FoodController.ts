@@ -53,9 +53,9 @@ class FoodController {
   async getAllFood(req: Request, res: Response): Promise<any> {
     try {
       const params = parseFoodQueryParams(req.query);
-  
+
       const foods = await FoodService.getAllFood(params);
-  
+
       return res.status(200).json({
         success: true,
         message: 'All food retrieved successfully',
