@@ -16,6 +16,7 @@ type SortField =
 
 type SortDirection = 'asc' | 'desc';
 
+// Foods index page logic
 export function useFoodsAdminLogic() {
   const { foods, loading, error, searchParams, setSearchParams } = useFoodsAdmin();
   const [sortField, setSortField] = useState<SortField>(null);
@@ -104,3 +105,5 @@ export function useFoodsAdminLogic() {
     getSortIcon,
   };
 }
+
+// Foods create page logic

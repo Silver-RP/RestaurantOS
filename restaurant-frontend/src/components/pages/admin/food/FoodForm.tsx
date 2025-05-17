@@ -6,6 +6,8 @@ import { FoodDetail } from '../../../../types/Dish.types';
 import ImageUploadPreview from '../ImageUploadPreview';
 import { Category } from 'types/Category.type';
 import { FaChevronDown } from 'react-icons/fa';
+import { toast } from 'react-toastify';
+
 
 interface FoodFormProps {
   initialData?: FoodDetail;
@@ -60,8 +62,18 @@ const FoodForm: React.FC<FoodFormProps> = ({ initialData, onSubmit }) => {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const fileList = e.target.files;
     if (!fileList) return;
+  
+    const newFiles = Array.from(fileList);
+    if (images.length + newFiles.length > 5) {
+      toast.error('Chỉ được tải lên tối đa 5 ảnh');
+      return;
+    }
+  
+    setImages((prev) => [...prev, ...newFiles]);
+  };
 
-    setImages((prev) => [...prev, ...Array.from(fileList)]);
+  const handleRemoveImage = (index: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   const generateSlug = (value: string) =>
@@ -98,6 +110,7 @@ const FoodForm: React.FC<FoodFormProps> = ({ initialData, onSubmit }) => {
           <div>
             <label className="block mb-1 text-sm font-medium text-admintext">
               Tên món
+              <span className='text-red-600 ml-1'>*</span>
             </label>
             <input
               type="text"
@@ -113,24 +126,27 @@ const FoodForm: React.FC<FoodFormProps> = ({ initialData, onSubmit }) => {
 
           <div>
             <label className="block mb-1 text-sm font-medium text-admintext">
-              Slug
+              Slug 
+              <span className='text-red-600 ml-1'>*</span>
             </label>
             <input
               type="text"
               value={slug}
               onChange={(e) => setSlug(e.target.value)}
               className="border rounded px-4 py-2 w-full"
+              required
             />
           </div>
 
           <div className="relative mb-4">
             <label className="block mb-1 text-sm font-medium text-admintext">
               Danh mục
+              <span className='text-red-600 ml-1'>*</span>
             </label>
             <select
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
-              className="appearance-none border rounded px-4 py-2 w-full pr-10"
+              className="appearance-none border rounded px-4 py-2 w-full pr-10  text-sm"
               required
             >
               <option value="">-- Chọn danh mục --</option>
@@ -152,7 +168,7 @@ const FoodForm: React.FC<FoodFormProps> = ({ initialData, onSubmit }) => {
               onChange={(e) =>
                 setStatus(e.target.value as 'hidden' | 'available' | 'soldout')
               }
-              className="border rounded px-2 py-2 w-full"
+              className="border rounded px-2 py-2 w-full text-sm"
             >
               <option value="available">Có sẵn</option>
               <option value="hidden">Ẩn</option>
@@ -162,7 +178,8 @@ const FoodForm: React.FC<FoodFormProps> = ({ initialData, onSubmit }) => {
 
           <div>
             <label className="block mb-1 text-sm font-medium text-admintext">
-              Giá
+              Giá (VND)
+              <span className='text-red-600 ml-1'>*</span>
             </label>
             <input
               type="number"
@@ -189,7 +206,7 @@ const FoodForm: React.FC<FoodFormProps> = ({ initialData, onSubmit }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block mb-1 text-sm font-medium text-admintext">
-                  Giá khuyến mãi
+                  Giá khuyến mãi (VND)
                 </label>
                 <input
                   type="number"
@@ -322,11 +339,13 @@ const FoodForm: React.FC<FoodFormProps> = ({ initialData, onSubmit }) => {
         <div>
           <label className="block mb-1 text-sm font-medium text-admintext">
             Mô tả
+            <span className='text-red-600 ml-1'>*</span>
           </label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="border rounded px-4 py-2 w-full h-28"
+            required
           />
         </div>
 
@@ -341,7 +360,7 @@ const FoodForm: React.FC<FoodFormProps> = ({ initialData, onSubmit }) => {
           />
         </div>
 
-        <ImageUploadPreview images={images} onChange={handleImageChange} />
+        <ImageUploadPreview images={images} onChange={handleImageChange}  onRemove={handleRemoveImage} />
 
         <div className="flex justify-end gap-2">
           <button

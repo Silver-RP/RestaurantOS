@@ -1,5 +1,4 @@
 'use client';
-import React from 'react';
 import { useCategories } from '@hooks/useCategories';
 import FoodForm from './FoodForm';
 import { useNavigate } from 'react-router-dom';
@@ -7,9 +6,10 @@ import { useNavigate } from 'react-router-dom';
 const CreateFoodPage = () => {
   const { categories } = useCategories();
   const navigate = useNavigate();
+  
 
   const handleSubmit = () => {
-    console.log('Submited form');
+   
     // await createFood(safeFormData);
   };
 
