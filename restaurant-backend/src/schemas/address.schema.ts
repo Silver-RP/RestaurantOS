@@ -27,7 +27,7 @@ export const CreateAddressSchema = z
         code: z.ZodIssueCode.custom,
         message: 'Quận/Huyện không thuộc TP. Hồ Chí Minh',
       });
-    } else if (!districtData.wards.includes(ward as string)) {
+    } else if (!(districtData.wards as unknown as string[]).includes(ward)) {
       ctx.addIssue({
         path: ['ward'],
         code: z.ZodIssueCode.custom,

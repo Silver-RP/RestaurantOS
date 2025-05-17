@@ -7,6 +7,7 @@ import Cart from '../models/CartModel';
 import { Dish } from '../models/DishModel';
 
 enum DeliveryStatus {
+  PENDING = 'PENDING',
   PENDING_PICKUP = 'PENDING_PICKUP',
   PICKED_UP = 'PICKED_UP',
   IN_TRANSIT = 'IN_TRANSIT',
@@ -41,7 +42,6 @@ class OrderService {
     throw { statusCode: 400, message: 'Address is required' };
   }
 
-  // tôi muốn truyền tổng số lượng sản phẩm vào database
   async createOrder(userId: string, finalAddressId: string, payment_method: string, delivery_type: string, totalAmount: number, order_type: string, delivery_time_type: string, total_quantity: number, note: string, scheduled_time: Date | null, session: any) {
     const items_price = totalAmount;
     const vat_amount = items_price * 0.08;
@@ -58,7 +58,7 @@ class OrderService {
       shipping_fee,
       total_price,
       total_quantity,
-      delivery_status: 'PENDING_PICKUP',
+      delivery_status: 'PENDING',
       order_type,
       delivery_time_type,
       note,
@@ -381,6 +381,8 @@ class OrderService {
       }
     } else if (orderType === 'ONLINE') {
       switch (deliveryStatus) {
+        case DeliveryStatus.PENDING:
+          return OrderStatus.PENDING;
         case DeliveryStatus.PENDING_PICKUP:
           return OrderStatus.PREPARING;
         case DeliveryStatus.PICKED_UP:

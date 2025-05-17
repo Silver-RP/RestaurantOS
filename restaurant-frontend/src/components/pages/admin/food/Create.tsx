@@ -2,15 +2,16 @@
 import { useCategories } from '@hooks/useCategories';
 import FoodForm from './FoodForm';
 import { useNavigate } from 'react-router-dom';
+import { useCUDFoods } from '../../../../hooks/useCUDFoods';
 
 const CreateFoodPage = () => {
   const { categories } = useCategories();
+  const { createFood } = useCUDFoods();
   const navigate = useNavigate();
   
 
-  const handleSubmit = () => {
-   
-    // await createFood(safeFormData);
+  const handleSubmit = (formData: FormData) => {
+    createFood(formData);
   };
 
   return (

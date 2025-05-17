@@ -103,4 +103,18 @@ export const fetchFoodBySearch = async ({ search, page, limit }: FetchFoodsParam
   return res.data.data;
 };
 
+export const createFoodApi = async (formData: FormData): Promise<void> => {
+  try {
+    const res = await api.post('/food/createfood', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return res.data;
+  } catch (error) {
+    console.error('Error creating food:', error);
+    throw error;
+  }
+}
+
 

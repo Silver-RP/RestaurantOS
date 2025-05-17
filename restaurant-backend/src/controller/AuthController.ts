@@ -1,5 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import AuthService from '../services/AuthService';
+import { IUser } from '../models/UserModel';
+import { Types } from 'mongoose';
+
 class AuthController {
   async register(req: Request, res: Response): Promise<any> {
     try {
@@ -294,9 +297,10 @@ class AuthController {
   changePasswordProfile = async (req: Request, res: Response): Promise<any> => {
     try {
       const { oldPassword, newPassword } = req.body;
+      const userId = (req.user as IUser).id as Types.ObjectId;
 
       const result = await AuthService.changePasswordProfile(
-        req.user?.id, // Lấy từ token
+        userId.toString(), 
         oldPassword,
         newPassword,
       );

@@ -267,7 +267,7 @@ const ProfilePage = () => {
     <div className="flex flex-col bg-bodyBackground text-white font-sans">
       <BreadCrumbComponents />
 
-      <div className="w-[1300px] max-w-[1300px] mx-auto flex px-8 py-12 gap-8">
+      <div className="w-[full] max-w-[1300px] mx-auto flex px-8 py-12 gap-8">
         <div className="w-1/3 hidden md:block">
           <ProfileSidebar />
         </div>

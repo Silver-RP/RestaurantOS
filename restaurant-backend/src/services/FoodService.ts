@@ -5,16 +5,47 @@ import mongoose, { Types } from 'mongoose';
 import { FoodFilter } from '../types/foodFilter';
 import { buildQuery } from '../utils/queryBuilder';
 import { getSortQuery } from '../utils/sorting';
+import UploadService from './UploadImageService';
 
 class FoodService {
-  async createFood(food: any) {
-    const newfood = new Dish(food);
+
+  async createFoodWithImages(foodData: any, files: Express.Multer.File[]) {
+    const categoryId = foodData.category?.toString();
+    const category = await Category.findById(categoryId);
+    if (!category) {
+      throw new Error('Category không tồn tại');
+    }
+  
+    const categorySlug = category.Cate_slug;
+  
+    const uploadedImages = await Promise.all(
+      files.map(file => UploadService.UploadImage(file, `dishes/${categorySlug}`))
+    );
+  
+    console.log('Uploaded images:', uploadedImages);
+  
+    // Chỉ lưu URL của hình ảnh
+    const formattedImages = uploadedImages.map(img => img.url);
+  
+    const food = {
+      ...foodData,
+      category: new mongoose.Types.ObjectId(categoryId),
+      images: formattedImages,  
+      newUntil: foodData.isDishNew ? foodData.newUntil : null,
+      discountUntil: foodData.discount_price > 0 ? foodData.discountUntil : null,
+    };
+  
     try {
-      return await newfood.save();
-    } catch {
-      throw new Error('Error creating food');
+      // Lưu món ăn vào cơ sở dữ liệu
+      const newFood = new Dish(food);
+      return await newFood.save();
+    } catch (dbError) {
+      // Không cần xóa ảnh vì không lưu public_id
+      console.error('Failed to save food:', dbError);
+      throw dbError;
     }
   }
+  
 
   async getTopFavoriteFood() {
     try {
@@ -34,10 +65,10 @@ class FoodService {
       limit = 10,
       sort = 'newest',
     } = filters;
-  
+
     const query = await buildQuery(filters);
     const sortQuery = getSortQuery(sort);
-  
+
     const options = {
       page,
       limit,
@@ -48,7 +79,7 @@ class FoodService {
         select: 'Cate_name',
       },
     };
-  
+
     try {
       return await Dish.paginate(query, options);
     } catch (error) {

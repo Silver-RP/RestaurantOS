@@ -49,27 +49,25 @@ const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
     status: initialFilters.status || '',
   });
 
-
-useEffect(() => {
-  setFilters((prev) => ({
-    ...prev,
-    category: initialFilters?.category || '',
-    priceMin: initialFilters?.priceMin || '',
-    priceMax: initialFilters?.priceMax || '',
-    discountMin: initialFilters?.discountMin || '',
-    discountMax: initialFilters?.discountMax || '',
-    stockMin: initialFilters?.stockMin || '',
-    stockMax: initialFilters?.stockMax || '',
-    viewsMin: initialFilters?.viewsMin || '',
-    viewsMax: initialFilters?.viewsMax || '',
-    orderedMin: initialFilters?.orderedMin || '',
-    orderedMax: initialFilters?.orderedMax || '',
-    ratingMin: initialFilters?.ratingMin || '',
-    ratingMax: initialFilters?.ratingMax || '',
-    status: initialFilters?.status || '',
-  }));
-}, [initialFilters]); // bắt buộc có để khi searchParams đổi, form reset
-
+  useEffect(() => {
+    setFilters((prev) => ({
+      ...prev,
+      category: initialFilters?.category || '',
+      priceMin: initialFilters?.priceMin || '',
+      priceMax: initialFilters?.priceMax || '',
+      discountMin: initialFilters?.discountMin || '',
+      discountMax: initialFilters?.discountMax || '',
+      stockMin: initialFilters?.stockMin || '',
+      stockMax: initialFilters?.stockMax || '',
+      viewsMin: initialFilters?.viewsMin || '',
+      viewsMax: initialFilters?.viewsMax || '',
+      orderedMin: initialFilters?.orderedMin || '',
+      orderedMax: initialFilters?.orderedMax || '',
+      ratingMin: initialFilters?.ratingMin || '',
+      ratingMax: initialFilters?.ratingMax || '',
+      status: initialFilters?.status || '',
+    }));
+  }, [initialFilters]); // bắt buộc có để khi searchParams đổi, form reset
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -280,12 +278,16 @@ useEffect(() => {
             />
           </div>
         </div>
+      </div>
+
+      <div className='mt-5'>
         <button
           onClick={() => onApply(filters)}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          className=" px-3 py-2 bg-blue-600 text-sm text-white rounded hover:bg-blue-700 mr-3"
         >
           Áp dụng bộ lọc
         </button>
+
         <button
           onClick={() => {
             const emptyFilters: FiltersType = {
@@ -304,22 +306,21 @@ useEffect(() => {
               ratingMax: '',
               status: '',
             };
-            
+
             setFilters(emptyFilters);
-            
+
             const newParams = new URLSearchParams(searchParams.toString());
-            
+
             Object.keys(emptyFilters).forEach((key) => {
               newParams.delete(key);
             });
-            
+
             newParams.delete('keyword');
             newParams.set('page', '1');
-            setSearchParams(newParams); 
+            setSearchParams(newParams);
             onApply(emptyFilters);
-            
           }}
-          className="px-4 py-2 bg-gray-300 text-black rounded hover:bg-gray-400"
+          className="px-4 py-2 bg-gray-300 text-black text-sm rounded hover:bg-gray-400"
         >
           Xoá bộ lọc
         </button>

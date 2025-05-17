@@ -5,6 +5,8 @@ import mongoose from 'mongoose';
 import axios from 'axios';
 import https from 'https';
 import { Address } from '../models/AddressModel';
+import { IUser } from '../models/UserModel';
+import { Types } from 'mongoose';
 
 class AddressController {
   async createAddress(req: Request, res: Response): Promise<void> {
@@ -19,7 +21,7 @@ class AddressController {
       }
 
       const input = parseResult.data;
-      const userId = req.user?.id;
+      const userId = (req.user as IUser).id as Types.ObjectId;
 
       if (!userId) {
         res.status(401).json({ success: false, message: 'Unauthorized: No user_id in token' });
@@ -95,13 +97,13 @@ class AddressController {
 
   async getAllAddresses(req: Request, res: Response): Promise<void> {
     try {
-      const user_id = req.user?.id;
+      const user_id = (req.user as IUser).id as Types.ObjectId;
 
       if (!user_id) {
         res.status(401).json({ success: false, message: 'Unauthorized: No user_id in token' });
         return;
       }
-      const addresses = await AddressService.getAllAddresses(user_id);
+      const addresses = await AddressService.getAllAddresses(user_id.toString());
       res.status(200).json({
         success: true,
         message: 'Addresses retrieved successfully',
@@ -170,7 +172,7 @@ class AddressController {
   async setDefaultAddress(req: Request, res: Response): Promise<void> {
     try {
       const addressId = req.params.id;
-      const userId = req.user?.id;
+      const userId = (req.user as IUser).id as Types.ObjectId;
 
       if (!userId) {
         res.status(403).json({ success: false, message: 'Forbidden: User not authenticated' });
@@ -182,7 +184,7 @@ class AddressController {
         return;
       }
 
-      const updatedAddress = await AddressService.setDefaultAddress(addressId, userId);
+      const updatedAddress = await AddressService.setDefaultAddress(addressId, userId.toString());
 
       if (!updatedAddress) {
         res.status(404).json({ success: false, message: 'Address not found or not owned by user' });

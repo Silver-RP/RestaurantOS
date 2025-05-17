@@ -13,26 +13,34 @@ export interface FoodType {
 }
 
 export interface FoodDetail {
-  createdAt: string; 
   _id: string;
   name: string;
   slug: string;
+  categories: Category[];
+  status: 'hidden' | 'available' | 'soldout';
   price: number;
   discount_price?: number;
+  discountUntil?: Date;
+  isDishNew?: boolean;
+  newUntil?: Date;
   description: string;
   shortDescription?: string;
   ingredients?: string;
-  status: 'hidden' | 'available' | 'soldout';
+  images: string[];
+  countInStock: number;
   views: number;
   ordered_count: number;
+  favorites_count: number;
   average_rating: number;
   rating_count: number;
-  favorites_count: number;
   rating: number;
-  categories: Category[];
-  countInStock: number;
-  images: string[];
+  alcohol_type?: string;
+  origin?: string;
+  alcohol_content?: number;
+  volume?: number;
+  createdAt: string;
 }
+
 
 export interface FoodResponse {
   docs: FoodDetail[];

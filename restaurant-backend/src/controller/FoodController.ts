@@ -1,6 +1,5 @@
 import FoodService from '../services/FoodService';
 import { Request, Response } from 'express';
-import UploadImage from '../services/UploadImage';
 import mongoose from 'mongoose';
 import { Types } from 'mongoose';
 import { IUser } from '../models/UserModel';
@@ -9,50 +8,28 @@ import { parseFoodQueryParams } from '../utils/queryParser';
 class FoodController {
   async createFood(req: Request, res: Response): Promise<any> {
     try {
-      const { name, price, description, categories, countInStock, rating, favorites } = req.body;
-      if (
-        !name ||
-        !price ||
-        !description ||
-        !categories ||
-        !countInStock ||
-        !rating ||
-        !favorites
-      ) {
-        return res.status(400).json({ message: 'All fields are required' });
+      const { name, slug, price, description, category } = req.body;
+  
+      if (!name || !price || !slug || !description || !category) {
+        return res.status(400).json({ message: 'Thiếu thông tin bắt buộc: name, price, slug, description, category' });
       }
-      const categoryId = categories.trim();
-      if (!mongoose.Types.ObjectId.isValid(categoryId)) {
-        return res.status(400).json({ message: 'Invalid category ID' });
+      if (!mongoose.Types.ObjectId.isValid(category)) {
+        return res.status(400).json({ message: 'Category không hợp lệ' });
       }
-      const categoryObjectId = new mongoose.Types.ObjectId(categoryId);
-      if (!req.file) {
-        return res.status(400).json({ message: 'Image is required' });
+  
+      const files = req.files as Express.Multer.File[];
+      if (!files || files.length === 0) {
+        return res.status(400).json({ message: 'Phải có ít nhất một hình ảnh' });
       }
-      const imageFile = req.file;
-
-      console.log('Image file received:', imageFile);
-      if (imageFile.mimetype !== 'image/jpeg' && imageFile.mimetype !== 'image/png') {
-        return res.status(400).json({ message: 'Invalid file type' });
-      }
-      const imageUrl = await UploadImage(req.file, 'food');
-      const food = {
-        name: req.body.name,
-        price: req.body.price,
-        description: req.body.description,
-        categories: categoryObjectId,
-        imageUrl: imageUrl,
-        countInStock: req.body.countInStock,
-        rating: req.body.rating,
-        favorites: req.body.favorites,
-      };
-      const newFood = await FoodService.createFood(food);
-      return res.status(201).json({ message: 'Food created successfully', data: newFood });
-    } catch (error) {
+  
+      const newFood = await FoodService.createFoodWithImages(req.body, files);
+      return res.status(201).json({ message: 'Tạo món ăn thành công', data: newFood });
+    } catch (error: any) {
       console.error('Error creating food:', error);
-      return res.status(500).json({ message: 'Internal server error' });
+      return res.status(500).json({ message: 'Lỗi máy chủ', error: error.message });
     }
   }
+  
 
   async getTopFavoriteFood(req: Request, res: Response): Promise<void> {
     try {

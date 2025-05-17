@@ -12,7 +12,8 @@
     "prettier": "prettier --write .",
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepare": "husky",
-    "lint:fix": "npx eslint . --fix && npx prettier --write ."
+    "lint:fix": "npx eslint . --fix && npx prettier --write .",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",
