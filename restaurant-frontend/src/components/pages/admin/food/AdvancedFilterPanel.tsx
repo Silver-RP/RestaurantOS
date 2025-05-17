@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCategories } from '@/hooks/useCategories';
+import { toast } from 'react-toastify';
+import { useSearchParams } from 'react-router-dom';
+
 type FiltersType = {
   category: string;
   priceMin: string;
@@ -18,33 +21,83 @@ type FiltersType = {
 };
 interface AdvancedFilterPanelProps {
   onApply: (filters: FiltersType) => void;
+  initialFilters?: Partial<FiltersType>;
+  searchParams: URLSearchParams;
+  setSearchParams: (params: URLSearchParams) => void;
 }
+
 const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
   onApply,
+  initialFilters = {},
 }) => {
   const { categories } = useCategories();
-  const [filters, setFilters] = useState({
-    category: '',
-    priceMin: '',
-    priceMax: '',
-    discountMin: '',
-    discountMax: '',
-    stockMin: '',
-    stockMax: '',
-    viewsMin: '',
-    viewsMax: '',
-    orderedMin: '',
-    orderedMax: '',
-    ratingMin: '',
-    ratingMax: '',
-    status: '',
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [filters, setFilters] = useState<FiltersType>({
+    category: initialFilters.category || '',
+    priceMin: initialFilters.priceMin || '',
+    priceMax: initialFilters.priceMax || '',
+    discountMin: initialFilters.discountMin || '',
+    discountMax: initialFilters.discountMax || '',
+    stockMin: initialFilters.stockMin || '',
+    stockMax: initialFilters.stockMax || '',
+    viewsMin: initialFilters.viewsMin || '',
+    viewsMax: initialFilters.viewsMax || '',
+    orderedMin: initialFilters.orderedMin || '',
+    orderedMax: initialFilters.orderedMax || '',
+    ratingMin: initialFilters.ratingMin || '',
+    ratingMax: initialFilters.ratingMax || '',
+    status: initialFilters.status || '',
   });
+
+
+useEffect(() => {
+  setFilters((prev) => ({
+    ...prev,
+    category: initialFilters?.category || '',
+    priceMin: initialFilters?.priceMin || '',
+    priceMax: initialFilters?.priceMax || '',
+    discountMin: initialFilters?.discountMin || '',
+    discountMax: initialFilters?.discountMax || '',
+    stockMin: initialFilters?.stockMin || '',
+    stockMax: initialFilters?.stockMax || '',
+    viewsMin: initialFilters?.viewsMin || '',
+    viewsMax: initialFilters?.viewsMax || '',
+    orderedMin: initialFilters?.orderedMin || '',
+    orderedMax: initialFilters?.orderedMax || '',
+    ratingMin: initialFilters?.ratingMin || '',
+    ratingMax: initialFilters?.ratingMax || '',
+    status: initialFilters?.status || '',
+  }));
+}, [initialFilters]); // bắt buộc có để khi searchParams đổi, form reset
+
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
-    setFilters((prev) => ({ ...prev, [name]: value }));
+    if (name === 'ratingMin' || name === 'ratingMax') {
+      const num = parseFloat(value);
+
+      if (value === '') {
+        setFilters((prev) => ({ ...prev, [name]: '' }));
+        return;
+      }
+
+      if (isNaN(num) || num < 0 || num > 5) {
+        toast.error('Giá trị rating phải từ 0 đến 5');
+        return;
+      }
+      const thousandFields = [
+        'priceMin',
+        'priceMax',
+        'discountMin',
+        'discountMax',
+      ];
+
+      setFilters((prev) => ({ ...prev, [name]: num }));
+    } else {
+      setFilters((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   return (
@@ -201,13 +254,15 @@ const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
 
         {/* Rating */}
         <div className="col-span-1">
-          <label className="block mb-1 text-sm">Rating</label>
+          <label className="block mb-1 text-sm">Rating (0 - 5)</label>
           <div className="flex gap-8 flex-col">
             <input
               name="ratingMin"
               type="number"
               step="0.1"
-              placeholder="Từ"
+              placeholder="Từ 0"
+              min={0}
+              max={5}
               className="w-full border rounded px-2 py-1"
               value={filters.ratingMin}
               onChange={handleChange}
@@ -216,7 +271,9 @@ const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
               name="ratingMax"
               type="number"
               step="0.1"
-              placeholder="Đến"
+              placeholder="Đến 5"
+              min={0}
+              max={5}
               className="w-full border rounded px-2 py-1"
               value={filters.ratingMax}
               onChange={handleChange}
@@ -228,6 +285,43 @@ const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
         >
           Áp dụng bộ lọc
+        </button>
+        <button
+          onClick={() => {
+            const emptyFilters: FiltersType = {
+              category: '',
+              priceMin: '',
+              priceMax: '',
+              discountMin: '',
+              discountMax: '',
+              stockMin: '',
+              stockMax: '',
+              viewsMin: '',
+              viewsMax: '',
+              orderedMin: '',
+              orderedMax: '',
+              ratingMin: '',
+              ratingMax: '',
+              status: '',
+            };
+            
+            setFilters(emptyFilters);
+            
+            const newParams = new URLSearchParams(searchParams.toString());
+            
+            Object.keys(emptyFilters).forEach((key) => {
+              newParams.delete(key);
+            });
+            
+            newParams.delete('keyword');
+            newParams.set('page', '1');
+            setSearchParams(newParams); 
+            onApply(emptyFilters);
+            
+          }}
+          className="px-4 py-2 bg-gray-300 text-black rounded hover:bg-gray-400"
+        >
+          Xoá bộ lọc
         </button>
       </div>
     </div>

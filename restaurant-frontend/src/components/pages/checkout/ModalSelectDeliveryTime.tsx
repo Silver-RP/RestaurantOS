@@ -162,7 +162,7 @@ const ModalSelectDeliveryTime = ({
           <div className="sticky top-0 bg-bodyBackground px-6 py-4 border-b border-gray-700 z-10">
             <div className="flex justify-between items-center">
               <Dialog.Title className="text-lg font-bold text-white">
-                Chọn Thời Gian Giao Hàng
+                Chọn Thời Gian Nhận Hàng
               </Dialog.Title>
               <button onClick={onClose} className="text-white">
                 <IoClose className="text-xl" />

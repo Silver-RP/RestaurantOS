@@ -290,7 +290,7 @@ const OrderConfirmation = () => {
             <InfoItem label="Phương thức thanh toán" value={getPaymentMethodDisplay()} />
             {orderData.note && <InfoItem label="Ghi chú" value={orderData.note} />}
             {orderData.delivery_time_type === "SCHEDULED" && (
-              <InfoItem label="Thời gian giao hàng" value={getScheduledTimeDisplay()} />
+              <InfoItem label="Thời gian nhận hàng" value={getScheduledTimeDisplay()} />
             )}
           </div>
         </section>

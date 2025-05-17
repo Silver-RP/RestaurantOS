@@ -9,6 +9,17 @@ export interface FetchFoodsParams {
   priceMax?: number;
   category?: string;
   search?: string;
+  status?: string;
+  discountMin?: number;
+  discountMax?: number;
+  stockMin?: number;
+  stockMax?: number;
+  viewsMin?: number;
+  viewsMax?: number;
+  orderedMin?: number;
+  orderedMax?: number;
+  ratingMin?: number;
+  ratingMax?: number;
 }
 
 export const fetchAllFoods = async (
@@ -16,17 +27,15 @@ export const fetchAllFoods = async (
 ): Promise<FoodResponse> => {
   const queryString = new URLSearchParams();
 
-  if (params.page !== undefined)
-    queryString.set('page', params.page.toString());
-  if (params.limit !== undefined)
-    queryString.set('limit', params.limit.toString());
-  if (params.sort) queryString.set('sort', params.sort);
-  if (params.priceMin !== undefined)
-    queryString.set('priceMin', params.priceMin.toString());
-  if (params.priceMax !== undefined)
-    queryString.set('priceMax', params.priceMax.toString());
-  if (params.category) queryString.set('category', params.category);
-  if (params.search) queryString.set('search', params.search);
+  Object.entries(params).forEach(([key, value]) => {
+    if (
+      value !== undefined &&
+      value !== null &&
+      !(typeof value === 'string' && value.trim() === '')
+    ) {
+      queryString.set(key, value.toString());
+    }
+  });
 
   const res = await api.get<{ data: FoodResponse }>(
     `/food/getallfood?${queryString.toString()}`,
@@ -41,18 +50,16 @@ export const fetchFoodBySlug = async (slug: string): Promise<FoodDetail> => {
   return res.data.data;
 };
 
-export const fetchFoodNewest = async (): Promise<FoodResponse> => {
-  const res = await api.get<{ data: FoodResponse }>('/food/getFoodNewest');
+export const fetchFoodNewest = async (): Promise<FoodDetail[]> => {
+  const res = await api.get<{ data: FoodDetail[] }>('/food/getFoodNewest');
   return res.data.data;
 };
 
 export const fetchFoodBest4 = async (
   categoryId: string,
-): Promise<FoodResponse> => {
-  const res = await api.get<{ data: FoodResponse }>(
-    `/food/getFoodBest4?category=${categoryId}`,
-  );
-  return res.data.data;
+): Promise<FoodDetail[]> => {
+  const res = await api.get(`/food/getFoodBest4?category=${categoryId}`);
+  return res.data?.data || [];
 };
 
 export const fetchFoodByFavorite = async (
@@ -65,6 +72,7 @@ export const fetchFoodByFavorite = async (
         params: { type },
       },
     );
+    console.log(res.data.data)
     return res.data.data;
   } catch (error) {
     console.error('Error fetching food by favorite:', error);

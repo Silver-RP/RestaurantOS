@@ -18,7 +18,7 @@ export const useUserAddresses = () => {
       const addresses = await getAddressesByUserId(); 
       setAddresses(addresses);
       setError(null);
-    } catch (error) {
+    } catch {
       setError('Lỗi khi tải địa chỉ');
     } finally {
       setLoading(false);

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from 'react';
 import { Category, CategoryResponse, CategoryCreatePayload  } from '../types/Category.type';
 import { AxiosError } from 'axios';
@@ -40,7 +41,6 @@ export const useCategories = () => {
     setCategories
   };
 };
-
 
 export const useCategoryDetail = (id: string) => {
   const [category, setCategory] = useState<Category | null>(null);
@@ -96,7 +96,7 @@ export const useAddCategory = () => {
       }
 
       const res = await addCategory(formData);
-      setSuccessMessage(res.message);
+      setSuccessMessage(res.message ?? null);
       onSuccess?.();
     } catch (err: any) {
       const message =
@@ -158,7 +158,6 @@ export const useUpdateCategory = () => {
 
   return { updateExistingCategory, loading, error, successMessage };
 };
-
 
 export const useDeleteCategory = () => {
   const [loading, setLoading] = useState(false);

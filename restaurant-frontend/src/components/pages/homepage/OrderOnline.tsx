@@ -1,24 +1,24 @@
-import ProductCardGrid from '../../common/ProductCardGrid';
-import React, { useState, useEffect } from 'react';
-import { BsArrowLeftCircle, BsArrowRightCircle } from 'react-icons/bs';
+import React from 'react';
 import { FaDiamond } from 'react-icons/fa6';
 import { useFoodNewest } from '@hooks/useFoods';
+import Container from '@/components/common/Container';
+import ProductCardGrid from '../../common/ProductCardGrid';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation } from 'swiper/modules';
 
-
+import 'swiper/css';
+import 'swiper/css/navigation';
 
 const OrderOnlineSection: React.FC = () => {
-  const [currentIndex, setCurrentIndex] = useState<number>(0);
-  const [productsPerPage, setProductsPerPage] = useState<number>(4);
-  const { data: foods } = useFoodNewest();
-  
-  const products: Product[] = 
-    foods?.map((food) => ({
+  const { data: foods = [] } = useFoodNewest();
+
+  const products = foods.map((food) => ({
       id: food._id,
       name: food.name,
       price: food.discount_price || food.price,
       originalPrice: food.discount_price ? food.price : undefined,
-      imageUrl: food.images[0] || '',
-      hoverImage: food.images[1] || '',
+      imageUrl: food.images?.[0] || '',
+      hoverImage: food.images?.[1] || '',
       isNew: true,
       discount: food.discount_price
         ? `${Math.round(((food.price - food.discount_price) / food.price) * 100)}% OFF`
@@ -33,40 +33,12 @@ const OrderOnlineSection: React.FC = () => {
       rating: food.average_rating || 4,
       favorites_count: food.favorites_count || 0,
       countInStock: food.countInStock || 10,
-
+      onAddToFavorite: () => {},
     })) || [];
-
-  useEffect(() => {
-    const updateProductsPerPage = () => {
-      if (window.innerWidth < 640) {
-        setProductsPerPage(1);
-      } else if (window.innerWidth < 768) {
-        setProductsPerPage(2);
-      } else if (window.innerWidth < 1024) {
-        setProductsPerPage(3);
-      } else {
-        setProductsPerPage(4);
-      }
-    };
-
-    updateProductsPerPage();
-    window.addEventListener('resize', updateProductsPerPage);
-    return () => window.removeEventListener('resize', updateProductsPerPage);
-  }, []);
-
-  const handleNavigation = (direction: 'prev' | 'next') => {
-    const maxIndex = Math.ceil(products.length / productsPerPage) - 1;
-    if (direction === 'prev' && currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
-    }
-    if (direction === 'next' && currentIndex < maxIndex) {
-      setCurrentIndex(currentIndex + 1);
-    }
-  };
 
   return (
     <section className="bg-bodyBackground w-full text-white py-16">
-      <div className="w-mainContainer mx-auto">
+      <Container>
         <img
           src="/assets/images/home/IconOnline.svg"
           alt="Icon"
@@ -83,43 +55,32 @@ const OrderOnlineSection: React.FC = () => {
           </h2>
         </div>
 
-        <div className="overflow-hidden relative">
-          <div
-            className="flex gap-8 transition-transform duration-700 ease-in-out"
-            style={{
-              width: `calc(${(products.length * 100) / productsPerPage}% + ${(products.length * 32) / productsPerPage}px)`,
-              transform: `translateX(calc(-${currentIndex * (100 / productsPerPage)}% - ${(currentIndex * (32 * productsPerPage)) / productsPerPage}px))`,
+        <div className="relative">
+
+          <Swiper
+            modules={[Navigation]}
+            navigation={{
+              prevEl: '.custom-swiper-prev',
+              nextEl: '.custom-swiper-next',
             }}
+            spaceBetween={24}
+            slidesPerView={1}
+            breakpoints={{
+              640: { slidesPerView: 1 },
+              768: { slidesPerView: 2 },
+              1024: { slidesPerView: 3 },
+              1280: { slidesPerView: 4 },
+            }}
+            className="!px-4"
           >
             {products.map((product) => (
-              <div
-                key={product.id}
-                style={{ width: `calc((100% - 96px) / 4)` }}
-              >
-                <ProductCardGrid key={product.id} {...product} />
-              </div>
+              <SwiperSlide key={product.id}>
+                <ProductCardGrid {...product} />
+              </SwiperSlide>
             ))}
-          </div>
-
-          <button
-            onClick={() => handleNavigation('prev')}
-            className="absolute left-0 top-1/2 transform -translate-y-1/2 text-secondaryColor p-2 z-10"
-            disabled={currentIndex === 0}
-          >
-            <BsArrowLeftCircle size={30} />
-          </button>
-
-          <button
-            onClick={() => handleNavigation('next')}
-            className="absolute right-0 top-1/2 transform -translate-y-1/2 text-secondaryColor p-2 z-10"
-            disabled={
-              currentIndex >= Math.ceil(products.length / productsPerPage) - 1
-            }
-          >
-            <BsArrowRightCircle size={30} />
-          </button>
+          </Swiper>
         </div>
-      </div>
+      </Container>
     </section>
   );
 };

@@ -2,12 +2,6 @@ import { Request, Response } from 'express';
 import cartService from '../services/CartService';
 import { IUser } from '../models/UserModel';
 
-interface AuthenticatedRequest extends Request {
-  user?: {
-    _id: string;
-  };
-}
-
 class CartController {
   static async getCartItems(req: Request, res: Response): Promise<void> {
     try {
@@ -47,6 +41,7 @@ class CartController {
       res.status(200).json({
         success: true,
         message: 'Item added to cart successfully',
+        cart: addCart,
       });
     } catch (error: any) {
       console.error('Error adding item to cart:', error);

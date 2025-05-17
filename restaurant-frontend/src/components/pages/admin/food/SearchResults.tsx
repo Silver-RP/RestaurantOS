@@ -4,12 +4,14 @@ import React, { useState, useEffect } from 'react';
 import { FaSearch } from 'react-icons/fa';
 import AdminPagination from '../AdminPagination';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import AdvancedFilterPanel from './AdvancedFilterPanel';
 
 const SearchPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get('query') || '';
   const page = parseInt(searchParams.get('page') || '1', 10);
   const limit = Number(searchParams.get('limit') || 12);
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
 
   const { foods, loading, error } = useFoodsSearch(query, page, limit);
   const [search, setSearch] = useState('');
@@ -59,7 +61,45 @@ const SearchPage = () => {
             <FaSearch size={18} />
           </button>
         </div>
+        <div className="flex gap-4 items-center">
+          <button
+            onClick={() => setShowFilterPanel(!showFilterPanel)}
+            className="px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-100"
+          >
+            {showFilterPanel ? 'Ẩn bộ lọc' : 'Hiện bộ lọc'}
+          </button>
+          <button
+            onClick={() => navigate('/admin/foods/create')}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            + Thêm món
+          </button>
+        </div>
       </div>
+      {showFilterPanel && (
+        <AdvancedFilterPanel
+        key={searchParams.toString()}
+        initialFilters={Object.fromEntries((searchParams as any).entries())}
+        searchParams={searchParams}
+        setSearchParams={setSearchParams}
+        onApply={(filters) => {
+          const newParams = new URLSearchParams(searchParams.toString());
+      
+          Object.entries(filters).forEach(([key, value]) => {
+            if (value !== '') {
+              newParams.set(key, String(value));
+            } else {
+              newParams.delete(key);
+            }
+          });
+      
+          newParams.set('page', '1');
+          setSearchParams(newParams); 
+          setShowFilterPanel(false);  
+        }}
+      />
+      
+      )}
 
       <div className="text-sm text-gray-700">
         Hiển thị{' '}

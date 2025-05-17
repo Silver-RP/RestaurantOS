@@ -60,7 +60,7 @@ const MenuItem: React.FC<MenuItemProps> = ({
       </div>
 
       <div className="flex-1 min-w-0">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-1">
+        <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-1">
           <h3
             className="text-white text-base sm:text-lg truncate max-w-full"
             title={name}
@@ -72,11 +72,18 @@ const MenuItem: React.FC<MenuItemProps> = ({
           </p>
         </div>
 
-        <p className="text-sm text-gray-400 mt-1 line-clamp-3 hidden md:block">
+        <p
+          className="text-sm text-gray-400 mt-1 hidden lg:block overflow-hidden"
+          style={{
+            maxHeight: '3em',
+            display: 'block',
+            lineHeight: '1.5em',
+          }}
+        >
           {description}
         </p>
 
-        <div className="md:hidden mt-1">{renderStars(average_rating)}</div>
+        <div className="lg:hidden mt-1">{renderStars(average_rating)}</div>
       </div>
     </div>
   );
