@@ -9,7 +9,7 @@ import sendOtpToPhoneNumber from '../utils/smsService';
 import User from '../models/UserModel';
 import Roles from '../models/RoleModel';
 import RefreshToken from '../models/RefreshToken';
-import { GoogleUser } from '../type/auth.types';
+import { GoogleUser } from '../types/auth.types';
 
 dotenv.config();
 

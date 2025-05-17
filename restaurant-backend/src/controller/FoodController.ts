@@ -1,11 +1,10 @@
 import FoodService from '../services/FoodService';
 import { Request, Response } from 'express';
 import UploadImage from '../services/UploadImage';
-import { Dish } from '../models/DishModel';
-import SearchService from '../services/SearchService';
 import mongoose from 'mongoose';
 import { Types } from 'mongoose';
 import { IUser } from '../models/UserModel';
+import { parseFoodQueryParams } from '../utils/queryParser';
 
 class FoodController {
   async createFood(req: Request, res: Response): Promise<any> {
@@ -76,31 +75,10 @@ class FoodController {
 
   async getAllFood(req: Request, res: Response): Promise<any> {
     try {
-      const {
-        page = 1,
-        limit = 12,
-        sort = 'newest',
-        search = '',
-        category = '',
-        priceMin,
-        priceMax,
-      } = req.query;
-
-      const pageNumber = parseInt(page as string, 10);
-      const limitNumber = parseInt(limit as string, 10);
-      const priceMinNumber = priceMin ? Number(priceMin) : undefined;
-      const priceMaxNumber = priceMax ? Number(priceMax) : undefined;
-
-      const foods = await FoodService.getAllFood({
-        page: pageNumber > 0 ? pageNumber : 1,
-        limit: limitNumber > 0 ? limitNumber : 12,
-        sort: sort as string,
-        search: search as string,
-        category: category as string,
-        priceMin: priceMinNumber,
-        priceMax: priceMaxNumber,
-      });
-
+      const params = parseFoodQueryParams(req.query);
+  
+      const foods = await FoodService.getAllFood(params);
+  
       return res.status(200).json({
         success: true,
         message: 'All food retrieved successfully',

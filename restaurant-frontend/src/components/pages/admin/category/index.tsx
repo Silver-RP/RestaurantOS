@@ -8,9 +8,10 @@ import { confirmAlert } from 'react-confirm-alert';
 
 import { toast } from 'react-toastify';
 const CategoriesPage: React.FC = () => {
-const { handleDeleteCategory } = useDeleteCategory();
+  const { handleDeleteCategory } = useDeleteCategory();
 
-  const { categories, loading, error, refetch, setCategories } = useCategories();
+  const { categories, loading, error, refetch, setCategories } =
+    useCategories();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -49,57 +50,57 @@ const { handleDeleteCategory } = useDeleteCategory();
     (page - 1) * perPage,
     page * perPage,
   );
- const confirmDelete = (id: string, name: string, foodCount: number) => {
-  if (foodCount > 0) {
-    toast.error('Không thể xoá danh mục đang chứa món ăn.');
-    return;
-  }
-  confirmAlert({
-    customUI: ({ onClose }) => (
-      <div className="fixed inset-0 bg-black/50 z-50 flex justify-center items-start pt-24">
-        <div className="bg-[#1f1f1f] text-white rounded-lg p-6 max-w-md w-full shadow-lg animate-[slideDown_0.3s_ease-out]">
-          <h2 className="text-red-400 font-semibold text-lg mb-3 flex items-center gap-2">
-            ⚠️ Xác nhận xoá
-          </h2>
-          <p className="text-sm mb-6">
-            Bạn có chắc chắn muốn xoá danh mục "<span className="font-medium text-white">{name}</span>" không?
-          </p>
-          <div className="flex justify-end gap-3 text-sm">
-            <button
-              onClick={onClose}
-              className="px-3 py-1 border border-gray-400 text-gray-300 rounded hover:bg-gray-700"
-            >
-              Huỷ
-            </button>
-            <button
-              onClick={() => {
-                handleDeleteCategory(id, {
-                  onSuccess: () => {
-                    toast.success('Xoá danh mục thành công!');
+  const confirmDelete = (id: string, name: string, foodCount: number) => {
+    if (foodCount > 0) {
+      toast.error('Không thể xoá danh mục đang chứa món ăn.');
+      return;
+    }
+    confirmAlert({
+      customUI: ({ onClose }) => (
+        <div className="fixed inset-0 bg-black/50 z-50 flex justify-center items-start pt-24">
+          <div className="bg-[#1f1f1f] text-white rounded-lg p-6 max-w-md w-full shadow-lg animate-[slideDown_0.3s_ease-out]">
+            <h2 className="text-red-400 font-semibold text-lg mb-3 flex items-center gap-2">
+              ⚠️ Xác nhận xoá
+            </h2>
+            <p className="text-sm mb-6">
+              Bạn có chắc chắn muốn xoá danh mục "
+              <span className="font-medium text-white">{name}</span>" không?
+            </p>
+            <div className="flex justify-end gap-3 text-sm">
+              <button
+                onClick={onClose}
+                className="px-3 py-1 border border-gray-400 text-gray-300 rounded hover:bg-gray-700"
+              >
+                Huỷ
+              </button>
+              <button
+                onClick={() => {
+                  handleDeleteCategory(id, {
+                    onSuccess: () => {
+                      toast.success('Xoá danh mục thành công!');
 
-                    // ✅ Cập nhật danh sách ngay mà không cần gọi lại API
-                    setCategories((prev) => {
-                      if (!prev) return prev;
-                      return {
-                        ...prev,
-                        data: prev.data.filter((cate) => cate._id !== id),
-                      };
-                    });
-                  },
-                });
-                onClose();
-              }}
-              className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-            >
-              Xoá
-            </button>
+                      // ✅ Cập nhật danh sách ngay mà không cần gọi lại API
+                      setCategories((prev) => {
+                        if (!prev) return prev;
+                        return {
+                          ...prev,
+                          data: prev.data.filter((cate) => cate._id !== id),
+                        };
+                      });
+                    },
+                  });
+                  onClose();
+                }}
+                className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+              >
+                Xoá
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    ),
-  });
-};
-
+      ),
+    });
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -221,8 +222,9 @@ const { handleDeleteCategory } = useDeleteCategory();
                     </button>
                     <button
                       className="text-red-500 hover:underline"
-                      onClick={() => confirmDelete(cate._id, cate.Cate_name, cate.foodCount)}
-
+                      onClick={() =>
+                        confirmDelete(cate._id, cate.Cate_name, cate.foodCount)
+                      }
                     >
                       Xoá
                     </button>
@@ -240,9 +242,12 @@ const { handleDeleteCategory } = useDeleteCategory();
               params.set('page', String(newPage));
               setSearchParams(params);
             }}
+            limit={0}
+            onLimitChange={function (newLimit: number): void {
+              throw new Error('Function not implemented.');
+            }}
           />
-              <ToastConfigAdmin />
-
+          <ToastConfigAdmin />
         </div>
       )}
     </div>

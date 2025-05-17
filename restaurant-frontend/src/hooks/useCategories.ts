@@ -41,7 +41,6 @@ export const useCategories = () => {
   };
 };
 
-
 export const useCategoryDetail = (id: string) => {
   const [category, setCategory] = useState<Category | null>(null);
   const [loading, setLoading] = useState(true);
@@ -96,7 +95,7 @@ export const useAddCategory = () => {
       }
 
       const res = await addCategory(formData);
-      setSuccessMessage(res.message);
+      setSuccessMessage(res.message || null); 
       onSuccess?.();
     } catch (err: any) {
       const message =
@@ -158,7 +157,6 @@ export const useUpdateCategory = () => {
 
   return { updateExistingCategory, loading, error, successMessage };
 };
-
 
 export const useDeleteCategory = () => {
   const [loading, setLoading] = useState(false);

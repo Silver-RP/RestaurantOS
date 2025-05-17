@@ -2,6 +2,9 @@ import { Dish } from '../models/DishModel';
 import Category from '../models/CategoryModel';
 import { Favorite } from '../models/FavoriteModel';
 import mongoose, { Types } from 'mongoose';
+import { FoodFilter } from '../types/foodFilter';
+import { buildQuery } from '../utils/queryBuilder';
+import { getSortQuery } from '../utils/sorting';
 
 class FoodService {
   async createFood(food: any) {
@@ -25,61 +28,16 @@ class FoodService {
     }
   }
 
-  async getAllFood({
-    page = 1,
-    limit = 10,
-    sort = 'newest',
-    search = '',
-    category = '',
-    priceMin,
-    priceMax,
-  }: {
-    page?: number;
-    limit?: number;
-    sort?: string;
-    search?: string;
-    category?: string;
-    priceMin?: number;
-    priceMax?: number;
-  }) {
-    const query: any = {};
-
-    if (search) {
-      query.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        // { description: { $regex: search, $options: 'i' } },
-      ];
-    }
-
-    if (priceMin !== undefined || priceMax !== undefined) {
-      query.price = {};
-      if (priceMin !== undefined) {
-        query.price.$gte = priceMin;
-      }
-      if (priceMax !== undefined) {
-        query.price.$lte = priceMax;
-      }
-    }
-
-    if (category) {
-      const categoryDoc = await Category.findOne({
-        Cate_slug: category,
-      }).lean();
-      if (categoryDoc) {
-        query.categories = { $in: [categoryDoc._id] };
-      } else {
-        return {
-          docs: [],
-          totalDocs: 0,
-          limit,
-          page,
-          totalPages: 0,
-        };
-      }
-    }
-
-    const sortQuery = this.getSortQuery(sort);
-
+  async getAllFood(filters: FoodFilter) {
+    const {
+      page = 1,
+      limit = 10,
+      sort = 'newest',
+    } = filters;
+  
+    const query = await buildQuery(filters);
+    const sortQuery = getSortQuery(sort);
+  
     const options = {
       page,
       limit,
@@ -90,61 +48,12 @@ class FoodService {
         select: 'Cate_name',
       },
     };
-
+  
     try {
       return await Dish.paginate(query, options);
     } catch (error) {
       console.error('Error in getAllFood:', error);
       throw new Error('Error fetching food items');
-    }
-  }
-
-  private getSortQuery(sort: string) {
-    switch (sort) {
-      case 'nameAZ':
-        return { name: 1 };
-      case 'nameZA':
-        return { name: -1 };
-      case 'priceLow':
-        return { price: 1 };
-      case 'priceHigh':
-        return { price: -1 };
-      case 'discountLow':
-        return { discount_price: 1 };
-      case 'discountHigh':
-        return { discount_price: -1 };
-      case 'newest':
-        return { createdAt: -1 };
-      case 'relevance':
-        return { _id: -1 };
-      case 'highestRated':
-        return { average_rating: -1 };
-      case 'lowestRated':
-        return { average_rating: 1 };
-      case 'mostViewed':
-        return { views: -1 };
-      case 'leastViews':
-        return { views: 1 };
-      case 'mostOrdered':
-        return { ordered_count: -1 };
-      case 'leastOrdered':
-        return { ordered_count: 1 };
-      case 'mostFavorite':
-        return { favorites_count: -1 };
-      case 'stockLow':
-        return { countInStock: -1 };
-      case 'stockHigh':
-        return { countInStock: 1 };
-      case 'categoryAZ':
-        return { categories: 1 };
-      case 'categoryZA':
-        return { categories: -1 };
-      case 'statusAZ':
-        return { status: 1 };
-      case 'statusZA':
-        return { status: -1 };
-      default:
-        return { createdAt: -1 };
     }
   }
 
@@ -232,36 +141,36 @@ class FoodService {
   }
 
 
-async getFoodBest4(categoryId: string) {
-  try {
-    const objectId = new mongoose.Types.ObjectId(categoryId);
+  async getFoodBest4(categoryId: string) {
+    try {
+      const objectId = new mongoose.Types.ObjectId(categoryId);
 
-    const foodNewest = await Dish.aggregate([
-      {
-        $match: { categories: { $in: [objectId] } }
-      },
-      {
-        $sort: { favorites_count: -1 }
-      },
-      {
-        $limit: 20
-      },
-      {
-        $lookup: {
-          from: 'categories',
-          localField: 'categories',
-          foreignField: '_id',
-          as: 'categories'
+      const foodNewest = await Dish.aggregate([
+        {
+          $match: { categories: { $in: [objectId] } }
+        },
+        {
+          $sort: { favorites_count: -1 }
+        },
+        {
+          $limit: 20
+        },
+        {
+          $lookup: {
+            from: 'categories',
+            localField: 'categories',
+            foreignField: '_id',
+            as: 'categories'
+          }
         }
-      }
-    ]);
+      ]);
 
-    return foodNewest;
-  } catch (error) {
-    console.error('Error in getFoodBest4:', error);
-    throw new Error('Error fetching food by category');
+      return foodNewest;
+    } catch (error) {
+      console.error('Error in getFoodBest4:', error);
+      throw new Error('Error fetching food by category');
+    }
   }
-}
 
 
   async getFoodByFavorites(favorites: number, type: string) {

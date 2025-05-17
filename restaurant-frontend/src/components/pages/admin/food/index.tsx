@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
-import { useFoods } from '../../../../hooks/useFoods';
+import { useFoods, useFoodsAdmin } from '../../../../hooks/useFoods';
 import React, { useState, useEffect } from 'react';
 import AdminPagination from '../AdminPagination';
 import { useNavigate } from 'react-router-dom';
 import { FaSort, FaArrowUp, FaArrowDown, FaSearch } from 'react-icons/fa';
 import AdvancedFilterPanel from './AdvancedFilterPanel';
-
 
 type SortField =
   | 'name'
@@ -21,7 +20,8 @@ type SortField =
 type SortDirection = 'asc' | 'desc';
 
 const MenuTable: React.FC = () => {
-  const { foods, loading, error, searchParams, setSearchParams } = useFoods();
+  const { foods, loading, error, searchParams, setSearchParams } =
+    useFoodsAdmin();
   const [sortOrder] = useState<'asc' | 'desc' | ''>('');
   const [sortField, setSortField] = useState<SortField>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
@@ -29,18 +29,6 @@ const MenuTable: React.FC = () => {
 
   const [search, setSearch] = useState('');
   const navigate = useNavigate();
-  
-  useEffect(() => {
-    const newParams = new URLSearchParams(searchParams.toString());
-    newParams.set('keyword', search);
-
-    if (sortOrder) newParams.set('sort', sortOrder);
-    else newParams.delete('sort');
-
-    newParams.set('page', '1');
-    setSearchParams(newParams);
-  }, [search, sortOrder]);
-
   const foodList = foods?.docs || [];
 
   const sortMapping: Record<string, { asc: string; desc: string }> = {
@@ -72,15 +60,38 @@ const MenuTable: React.FC = () => {
     });
   };
 
+  // const handleEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  //   if (e.key === 'Enter' && search.trim()) {
+  //     navigate(`/admin/foods/search?query=${search.trim()}`);
+  //   }
+  // };
+
+  // const handleClick = () => {
+  //   navigate(`/admin/foods/search?query=${search.trim()}`);
+  // };
+
   const handleEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && search.trim()) {
-      navigate(`/admin/foods/search?query=${search.trim()}`);
+      setSearchParams((prev) => {
+        const newParams = new URLSearchParams(prev);
+        newParams.set('keyword', search.trim());
+        newParams.set('page', '1'); 
+        return newParams;
+      });
     }
   };
-
+  
   const handleClick = () => {
-    navigate(`/admin/foods/search?query=${search.trim()}`);
+    if (search.trim()) {
+      setSearchParams((prev) => {
+        const newParams = new URLSearchParams(prev);
+        newParams.set('keyword', search.trim());
+        newParams.set('page', '1');
+        return newParams;
+      });
+    }
   };
+  
 
   const getSortIcon = (field: SortField) => {
     if (sortField === field) {
@@ -103,13 +114,13 @@ const MenuTable: React.FC = () => {
               className="px-4 py-2 border rounded-md w-full"
             />
             <button
-            onClick={handleClick}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-900"
-            aria-label="Search"
-            type="button"
-          >
-            <FaSearch size={18} />
-          </button>
+              onClick={handleClick}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-900"
+              aria-label="Search"
+              type="button"
+            >
+              <FaSearch size={18} />
+            </button>
           </div>
         </div>
 
@@ -130,42 +141,27 @@ const MenuTable: React.FC = () => {
       </div>
       {showFilterPanel && (
         <AdvancedFilterPanel
-          onApply={(filters) => {
-            const newParams = new URLSearchParams(searchParams.toString());
-
-            newParams.set('keyword', search);
-
-            filters.category && newParams.set('category', filters.category);
-            filters.status && newParams.set('status', filters.status);
-
-            filters.priceMin && newParams.set('priceMin', filters.priceMin);
-            filters.priceMax && newParams.set('priceMax', filters.priceMax);
-
-            filters.discountMin &&
-              newParams.set('discountMin', filters.discountMin);
-            filters.discountMax &&
-              newParams.set('discountMax', filters.discountMax);
-
-            filters.stockMin && newParams.set('stockMin', filters.stockMin);
-            filters.stockMax && newParams.set('stockMax', filters.stockMax);
-
-            filters.viewsMin && newParams.set('viewsMin', filters.viewsMin);
-            filters.viewsMax && newParams.set('viewsMax', filters.viewsMax);
-
-            filters.orderedMin &&
-              newParams.set('orderedMin', filters.orderedMin);
-            filters.orderedMax &&
-              newParams.set('orderedMax', filters.orderedMax);
-
-            filters.ratingMin && newParams.set('ratingMin', filters.ratingMin);
-            filters.ratingMax && newParams.set('ratingMax', filters.ratingMax);
-
-            newParams.set('page', '1');
-
-            setSearchParams(newParams);
-            setShowFilterPanel(false);
-          }}
-        />
+        key={searchParams.toString()}
+        initialFilters={Object.fromEntries((searchParams as any).entries())}
+        searchParams={searchParams}
+        setSearchParams={setSearchParams}
+        onApply={(filters) => {
+          const newParams = new URLSearchParams(searchParams.toString());
+      
+          Object.entries(filters).forEach(([key, value]) => {
+            if (value !== '') {
+              newParams.set(key, String(value));
+            } else {
+              newParams.delete(key);
+            }
+          });
+      
+          newParams.set('page', '1');
+          setSearchParams(newParams); 
+          setShowFilterPanel(false);  
+        }}
+      />
+      
       )}
       <div className="text-sm text-gray-700">
         Hiển thị <strong>{foodList.length}</strong> trên tổng{' '}
