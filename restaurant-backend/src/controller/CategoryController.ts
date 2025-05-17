@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import CategoryService from '../services/CategoryService';
-import SearchService from '../services/SearchService';
 import Category from '../models/CategoryModel';
 import PaginateService from '../services/PaginateService';
 import { createCategorySchema } from '../validators/categoriesValidator';

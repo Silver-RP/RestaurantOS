@@ -8,7 +8,7 @@ import CateRoutes from './routes/CategoryRoutes';
 import ReservationContactRoutes from './routes/ReservationContactRoutes';
 import ReservationDetailContactRoutes from './routes/ReservationDetailContactRoutes';
 import ProfileRoutes from './routes/ProfileRoutes';
-import SearchRoutes from './routes/SearchRoutes';
+
 import StaffRoutes from './routes/StaffRoutes';
 import FoodRoutes from './routes/FoodRoutes';
 import PermissionRoutes from './routes/PermissionRoutes';
@@ -97,7 +97,6 @@ app.use('/api/permission', PermissionRoutes);
 app.use('/api/category', CateRoutes);
 app.use('/api/reservationcontact', ReservationContactRoutes);
 app.use('/api/reservationdetailcontact', ReservationDetailContactRoutes);
-app.use('/api/search', SearchRoutes);
 app.use(
   '/api/staff',
   AuthMiddleWare.verifyToken,

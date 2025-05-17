@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import FoodController from '../controller/FoodController';
-import SearchController from '../controller/SearchController';
 import multer from 'multer';
 import AuthMiddleWare from '../middleware/AuthMiddleWare';
 
@@ -30,7 +29,5 @@ router.get('/getFoodByFavorites', FoodController.getFoodByFavorites);
 router.post('/favorite', AuthMiddleWare.verifyToken, FoodController.toggleFavorite);
 router.get('/getFavoriteFoods', AuthMiddleWare.verifyToken, FoodController.getFavoriteFoods);
 router.post('/countFoodView/:foodId', FoodController.countFoodView);
-
-router.get('/getFoodBySearch', AuthMiddleWare.verifyToken, SearchController.searchFoods);
 
 export default router;
