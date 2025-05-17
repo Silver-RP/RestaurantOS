@@ -36,7 +36,7 @@ const dishSchema = new mongoose.Schema(
     discount_price: { type: Number, min: 0 },
     description: { type: String, required: true },
     shortDescription: { type: String },
-    ingredientsl: { type: String },
+    ingredients: { type: String },
     status: {
       type: String,
       enum: ['hidden', 'available', 'soldout'],
