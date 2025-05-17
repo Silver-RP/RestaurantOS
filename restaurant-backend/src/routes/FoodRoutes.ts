@@ -7,7 +7,7 @@ import AuthMiddleWare from '../middleware/AuthMiddleWare';
 const storage = multer.memoryStorage();
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // Giới hạn 5MB
+  limits: { fileSize: 5 * 1024 * 1024 }, 
 });
 
 const router = Router();
@@ -22,7 +22,6 @@ router.delete('/deletefood/:id', FoodController.deleteFood);
 router.get('/getFoodByCategory', FoodController.getFoodByCategory);
 router.get('/getFoodNewest', FoodController.getFoodByNewest);
 router.get('/getFoodBest4', FoodController.getFoodBest4);
-// router.get('/getFoodBySearch', FoodController.getFoodBySearch);
 router.get('/getFoodByPrice', FoodController.getFoodByPrice);
 router.get('/getFoodByRating', FoodController.getFoodByRating);
 router.get('/getFoodByFavorites', FoodController.getFoodByFavorites);

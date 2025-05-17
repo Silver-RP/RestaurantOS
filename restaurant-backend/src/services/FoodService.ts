@@ -114,14 +114,6 @@ class FoodService {
     }
   }
 
-  async getFoodBySearch(search: string) {
-    try {
-      return await Dish.find({ $text: { $search: search } });
-    } catch {
-      throw new Error('Error getting food by search');
-    }
-  }
-
   async getFoodByPrice(pricemin: number, pricemax: number) {
     try {
       return await Dish.find({

@@ -1,102 +1,35 @@
-/* eslint-disable @typescript-eslint/no-unused-expressions */
-import { useFoods, useFoodsAdmin } from '../../../../hooks/useFoods';
-import React, { useState, useEffect } from 'react';
+
+import { useFoodsAdminLogic } from '../../../../hooks/useFoodsAdminLogic';
+import React from 'react';
 import AdminPagination from '../AdminPagination';
-import { useNavigate } from 'react-router-dom';
 import { FaSort, FaArrowUp, FaArrowDown, FaSearch } from 'react-icons/fa';
 import AdvancedFilterPanel from './AdvancedFilterPanel';
 
-type SortField =
-  | 'name'
-  | 'price'
-  | 'discount_price'
-  | 'countInStock'
-  | 'views'
-  | 'category'
-  | 'ordered_count'
-  | 'average_rating'
-  | 'status'
-  | null;
-type SortDirection = 'asc' | 'desc';
-
 const MenuTable: React.FC = () => {
-  const { foods, loading, error, searchParams, setSearchParams } =
-    useFoodsAdmin();
-  const [sortOrder] = useState<'asc' | 'desc' | ''>('');
-  const [sortField, setSortField] = useState<SortField>(null);
-  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
-  const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const {
+    foods,
+    loading,
+    error,
+    searchParams,
+    setSearchParams,
+    sortField,
+    sortDirection,
+    showFilterPanel,
+    setShowFilterPanel,
+    search,
+    setSearch,
+    navigate,
+    foodList,
+    handleSort,
+    handleEnter,
+    handleClick,
+    getSortIcon,
+  } = useFoodsAdminLogic();
 
-  const [search, setSearch] = useState('');
-  const navigate = useNavigate();
-  const foodList = foods?.docs || [];
-
-  const sortMapping: Record<string, { asc: string; desc: string }> = {
-    name: { asc: 'nameAZ', desc: 'nameZA' },
-    price: { asc: 'priceLow', desc: 'priceHigh' },
-    discount_price: { asc: 'discountLow', desc: 'discountHigh' },
-    countInStock: { asc: 'stockHigh', desc: 'stockLow' },
-    views: { asc: 'leastViews', desc: 'mostViewed' },
-    ordered_count: { asc: 'leastOrdered', desc: 'mostOrdered' },
-    average_rating: { asc: 'lowestRated', desc: 'highestRated' },
-    category: { asc: 'categoryAZ', desc: 'categoryZA' },
-    status: { asc: 'statusAZ', desc: 'statusZA' },
-  };
-
-  const handleSort = (field: string) => {
-    const direction =
-      sortField === field ? (sortDirection === 'asc' ? 'desc' : 'asc') : 'asc';
-
-    setSortField(field as SortField);
-    setSortDirection(direction);
-
-    const sortValue = sortMapping[field]?.[direction] || 'default';
-
-    setSearchParams((prev) => {
-      const newParams = new URLSearchParams(prev);
-      newParams.set('sort', sortValue);
-      newParams.set('page', '1');
-      return newParams;
-    });
-  };
-
-  // const handleEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
-  //   if (e.key === 'Enter' && search.trim()) {
-  //     navigate(`/admin/foods/search?query=${search.trim()}`);
-  //   }
-  // };
-
-  // const handleClick = () => {
-  //   navigate(`/admin/foods/search?query=${search.trim()}`);
-  // };
-
-  const handleEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && search.trim()) {
-      setSearchParams((prev) => {
-        const newParams = new URLSearchParams(prev);
-        newParams.set('keyword', search.trim());
-        newParams.set('page', '1'); 
-        return newParams;
-      });
-    }
-  };
-  
-  const handleClick = () => {
-    if (search.trim()) {
-      setSearchParams((prev) => {
-        const newParams = new URLSearchParams(prev);
-        newParams.set('keyword', search.trim());
-        newParams.set('page', '1');
-        return newParams;
-      });
-    }
-  };
-  
-
-  const getSortIcon = (field: SortField) => {
-    if (sortField === field) {
-      return sortDirection === 'asc' ? <FaArrowUp /> : <FaArrowDown />;
-    }
+  const renderSortIcon = (field: typeof sortField) => {
+    const iconType = getSortIcon(field);
+    if (iconType === 'asc') return <FaArrowUp />;
+    if (iconType === 'desc') return <FaArrowDown />;
     return <FaSort />;
   };
 
@@ -185,7 +118,7 @@ const MenuTable: React.FC = () => {
                   onClick={() => handleSort('name')}
                 >
                   <span className="flex items-center gap-1">
-                    Tên món {getSortIcon('name')}
+                    Tên món {renderSortIcon('name')}
                   </span>
                 </th>
 
@@ -194,7 +127,7 @@ const MenuTable: React.FC = () => {
                   onClick={() => handleSort('price')}
                 >
                   <span className="flex items-center gap-1">
-                    Giá (đ) {getSortIcon('price')}
+                    Giá (đ) {renderSortIcon('price')}
                   </span>
                 </th>
 
@@ -203,7 +136,7 @@ const MenuTable: React.FC = () => {
                   onClick={() => handleSort('discount_price')}
                 >
                   <span className="flex items-center gap-1">
-                    Giá KM {getSortIcon('discount_price')}
+                    Giá KM {renderSortIcon('discount_price')}
                   </span>
                 </th>
 
@@ -212,7 +145,7 @@ const MenuTable: React.FC = () => {
                   onClick={() => handleSort('countInStock')}
                 >
                   <span className="flex items-center gap-1">
-                    Kho {getSortIcon('countInStock')}
+                    Kho {renderSortIcon('countInStock')}
                   </span>
                 </th>
 
@@ -221,7 +154,7 @@ const MenuTable: React.FC = () => {
                   onClick={() => handleSort('category')}
                 >
                   <span className="flex items-center gap-1">
-                    Danh mục {getSortIcon('category')}
+                    Danh mục {renderSortIcon('category')}
                   </span>
                 </th>
 
@@ -230,7 +163,7 @@ const MenuTable: React.FC = () => {
                   onClick={() => handleSort('views')}
                 >
                   <span className="flex items-center gap-1">
-                    Lượt xem {getSortIcon('views')}
+                    Lượt xem {renderSortIcon('views')}
                   </span>
                 </th>
 
@@ -239,7 +172,7 @@ const MenuTable: React.FC = () => {
                   onClick={() => handleSort('ordered_count')}
                 >
                   <span className="flex items-center gap-1">
-                    Số đặt {getSortIcon('ordered_count')}
+                    Số đặt {renderSortIcon('ordered_count')}
                   </span>
                 </th>
 
@@ -248,7 +181,7 @@ const MenuTable: React.FC = () => {
                   onClick={() => handleSort('average_rating')}
                 >
                   <span className="flex items-center gap-1">
-                    Rating {getSortIcon('average_rating')}
+                    Rating {renderSortIcon('average_rating')}
                   </span>
                 </th>
 
@@ -257,7 +190,7 @@ const MenuTable: React.FC = () => {
                   onClick={() => handleSort('status')}
                 >
                   <span className="flex items-center gap-1">
-                    Status {getSortIcon('status')}
+                    Status {renderSortIcon('status')}
                   </span>
                 </th>
 
