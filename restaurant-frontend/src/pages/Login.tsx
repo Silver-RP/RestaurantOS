@@ -12,6 +12,7 @@ import { clearStatus } from '../redux/feature/auth/authSlice';
 import { AxiosError } from 'axios';
 import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
 import { LoginWithGoogle } from '../redux/feature/auth/authActions';
+import Cookies from 'js-cookie';
 
 const Login = () => {
   const emailRef = useRef<HTMLInputElement>(null);
@@ -135,6 +136,8 @@ const Login = () => {
       const result = await dispatch(
         LoginWithGoogle({ credential: response.credential, rememberMe }),
       ).unwrap();
+
+      Cookies.set('userInfo', JSON.stringify(result.user), { expires: 1 });
 
       toast.success('Đăng nhập Google thành công!');
       navigate('/');
