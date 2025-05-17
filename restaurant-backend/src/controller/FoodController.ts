@@ -177,16 +177,6 @@ class FoodController {
     }
   }
 
-  async getFoodBySearch(req: Request, res: Response): Promise<any> {
-    try {
-      const { search } = req.query;
-      const food = await FoodService.getFoodBySearch(String(search));
-      res.status(200).json(food);
-    } catch {
-      throw new Error('Error getting food by search');
-    }
-  }
-
   async getFoodByPrice(req: Request, res: Response): Promise<any> {
     try {
       const { min, max } = req.query;
