@@ -55,13 +55,15 @@ export const useUsers = () => {
 
 
 
+
 export const useAddUser = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+ 
   const createUser = async (
-    formData: FormData,
+    userData: Partial<User>,
     onSuccess?: (data: User) => void
   ) => {
     setLoading(true);
@@ -69,7 +71,7 @@ export const useAddUser = () => {
     setSuccessMessage(null);
 
     try {
-      const res = await addUser(formData);
+      const res = await addUser(userData); // userData là object JSON
       if (res.status === 'OK') {
         setSuccessMessage(res.message);
         onSuccess?.(res.data);

@@ -1,4 +1,3 @@
-import { useAddUser } from '@/hooks/useUsers';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -9,92 +8,73 @@ interface RoleOption {
   label: string;
 }
 
-interface CreateUserFormProps {
+interface EditUserFormProps {
   roles: { _id: string; name: string }[];
+  userData: any;
   onSubmit: (data: any) => void;
 }
 
-const CreateUserForm: React.FC<CreateUserFormProps> = ({ roles = [], onSubmit }) => {
+const EditUserForm: React.FC<EditUserFormProps> = ({ roles = [], userData, onSubmit }) => {
   const navigate = useNavigate();
-  const { loading, error } = useAddUser();
 
   const roleOptions: RoleOption[] = roles.map((role) => ({
     value: role._id,
     label: role.name,
   }));
 
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [phone, setPhone] = useState('');
-  const [birthday, setBirthday] = useState('');
-  const [gender, setGender] = useState('');
-  const [status, setStatus] = useState('inactive');
-  const [isEmailVerified, setIsEmailVerified] = useState(false);
-  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
-  const [passwordError, setPasswordError] = useState('');
-
-  useEffect(() => {
-    if (error) toast.error(error);
-  }, [error]);
+  const [username, setUsername] = useState(userData?.username || '');
+  const [email, setEmail] = useState(userData?.email || '');
+  const [phone, setPhone] = useState(userData?.phone || '');
+  const [birthday, setBirthday] = useState(userData?.birthday?.slice(0, 10) || '');
+  const [gender, setGender] = useState(userData?.gender || '');
+  const [status, setStatus] = useState(userData?.status || 'inactive');
+  const [isEmailVerified, setIsEmailVerified] = useState(userData?.isEmailVerified || false);
+  const [selectedRoles, setSelectedRoles] = useState<string[]>(userData?.roles || []);
 
   const handleSubmit = (e: React.FormEvent) => {
-  e.preventDefault();
-  setPasswordError('');
+    e.preventDefault();
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!username.trim() || !email.trim()) {
+      toast.error('Vui lòng nhập đầy đủ username và email');
+      return;
+    }
 
-  if (!username.trim() || !email.trim() || !password) {
-    toast.error('Vui lòng nhập đầy đủ username, email và mật khẩu');
-    return;
-  }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      toast.error('Email không hợp lệ');
+      return;
+    }
 
-  if (!emailRegex.test(email.trim())) {
-    toast.error('Email không hợp lệ');
-    return;
-  }
+    if (selectedRoles.length === 0) {
+      toast.error('Bạn cần chọn ít nhất 1 vai trò');
+      return;
+    }
 
-  if (password !== confirmPassword) {
-    setPasswordError('Mật khẩu xác nhận không đúng');
-    return;
-  }
+    const data = {
+      ...userData,
+      username: username.trim(),
+      email: email.trim(),
+      phone,
+      birthday,
+      gender,
+      status,
+      isEmailVerified,
+      roles: selectedRoles,
+    };
 
-  if (selectedRoles.length === 0) {
-    toast.error('Bạn cần chọn ít nhất 1 vai trò');
-    return;
-  }
-
-  const data = {
-    username: username.trim(),
-    email: email.trim(),
-    password,
-    phone,
-    birthday,
-    gender,
-    status,
-    isEmailVerified,
-    roles: selectedRoles,
+    onSubmit(data);
   };
-
-  console.log('data gửi đi:', data);
-
-  onSubmit(data);
-};
 
   return (
     <div className="p-6 bg-white shadow-md rounded-md max-w-3xl mx-auto">
-      <h1 className="text-2xl font-semibold mb-4">Thêm người dùng mới</h1>
+      <h1 className="text-2xl font-semibold mb-4">Chỉnh sửa người dùng</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Username */}
         <div>
-          <label className="block text-sm mb-1">
-            Tên người dùng <span className="text-red-500">*</span>
-          </label>
+          <label className="block text-sm mb-1">Tên người dùng *</label>
           <input
             type="text"
             value={username}
-            required
             onChange={(e) => setUsername(e.target.value)}
             className="w-full border px-3 py-2 rounded"
           />
@@ -102,47 +82,13 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ roles = [], onSubmit })
 
         {/* Email */}
         <div>
-          <label className="block text-sm mb-1">
-            Email <span className="text-red-500">*</span>
-          </label>
+          <label className="block text-sm mb-1">Email *</label>
           <input
             type="email"
             value={email}
-            required
             onChange={(e) => setEmail(e.target.value)}
             className="w-full border px-3 py-2 rounded"
           />
-        </div>
-
-        {/* Password */}
-        <div>
-          <label className="block text-sm mb-1">
-            Mật khẩu <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="password"
-            value={password}
-            required
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full border px-3 py-2 rounded"
-          />
-        </div>
-
-        {/* Confirm Password */}
-        <div>
-          <label className="block text-sm mb-1">
-            Xác nhận mật khẩu <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="password"
-            value={confirmPassword}
-            required
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            className={`w-full border px-3 py-2 rounded ${passwordError ? 'border-red-500' : ''}`}
-          />
-          {passwordError && (
-            <p className="text-red-500 text-sm">{passwordError}</p>
-          )}
         </div>
 
         {/* Phone & Birthday */}
@@ -211,15 +157,11 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ roles = [], onSubmit })
 
         {/* Roles */}
         <div>
-          <label className="block text-sm mb-1">
-            Vai trò <span className="text-red-500">*</span>
-          </label>
+          <label className="block text-sm mb-1">Vai trò *</label>
           <Select
             isMulti
             options={roleOptions}
-            value={roleOptions.filter((opt) =>
-              selectedRoles.includes(opt.value),
-            )}
+            value={roleOptions.filter((opt) => selectedRoles.includes(opt.value))}
             onChange={(selected) => {
               const roleIds = selected.map((opt) => opt.value);
               setSelectedRoles(roleIds);
@@ -230,7 +172,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ roles = [], onSubmit })
           />
         </div>
 
-        {/* Submit button */}
+        {/* Submit */}
         <div className="flex justify-end gap-2">
           <button
             type="button"
@@ -241,14 +183,9 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ roles = [], onSubmit })
           </button>
           <button
             type="submit"
-            disabled={loading}
-            className={`px-4 py-2 rounded text-white ${
-              loading
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-blue-600 hover:bg-blue-700'
-            }`}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
-            {loading ? 'Đang lưu...' : 'Lưu người dùng'}
+            Lưu thay đổi
           </button>
         </div>
       </form>
@@ -256,4 +193,4 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ roles = [], onSubmit })
   );
 };
 
-export default CreateUserForm;
+export default EditUserForm;
