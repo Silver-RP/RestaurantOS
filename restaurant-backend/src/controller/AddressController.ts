@@ -127,7 +127,8 @@ class AddressController {
         return;
       }
 
-      const updated = await AddressService.updateAddress(addressId, parseResult.data);
+      const userId = req.user?.id;
+      const updated = await AddressService.updateAddress(addressId, parseResult.data, userId);
 
       res.status(200).json({
         success: true,

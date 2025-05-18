@@ -327,7 +327,7 @@ const ProfilePage = () => {
                 <p className="text-gray-400">Số điện thoại</p>
                 {isEditingPersonal ? (
                   <input
-                    type="number"
+                    type="text"
                     name="phone"
                     value={personalInfo.phone}
                     onChange={handlePersonalChange}
