@@ -152,7 +152,7 @@ export const UpdateAddressModal: React.FC<UpdateAddressModalProps> = ({
               <Controller
                 name="full_name"
                 control={control}
-                rules={{ required: 'Bắt buộc' }}
+                rules={{ required: 'Vui lòng điền Họ tên' }}
                 render={({ field }) => (
                   <input
                     {...field}
@@ -173,7 +173,7 @@ export const UpdateAddressModal: React.FC<UpdateAddressModalProps> = ({
                 name="phone"
                 control={control}
                 rules={{
-                  required: 'Bắt buộc',
+                  required: 'Vui lòng nhập số điện thoại',
                   pattern: {
                     value: /^[0-9]{9,11}$/,
                     message: 'Số điện thoại không hợp lệ',
@@ -257,7 +257,7 @@ export const UpdateAddressModal: React.FC<UpdateAddressModalProps> = ({
             <Controller
               name="street_address"
               control={control}
-              rules={{ required: 'Bắt buộc' }}
+              rules={{ required: 'Vui lòng nhập tên đường' }}
               render={({ field }) => (
                 <AddressInput
                   value={field.value || ''}
