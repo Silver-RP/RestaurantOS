@@ -1,8 +1,12 @@
-import { useAddUser } from '@/hooks/useUsers';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
+import { useForm, Controller } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'react-toastify';
 import Select from 'react-select';
+
+import { useAddUser } from '@/hooks/useUsers';
+import { createUserSchema, CreateUserFormValues } from '@/utils/zodSchemas';
 
 interface RoleOption {
   value: string;
@@ -14,7 +18,10 @@ interface CreateUserFormProps {
   onSubmit: (data: any) => void;
 }
 
-const CreateUserForm: React.FC<CreateUserFormProps> = ({ roles = [], onSubmit }) => {
+const CreateUserForm: React.FC<CreateUserFormProps> = ({
+  roles = [],
+  onSubmit,
+}) => {
   const navigate = useNavigate();
   const { loading, error } = useAddUser();
 
@@ -23,125 +30,82 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ roles = [], onSubmit })
     label: role.name,
   }));
 
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [phone, setPhone] = useState('');
-  const [birthday, setBirthday] = useState('');
-  const [gender, setGender] = useState('');
-  const [status, setStatus] = useState('inactive');
-  const [isEmailVerified, setIsEmailVerified] = useState(false);
-  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
-  const [passwordError, setPasswordError] = useState('');
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm<CreateUserFormValues>({
+    resolver: zodResolver(createUserSchema),
+    defaultValues: {
+      status: 'inactive',
+      isEmailVerified: false,
+      roles: [],
+    },
+  });
 
   useEffect(() => {
     if (error) toast.error(error);
   }, [error]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-  e.preventDefault();
-  setPasswordError('');
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-  if (!username.trim() || !email.trim() || !password) {
-    toast.error('Vui lòng nhập đầy đủ username, email và mật khẩu');
-    return;
-  }
-
-  if (!emailRegex.test(email.trim())) {
-    toast.error('Email không hợp lệ');
-    return;
-  }
-
-  if (password !== confirmPassword) {
-    setPasswordError('Mật khẩu xác nhận không đúng');
-    return;
-  }
-
-  if (selectedRoles.length === 0) {
-    toast.error('Bạn cần chọn ít nhất 1 vai trò');
-    return;
-  }
-
-  const data = {
-    username: username.trim(),
-    email: email.trim(),
-    password,
-    phone,
-    birthday,
-    gender,
-    status,
-    isEmailVerified,
-    roles: selectedRoles,
+  const onValid = (data: CreateUserFormValues) => {
+    const { confirmPassword, ...payload } = data;
+    onSubmit(payload);
   };
-
-  console.log('data gửi đi:', data);
-
-  onSubmit(data);
-};
 
   return (
     <div className="p-6 bg-white shadow-md rounded-md max-w-3xl mx-auto">
       <h1 className="text-2xl font-semibold mb-4">Thêm người dùng mới</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit(onValid)} className="space-y-4">
         {/* Username */}
         <div>
-          <label className="block text-sm mb-1">
-            Tên người dùng <span className="text-red-500">*</span>
-          </label>
+          <label className="block text-sm mb-1">Tên người dùng *</label>
           <input
-            type="text"
-            value={username}
-            required
-            onChange={(e) => setUsername(e.target.value)}
+            {...register('username')}
             className="w-full border px-3 py-2 rounded"
           />
+          {errors.username && (
+            <p className="text-red-500 text-sm">{errors.username.message}</p>
+          )}
         </div>
 
         {/* Email */}
         <div>
-          <label className="block text-sm mb-1">
-            Email <span className="text-red-500">*</span>
-          </label>
+          <label className="block text-sm mb-1">Email *</label>
           <input
-            type="email"
-            value={email}
-            required
-            onChange={(e) => setEmail(e.target.value)}
+            {...register('email')}
             className="w-full border px-3 py-2 rounded"
           />
+          {errors.email && (
+            <p className="text-red-500 text-sm">{errors.email.message}</p>
+          )}
         </div>
 
         {/* Password */}
         <div>
-          <label className="block text-sm mb-1">
-            Mật khẩu <span className="text-red-500">*</span>
-          </label>
+          <label className="block text-sm mb-1">Mật khẩu *</label>
           <input
             type="password"
-            value={password}
-            required
-            onChange={(e) => setPassword(e.target.value)}
+            {...register('password')}
             className="w-full border px-3 py-2 rounded"
           />
+          {errors.password && (
+            <p className="text-red-500 text-sm">{errors.password.message}</p>
+          )}
         </div>
 
         {/* Confirm Password */}
         <div>
-          <label className="block text-sm mb-1">
-            Xác nhận mật khẩu <span className="text-red-500">*</span>
-          </label>
+          <label className="block text-sm mb-1">Xác nhận mật khẩu *</label>
           <input
             type="password"
-            value={confirmPassword}
-            required
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            className={`w-full border px-3 py-2 rounded ${passwordError ? 'border-red-500' : ''}`}
+            {...register('confirmPassword')}
+            className="w-full border px-3 py-2 rounded"
           />
-          {passwordError && (
-            <p className="text-red-500 text-sm">{passwordError}</p>
+          {errors.confirmPassword && (
+            <p className="text-red-500 text-sm">
+              {errors.confirmPassword.message}
+            </p>
           )}
         </div>
 
@@ -150,20 +114,24 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ roles = [], onSubmit })
           <div>
             <label className="block text-sm mb-1">Số điện thoại</label>
             <input
-              type="text"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              {...register('phone')}
               className="w-full border px-3 py-2 rounded"
             />
+            {errors.phone && (
+              <p className="text-red-500 text-sm">{errors.phone.message}</p>
+            )}
           </div>
           <div>
             <label className="block text-sm mb-1">Ngày sinh</label>
             <input
               type="date"
-              value={birthday}
-              onChange={(e) => setBirthday(e.target.value)}
+              max={new Date().toISOString().split('T')[0]}
+              {...register('birthday')}
               className="w-full border px-3 py-2 rounded"
             />
+            {errors.birthday && (
+              <p className="text-red-500 text-sm">{errors.birthday.message}</p>
+            )}
           </div>
         </div>
 
@@ -171,8 +139,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ roles = [], onSubmit })
         <div>
           <label className="block text-sm mb-1">Giới tính</label>
           <select
-            value={gender}
-            onChange={(e) => setGender(e.target.value)}
+            {...register('gender')}
             className="w-full border px-3 py-2 rounded"
           >
             <option value="">-- Chọn giới tính --</option>
@@ -181,13 +148,15 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ roles = [], onSubmit })
             <option value="Khác">Khác</option>
           </select>
         </div>
+        {errors && (
+          <p className="text-red-500 text-sm">{errors.gender?.message}</p>
+        )}
 
         {/* Status */}
         <div>
           <label className="block text-sm mb-1">Trạng thái tài khoản</label>
           <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
+            {...register('status')}
             className="w-full border px-3 py-2 rounded"
           >
             <option value="active">Hoạt động</option>
@@ -195,58 +164,63 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ roles = [], onSubmit })
             <option value="block">Bị khóa</option>
           </select>
         </div>
+        {errors && (
+          <p className="text-red-500 text-sm">{errors.status?.message}</p>
+        )}
 
         {/* Email verified */}
         <div>
           <label className="block text-sm mb-1">Xác minh email</label>
           <select
-            value={isEmailVerified ? 'true' : 'false'}
-            onChange={(e) => setIsEmailVerified(e.target.value === 'true')}
+            {...register('isEmailVerified')}
             className="w-full border px-3 py-2 rounded"
           >
             <option value="false">Chưa xác minh</option>
             <option value="true">Đã xác minh</option>
           </select>
         </div>
-
+        {errors && (
+          <p className="text-red-500 text-sm">
+            {errors.isEmailVerified?.message}
+          </p>
+        )}
         {/* Roles */}
         <div>
-          <label className="block text-sm mb-1">
-            Vai trò <span className="text-red-500">*</span>
-          </label>
-          <Select
-            isMulti
-            options={roleOptions}
-            value={roleOptions.filter((opt) =>
-              selectedRoles.includes(opt.value),
+          <label className="block text-sm mb-1">Vai trò *</label>
+          <Controller
+            name="roles"
+            control={control}
+            render={({ field }) => (
+              <Select
+                isMulti
+                options={roleOptions}
+                value={roleOptions.filter((opt) =>
+                  field.value.includes(opt.value),
+                )}
+                onChange={(selected) =>
+                  field.onChange(selected.map((opt) => opt.value))
+                }
+              />
             )}
-            onChange={(selected) => {
-              const roleIds = selected.map((opt) => opt.value);
-              setSelectedRoles(roleIds);
-            }}
-            className="react-select-container"
-            classNamePrefix="react-select"
-            placeholder="Chọn vai trò..."
           />
+          {errors.roles && (
+            <p className="text-red-500 text-sm">{errors.roles.message}</p>
+          )}
         </div>
 
-        {/* Submit button */}
+        {/* Submit */}
         <div className="flex justify-end gap-2">
           <button
             type="button"
             onClick={() => navigate('/admin/users')}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+            className="px-4 py-2 bg-gray-200 text-gray-700 rounded"
           >
             Huỷ
           </button>
           <button
             type="submit"
             disabled={loading}
-            className={`px-4 py-2 rounded text-white ${
-              loading
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-blue-600 hover:bg-blue-700'
-            }`}
+            className={`px-4 py-2 rounded text-white ${loading ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'}`}
           >
             {loading ? 'Đang lưu...' : 'Lưu người dùng'}
           </button>

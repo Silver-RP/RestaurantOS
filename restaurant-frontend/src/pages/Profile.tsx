@@ -10,7 +10,8 @@ import { AppDispatch } from '@/redux/store';
 import { updateUserInfo } from '@/redux/feature/user/userAction';
 import { toast } from 'react-toastify';
 import { useChangePasswordProfile } from '@/hooks/useAuth';
-import { useCheckPassword } from '@/hooks/useUsers'; 
+import { useCheckPassword } from '@/hooks/useUsers';
+import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
 
 const ProfilePage = () => {
   const [touchedFields, setTouchedFields] = useState({
@@ -18,6 +19,9 @@ const ProfilePage = () => {
     newPassword: false,
     confirmPassword: false,
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { checkPassword } = useCheckPassword();
   const [isCheckingPassword, setIsCheckingPassword] = useState(false);
   const [, setIsPasswordValid] = useState<boolean | null>(null);
@@ -72,10 +76,10 @@ const ProfilePage = () => {
           }
         }
       };
-  
+
       check();
     }, 500);
-  
+
     return () => clearTimeout(delayDebounce);
   }, [accountInfo.password, user?._id]);
 
@@ -413,53 +417,87 @@ const ProfilePage = () => {
                 {isEditingAccount && (
                   <>
                     <p className="text-gray-400">Mật khẩu hiện tại</p>
-                    <div className="flex flex-col">
+                    <div className="relative">
                       <input
-                        type="password"
+                        type={showPassword ? 'text' : 'password'}
                         name="password"
                         value={accountInfo.password}
                         onChange={handleAccountChangetouchedFields}
                         placeholder="Nhập mật khẩu hiện tại"
-                        className="w-full bg-transparent border-b border-gray-500 text-white placeholder-gray-500 focus:outline-none focus:border-secondaryColor py-2"
+                        className="w-full bg-transparent border-b border-gray-500 text-white placeholder-gray-500 focus:outline-none focus:border-secondaryColor py-2 pr-10"
                       />
+                      <span
+                        className="absolute right-2 top-2 text-xl text-white cursor-pointer"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? (
+                          <AiOutlineEyeInvisible />
+                        ) : (
+                          <AiOutlineEye />
+                        )}
+                      </span>
                       {touchedFields.password && (
-  <span className="text-red-400 text-sm mt-1">
-    {isCheckingPassword ? 'Đang kiểm tra...' : passwordErrors.password}
-  </span>
-)}
+                        <span className="text-red-400 text-sm mt-1 block">
+                          {isCheckingPassword
+                            ? 'Đang kiểm tra...'
+                            : passwordErrors.password}
+                        </span>
+                      )}
                     </div>
 
                     <p className="text-gray-400">Mật khẩu mới</p>
-                    <div className="flex flex-col">
+                    <div className="relative">
                       <input
-                        type="password"
+                        type={showNewPassword ? 'text' : 'password'}
                         name="newPassword"
                         value={accountInfo.newPassword}
                         onChange={handleAccountChangetouchedFields}
                         placeholder="Nhập mật khẩu mới"
-                        className="w-full bg-transparent border-b border-gray-500 text-white placeholder-gray-500 focus:outline-none focus:border-secondaryColor py-2"
+                        className="w-full bg-transparent border-b border-gray-500 text-white placeholder-gray-500 focus:outline-none focus:border-secondaryColor py-2 pr-10"
                       />
+                      <span
+                        className="absolute right-2 top-2 text-xl text-white cursor-pointer"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                      >
+                        {showNewPassword ? (
+                          <AiOutlineEyeInvisible />
+                        ) : (
+                          <AiOutlineEye />
+                        )}
+                      </span>
                       {touchedFields.newPassword &&
                         passwordErrors.newPassword && (
-                          <span className="text-red-400 text-sm mt-1">
+                          <span className="text-red-400 text-sm mt-1 block">
                             {passwordErrors.newPassword}
                           </span>
                         )}
                     </div>
 
                     <p className="text-gray-400">Xác nhận mật khẩu mới</p>
-                    <div className="flex flex-col">
+                    <div className="relative">
                       <input
-                        type="password"
+                        type={showConfirmPassword ? 'text' : 'password'}
                         name="confirmPassword"
                         value={accountInfo.confirmPassword}
                         onChange={handleAccountChangetouchedFields}
                         placeholder="Nhập lại mật khẩu mới"
-                        className="w-full bg-transparent border-b border-gray-500 text-white placeholder-gray-500 focus:outline-none focus:border-secondaryColor py-2"
+                        className="w-full bg-transparent border-b border-gray-500 text-white placeholder-gray-500 focus:outline-none focus:border-secondaryColor py-2 pr-10"
                       />
+                      <span
+                        className="absolute right-2 top-2 text-xl text-white cursor-pointer"
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
+                      >
+                        {showConfirmPassword ? (
+                          <AiOutlineEyeInvisible />
+                        ) : (
+                          <AiOutlineEye />
+                        )}
+                      </span>
                       {touchedFields.confirmPassword &&
                         passwordErrors.confirmPassword && (
-                          <span className="text-red-400 text-sm mt-1">
+                          <span className="text-red-400 text-sm mt-1 block">
                             {passwordErrors.confirmPassword}
                           </span>
                         )}
