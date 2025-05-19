@@ -84,18 +84,67 @@ class AddressService {
     const addresses = await Address.find({ user_id });
     return addresses;
   }
-  async updateAddress(addressId: string, updateData: any): Promise<any> {
+  async updateAddress(addressId: string, updateData: any, userId: string): Promise<any> {
+    if (!mongoose.Types.ObjectId.isValid(addressId)) {
+      throw new Error('Invalid address ID');
+    }
+
     const currentAddress = await Address.findById(addressId);
     if (!currentAddress) {
       throw new Error('Address not found');
     }
 
-    // Nếu muốn set is_default, cần unset các địa chỉ khác
+    if (currentAddress.user_id.toString() !== userId) {
+      throw new Error('Bạn không có quyền chỉnh sửa địa chỉ này');
+    }
+
+    // Không cho phép sửa user_id
+    delete updateData.user_id;
+
+    // Nếu đang cập nhật is_default → unset các địa chỉ khác
     if (updateData.is_default === true) {
       await Address.updateMany(
-        { user_id: currentAddress.user_id, is_default: true },
+        { user_id: userId, is_default: true },
         { $set: { is_default: false } },
       );
+    }
+
+    // 🧠 Kiểm tra nếu có thay đổi về địa chỉ thì cập nhật lại lat/lon bằng Nominatim
+    const shouldUpdateLocation =
+      updateData.street_address || updateData.ward || updateData.district || updateData.province;
+
+    if (shouldUpdateLocation && (!updateData.lat || !updateData.lon)) {
+      const street = updateData.street_address || currentAddress.street_address;
+      const ward = updateData.ward || currentAddress.ward;
+      const district = updateData.district || currentAddress.district;
+      const province = updateData.province || currentAddress.province;
+
+      const fullQuery = `${street}, ${ward}, ${district}, ${province}, Vietnam`;
+
+      const res = await axios.get('https://nominatim.openstreetmap.org/search', {
+        params: {
+          q: fullQuery,
+          format: 'json',
+          addressdetails: 1,
+          limit: 1,
+        },
+        headers: {
+          'User-Agent': 'beefbeef-app',
+        },
+      });
+
+      const result = res.data[0];
+      if (result) {
+        updateData.lat = result.lat;
+        updateData.lon = result.lon;
+
+        // Nếu thiếu trường nào thì lấy từ Nominatim
+        const addr = result.address;
+        updateData.province = updateData.province || addr.state || addr.city;
+        updateData.district = updateData.district || addr.county || addr.district;
+        updateData.ward = updateData.ward || addr.suburb || addr.village;
+        updateData.street_address = updateData.street_address || addr.road;
+      }
     }
 
     const updatedAddress = await Address.findByIdAndUpdate(addressId, updateData, {

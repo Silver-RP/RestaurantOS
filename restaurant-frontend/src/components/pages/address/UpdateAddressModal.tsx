@@ -7,7 +7,6 @@ import { MapDisplay } from './MapDisplay';
 import { updateAddress } from '@/api/AddressApi';
 import { cities, wardsByDistrict } from '@/utils/DataAddress';
 
-
 interface UpdateAddressModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -26,12 +25,18 @@ interface FormValues {
   is_default: boolean;
 }
 
-export const UpdateAddressModal: React.FC<UpdateAddressModalProps> = ({ isOpen, onClose, address, onSave }) => {
+export const UpdateAddressModal: React.FC<UpdateAddressModalProps> = ({
+  isOpen,
+  onClose,
+  address,
+  onSave,
+}) => {
   const [district, setDistrict] = useState('');
   const [ward, setWard] = useState('');
   const [lat, setLat] = useState(0);
   const [lon, setLon] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [addressError, setAddressError] = useState<string | null>(null);
 
   const {
     control,
@@ -55,7 +60,8 @@ export const UpdateAddressModal: React.FC<UpdateAddressModalProps> = ({ isOpen, 
 
   useEffect(() => {
     if (address) {
-      const fallbackStreet = address.street_address?.split(',').map((s: string) => s.trim()) || [];
+      const fallbackStreet =
+        address.street_address?.split(',').map((s: string) => s.trim()) || [];
       reset({
         full_name: address.name || address.full_name || '',
         phone: address.phone || '',
@@ -77,17 +83,25 @@ export const UpdateAddressModal: React.FC<UpdateAddressModalProps> = ({ isOpen, 
 
   useEffect(() => {
     const timer = setTimeout(async () => {
-      if (watchedStreet.length > 5) {
+      setAddressError(null); // Reset lỗi cũ
+      if (watchedStreet.length > 5 && ward && district) {
         const full = `${watchedStreet}, ${ward}, ${district}, TP. Hồ Chí Minh`;
         try {
-          const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(full)}&format=json`);
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(full)}&format=json`,
+          );
           const json = await res.json();
           if (json.length > 0) {
             setLat(parseFloat(json[0].lat));
             setLon(parseFloat(json[0].lon));
+          } else {
+            setLat(0);
+            setLon(0);
+            setAddressError('Không tìm thấy đường này trên bản đồ');
           }
         } catch (e) {
           console.error('Lỗi tìm kiếm toạ độ:', e);
+          setAddressError('Lỗi khi tìm địa chỉ. Vui lòng thử lại.');
         }
       }
     }, 500);
@@ -95,20 +109,27 @@ export const UpdateAddressModal: React.FC<UpdateAddressModalProps> = ({ isOpen, 
   }, [watchedStreet, ward, district]);
 
   const onSubmit = async (data: FormValues) => {
-    if (!district || !ward || lat === 0 || lon === 0) {
-      alert('Vui lòng nhập đầy đủ thông tin địa chỉ');
+    if (!district || !ward) {
+      alert('Vui lòng nhập đầy đủ quận và phường');
       return;
     }
+
     try {
       setIsSubmitting(true);
-      await updateAddress(address.id, {
+      const response = await updateAddress(address.id, {
         ...data,
         district,
         ward,
         province: 'TP. Hồ Chí Minh',
-        lat,
-        lon,
+        lat: lat || undefined,
+        lon: lon || undefined, // Gửi lên, BE sẽ tự xử nếu thiếu
       });
+
+      // 👉 nhận lại địa chỉ đã chuẩn hóa
+      if (response?.data) {
+        console.log('✅ Địa chỉ sau khi chuẩn hóa:', response.data);
+      }
+
       onSave();
     } catch (err) {
       console.error('❌ Lỗi cập nhật địa chỉ:', err);
@@ -131,12 +152,19 @@ export const UpdateAddressModal: React.FC<UpdateAddressModalProps> = ({ isOpen, 
               <Controller
                 name="full_name"
                 control={control}
-                rules={{ required: 'Bắt buộc' }}
+                rules={{ required: 'Vui lòng điền Họ tên' }}
                 render={({ field }) => (
-                  <input {...field} className="w-full bg-transparent border-b border-gray-500 text-white py-2 focus:outline-none" />
+                  <input
+                    {...field}
+                    className="w-full bg-transparent border-b border-gray-500 text-white py-2 focus:outline-none"
+                  />
                 )}
               />
-              {errors.full_name && <p className="text-red-500 text-sm">{errors.full_name.message}</p>}
+              {errors.full_name && (
+                <p className="text-red-500 text-sm">
+                  {errors.full_name.message}
+                </p>
+              )}
             </div>
 
             <div>
@@ -144,35 +172,57 @@ export const UpdateAddressModal: React.FC<UpdateAddressModalProps> = ({ isOpen, 
               <Controller
                 name="phone"
                 control={control}
-                rules={{ required: 'Bắt buộc', pattern: { value: /^[0-9]{9,11}$/, message: 'Số điện thoại không hợp lệ' } }}
+                rules={{
+                  required: 'Vui lòng nhập số điện thoại',
+                  pattern: {
+                    value: /^[0-9]{9,11}$/,
+                    message: 'Số điện thoại không hợp lệ',
+                  },
+                }}
                 render={({ field }) => (
-                  <input {...field} className="w-full bg-transparent border-b border-gray-500 text-white py-2 focus:outline-none" />
+                  <input
+                    {...field}
+                    className="w-full bg-transparent border-b border-gray-500 text-white py-2 focus:outline-none"
+                  />
                 )}
               />
-              {errors.phone && <p className="text-red-500 text-sm">{errors.phone.message}</p>}
+              {errors.phone && (
+                <p className="text-red-500 text-sm">{errors.phone.message}</p>
+              )}
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="text-gray-400">Tỉnh / Thành phố</label>
-              <div className="w-full border-b border-gray-500 py-2 text-white">TP. Hồ Chí Minh</div>
+              <div className="w-full border-b border-gray-500 py-2 text-white">
+                TP. Hồ Chí Minh
+              </div>
             </div>
 
             <div>
               <label className="text-gray-400">Quận / Huyện</label>
-              <Listbox value={district} onChange={(val) => setDistrict(val.trim())}>
+              <Listbox
+                value={district}
+                onChange={(val) => setDistrict(val.trim())}
+              >
                 <div className="relative capitalize">
                   <Listbox.Button className="w-full border-b border-gray-500 py-2 text-white flex justify-between">
                     <span>{district || 'Chọn quận'}</span>
                     <FiChevronDown />
                   </Listbox.Button>
                   <Listbox.Options className="absolute mt-1 max-h-60 overflow-auto bg-bodyBackground border border-white/20 z-10 capitalize">
-                    {cities.find((c) => c.name === 'TP. Hồ Chí Minh')?.districts.map((d) => (
-                      <Listbox.Option key={d} value={d} className="p-2 text-sm hover:bg-white/10 cursor-pointer capitalize">
-                        {d}
-                      </Listbox.Option>
-                    ))}
+                    {cities
+                      .find((c) => c.name === 'TP. Hồ Chí Minh')
+                      ?.districts.map((d) => (
+                        <Listbox.Option
+                          key={d}
+                          value={d}
+                          className="p-2 text-sm hover:bg-white/10 cursor-pointer capitalize"
+                        >
+                          {d}
+                        </Listbox.Option>
+                      ))}
                   </Listbox.Options>
                 </div>
               </Listbox>
@@ -188,7 +238,11 @@ export const UpdateAddressModal: React.FC<UpdateAddressModalProps> = ({ isOpen, 
                   </Listbox.Button>
                   <Listbox.Options className="absolute mt-1 max-h-60 overflow-auto bg-bodyBackground border border-white/20 z-10">
                     {(wardsByDistrict[district] || []).map((w) => (
-                      <Listbox.Option key={w} value={w} className="p-2 text-sm hover:bg-white/10 cursor-pointer">
+                      <Listbox.Option
+                        key={w}
+                        value={w}
+                        className="p-2 text-sm hover:bg-white/10 cursor-pointer"
+                      >
                         {w}
                       </Listbox.Option>
                     ))}
@@ -203,7 +257,7 @@ export const UpdateAddressModal: React.FC<UpdateAddressModalProps> = ({ isOpen, 
             <Controller
               name="street_address"
               control={control}
-              rules={{ required: 'Bắt buộc' }}
+              rules={{ required: 'Vui lòng nhập tên đường' }}
               render={({ field }) => (
                 <AddressInput
                   value={field.value || ''}
@@ -216,7 +270,14 @@ export const UpdateAddressModal: React.FC<UpdateAddressModalProps> = ({ isOpen, 
                 />
               )}
             />
-            {errors.street_address && <p className="text-red-500 text-sm">{errors.street_address.message}</p>}
+            {errors.street_address && (
+              <p className="text-red-500 text-sm">
+                {errors.street_address.message}
+              </p>
+            )}
+            {addressError && (
+              <p className="text-red-500 text-sm mt-1">{addressError}</p>
+            )}
           </div>
 
           {lat !== 0 && lon !== 0 && (
@@ -237,11 +298,17 @@ export const UpdateAddressModal: React.FC<UpdateAddressModalProps> = ({ isOpen, 
                       type="button"
                       key={type}
                       className={`px-4 py-2 rounded border transition ${
-                        field.value === type ? 'bg-secondaryColor text-black' : 'border-gray-500 text-white'
+                        field.value === type
+                          ? 'bg-secondaryColor text-black'
+                          : 'border-gray-500 text-white'
                       }`}
                       onClick={() => field.onChange(type)}
                     >
-                      {type === 'HOME' ? 'Nhà riêng' : type === 'WORK' ? 'Văn phòng' : 'Khác'}
+                      {type === 'HOME'
+                        ? 'Nhà riêng'
+                        : type === 'WORK'
+                          ? 'Văn phòng'
+                          : 'Khác'}
                     </button>
                   ))}
                 </div>
@@ -266,10 +333,18 @@ export const UpdateAddressModal: React.FC<UpdateAddressModalProps> = ({ isOpen, 
           </div>
 
           <div className="flex justify-end gap-3 pt-4">
-            <button type="button" onClick={onClose} className="px-4 py-2 border border-secondaryColor text-secondaryColor rounded-md">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 border border-secondaryColor text-secondaryColor rounded-md"
+            >
               Hủy
             </button>
-            <button type="submit" disabled={isSubmitting} className="px-4 py-2 bg-secondaryColor text-black rounded-md disabled:opacity-50">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-4 py-2 bg-secondaryColor text-black rounded-md disabled:opacity-50"
+            >
               {isSubmitting ? 'Đang lưu...' : 'Lưu'}
             </button>
           </div>
