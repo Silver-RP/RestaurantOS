@@ -73,12 +73,16 @@ axiosInstance.interceptors.response.use(
         return axiosInstance(originalRequest);
       } catch (err) {
         Cookies.remove('accessToken');
-        window.location.href = '/login';
         processQueue(err, null);
+
+        if (window.location.pathname !== '/login') {
+          redirectingToLogin = true;
+          window.location.href = '/login';
+        }
+
         return Promise.reject(err);
       } finally {
         isRefreshing = false;
-        redirectingToLogin = false; 
       }
     }
 
