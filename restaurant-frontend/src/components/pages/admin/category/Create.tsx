@@ -1,7 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import CategoryForm from './CategoryForm';
-// import { useAddCategory } from '@hooks/useAddCategory';
 import { CategoryCreatePayload } from '@/types/Category.type';
 import { useAddCategory } from '@/hooks/useCategories';
 import { toast } from 'react-toastify';

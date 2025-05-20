@@ -9,7 +9,7 @@ class FoodController {
   async createFood(req: Request, res: Response): Promise<any> {
     try {
       const { name, slug, price, description, category } = req.body;
-  
+
       if (!name || !price || !slug || !description || !category) {
         return res.status(400).json({ message: 'Thiếu thông tin bắt buộc: name, price, slug, description, category' });
       }

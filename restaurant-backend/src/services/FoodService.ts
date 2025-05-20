@@ -12,6 +12,7 @@ class FoodService {
   async createFoodWithImages(foodData: any, files: Express.Multer.File[]) {
     const categoryId = foodData.category?.toString();
     const category = await Category.findById(categoryId);
+    console.log('Category:', category);
     if (!category) {
       throw new Error('Category không tồn tại');
     }
@@ -22,25 +23,20 @@ class FoodService {
       files.map(file => UploadService.UploadImage(file, `dishes/${categorySlug}`))
     );
   
-    console.log('Uploaded images:', uploadedImages);
-  
-    // Chỉ lưu URL của hình ảnh
     const formattedImages = uploadedImages.map(img => img.url);
   
     const food = {
       ...foodData,
-      category: new mongoose.Types.ObjectId(categoryId),
+      categories: new mongoose.Types.ObjectId(categoryId),
       images: formattedImages,  
       newUntil: foodData.isDishNew ? foodData.newUntil : null,
       discountUntil: foodData.discount_price > 0 ? foodData.discountUntil : null,
     };
-  
+
     try {
-      // Lưu món ăn vào cơ sở dữ liệu
       const newFood = new Dish(food);
       return await newFood.save();
     } catch (dbError) {
-      // Không cần xóa ảnh vì không lưu public_id
       console.error('Failed to save food:', dbError);
       throw dbError;
     }
