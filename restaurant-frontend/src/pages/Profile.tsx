@@ -12,6 +12,7 @@ import { toast } from 'react-toastify';
 import { useChangePasswordProfile } from '@/hooks/useAuth';
 import { useCheckPassword } from '@/hooks/useUsers';
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
+import Container from '@/components/common/Container';
 
 const ProfilePage = () => {
   const [touchedFields, setTouchedFields] = useState({
@@ -302,12 +303,12 @@ const ProfilePage = () => {
     <div className="flex flex-col bg-bodyBackground text-white font-sans">
       <BreadCrumbComponents />
 
-      <div className="w-[full] max-w-[1300px] mx-auto flex px-8 py-12 gap-8">
+      <Container className='flex gap-6 py-10'>
         <div className="w-1/3 hidden md:block">
           <ProfileSidebar />
         </div>
 
-        <div className="flex-1 bg-bodyBackground p-10 border border-[#FFE0A0]">
+        <div className="flex-1 w-2/3 bg-bodyBackground p-10 border border-[#FFE0A0]">
           <h2 className="text-3xl font-restora font-bold text-white mb-8">
             Thông tin tài khoản
           </h2>
@@ -526,7 +527,7 @@ const ProfilePage = () => {
             </div>
           </div>
         </div>
-      </div>
+      </Container>
     </div>
   );
 };
