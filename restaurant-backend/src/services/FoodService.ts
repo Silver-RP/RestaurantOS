@@ -12,23 +12,22 @@ class FoodService {
   async createFoodWithImages(foodData: any, files: Express.Multer.File[]) {
     const categoryId = foodData.category?.toString();
     const category = await Category.findById(categoryId);
-    console.log('Category:', category);
     if (!category) {
       throw new Error('Category không tồn tại');
     }
-  
+
     const categorySlug = category.Cate_slug;
-  
+
     const uploadedImages = await Promise.all(
       files.map(file => UploadService.UploadImage(file, `dishes/${categorySlug}`))
     );
-  
+
     const formattedImages = uploadedImages.map(img => img.url);
-  
+
     const food = {
       ...foodData,
       categories: new mongoose.Types.ObjectId(categoryId),
-      images: formattedImages,  
+      images: formattedImages,
       newUntil: foodData.isDishNew ? foodData.newUntil : null,
       discountUntil: foodData.discount_price > 0 ? foodData.discountUntil : null,
     };
@@ -40,6 +39,27 @@ class FoodService {
       console.error('Failed to save food:', dbError);
       throw dbError;
     }
+  }
+
+  async updateFoodWithImages(id: string, foodData: any, files?: Express.Multer.File[]) {
+    const category = await this.getCategory(foodData.category);
+    const categorySlug = category.Cate_slug;
+  
+    const existingImages = this.parseExistingImages(foodData.existingImages);
+    const uploadedImages = await this.uploadNewImages(files, categorySlug);
+    const formattedImages = [...existingImages, ...uploadedImages];
+  
+    const originalDish = await Dish.findById(id);
+    if (!originalDish) throw new Error('Không tìm thấy món ăn gốc');
+  
+    await this.deleteRemovedImages(originalDish.images || [], formattedImages);
+  
+    const updateFields = this.buildUpdateFields(foodData, category.id, formattedImages);
+  
+    const updated = await Dish.findByIdAndUpdate(id, updateFields, { new: true });
+    if (!updated) throw new Error('Không tìm thấy món ăn để cập nhật');
+  
+    return updated;
   }
   
 
@@ -103,14 +123,6 @@ class FoodService {
       return food;
     } catch {
       throw new Error('Error getting food by id');
-    }
-  }
-
-  async updateFood(id: string, food: any) {
-    try {
-      return await Dish.findByIdAndUpdate(id, food, { new: true });
-    } catch {
-      throw new Error('Error updating food');
     }
   }
 
@@ -337,6 +349,49 @@ class FoodService {
       throw new Error('Error counting food view');
     }
   }
+
+  // updateFoodWithImages's private methods
+  private async getCategory(categoryId: string) {
+    const category = await Category.findById(categoryId);
+    if (!category) throw new Error('Category không tồn tại');
+    return category;
+  }
+  
+  private parseExistingImages(imagesJson: string): string[] {
+    try {
+      const images = JSON.parse(imagesJson || '[]');
+      return Array.isArray(images) ? images : [];
+    } catch {
+      return [];
+    }
+  }
+  
+  private async uploadNewImages(files: Express.Multer.File[] | undefined, folder: string): Promise<string[]> {
+    if (!files || files.length === 0) return [];
+  
+    const uploaded = await Promise.all(
+      files.map(file => UploadService.UploadImage(file, `dishes/${folder}`))
+    );
+    return uploaded.map(img => img.url);
+  }
+  
+  private async deleteRemovedImages(original: string[], updated: string[]) {
+    const toRemove = original.filter(img => !updated.includes(img));
+    if (toRemove.length > 0) {
+      await UploadService.deleteImages(toRemove);
+    }
+  }
+  
+  private buildUpdateFields(foodData: any, categoryId: string, images: string[]) {
+    return {
+      ...foodData,
+      categories: new mongoose.Types.ObjectId(categoryId),
+      newUntil: foodData.isDishNew ? foodData.newUntil : null,
+      discountUntil: foodData.discount_price > 0 ? foodData.discountUntil : null,
+      images,
+    };
+  }
+  
 }
 
 export default new FoodService();

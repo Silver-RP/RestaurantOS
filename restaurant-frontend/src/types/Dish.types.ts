@@ -27,6 +27,7 @@ export interface FoodDetail {
   shortDescription?: string;
   ingredients?: string;
   images: string[];
+  imagesPreview: string[];
   countInStock: number;
   views: number;
   ordered_count: number;

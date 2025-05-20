@@ -1,4 +1,3 @@
-
 import { useFoodsAdminLogic } from '../../../../hooks/useFoodsAdminLogic';
 import React from 'react';
 import AdminPagination from '../AdminPagination';
@@ -13,7 +12,6 @@ const MenuTable: React.FC = () => {
     searchParams,
     setSearchParams,
     sortField,
-    sortDirection,
     showFilterPanel,
     setShowFilterPanel,
     search,
@@ -74,27 +72,26 @@ const MenuTable: React.FC = () => {
       </div>
       {showFilterPanel && (
         <AdvancedFilterPanel
-        key={searchParams.toString()}
-        initialFilters={Object.fromEntries((searchParams as any).entries())}
-        searchParams={searchParams}
-        setSearchParams={setSearchParams}
-        onApply={(filters) => {
-          const newParams = new URLSearchParams(searchParams.toString());
-      
-          Object.entries(filters).forEach(([key, value]) => {
-            if (value !== '') {
-              newParams.set(key, String(value));
-            } else {
-              newParams.delete(key);
-            }
-          });
-      
-          newParams.set('page', '1');
-          setSearchParams(newParams); 
-          setShowFilterPanel(false);  
-        }}
-      />
-      
+          key={searchParams.toString()}
+          initialFilters={Object.fromEntries((searchParams as any).entries())}
+          searchParams={searchParams}
+          setSearchParams={setSearchParams}
+          onApply={(filters) => {
+            const newParams = new URLSearchParams(searchParams.toString());
+
+            Object.entries(filters).forEach(([key, value]) => {
+              if (value !== '') {
+                newParams.set(key, String(value));
+              } else {
+                newParams.delete(key);
+              }
+            });
+
+            newParams.set('page', '1');
+            setSearchParams(newParams);
+            setShowFilterPanel(false);
+          }}
+        />
       )}
       <div className="text-sm text-gray-700">
         Hiển thị <strong>{foodList.length}</strong> trên tổng{' '}
@@ -190,7 +187,7 @@ const MenuTable: React.FC = () => {
                   onClick={() => handleSort('status')}
                 >
                   <span className="flex items-center gap-1">
-                    Status {renderSortIcon('status')}
+                    Trạng thái {renderSortIcon('status')}
                   </span>
                 </th>
 
@@ -232,7 +229,11 @@ const MenuTable: React.FC = () => {
                             : 'bg-gray-100 text-gray-800'
                       }`}
                     >
-                      {item.status}
+                      {item.status === 'available'
+                        ? 'còn hàng'
+                        : item.status === 'soldout'
+                          ? 'hết hàng'
+                          : 'đã ẩn'}
                     </span>
                   </td>
                   <td className="px-4 py-2 space-x-2">

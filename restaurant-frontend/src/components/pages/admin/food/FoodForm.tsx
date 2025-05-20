@@ -4,7 +4,7 @@ import { FoodDetail } from '../../../../types/Dish.types';
 import ImageUploadPreview from '../ImageUploadPreview';
 import { Category } from 'types/Category.type';
 import { FaChevronDown } from 'react-icons/fa';
-import { useCreateFoodLogic } from '@hooks/useCUDFoods';
+import { useFoodLogic } from '@hooks/useCUDFoods';
 
 interface FoodFormProps {
   initialData?: FoodDetail;
@@ -25,9 +25,8 @@ const FoodForm: React.FC<FoodFormProps> = ({ initialData, onSubmit, categories }
     origin, setOrigin, alcoholType, setAlcoholType, alcoholContent, setAlcoholContent,
     volume, setVolume, handleSubmit, generateSlug,
     isAlcoholCategory,
-  } = useCreateFoodLogic({ initialData, categories, onSubmit });
+  } = useFoodLogic({ initialData, categories, onSubmit });
 
-  
   return (
     <div className="p-6 bg-white shadow-lg rounded-lg w-full max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold mb-4 text-admintext">

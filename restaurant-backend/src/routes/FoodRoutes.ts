@@ -13,11 +13,11 @@ const upload = multer({
 const router = Router();
 
 // API upload ảnh lên Cloudinary
-router.post('/createfood', upload.array('images'), FoodController.createFood);
+router.post('/createfood', upload.array('images', 5), FoodController.createFood);
 router.get('/getallfood', FoodController.getAllFood);
 router.get('/getfoodbyid/:id', FoodController.getFoodById);
 router.get('/getfoodbyslug/:slug', FoodController.getFoodBySlug);
-router.put('/updatefood/:id', FoodController.updateFood);
+router.put('/updatefood/:id',  upload.array('images', 5), FoodController.updateFood);
 router.delete('/deletefood/:id', FoodController.deleteFood);
 router.get('/getFoodByCategory', FoodController.getFoodByCategory);
 router.get('/getFoodNewest', FoodController.getFoodByNewest);

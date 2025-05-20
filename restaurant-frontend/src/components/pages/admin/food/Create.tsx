@@ -1,4 +1,4 @@
-'use client';
+
 import { useCategories } from '@hooks/useCategories';
 import FoodForm from './FoodForm';
 import { useNavigate } from 'react-router-dom';

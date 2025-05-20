@@ -37,7 +37,6 @@ dotenv.config();
 connectDB();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-console.log('Mongo URI: abc');
 app.use(cors({
   origin: (origin, callback) => {
     if (origin === 'http://localhost:4173' || origin === 'http://localhost:5173' || !origin) {

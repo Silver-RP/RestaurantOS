@@ -128,9 +128,9 @@ const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
               onChange={handleChange}
             >
               <option value="">Tất cả</option>
-              <option value="available">Available</option>
-              <option value="hidden">Hidden</option>
-              <option value="soldout">Sold Out</option>
+              <option value="available">Có sẵn</option>
+              <option value="hidden">Đã ẩn</option>
+              <option value="soldout">Hết hàng</option>
             </select>
           </div>
         </div>

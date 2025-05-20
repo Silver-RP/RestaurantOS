@@ -117,4 +117,18 @@ export const createFoodApi = async (formData: FormData): Promise<void> => {
   }
 }
 
+export const updateFoodApi = async (formData: FormData, foodId:string): Promise<void> => {
+  try {
+    const res = await api.put(`/food/updatefood/${foodId}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return res.data;
+  } catch (error) {
+    console.error('Error updating food:', error);
+    throw error;
+  }
+}
+
 

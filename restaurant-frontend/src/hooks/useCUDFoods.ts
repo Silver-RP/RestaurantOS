@@ -1,4 +1,4 @@
-import { createFoodApi } from '@/api/FoodApi';
+import { createFoodApi, updateFoodApi } from '@/api/FoodApi';
 import { useNavigate } from 'react-router-dom';
 import { showOverlayLoading, hideOverlayLoading } from '@/redux/feature/loadingUI/uiSlice';
 import { useDispatch } from 'react-redux';
@@ -24,8 +24,23 @@ export const useCUDFoods = () => {
             dispatch(hideOverlayLoading());
         }
     };
+
+    const updateFood = async (formData: FormData, foodId: string) => {
+        dispatch(showOverlayLoading("Đang cập nhật món ăn..."));
+        try {
+            await updateFoodApi(formData, foodId);
+            toast.success('Cập nhật món ăn thành công');
+            navigate('/admin/foods');
+        } catch (error) {
+            toast.error('Cập nhật món ăn thất bại');
+            console.error('Lỗi khi cập nhật món ăn:', error);
+        } finally {
+            dispatch(hideOverlayLoading());
+        }
+    }
+
     return {
-        createFood,
+        createFood, updateFood
     };
 }
 
@@ -36,7 +51,7 @@ interface UseFoodFormProps {
     onSubmit: (formData: FormData) => void;
 }
 
-export function useCreateFoodLogic({ initialData, categories, onSubmit }: UseFoodFormProps) {
+export function useFoodLogic({ initialData, categories, onSubmit }: UseFoodFormProps) {
     const [name, setName] = useState('');
     const [slug, setSlug] = useState('');
     const [categoryId, setCategoryId] = useState('');
@@ -73,7 +88,7 @@ export function useCreateFoodLogic({ initialData, categories, onSubmit }: UseFoo
             setDescription(initialData.description || '');
             setShortDescription(initialData.shortDescription || '');
             setIngredients(initialData.ingredients || '');
-            setImages(initialData.images || []);
+            setImages(initialData.imagesPreview || []);
             setCountInStock(initialData.countInStock);
             setOrigin(initialData.origin || '');
             setAlcoholType(initialData.alcohol_type || '');
@@ -140,10 +155,13 @@ export function useCreateFoodLogic({ initialData, categories, onSubmit }: UseFoo
             formData.append('alcohol_content', String(alcoholContent));
             formData.append('volume', String(volume));
         }
-        images.forEach((img) => {
-            if (img instanceof File) formData.append('images', img);
+        const existing = images.filter((img) => typeof img === 'string') as string[];
+        const newImages = images.filter((img) => typeof img !== 'string') as File[];
+        formData.append('existingImages', JSON.stringify(existing));
+            newImages.forEach((file) => {
+                formData.append('images', file);
         });
-
+       
         onSubmit(formData);
     };
 
