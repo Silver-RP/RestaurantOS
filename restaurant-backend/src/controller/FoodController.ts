@@ -16,12 +16,12 @@ class FoodController {
       if (!mongoose.Types.ObjectId.isValid(category)) {
         return res.status(400).json({ message: 'Category không hợp lệ' });
       }
-  
+
       const files = req.files as Express.Multer.File[];
       if (!files || files.length === 0) {
         return res.status(400).json({ message: 'Phải có ít nhất một hình ảnh' });
       }
-  
+
       const newFood = await FoodService.createFoodWithImages(req.body, files);
       return res.status(201).json({ message: 'Tạo món ăn thành công', data: newFood });
     } catch (error: any) {
@@ -29,26 +29,26 @@ class FoodController {
       return res.status(500).json({ message: 'Lỗi máy chủ', error: error.message });
     }
   }
-  
+
   async updateFood(req: Request, res: Response): Promise<any> {
     try {
       const { id } = req.params;
       const { name, slug, price, description, category } = req.body;
-  
+
       if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({ message: 'ID món ăn không hợp lệ' });
       }
-  
+
       if (!name || !price || !slug || !description || !category) {
         return res.status(400).json({ message: 'Thiếu thông tin bắt buộc: name, price, slug, description, category' });
       }
-  
+
       if (!mongoose.Types.ObjectId.isValid(category)) {
         return res.status(400).json({ message: 'Category không hợp lệ' });
       }
-  
-      const files = req.files as Express.Multer.File[]; 
-  
+
+      const files = req.files as Express.Multer.File[];
+
       const updatedFood = await FoodService.updateFoodWithImages(id, req.body, files);
       return res.status(200).json({ message: 'Cập nhật món ăn thành công', data: updatedFood });
     } catch (error: any) {
@@ -56,7 +56,7 @@ class FoodController {
       return res.status(500).json({ message: 'Lỗi máy chủ', error: error.message });
     }
   }
-  
+
   async getTopFavoriteFood(req: Request, res: Response): Promise<void> {
     try {
       const foodFavoriteTop = await FoodService.getTopFavoriteFood();
@@ -146,16 +146,6 @@ class FoodController {
         success: false,
         message: 'Error getting food by newest',
       });
-    }
-  }
-
-  async deleteFood(req: Request, res: Response): Promise<any> {
-    try {
-      const { id } = req.params;
-      const deletedFood = await FoodService.deleteFood(id);
-      res.status(200).json(deletedFood);
-    } catch {
-      throw new Error('Error deleting food');
     }
   }
 
@@ -309,5 +299,39 @@ class FoodController {
       return res.status(500).json({ message: 'Internal server error' });
     }
   }
+
+  async softDeleteDish(req: Request, res: Response): Promise<any> {
+    try {
+      const id = req.params.foodId;
+      const deletedDish = await FoodService.softDeleteDish(id);
+      return res.status(200).json({ message: 'Dish deleted successfully', data: deletedDish });
+    } catch (error) {
+      console.error('Error soft deleting dish:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
+  async restoreFood(req: Request, res: Response): Promise<any> {
+    try {
+      const { id } = req.params;
+      const restoredDish = await FoodService.restoreDish(id);
+      return res.status(200).json({ message: 'Dish restored successfully', data: restoredDish });
+    } catch (error) {
+      console.error('Error restoring dish:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
+  async permanentlyDeleteFood(req: Request, res: Response): Promise<any> {
+    try {
+      const { id } = req.params;
+      const deletedDish = await FoodService.permanentlyDeleteDish(id);
+      return res.status(200).json({ message: 'Dish permanently deleted successfully', data: deletedDish });
+    } catch (error) {
+      console.error('Error permanently deleting dish:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
 }
 export default new FoodController();

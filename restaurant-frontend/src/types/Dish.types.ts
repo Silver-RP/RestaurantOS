@@ -13,6 +13,7 @@ export interface FoodType {
 }
 
 export interface FoodDetail {
+  isDeleted: boolean;
   _id: string;
   name: string;
   slug: string;

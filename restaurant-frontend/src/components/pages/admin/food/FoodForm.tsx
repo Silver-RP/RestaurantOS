@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { FoodDetail } from '../../../../types/Dish.types';
 import ImageUploadPreview from '../ImageUploadPreview';
 import { Category } from 'types/Category.type';
-import { FaChevronDown } from 'react-icons/fa';
+import { FaChevronDown, FaTrash } from 'react-icons/fa';
 import { useFoodLogic } from '@hooks/useCUDFoods';
+import ConfirmModal from '@/components/common/ConfirmModal';
 
 interface FoodFormProps {
   initialData?: FoodDetail;
@@ -13,25 +14,89 @@ interface FoodFormProps {
   submitLabel: string;
 }
 
-const FoodForm: React.FC<FoodFormProps> = ({ initialData, onSubmit, categories }) => {
+const FoodForm: React.FC<FoodFormProps> = ({
+  initialData,
+  onSubmit,
+  categories,
+}) => {
   const navigate = useNavigate();
-
+  
   const {
-    name, setName, slug, setSlug, categoryId, setCategoryId, status, setStatus,
-    price, setPrice, discountPrice, setDiscountPrice, discountUntil, setDiscountUntil,
-    isDishNew, setIsDishNew, newUntil, setNewUntil, description, setDescription,
-    shortDescription, setShortDescription, ingredients, setIngredients, images,
-    handleImageChange, handleRemoveImage, countInStock, setCountInStock,
-    origin, setOrigin, alcoholType, setAlcoholType, alcoholContent, setAlcoholContent,
-    volume, setVolume, handleSubmit, generateSlug,
+    name,
+    setName,
+    slug,
+    setSlug,
+    categoryId,
+    setCategoryId,
+    status,
+    setStatus,
+    price,
+    setPrice,
+    discountPrice,
+    setDiscountPrice,
+    discountUntil,
+    setDiscountUntil,
+    isDishNew,
+    setIsDishNew,
+    newUntil,
+    setNewUntil,
+    description,
+    setDescription,
+    shortDescription,
+    setShortDescription,
+    ingredients,
+    setIngredients,
+    images,
+    handleImageChange,
+    handleRemoveImage,
+    countInStock,
+    setCountInStock,
+    origin,
+    setOrigin,
+    alcoholType,
+    setAlcoholType,
+    alcoholContent,
+    setAlcoholContent,
+    volume,
+    setVolume,
+    handleSubmit,
+    generateSlug,
     isAlcoholCategory,
+    handleDeleteClick,
+    showConfirm,
+    setShowConfirm,
+    handleConfirmDelete
   } = useFoodLogic({ initialData, categories, onSubmit });
 
   return (
     <div className="p-6 bg-white shadow-lg rounded-lg w-full max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4 text-admintext">
-        {initialData ? 'Chỉnh sửa món ăn' : 'Thêm món ăn mới'}
-      </h1>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold text-admintext">
+          {initialData ? 'Chỉnh sửa món ăn' : 'Thêm món ăn mới'}
+        </h1>
+
+        {initialData && (
+          <button
+            type="button"
+            onClick={handleDeleteClick}
+            className="text-red-600 hover:text-red-800 flex items-center gap-1"
+            title="Xoá món ăn"
+          >
+            <FaTrash />
+            <span className="hidden sm:inline">Xoá</span>
+          </button>
+        )}
+      </div>
+
+      {showConfirm && (
+        <ConfirmModal
+          title="Xác nhận xoá"
+          description={`Bạn có chắc chắn muốn xoá "${initialData?.name || 'món ăn'}"?`}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setShowConfirm(false)}
+        />
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>

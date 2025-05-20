@@ -6,6 +6,7 @@ import { FoodFilter } from '../types/foodFilter';
 import { buildQuery } from '../utils/queryBuilder';
 import { getSortQuery } from '../utils/sorting';
 import UploadService from './UploadImageService';
+import { OrderDetail } from '../models/OrderDetailModel';
 
 class FoodService {
 
@@ -44,24 +45,24 @@ class FoodService {
   async updateFoodWithImages(id: string, foodData: any, files?: Express.Multer.File[]) {
     const category = await this.getCategory(foodData.category);
     const categorySlug = category.Cate_slug;
-  
+
     const existingImages = this.parseExistingImages(foodData.existingImages);
     const uploadedImages = await this.uploadNewImages(files, categorySlug);
     const formattedImages = [...existingImages, ...uploadedImages];
-  
+
     const originalDish = await Dish.findById(id);
     if (!originalDish) throw new Error('Không tìm thấy món ăn gốc');
-  
+
     await this.deleteRemovedImages(originalDish.images || [], formattedImages);
-  
+
     const updateFields = this.buildUpdateFields(foodData, category.id, formattedImages);
-  
+
     const updated = await Dish.findByIdAndUpdate(id, updateFields, { new: true });
     if (!updated) throw new Error('Không tìm thấy món ăn để cập nhật');
-  
+
     return updated;
   }
-  
+
 
   async getTopFavoriteFood() {
     try {
@@ -123,14 +124,6 @@ class FoodService {
       return food;
     } catch {
       throw new Error('Error getting food by id');
-    }
-  }
-
-  async deleteFood(id: string) {
-    try {
-      return await Dish.findByIdAndDelete(id);
-    } catch {
-      throw new Error('Error deleting food');
     }
   }
 
@@ -350,13 +343,79 @@ class FoodService {
     }
   }
 
+  async softDeleteDish(id: string) {
+    try {
+      console.log('Soft deleting dish with ID:', id);
+      const food = await Dish.findById(id);
+      if (!food) {
+        throw new Error('Food not found');
+      }
+      food.isDeleted = true;
+      await food.save();
+      return food;
+    } catch (error) {
+      console.error('Error soft deleting dish:', error);
+      throw new Error('Error soft deleting dish');
+    }
+  }
+
+  async restoreDish(id: string) {
+    try {
+      const food = await Dish.findById(id);
+      if (!food) {
+        throw new Error('Food not found');
+      }
+      food.isDeleted = false;
+      await food.save();
+      return food;
+    } catch (error) {
+      console.error('Error restoring dish:', error);
+      throw new Error('Error restoring dish');
+    }
+  }
+
+  /*
+    Xoá món ăn vĩnh viễn:
+    - Kiểm tra món ăn có tồn tại không
+    - Kiểm tra món ăn có đang được sử dụng trong đơn hàng không
+    - Đơn hàng (orders)
+    - Đánh giá (reviews)
+    - Yêu thích (favorites)
+    - Menu đang active
+    - Các báo cáo liên quan
+  */
+  async permanentlyDeleteDish(id: string) {
+    try {
+      const dish = await Dish.findById(id);
+      if (!dish) {
+        throw new Error('Món ăn không tồn tại');
+      }
+
+      const usedInOrderDetails = await OrderDetail.exists({ dish_id: id });
+      if (usedInOrderDetails) {
+        throw new Error('Không thể xoá món ăn vì đã được sử dụng trong chi tiết đơn hàng');
+      }
+
+      if (dish.images && dish.images.length > 0) {
+        await UploadService.deleteImages(dish.images);
+      }
+
+      await dish.deleteOne();
+
+      return { message: 'Xoá món ăn vĩnh viễn thành công' };
+    } catch (error: any) {
+      console.error('Lỗi xoá món ăn vĩnh viễn:', error);
+      throw new Error(error.message || 'Lỗi khi xoá món ăn vĩnh viễn');
+    }
+  }
+
   // updateFoodWithImages's private methods
   private async getCategory(categoryId: string) {
     const category = await Category.findById(categoryId);
     if (!category) throw new Error('Category không tồn tại');
     return category;
   }
-  
+
   private parseExistingImages(imagesJson: string): string[] {
     try {
       const images = JSON.parse(imagesJson || '[]');
@@ -365,23 +424,23 @@ class FoodService {
       return [];
     }
   }
-  
+
   private async uploadNewImages(files: Express.Multer.File[] | undefined, folder: string): Promise<string[]> {
     if (!files || files.length === 0) return [];
-  
+
     const uploaded = await Promise.all(
       files.map(file => UploadService.UploadImage(file, `dishes/${folder}`))
     );
     return uploaded.map(img => img.url);
   }
-  
+
   private async deleteRemovedImages(original: string[], updated: string[]) {
     const toRemove = original.filter(img => !updated.includes(img));
     if (toRemove.length > 0) {
       await UploadService.deleteImages(toRemove);
     }
   }
-  
+
   private buildUpdateFields(foodData: any, categoryId: string, images: string[]) {
     return {
       ...foodData,
@@ -391,7 +450,9 @@ class FoodService {
       images,
     };
   }
-  
+
+
+
 }
 
 export default new FoodService();

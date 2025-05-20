@@ -1,7 +1,7 @@
 import { useFoodsAdminLogic } from '../../../../hooks/useFoodsAdminLogic';
 import React from 'react';
 import AdminPagination from '../AdminPagination';
-import { FaSort, FaArrowUp, FaArrowDown, FaSearch } from 'react-icons/fa';
+import { FaSort, FaArrowUp, FaArrowDown, FaSearch, FaEdit  } from 'react-icons/fa';
 import AdvancedFilterPanel from './AdvancedFilterPanel';
 
 const MenuTable: React.FC = () => {
@@ -191,7 +191,7 @@ const MenuTable: React.FC = () => {
                   </span>
                 </th>
 
-                <th className="px-4 py-2">Hành động</th>
+                <th className="px-4 py-2 ">Hành động</th>
               </tr>
             </thead>
             <tbody>
@@ -241,7 +241,7 @@ const MenuTable: React.FC = () => {
                       className="text-blue-500 hover:underline"
                       onClick={() => navigate(`/admin/foods/edit/${item.slug}`)}
                     >
-                      Sửa
+                      <FaEdit size={18} />
                     </button>
                   </td>
                 </tr>

@@ -27,7 +27,7 @@ export interface IDish extends mongoose.Document {
   alcohol_content?: number; // Nồng độ cồn
   volume?: number;
   images: string[]; 
-
+  isDeleted: boolean;
 }
 
 const dishSchema = new mongoose.Schema(
@@ -68,6 +68,7 @@ const dishSchema = new mongoose.Schema(
     alcohol_content: { type: Number, min: 0 },
     volume: { type: Number, min: 0 }, // Thể tích (ml)
     images: [{ type: String, required: true }],
+    isDeleted: { type: Boolean, default: false }
   },
   {
     timestamps: true,

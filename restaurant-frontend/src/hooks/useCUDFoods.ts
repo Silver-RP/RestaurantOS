@@ -1,4 +1,4 @@
-import { createFoodApi, updateFoodApi } from '@/api/FoodApi';
+import { createFoodApi, updateFoodApi, sortDeleteFood } from '@/api/FoodApi';
 import { useNavigate } from 'react-router-dom';
 import { showOverlayLoading, hideOverlayLoading } from '@/redux/feature/loadingUI/uiSlice';
 import { useDispatch } from 'react-redux';
@@ -39,8 +39,21 @@ export const useCUDFoods = () => {
         }
     }
 
+    const confirmDeleteDish = async (foodId: string) => {
+        dispatch(showOverlayLoading("Đang xóa món ăn..."));
+        try {
+            await sortDeleteFood(foodId);
+            toast.success('Xóa món ăn thành công'); 
+        } catch (error) {
+            toast.error('Xóa món ăn thất bại');
+            console.error('Lỗi khi xóa món ăn:', error);
+        } finally {
+            dispatch(hideOverlayLoading());
+        }
+    }
+
     return {
-        createFood, updateFood
+        createFood, updateFood, confirmDeleteDish
     };
 }
 
@@ -70,9 +83,13 @@ export function useFoodLogic({ initialData, categories, onSubmit }: UseFoodFormP
     const [alcoholType, setAlcoholType] = useState('');
     const [alcoholContent, setAlcoholContent] = useState(0);
     const [volume, setVolume] = useState(0);
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [isDeleted, setIsDeleted] = useState(false);
 
     const selectedCategory = categories.find((c) => c._id === categoryId);
     const isAlcoholCategory = selectedCategory?.Cate_name.toLowerCase().includes('đồ uống có cồn');
+    const { confirmDeleteDish } = useCUDFoods();
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (initialData) {
@@ -94,6 +111,7 @@ export function useFoodLogic({ initialData, categories, onSubmit }: UseFoodFormP
             setAlcoholType(initialData.alcohol_type || '');
             setAlcoholContent(initialData.alcohol_content || 0);
             setVolume(initialData.volume || 0);
+            setIsDeleted(initialData.isDeleted || false);
         }
     }, [initialData]);
 
@@ -158,12 +176,29 @@ export function useFoodLogic({ initialData, categories, onSubmit }: UseFoodFormP
         const existing = images.filter((img) => typeof img === 'string') as string[];
         const newImages = images.filter((img) => typeof img !== 'string') as File[];
         formData.append('existingImages', JSON.stringify(existing));
-            newImages.forEach((file) => {
-                formData.append('images', file);
+        newImages.forEach((file) => {
+            formData.append('images', file);
         });
-       
+
         onSubmit(formData);
     };
+
+    const handleDeleteClick = () => {
+        setShowConfirm(true);
+    };
+
+    const handleConfirmDelete = async () => {
+
+        if (!initialData?._id) {
+            toast.error("Không tìm thấy ID món ăn");
+            return;
+        }
+        await confirmDeleteDish(initialData._id);
+        setShowConfirm(false);
+        navigate('/admin/foods');
+    };
+    
+
 
     return {
         // States
@@ -175,6 +210,6 @@ export function useFoodLogic({ initialData, categories, onSubmit }: UseFoodFormP
         origin, setOrigin, alcoholType, setAlcoholType, alcoholContent, setAlcoholContent,
         volume, setVolume,
         handleSubmit, generateSlug,
-        isAlcoholCategory,
+        isAlcoholCategory, handleDeleteClick, showConfirm, setShowConfirm, handleConfirmDelete
     };
 }

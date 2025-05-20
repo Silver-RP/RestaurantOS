@@ -131,4 +131,14 @@ export const updateFoodApi = async (formData: FormData, foodId:string): Promise<
   }
 }
 
+export const sortDeleteFood = async (foodId: string): Promise<void> => {
+  try {
+    const res = await api.delete(`/food/sortDeleteFood/${foodId}`);
+    return res.data;
+  } catch (error) {
+    console.error('Error deleting food:', error);
+    throw error;
+  }
+}
+
 
