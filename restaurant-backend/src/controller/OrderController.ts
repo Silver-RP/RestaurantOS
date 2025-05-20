@@ -91,7 +91,8 @@ class OrderController {
       }
 
       const userId = (req.user as IUser).id as Types.ObjectId;
-      const deliveryStatus = typeof req.query.delivery_status === 'string' ? req.query.delivery_status : null;
+      const deliveryStatus =
+        typeof req.query.delivery_status === 'string' ? req.query.delivery_status : null;
       const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
       const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 5;
 
