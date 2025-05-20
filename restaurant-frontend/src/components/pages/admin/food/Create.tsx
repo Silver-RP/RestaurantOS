@@ -9,7 +9,6 @@ const CreateFoodPage = () => {
   const { createFood } = useCUDFoods();
   const navigate = useNavigate();
   
-
   const handleSubmit = (formData: FormData) => {
     createFood(formData);
   };

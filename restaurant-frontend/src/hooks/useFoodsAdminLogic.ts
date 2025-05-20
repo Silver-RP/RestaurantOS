@@ -106,4 +106,3 @@ export function useFoodsAdminLogic() {
   };
 }
 
-// Foods create page logic
