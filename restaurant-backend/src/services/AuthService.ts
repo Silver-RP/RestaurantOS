@@ -104,7 +104,7 @@ class AuthService {
 
     const isMatch = await bcrypt.compare(password, user.password || '');
     if (!isMatch) {
-      throw new Error('Password is incorrect');
+      throw new Error('Mật khẩu không đúng');
     }
 
     const accessTokenExpiresIn = rememberMe ? 60 * 60 * 2 : 60 * 60;

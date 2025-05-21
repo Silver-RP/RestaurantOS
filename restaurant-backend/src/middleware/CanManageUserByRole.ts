@@ -107,7 +107,7 @@ export const canManageUserByRole = async (req: Request, res: Response, next: Nex
         const canBlock = targetRoleNames.every((r) => allowed.includes(r));
         if (!canBlock) {
           return res.status(403).json({
-            message: 'Manager không được khóa người có quyền cao hơn',
+            message: 'Manager không được khóa người có quyền cao hơn và ngang cấp',
           });
         }
         return next();

@@ -46,3 +46,8 @@ export const placeDirectOrder = async (data: PlaceOrderRequest) => {
   const res = await api.post('/order/place-order', data);
   return res.data;
 };
+
+export const getUserOrders = async (): Promise<OrdersResponse> => {
+  const res = await api.get('/order/user-orders');
+  return res.data;
+};
