@@ -14,6 +14,7 @@ import EditCategoryPage from "@components/pages/admin/category/Edit";
 import UserIndexPage from "@/components/pages/admin/user";
 import CreateUserPage from "@/components/pages/admin/user/CreateUserPage";
 import SearchResults from "@/components/pages/admin/food/SearchResults";
+import TrashPage from "@/components/pages/admin/food/Trash";
 
 
 const adminRoutes = [
@@ -29,6 +30,7 @@ const adminRoutes = [
       { path: "foods", element: <FoodList /> },
       { path: "foods/create", element: <FoodCreatePage /> },
       { path: "foods/edit/:slug", element: <FoodEditPage /> },
+      { path: "foods/trash", element: <TrashPage /> },
       { path: "foods/search", element: <SearchResults /> },
       { path: 'categories', element: <CategoriesPage />},
       { path: "categories/create", element: <CreateCategoryPage /> },

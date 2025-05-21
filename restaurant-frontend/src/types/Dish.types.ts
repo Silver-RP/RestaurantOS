@@ -13,7 +13,7 @@ export interface FoodType {
 }
 
 export interface FoodDetail {
-  isDeleted: boolean;
+
   _id: string;
   name: string;
   slug: string;
@@ -41,6 +41,8 @@ export interface FoodDetail {
   alcohol_content?: number;
   volume?: number;
   createdAt: string;
+  isDeleted: boolean;
+  deletedAt: string | number | Date;
 }
 
 

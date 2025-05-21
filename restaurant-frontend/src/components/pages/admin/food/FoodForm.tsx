@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { FoodDetail } from '../../../../types/Dish.types';
 import ImageUploadPreview from '../ImageUploadPreview';
 import { Category } from 'types/Category.type';
-import { FaChevronDown, FaTrash } from 'react-icons/fa';
-import { useFoodLogic } from '@hooks/useCUDFoods';
+import { FaChevronDown } from 'react-icons/fa';
+import { useFoodLogic } from '@/hooks/useFoodsAdminLogic';
 import ConfirmModal from '@/components/common/ConfirmModal';
+import { FiTrash2 } from "react-icons/fi"
 
 interface FoodFormProps {
   initialData?: FoodDetail;
@@ -77,14 +78,15 @@ const FoodForm: React.FC<FoodFormProps> = ({
 
         {initialData && (
           <button
-            type="button"
-            onClick={handleDeleteClick}
-            className="text-red-600 hover:text-red-800 flex items-center gap-1"
-            title="Xoá món ăn"
-          >
-            <FaTrash />
-            <span className="hidden sm:inline">Xoá</span>
-          </button>
+          type="button"
+          onClick={handleDeleteClick}
+          className="flex items-center px-4 py-2 bg-red-50 text-red-600 rounded hover:bg-red-100 gap-2"
+          title="Xoá món ăn"
+        >
+          <FiTrash2 />
+          <span className="hidden sm:inline">Xoá</span>
+        </button>
+        
         )}
       </div>
 

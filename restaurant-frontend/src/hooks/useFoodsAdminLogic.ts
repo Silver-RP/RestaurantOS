@@ -1,6 +1,11 @@
-import { useState } from 'react';
-import { useFoodsAdmin } from './useFoods';
+import { useFoodsAdmin, useFoodsTrash } from './useFoods';
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import slugify from 'slugify';
+import { Category } from 'types/Category.type';
+import { FoodDetail } from 'types/Dish.types';
+import { toast } from 'react-toastify';
+import { useCRUDFoods } from './useCRUDFoods';
 
 type SortField =
   | 'name'
@@ -12,6 +17,7 @@ type SortField =
   | 'ordered_count'
   | 'average_rating'
   | 'status'
+  | 'deletedAt'
   | null;
 
 type SortDirection = 'asc' | 'desc';
@@ -103,6 +109,293 @@ export function useFoodsAdminLogic() {
     handleEnter,
     handleClick,
     getSortIcon,
+  };
+}
+
+// Foods create/update page logic
+interface UseFoodFormProps {
+  initialData?: FoodDetail;
+  categories: Category[];
+  onSubmit: (formData: FormData) => void;
+}
+
+export function useFoodLogic({ initialData, categories, onSubmit }: UseFoodFormProps) {
+  const [name, setName] = useState('');
+  const [slug, setSlug] = useState('');
+  const [categoryId, setCategoryId] = useState('');
+  const [status, setStatus] = useState<'hidden' | 'available' | 'soldout'>('available');
+  const [price, setPrice] = useState(0);
+  const [discountPrice, setDiscountPrice] = useState(0);
+  const [discountUntil, setDiscountUntil] = useState<Date | null>(null);
+  const [isDishNew, setIsDishNew] = useState(false);
+  const [newUntil, setNewUntil] = useState<Date | null>(null);
+  const [description, setDescription] = useState('');
+  const [shortDescription, setShortDescription] = useState('');
+  const [ingredients, setIngredients] = useState('');
+  const [images, setImages] = useState<(File | string)[]>([]);
+  const [countInStock, setCountInStock] = useState(0);
+  const [origin, setOrigin] = useState('');
+  const [alcoholType, setAlcoholType] = useState('');
+  const [alcoholContent, setAlcoholContent] = useState(0);
+  const [volume, setVolume] = useState(0);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [isDeleted, setIsDeleted] = useState(false);
+
+  const selectedCategory = categories.find((c) => c._id === categoryId);
+  const isAlcoholCategory = selectedCategory?.Cate_name.toLowerCase().includes('đồ uống có cồn');
+  const { confirmDeleteDish } = useCRUDFoods();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (initialData) {
+      setName(initialData.name);
+      setSlug(initialData.slug);
+      setCategoryId(initialData.categories?.[0]?._id || '');
+      setStatus(initialData.status);
+      setPrice(initialData.price);
+      setDiscountPrice(initialData.discount_price || 0);
+      setDiscountUntil(initialData.discountUntil || null);
+      setIsDishNew(initialData.isDishNew || false);
+      setNewUntil(initialData.newUntil || null);
+      setDescription(initialData.description || '');
+      setShortDescription(initialData.shortDescription || '');
+      setIngredients(initialData.ingredients || '');
+      setImages(initialData.imagesPreview || []);
+      setCountInStock(initialData.countInStock);
+      setOrigin(initialData.origin || '');
+      setAlcoholType(initialData.alcohol_type || '');
+      setAlcoholContent(initialData.alcohol_content || 0);
+      setVolume(initialData.volume || 0);
+      setIsDeleted(initialData.isDeleted || false);
+    }
+  }, [initialData]);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const fileList = e.target.files;
+    if (!fileList) return;
+    const newFiles = Array.from(fileList);
+    if (images.length + newFiles.length > 5) {
+      toast.error('Chỉ được tải lên tối đa 5 ảnh');
+      return;
+    }
+    setImages((prev) => [...prev, ...newFiles]);
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const generateSlug = (value: string) => slugify(value, { lower: true, strict: true });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!name.trim() || name.length < 3) return toast.error('Tên món ăn phải có ít nhất 3 ký tự');
+    if (price < 0) return toast.error('Giá phải lớn hơn hoặc bằng 0');
+    if (discountPrice < 0 || discountPrice > price)
+      return toast.error('Giá khuyến mãi phải nhỏ hơn hoặc bằng giá gốc và >= 0');
+    if (countInStock < 0) return toast.error('Số lượng tồn kho phải >= 0');
+    if (!description.trim()) return toast.error('Mô tả không được để trống');
+    if (!categoryId) return toast.error('Phải chọn danh mục');
+    if (!['hidden', 'available', 'soldout'].includes(status)) return toast.error('Trạng thái không hợp lệ');
+    if (isDishNew && newUntil && newUntil <= new Date())
+      return toast.error('Ngày kết thúc món mới phải lớn hơn hiện tại');
+    if (discountPrice > 0 && discountUntil && discountUntil <= new Date())
+      return toast.error('Ngày kết thúc khuyến mãi phải lớn hơn hiện tại');
+    if (images.length === 0) return toast.error('Phải chọn ít nhất 1 ảnh');
+    if (images.length > 5) return toast.error('Tối đa 5 ảnh');
+    if (alcoholContent < 0 || alcoholContent > 100)
+      return toast.error('Nồng độ cồn phải từ 0 đến 100');
+    if (volume && volume < 0) return toast.error('Thể tích phải >= 0');
+
+    const formData = new FormData();
+    formData.append('name', name.trim());
+    formData.append('slug', slug.trim());
+    formData.append('price', String(price));
+    formData.append('discount_price', String(discountPrice));
+    formData.append('countInStock', String(countInStock));
+    formData.append('description', description.trim());
+    formData.append('shortDescription', shortDescription.trim());
+    formData.append('ingredients', ingredients.trim());
+    formData.append('category', categoryId);
+    formData.append('status', status);
+    formData.append('isDishNew', String(isDishNew));
+    if (isDishNew && newUntil) formData.append('newUntil', newUntil.toISOString());
+    if (discountPrice > 0 && discountUntil) formData.append('discountUntil', discountUntil.toISOString());
+    if (isAlcoholCategory) {
+      formData.append('origin', origin.trim());
+      formData.append('alcohol_type', alcoholType.trim());
+      formData.append('alcohol_content', String(alcoholContent));
+      formData.append('volume', String(volume));
+    }
+    const existing = images.filter((img) => typeof img === 'string') as string[];
+    const newImages = images.filter((img) => typeof img !== 'string') as File[];
+    formData.append('existingImages', JSON.stringify(existing));
+    newImages.forEach((file) => {
+      formData.append('images', file);
+    });
+
+    onSubmit(formData);
+  };
+
+  const handleDeleteClick = () => {
+    setShowConfirm(true);
+  };
+
+  const handleConfirmDelete = async () => {
+
+    if (!initialData?._id) {
+      toast.error("Không tìm thấy ID món ăn");
+      return;
+    }
+    await confirmDeleteDish(initialData._id);
+    setShowConfirm(false);
+    navigate('/admin/foods');
+  };
+
+
+  return {
+    // States
+    name, setName, slug, setSlug, categoryId, setCategoryId, status, setStatus,
+    price, setPrice, discountPrice, setDiscountPrice, discountUntil, setDiscountUntil,
+    isDishNew, setIsDishNew, newUntil, setNewUntil, description, setDescription,
+    shortDescription, setShortDescription, ingredients, setIngredients, images,
+    handleImageChange, handleRemoveImage, countInStock, setCountInStock,
+    origin, setOrigin, alcoholType, setAlcoholType, alcoholContent, setAlcoholContent,
+    volume, setVolume,
+    handleSubmit, generateSlug,
+    isAlcoholCategory, handleDeleteClick, showConfirm, setShowConfirm, handleConfirmDelete,
+
+  };
+}
+
+// Foods trash page logic
+export function useFoodsTrashLogic() {
+  const { foods, loading, error, searchParams, setSearchParams } = useFoodsTrash();
+  const [sortField, setSortField] = useState<SortField>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [search, setSearch] = useState('');
+  const [foodIdToRestore, setFoodIdToRestore] = useState<string | null>(null);
+  const [foodIdToDelete, setFoodIdToDelete] = useState<string | null>(null);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const { restoreFood, permanentDeleteFood } = useCRUDFoods();
+
+  const navigate = useNavigate();
+
+  const foodList = foods?.docs || [];
+
+  const sortMapping: Record<string, { asc: string; desc: string }> = {
+    name: { asc: 'nameAZ', desc: 'nameZA' },
+    price: { asc: 'priceLow', desc: 'priceHigh' },
+    category: { asc: 'categoryAZ', desc: 'categoryZA' },
+    deletedAt: { asc: 'deletedAtOld', desc: 'deletedAtNew' },
+    status: { asc: 'statusAZ', desc: 'statusZA' },
+  };
+
+  const handleSort = (field: string) => {
+    const direction =
+      sortField === field ? (sortDirection === 'asc' ? 'desc' : 'asc') : 'asc';
+
+    setSortField(field as SortField);
+    setSortDirection(direction);
+
+    const sortValue = sortMapping[field]?.[direction] || 'default';
+
+    setSearchParams((prev) => {
+      const newParams = new URLSearchParams(prev);
+      newParams.set('sort', sortValue);
+      newParams.set('page', '1');
+      return newParams;
+    });
+  };
+
+  const handleEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && search.trim()) {
+      setSearchParams((prev) => {
+        const newParams = new URLSearchParams(prev);
+        newParams.set('keyword', search.trim());
+        newParams.set('page', '1');
+        return newParams;
+      });
+    }
+  };
+
+  const handleClick = () => {
+    if (search.trim()) {
+      setSearchParams((prev) => {
+        const newParams = new URLSearchParams(prev);
+        newParams.set('keyword', search.trim());
+        newParams.set('page', '1');
+        return newParams;
+      });
+    }
+  };
+
+  const getSortIcon = (field: SortField) => {
+    if (sortField === field) {
+      return sortDirection === 'asc' ? 'asc' : 'desc';
+    }
+    return null;
+  };
+
+  const handleRestoreClick = (foodId: string) => {
+    setShowConfirm(true);
+    setFoodIdToRestore(foodId);
+  }
+
+  const handleConfirmRestore = async (foodId: string) => {
+    if (!foodId) return;
+
+    try {
+      await restoreFood(foodId);
+      setShowConfirm(false);
+    } catch (error) {
+    }
+  }
+
+  const handlePermanentDeleteClick = (foodId: string) => {
+    setShowConfirm(true);
+    setFoodIdToDelete(foodId);
+  }
+
+  const handleConfirmPermanentDelete = async (foodId: string) => {
+    if (!foodId) return;
+
+    try {
+      await permanentDeleteFood(foodId);
+      setShowConfirm(false);
+    } catch (error) {
+    }
+  }
+
+
+
+  return {
+    foods,
+    loading,
+    error,
+    searchParams,
+    setSearchParams,
+    sortField,
+    sortDirection,
+    search,
+    setSearch,
+    navigate,
+    foodList,
+    handleSort,
+    handleEnter,
+    handleClick,
+    getSortIcon,
+    showConfirm,
+    setShowConfirm,
+    foodIdToRestore,
+    setFoodIdToRestore,
+    foodIdToDelete,
+    setFoodIdToDelete,
+    handleRestoreClick,
+    handleConfirmRestore,
+    handlePermanentDeleteClick,
+    handleConfirmPermanentDelete,
   };
 }
 

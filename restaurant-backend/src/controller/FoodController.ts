@@ -311,9 +311,31 @@ class FoodController {
     }
   }
 
+  async getTrashFood(req: Request, res: Response): Promise<any> {
+    try {
+      const params = parseFoodQueryParams(req.query);
+
+      const foods = await FoodService.getTrashFood(params);
+
+      return res.status(200).json({
+        success: true,
+        message: 'All deleted food retrieved successfully',
+        data: foods,
+      });
+    } catch (error: any) {
+      console.error('Error in getTrashFood:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Error getting deleted food',
+        error: error.message,
+      });
+    }
+  }
+
   async restoreFood(req: Request, res: Response): Promise<any> {
     try {
-      const { id } = req.params;
+       const id = req.params.foodId;
+       console.log('RestoreFood ID:', id);
       const restoredDish = await FoodService.restoreDish(id);
       return res.status(200).json({ message: 'Dish restored successfully', data: restoredDish });
     } catch (error) {
@@ -324,7 +346,7 @@ class FoodController {
 
   async permanentlyDeleteFood(req: Request, res: Response): Promise<any> {
     try {
-      const { id } = req.params;
+       const id = req.params.foodId;
       const deletedDish = await FoodService.permanentlyDeleteDish(id);
       return res.status(200).json({ message: 'Dish permanently deleted successfully', data: deletedDish });
     } catch (error) {

@@ -2,24 +2,20 @@ import { useFoodDetail } from '@hooks/useFoods';
 import { useNavigate, useParams } from 'react-router-dom';
 import FoodForm from './FoodForm';
 import { useCategories } from '@hooks/useCategories';
-import { useCUDFoods } from '@hooks/useCUDFoods';
+import { useCRUDFoods } from '@/hooks/useCRUDFoods';
 
 const EditFoodPage = () => {
   const { slug } = useParams();
   const { food, loading, error } = useFoodDetail(slug || '');
   const { categories } = useCategories();
-  const { updateFood } = useCUDFoods();
+  const { updateFood } = useCRUDFoods();
   const navigate = useNavigate();
   const foodId = food?._id;
 
   if (loading) return <p>Đang tải dữ liệu món ăn...</p>;
   if (error || !food)
     return <p className="text-red-500">Không tìm thấy món ăn.</p>;
-
-  const existingImages = food.images.map((url) => ({
-    url,
-  }));
-
+    
   const initialData = {
     ...food,
     existingImages: JSON.stringify(food.images),

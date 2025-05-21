@@ -29,7 +29,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
             onClick={onConfirm}
             className="px-4 py-2 text-white bg-red-600 rounded hover:bg-red-700"
           >
-            Xoá
+            Xác nhận
           </button>
         </div>
       </div>

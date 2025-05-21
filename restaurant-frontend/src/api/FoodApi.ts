@@ -131,9 +131,9 @@ export const updateFoodApi = async (formData: FormData, foodId:string): Promise<
   }
 }
 
-export const sortDeleteFood = async (foodId: string): Promise<void> => {
+export const softDeleteFood = async (foodId: string): Promise<void> => {
   try {
-    const res = await api.delete(`/food/sortDeleteFood/${foodId}`);
+    const res = await api.delete(`/food/softDeleteFood/${foodId}`);
     return res.data;
   } catch (error) {
     console.error('Error deleting food:', error);
@@ -141,4 +141,43 @@ export const sortDeleteFood = async (foodId: string): Promise<void> => {
   }
 }
 
+export const getSoftDeleteFood = async (
+  params: FetchFoodsParams,
+): Promise<FoodResponse> => {
+  const queryString = new URLSearchParams();
 
+  Object.entries(params).forEach(([key, value]) => {
+    if (
+      value !== undefined &&
+      value !== null &&
+      !(typeof value === 'string' && value.trim() === '')
+    ) {
+      queryString.set(key, value.toString());
+    }
+  });
+
+  const res = await api.get<{ data: FoodResponse }>(
+    `/food/trashFood?${queryString.toString()}`,
+  );
+  return res.data.data;
+};
+
+export const restoreFoodAPI = async (foodId: string): Promise<void> => {
+  try {
+    const res = await api.patch(`/food/restoreDish/${foodId}`);
+    return res.data;
+  } catch (error) {
+    console.error('Error restoring food:', error);
+    throw error;
+  }
+}
+
+export const permanentlyDeleteFoodAPI = async (foodId: string): Promise<void> => {
+  try {
+    const res = await api.delete(`/food/deleteFood/${foodId}`);
+    return res.data;
+  } catch (error) {
+    console.error('Error permanently deleting food:', error);
+    throw error;
+  }
+}

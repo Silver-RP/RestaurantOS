@@ -29,7 +29,8 @@ router.get('/getFavoriteFoods', AuthMiddleWare.verifyToken, FoodController.getFa
 router.post('/countFoodView/:foodId', FoodController.countFoodView);
 
 // API Delete food
-router.delete('/sortDeleteFood/:foodId', FoodController.softDeleteDish);
+router.delete('/softDeleteFood/:foodId', FoodController.softDeleteDish);
+router.get('/trashFood', FoodController.getTrashFood);
 router.patch('/restoreDish/:foodId', FoodController.restoreFood);
 router.delete('/deleteFood/:foodId', FoodController.permanentlyDeleteFood);
 

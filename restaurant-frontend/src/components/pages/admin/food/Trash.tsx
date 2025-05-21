@@ -1,17 +1,14 @@
-import { useFoodsAdminLogic } from '../../../../hooks/useFoodsAdminLogic';
+import { useFoodsTrashLogic } from '../../../../hooks/useFoodsAdminLogic';
+import { useCRUDFoods } from '@/hooks/useCRUDFoods';
 import React from 'react';
 import AdminPagination from '../AdminPagination';
-import {
-  FaSort,
-  FaArrowUp,
-  FaArrowDown,
-  FaSearch,
-  FaEdit,
-} from 'react-icons/fa';
-import { FiTrash2 } from 'react-icons/fi';
-import AdvancedFilterPanel from './AdvancedFilterPanel';
+import { FaSort, FaArrowUp, FaArrowDown, FaSearch } from 'react-icons/fa';
+import { FaUndoAlt } from 'react-icons/fa';
+import { FaTrashAlt } from 'react-icons/fa';
+import { BiUndo } from 'react-icons/bi';
+import ConfirmModal from '@/components/common/ConfirmModal';
 
-const MenuTable: React.FC = () => {
+const TrashTable: React.FC = () => {
   const {
     foods,
     loading,
@@ -19,8 +16,6 @@ const MenuTable: React.FC = () => {
     searchParams,
     setSearchParams,
     sortField,
-    showFilterPanel,
-    setShowFilterPanel,
     search,
     setSearch,
     navigate,
@@ -29,7 +24,17 @@ const MenuTable: React.FC = () => {
     handleEnter,
     handleClick,
     getSortIcon,
-  } = useFoodsAdminLogic();
+    foodIdToRestore,
+    setFoodIdToRestore,
+    foodIdToDelete,
+    setFoodIdToDelete,
+    showConfirm,
+    setShowConfirm,
+    handleRestoreClick,
+    handleConfirmRestore,
+    handlePermanentDeleteClick,
+    handleConfirmPermanentDelete,
+  } = useFoodsTrashLogic();
 
   const renderSortIcon = (field: typeof sortField) => {
     const iconType = getSortIcon(field);
@@ -61,52 +66,16 @@ const MenuTable: React.FC = () => {
             </button>
           </div>
         </div>
-
         <div className="flex gap-4 items-center">
           <button
-            onClick={() => setShowFilterPanel(!showFilterPanel)}
-            className="px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-100"
+            onClick={() => navigate('/admin/foods')}
+            className="flex px-4 py-2 gap-2 border bg-gray-100 border-gray-300 text-gray-700 rounded hover:bg-gray-200"
           >
-            {showFilterPanel ? 'Ẩn bộ lọc' : 'Hiện bộ lọc'}
-          </button>
-          <button
-            onClick={() => navigate('/admin/foods/create')}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            + Thêm món
-          </button>
-          <button
-            onClick={() => navigate('/admin/foods/trash')}
-            className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-          >
-            <FiTrash2 />
-            <span>Đã xoá</span>
+            <BiUndo size={18} />
+            <span>Quay về</span>
           </button>
         </div>
       </div>
-      {showFilterPanel && (
-        <AdvancedFilterPanel
-          key={searchParams.toString()}
-          initialFilters={Object.fromEntries((searchParams as any).entries())}
-          searchParams={searchParams}
-          setSearchParams={setSearchParams}
-          onApply={(filters) => {
-            const newParams = new URLSearchParams(searchParams.toString());
-
-            Object.entries(filters).forEach(([key, value]) => {
-              if (value !== '') {
-                newParams.set(key, String(value));
-              } else {
-                newParams.delete(key);
-              }
-            });
-
-            newParams.set('page', '1');
-            setSearchParams(newParams);
-            setShowFilterPanel(false);
-          }}
-        />
-      )}
       <div className="text-sm text-gray-700">
         Hiển thị <strong>{foodList.length}</strong> trên tổng{' '}
         <strong>{foods?.totalDocs || 0}</strong> món
@@ -144,24 +113,6 @@ const MenuTable: React.FC = () => {
 
                 <th
                   className="px-4 py-2 cursor-pointer whitespace-nowrap"
-                  onClick={() => handleSort('discount_price')}
-                >
-                  <span className="flex items-center gap-1">
-                    Giá KM {renderSortIcon('discount_price')}
-                  </span>
-                </th>
-
-                <th
-                  className="px-4 py-2 cursor-pointer whitespace-nowrap"
-                  onClick={() => handleSort('countInStock')}
-                >
-                  <span className="flex items-center gap-1">
-                    Kho {renderSortIcon('countInStock')}
-                  </span>
-                </th>
-
-                <th
-                  className="px-4 py-2 cursor-pointer whitespace-nowrap"
                   onClick={() => handleSort('category')}
                 >
                   <span className="flex items-center gap-1">
@@ -171,28 +122,10 @@ const MenuTable: React.FC = () => {
 
                 <th
                   className="px-4 py-2 cursor-pointer whitespace-nowrap"
-                  onClick={() => handleSort('views')}
+                  onClick={() => handleSort('deletedAt')}
                 >
                   <span className="flex items-center gap-1">
-                    Lượt xem {renderSortIcon('views')}
-                  </span>
-                </th>
-
-                <th
-                  className="px-4 py-2 cursor-pointer whitespace-nowrap"
-                  onClick={() => handleSort('ordered_count')}
-                >
-                  <span className="flex items-center gap-1">
-                    Số đặt {renderSortIcon('ordered_count')}
-                  </span>
-                </th>
-
-                <th
-                  className="px-4 py-2 cursor-pointer whitespace-nowrap"
-                  onClick={() => handleSort('average_rating')}
-                >
-                  <span className="flex items-center gap-1">
-                    Rating {renderSortIcon('average_rating')}
+                    Ngày xoá {renderSortIcon('deletedAt')}
                   </span>
                 </th>
 
@@ -222,17 +155,14 @@ const MenuTable: React.FC = () => {
                   <td className="px-4 py-2 font-medium">{item.name}</td>
                   <td className="px-4 py-2">{item.price.toLocaleString()}</td>
                   <td className="px-4 py-2">
-                    {item.discount_price != null
-                      ? item.discount_price.toLocaleString()
-                      : '—'}
-                  </td>
-                  <td className="px-4 py-2">{item.countInStock}</td>
-                  <td className="px-4 py-2">
                     {item.categories?.[0]?.Cate_name ?? '—'}
                   </td>
-                  <td className="px-4 py-2">{item.views}</td>
-                  <td className="px-4 py-2">{item.ordered_count}</td>
-                  <td className="px-4 py-2">{item.average_rating}</td>
+                  <td>
+                    {item.deletedAt
+                      ? new Date(item.deletedAt).toLocaleDateString()
+                      : '—'}
+                  </td>
+
                   <td className="px-4 py-2">
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-semibold ${
@@ -252,13 +182,43 @@ const MenuTable: React.FC = () => {
                   </td>
                   <td className="px-4 py-2 space-x-2">
                     <button
-                      className="relative group text-blue-500 hover:underline"
-                      onClick={() => navigate(`/admin/foods/edit/${item.slug}`)}
+                      className="relative group text-green-600 hover:underline mr-2"
+                      onClick={() => handleRestoreClick(item._id)} 
                     >
-                      <FaEdit size={18} />
+                      <FaUndoAlt size={18} />
                       <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 normal-case">
-                        Chỉnh sửa
+                        Khôi phục
                       </span>
+
+                      {showConfirm && foodIdToRestore === item._id && (
+                        <ConfirmModal
+                          title="Xác nhận khôi phục"
+                          description={`Bạn có chắc chắn muốn khôi phục "${item?.name || 'món ăn'}"?`}
+                          onConfirm={() => handleConfirmRestore(item._id)}
+                          onCancel={() => setShowConfirm(false)}
+                        />
+                      )}
+                    </button>
+
+                    <button
+                      className="relative group text-red-600 hover:underline"
+                      onClick={() => handlePermanentDeleteClick(item._id)} 
+                    >
+                      <FaTrashAlt size={18} />
+                      <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 normal-case">
+                        Xoá vĩnh viễn
+                      </span>
+
+                      {showConfirm && foodIdToDelete === item._id && (
+                        <ConfirmModal
+                          title="Xác nhận xoá vĩnh viễn"
+                          description={`Bạn có chắc chắn muốn xoá vĩnh viễn "${item?.name || 'món ăn'}"?`}
+                          onConfirm={() =>
+                            handleConfirmPermanentDelete(item._id)
+                          }
+                          onCancel={() => setShowConfirm(false)}
+                        />
+                      )}
                     </button>
                   </td>
                 </tr>
@@ -291,4 +251,4 @@ const MenuTable: React.FC = () => {
   );
 };
 
-export default MenuTable;
+export default TrashTable;

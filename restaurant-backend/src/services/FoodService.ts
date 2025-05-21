@@ -63,7 +63,6 @@ class FoodService {
     return updated;
   }
 
-
   async getTopFavoriteFood() {
     try {
       const food = await Dish.find().sort({ favorites_count: -1 }).limit(5);
@@ -351,11 +350,38 @@ class FoodService {
         throw new Error('Food not found');
       }
       food.isDeleted = true;
+      food.deletedAt = new Date();
       await food.save();
       return food;
     } catch (error) {
       console.error('Error soft deleting dish:', error);
       throw new Error('Error soft deleting dish');
+    }
+  }
+
+  async getTrashFood(filters: FoodFilter) {
+    const { page = 1, limit = 12, sort = 'newest' } = filters;
+
+    const query = await buildQuery(filters);
+    query.isDeleted = true;
+    const sortQuery = getSortQuery(sort);
+
+    const options = {
+      page,
+      limit,
+      sort: sortQuery,
+      lean: true,
+      populate: {
+        path: 'categories',
+        select: 'Cate_name',
+      },
+    };
+
+    try {
+      return await Dish.paginate(query, options);
+    } catch (error) {
+      console.error('Error in getTrashFood:', error);
+      throw new Error('Error fetching trash food items');
     }
   }
 
@@ -386,6 +412,7 @@ class FoodService {
   */
   async permanentlyDeleteDish(id: string) {
     try {
+      console.log('Permanently deleting dish with ID:', id);
       const dish = await Dish.findById(id);
       if (!dish) {
         throw new Error('Món ăn không tồn tại');
