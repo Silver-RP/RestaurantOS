@@ -42,6 +42,7 @@ export const useCRUDFoods = () => {
         try {
             await softDeleteFood(foodId);
             toast.success('Xóa món ăn thành công');
+            navigate('/admin/foods');
         } catch (error) {
             toast.error('Xóa món ăn thất bại');
             console.error('Lỗi khi xóa món ăn:', error);
@@ -56,6 +57,7 @@ export const useCRUDFoods = () => {
             console.log('RestoreFood foodId react: ', foodId);
             await restoreFoodAPI(foodId);
             toast.success('Khôi phục món ăn thành công');
+            setTimeout(() => { navigate(0); }, 1500);
         } catch (error) {
             toast.error('Khôi phục món ăn thất bại');
             console.error('Lỗi khi khôi phục món ăn:', error);
@@ -69,6 +71,7 @@ export const useCRUDFoods = () => {
         try {
             await permanentlyDeleteFoodAPI(foodId);
             toast.success('Xóa vĩnh viễn món ăn thành công');
+            setTimeout(() => { navigate(0); }, 1500);
         } catch (error) {
             toast.error('Xóa vĩnh viễn món ăn thất bại');
             console.error('Lỗi khi xóa vĩnh viễn món ăn:', error);

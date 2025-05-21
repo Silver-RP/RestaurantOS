@@ -3,6 +3,8 @@ import Category  from '../models/CategoryModel';
 
 async function buildQuery(filters: FoodFilter): Promise<any> {
     const query: any = {};
+    query.isDeleted = false;
+
   
     if (filters.search) {
       query.$or = [

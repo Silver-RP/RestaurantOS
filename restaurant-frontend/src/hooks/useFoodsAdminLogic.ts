@@ -63,13 +63,22 @@ export function useFoodsAdminLogic() {
   };
 
   const handleEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && search.trim()) {
-      setSearchParams((prev) => {
-        const newParams = new URLSearchParams(prev);
-        newParams.set('keyword', search.trim());
-        newParams.set('page', '1');
-        return newParams;
-      });
+    if (e.key === 'Enter') {
+      if (search.trim()) {
+        setSearchParams((prev) => {
+          const newParams = new URLSearchParams(prev);
+          newParams.set('keyword', search.trim());
+          newParams.set('page', '1');
+          return newParams;
+        });
+      } else {
+        setSearchParams((prev) => {
+          const newParams = new URLSearchParams(prev);
+          newParams.delete('keyword');
+          newParams.set('page', '1');
+          return newParams;
+        });
+      }
     }
   };
 
@@ -81,8 +90,16 @@ export function useFoodsAdminLogic() {
         newParams.set('page', '1');
         return newParams;
       });
+    } else {
+      setSearchParams((prev) => {
+        const newParams = new URLSearchParams(prev);
+        newParams.delete('keyword');
+        newParams.set('page', '1');
+        return newParams;
+      });
     }
   };
+
 
   const getSortIcon = (field: SortField) => {
     if (sortField === field) {
@@ -310,13 +327,22 @@ export function useFoodsTrashLogic() {
   };
 
   const handleEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && search.trim()) {
-      setSearchParams((prev) => {
-        const newParams = new URLSearchParams(prev);
-        newParams.set('keyword', search.trim());
-        newParams.set('page', '1');
-        return newParams;
-      });
+    if (e.key === 'Enter') {
+      if (search.trim()) {
+        setSearchParams((prev) => {
+          const newParams = new URLSearchParams(prev);
+          newParams.set('keyword', search.trim());
+          newParams.set('page', '1');
+          return newParams;
+        });
+      } else {
+        setSearchParams((prev) => {
+          const newParams = new URLSearchParams(prev);
+          newParams.delete('keyword');
+          newParams.set('page', '1');
+          return newParams;
+        });
+      }
     }
   };
 
@@ -325,6 +351,13 @@ export function useFoodsTrashLogic() {
       setSearchParams((prev) => {
         const newParams = new URLSearchParams(prev);
         newParams.set('keyword', search.trim());
+        newParams.set('page', '1');
+        return newParams;
+      });
+    } else {
+      setSearchParams((prev) => {
+        const newParams = new URLSearchParams(prev);
+        newParams.delete('keyword');
         newParams.set('page', '1');
         return newParams;
       });
