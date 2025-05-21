@@ -15,10 +15,9 @@ export const ToastConfig = () => {
       pauseOnHover
       theme="dark"
       toastClassName="bg-headerBackground text-white font-sans border border-secondaryColor rounded-md shadow-md"
-    //   bodyClassName="text-sm font-medium"
+      //   bodyClassName="text-sm font-medium"
       progressClassName="bg-secondaryColor"
     />
-    
   );
 };
 export const ToastConfigAdmin = () => (
@@ -31,9 +30,8 @@ export const ToastConfigAdmin = () => (
     pauseOnFocusLoss
     draggable
     pauseOnHover
-    theme="dark"
-    toastClassName="bg-headerBackground text-white border border-secondaryColor rounded-md shadow-md"
+    theme="light"
     progressClassName="bg-secondaryColor"
-    style={{ marginTop: '70px' }}
+    style={{ marginTop: '20px' }}
   />
 );

@@ -1,5 +1,7 @@
 import UserService from '../services/UserService';
 import { Request, Response } from 'express';
+import Role from '../models/RoleModel';
+import mongoose from 'mongoose';
 
 class UserController {
   async getAllUser(req: Request, res: Response): Promise<void> {
@@ -74,12 +76,15 @@ class UserController {
   async filterUser(req: Request, res: Response) {
     try {
       const filterOptions = {
-        nameSort: req.query.nameSort as string, // 'A->Z', 'Z->A'
-        emailSort: req.query.emailSort as string, // 'A->Z', 'Z->A'
-        gender: req.query.gender as string, // 'male', 'female', 'other'
-        status: req.query.status as string, // 'active', 'inactive', 'blocked'
-        startDate: req.query.startDate ? new Date(req.query.startDate as string) : undefined,
-        endDate: req.query.endDate ? new Date(req.query.endDate as string) : undefined,
+        keyword: req.query.keyword as string,
+        nameSort: req.query.nameSort as string,
+        emailSort: req.query.emailSort as string,
+        gender: req.query.gender as string,
+        status: req.query.status as string,
+        role: req.query.role as string,
+        isVerified: req.query.isVerified as string,
+        startDate: req.query.birthdayFrom ? new Date(req.query.birthdayFrom as string) : undefined,
+        endDate: req.query.birthdayTo ? new Date(req.query.birthdayTo as string) : undefined,
         page: req.query.page ? parseInt(req.query.page as string) : 1,
         pageSize: req.query.pageSize ? parseInt(req.query.pageSize as string) : 10,
       };
@@ -89,7 +94,7 @@ class UserController {
     } catch (error: any) {
       return res.status(500).json({
         status: 'ERROR',
-        message: error.message,
+        message: error.message || 'Error filtering users',
       });
     }
   }
@@ -97,10 +102,63 @@ class UserController {
   async updateUser(req: Request, res: Response): Promise<void> {
     try {
       const userId = req.params.userId;
-      const updateData = req.body;
+      const requester = req.user as { _id: string; roles?: mongoose.Types.ObjectId[] };
+      const updateData = { ...req.body };
 
+      if (!requester) {
+        res.status(401).json({
+          status: 'ERROR',
+          message: 'Unauthorized: requester not found',
+        });
+        return;
+      }
+
+      // ===== Lấy thông tin role name =====
+      const roleDocs = await Role.find({ _id: { $in: requester.roles } });
+      const roleNames = roleDocs.map((r) => r.name);
+
+      // ===== Xác định vai trò cao nhất =====
+      type RoleName = 'user' | 'admin' | 'superadmin';
+      let highestRole: RoleName = 'user';
+      if (roleNames.includes('superadmin')) highestRole = 'superadmin';
+      else if (roleNames.includes('admin')) highestRole = 'admin';
+
+      // ===== Kiểm tra quyền sửa người khác nếu là user =====
+      if (highestRole === 'user' && requester._id !== userId) {
+        res.status(403).json({
+          status: 'ERROR',
+          message: 'Bạn không có quyền chỉnh sửa người dùng khác',
+        });
+        return;
+      }
+
+      const editableFieldsByRole: Record<RoleName, string[]> = {
+        user: ['username', 'phone', 'birthday', 'gender'],
+        admin: ['username', 'phone', 'birthday', 'gender', 'status', 'roles', 'email'],
+        superadmin: [
+          'username',
+          'phone',
+          'birthday',
+          'gender',
+          'status',
+          'roles',
+          'email',
+          'isEmailVerified',
+        ],
+      };
+
+      const allowedFields = editableFieldsByRole[highestRole];
+
+      // ===== Loại bỏ các field không được phép =====
+      Object.keys(updateData).forEach((key) => {
+        if (!allowedFields.includes(key)) {
+          delete updateData[key];
+        }
+      });
+
+      // ===== Gọi service cập nhật =====
       const result = await UserService.updateUserInfo(userId, updateData);
-      res.status(200).json(result); // ❌ không return
+      res.status(200).json(result);
     } catch (error: any) {
       res.status(500).json({
         status: 'ERROR',
@@ -108,7 +166,6 @@ class UserController {
       });
     }
   }
-
   async changeUserPassword(req: Request, res: Response): Promise<void> {
     try {
       const userId = req.params.userId;

@@ -4,10 +4,10 @@ import bcrypt from 'bcrypt';
 class ProfileService {
   async getUserProfile(userId: string) {
     try {
-      const user = await User.findById(userId);
+      const user = await User.findById(userId).select('-password -__v').populate('roles', 'name'); 
       return user;
     } catch (error: any) {
-      throw new Error(error.message);
+      throw new Error('Không thể lấy thông tin người dùng: ' + error.message);
     }
   }
   async updateUserProfile(userId: string, data: any) {

@@ -95,14 +95,16 @@ class AuthService {
     const { email, password, rememberMe } = loginUser;
 
     const user = await User.findOne({ email }).populate('roles', 'name');
-
     if (!user) {
       throw new Error('Email not registered');
+    }
+    if (user.status === 'block') {
+      throw new Error('Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.');
     }
 
     const isMatch = await bcrypt.compare(password, user.password || '');
     if (!isMatch) {
-      throw new Error('Password is incorrect');
+      throw new Error('Mật khẩu không đúng');
     }
 
     const accessTokenExpiresIn = rememberMe ? 60 * 60 * 2 : 60 * 60;
@@ -283,7 +285,7 @@ class AuthService {
     try {
       let user;
       const otp = crypto.randomInt(100000, 999999).toString();
-      const expireAt = new Date(Date.now() + 5 * 60 * 1000);
+      const expireAt = new Date(Date.now() + 1 * 60 * 1000); // 1 phút
 
       const phoneRegex = /^(\+84|0)(3|5|7|8|9)\d{8}$/;
       const emailRegex =
@@ -332,8 +334,8 @@ class AuthService {
         const mailOptions = {
           from: process.env.MAIL_FROM_ADDRESS,
           to: identifier,
-          subject: 'OTP for password reset',
-          text: `Your OTP is ${otp}. It will expire in 5 minutes`,
+          subject: 'Xác minh OTP',
+          text: `Mã OTP của bạn là ${otp}. Sẽ hết hạn trong 1 phút.`,
         };
 
         await transporter.sendMail(mailOptions);
@@ -356,7 +358,7 @@ class AuthService {
     }
 
     const otp = crypto.randomInt(100000, 999999).toString();
-    const otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+    const otpExpiry = new Date(Date.now() + 1 * 60 * 1000); // 1 phút
 
     const now = new Date();
     const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
@@ -384,7 +386,7 @@ class AuthService {
       from: process.env.MAIL_FROM_ADDRESS,
       to: email,
       subject: 'Verify Your Email Address',
-      text: `Your verification OTP is ${otp}. It will expire in 5 minutes.`,
+      text: `Your verification OTP is ${otp}. It will expire in 1 minute.`,
     };
 
     await transporter.sendMail(mailOptions);

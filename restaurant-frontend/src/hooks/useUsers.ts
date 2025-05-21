@@ -2,7 +2,13 @@
 import { useEffect, useState } from 'react';
 import { User } from 'types/User.type';
 import { useSearchParams } from 'react-router-dom';
-import { getAllUsers, UserQueryParams } from '@/api/UserApi';
+import {
+  getAllUsers,
+  filterUsers,
+  updateUserInfoAPI,
+  UserQueryParams,
+  FilterUserParams,
+} from '@/api/UserApi';
 import { addUser } from '@/api/UserApi';
 import { checkUserPassword as checkPasswordAPI } from '@/api/UserApi';
 export const useUsers = () => {
@@ -18,17 +24,41 @@ export const useUsers = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const query: UserQueryParams = {
-        keyword: searchParams.get('keyword') || '',
-        page: Number(searchParams.get('page') || 1),
-        limit: Number(searchParams.get('limit') || 12),
-      };
-      const res = await getAllUsers(query);
-      setUsers(res.users);
-      setTotalDocs(res.totalDocs);
-      setTotalPages(res.totalPages);
-      setPage(res.page);
-      setLimit(res.limit);
+
+      const keyword = searchParams.get('keyword') || '';
+      const page = Number(searchParams.get('page') || 1);
+      const limit = Number(searchParams.get('limit') || 12);
+
+      // Kiểm tra có dùng filter nâng cao không
+      const hasFilter =
+        searchParams.get('role') ||
+        searchParams.get('gender') ||
+        searchParams.get('status') ||
+        searchParams.get('isVerified') ||
+        searchParams.get('birthdayFrom') ||
+        searchParams.get('birthdayTo');
+
+      if (hasFilter) {
+        const query: FilterUserParams = {};
+        for (const [key, value] of searchParams.entries()) {
+          if (value !== '') query[key as keyof FilterUserParams] = value;
+        }
+
+        const res = await filterUsers(query);
+        setUsers(res.users);
+        setTotalDocs(res.totalDocs);
+        setTotalPages(res.totalPages);
+        setPage(res.page);
+        setLimit(res.pageSize);
+      } else {
+        const query: UserQueryParams = { keyword, page, limit };
+        const res = await getAllUsers(query);
+        setUsers(res.users);
+        setTotalDocs(res.totalDocs);
+        setTotalPages(res.totalPages);
+        setPage(res.page);
+        setLimit(res.limit);
+      }
     } catch (err) {
       console.error(err);
       setError('Không thể tải danh sách người dùng');
@@ -51,21 +81,18 @@ export const useUsers = () => {
     error,
     searchParams,
     setSearchParams,
+    fetchUsers,
   };
 };
-
-
-
 
 export const useAddUser = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
- 
   const createUser = async (
     userData: Partial<User>,
-    onSuccess?: (data: User) => void
+    onSuccess?: (data: User) => void,
   ) => {
     setLoading(true);
     setError(null);
@@ -102,7 +129,7 @@ export const useCheckPassword = () => {
   const checkPassword = async (
     userId: string,
     password: string,
-    onSuccess?: (match: boolean) => void
+    onSuccess?: (match: boolean) => void,
   ) => {
     setLoading(true);
     setError(null);
@@ -123,6 +150,31 @@ export const useCheckPassword = () => {
   return {
     checkPassword,
     match,
+    loading,
+    error,
+  };
+};
+
+export const useUpdateUser = () => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const updateUserById = async (userId: string, data: Partial<User>) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await updateUserInfoAPI(userId, data);
+      return res.data;
+    } catch (err: any) {
+      setError(err?.response?.data?.message || 'Lỗi khi cập nhật người dùng');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return {
+    updateUser: updateUserById,
     loading,
     error,
   };

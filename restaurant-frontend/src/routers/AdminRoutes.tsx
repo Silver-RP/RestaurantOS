@@ -1,5 +1,6 @@
 // src/routes/AdminRoutes.tsx
-import { Navigate } from "react-router-dom";
+import React from 'react';
+import { Navigate } from 'react-router-dom';
 
 import FoodList from "../components/pages/admin/food/index";
 import DashboardPage from "@components/pages/admin/Dashborad";
@@ -16,15 +17,17 @@ import CreateUserPage from "@/components/pages/admin/user/CreateUserPage";
 import SearchResults from "@/components/pages/admin/food/SearchResults";
 import TrashPage from "@/components/pages/admin/food/Trash";
 
+import EditUserPage from '@/components/pages/admin/user/EditUserPage';
+import ProtectedRoute from '@/utils/ProtectedRoute';
 
 const adminRoutes = [
   {
-    path: "/admin",
+    path: '/admin',
     element: (
-        <AdminSidebarProvider>
-          <AdminLayout />
-        </AdminSidebarProvider>
-      ),
+      <AdminSidebarProvider>
+        <AdminLayout />
+      </AdminSidebarProvider>
+    ),
     children: [
       { index: true, element: <DashboardPage /> },
       { path: "foods", element: <FoodList /> },

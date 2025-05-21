@@ -90,10 +90,9 @@ export const createUserSchema = z
     status: z.enum(['active', 'inactive', 'block'], {
       required_error: 'Trạng thái là bắt buộc',
     }),
-    isEmailVerified: z.preprocess(
-      (val) => val === 'true' || val === true,
-      z.boolean(),
-    ),
+    isEmailVerified: z.enum(['true', 'false'], {
+      required_error: 'Vui lòng chọn trạng thái xác minh',
+    }),
     roles: z.array(z.string()).min(1, 'Phải chọn ít nhất 1 vai trò'),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -101,7 +100,6 @@ export const createUserSchema = z
     message: 'Mật khẩu xác nhận không đúng',
   });
 export type CreateUserFormValues = z.infer<typeof createUserSchema>;
-
 
 export const changePasswordSchema = z
   .object({
@@ -125,3 +123,70 @@ export const changePasswordSchema = z
   });
 
 export type ChangePasswordForm = z.infer<typeof changePasswordSchema>;
+
+export const editUserSchema = z
+  .object({
+    username: z
+      .string({ required_error: 'Tên người dùng là bắt buộc' })
+      .min(1, 'Tên người dùng không được để trống'),
+
+    email: z
+      .string({ required_error: 'Email là bắt buộc' })
+      .email('Email không hợp lệ'),
+
+    password: z
+      .string()
+      .min(8, 'Mật khẩu phải có ít nhất 8 ký tự')
+      .max(64, 'Mật khẩu không được dài quá 64 ký tự')
+      .regex(/[A-Z]/, 'Phải có ít nhất 1 chữ in hoa')
+      .regex(/[a-z]/, 'Phải có ít nhất 1 chữ thường')
+      .regex(/[0-9]/, 'Phải có ít nhất 1 chữ số')
+      .regex(/[^A-Za-z0-9]/, 'Phải có ít nhất 1 ký tự đặc biệt')
+      .optional()
+      .or(z.literal('')),
+
+    confirmPassword: z.string().optional(),
+
+    phone: z
+      .string({ required_error: 'Số điện thoại là bắt buộc' })
+      .regex(/^0\d{9,10}$/, 'Số điện thoại không hợp lệ'),
+
+    birthday: z
+      .string({ required_error: 'Ngày sinh là bắt buộc' })
+      .refine(
+        (val) => !val || !isNaN(Date.parse(val)),
+        'Ngày sinh không hợp lệ',
+      ),
+
+    gender: z.enum(['Nam', 'Nữ', 'Khác'], {
+      errorMap: () => ({ message: 'Giới tính không hợp lệ' }),
+    }),
+
+    status: z.enum(['active', 'inactive', 'block'], {
+      errorMap: () => ({ message: 'Trạng thái không hợp lệ' }),
+    }),
+
+    isEmailVerified: z
+      .union([z.boolean(), z.literal('true'), z.literal('false')])
+      .transform((v) => v === 'true' || v === true),
+
+    roles: z
+      .array(z.string(), {
+        required_error: 'Vai trò là bắt buộc',
+      })
+      .min(1, 'Phải chọn ít nhất một vai trò'),
+  })
+  .refine(
+    (data) => {
+      if (data.password && data.password.trim() !== '') {
+        return data.password === data.confirmPassword;
+      }
+      return true;
+    },
+    {
+      path: ['confirmPassword'],
+      message: 'Mật khẩu xác nhận không khớp',
+    },
+  );
+
+export type EditUserFormValues = z.infer<typeof editUserSchema>;

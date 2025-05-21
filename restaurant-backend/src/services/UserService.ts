@@ -7,17 +7,19 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 
 dayjs.extend(customParseFormat);
 interface FilterUserOptions {
-  name?: string;
-  email?: string;
+  keyword?: string;
+  nameSort?: string;
+  emailSort?: string;
   gender?: string;
   status?: string;
+  role?: string;
+  isVerified?: string;
   startDate?: Date;
   endDate?: Date;
   page?: number;
   pageSize?: number;
-  nameSort?: string;
-  emailSort?: string;
 }
+
 interface GetAllUserParams {
   page?: number;
   limit?: number;
@@ -38,7 +40,7 @@ class UserService {
 
     try {
       const [docs, totalDocs] = await Promise.all([
-        User.find(query).skip(skip).limit(limit),
+        User.find(query).skip(skip).limit(limit).populate('roles', 'name'),
         User.countDocuments(query),
       ]);
 
@@ -149,10 +151,10 @@ class UserService {
         };
       }
 
-      if (user.status === 'blocked') {
+      if (user.status === 'block') {
         user.status = 'active';
       } else {
-        user.status = 'blocked';
+        user.status = 'block';
       }
       await user.save();
 
@@ -174,57 +176,58 @@ class UserService {
   async filterUsers(options: FilterUserOptions) {
     try {
       const query: any = {};
-
+      if (options.keyword) {
+        query.$or = [
+          { username: { $regex: options.keyword, $options: 'i' } },
+          { email: { $regex: options.keyword, $options: 'i' } },
+        ];
+      }
       if (options.gender) {
         query.gender = options.gender;
       }
-
       if (options.status) {
         query.status = options.status;
       }
-
+      if (options.isVerified === 'true') query.isEmailVerified = true;
+      if (options.isVerified === 'false') query.isEmailVerified = false;
       if (options.startDate || options.endDate) {
-        query.exprireAt = {};
-        if (options.startDate) {
-          query.exprireAt.$gte = options.startDate;
-        }
-        if (options.endDate) {
-          query.exprireAt.$lte = options.endDate;
+        query.birthday = {};
+        if (options.startDate) query.birthday.$gte = options.startDate;
+        if (options.endDate) query.birthday.$lte = options.endDate;
+      }
+      if (options.role) {
+        const roleDoc = await Roles.findOne({ name: options.role });
+        if (roleDoc) {
+          query.roles = roleDoc._id;
         }
       }
-
-      const userRole = await Roles.findOne({ name: 'user' });
-      if (!userRole) {
-        throw new Error('Role user not found');
-      }
-
-      query.roles = userRole._id;
-
       const sort: any = {};
       if (options.nameSort) {
-        sort.userName = options.nameSort === 'A->Z' ? 1 : -1;
+        sort.username = options.nameSort === 'A->Z' ? 1 : -1;
       }
-
       if (options.emailSort) {
         sort.email = options.emailSort === 'A->Z' ? 1 : -1;
       }
-
       const page = options.page || 1;
       const limit = options.pageSize || 10;
       const skip = (page - 1) * limit;
 
       const [users, totalDocuments] = await Promise.all([
-        User.find(query).select('-password').sort(sort).skip(skip).limit(limit),
+        User.find(query)
+          .populate('roles', 'name')
+          .select('-password')
+          .sort(sort)
+          .skip(skip)
+          .limit(limit),
         User.countDocuments(query),
       ]);
-
       return {
         status: 'SUCCESS',
         data: {
           users,
           metadata: {
             total: totalDocuments,
-            page: page,
+            page,
             pageSize: limit,
             totalPages: Math.ceil(totalDocuments / limit),
           },
@@ -245,7 +248,15 @@ class UserService {
         }
         updateData.birthday = parsed.toDate();
       }
-
+      if (updateData.email) {
+        const emailExists = await User.findOne({ email: updateData.email, _id: { $ne: userId } });
+        if (emailExists) {
+          return {
+            status: 'ERROR',
+            message: 'Email đã tồn tại trên hệ thống',
+          };
+        }
+      }
       const user = await User.findByIdAndUpdate(userId, { $set: updateData }, { new: true }).select(
         '-password',
       );

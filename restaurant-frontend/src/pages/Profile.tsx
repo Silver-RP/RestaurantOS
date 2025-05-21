@@ -7,12 +7,13 @@ import { RootState } from '@/redux/store';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/redux/store';
-import { updateUserInfo } from '@/redux/feature/user/userAction';
+import { updateUserProfile } from '@/redux/feature/user/userAction';
 import { toast } from 'react-toastify';
 import { useChangePasswordProfile } from '@/hooks/useAuth';
 import { useCheckPassword } from '@/hooks/useUsers';
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
 import Container from '@/components/common/Container';
+
 
 const ProfilePage = () => {
   const [touchedFields, setTouchedFields] = useState({
@@ -31,6 +32,8 @@ const ProfilePage = () => {
     useChangePasswordProfile();
 
   const { user } = useSelector((state: RootState) => state.user);
+  console.log('user in profile', user);
+  
   const [formattedBirthday, setFormattedBirthday] = useState('');
 
   const [isEditingPersonal, setIsEditingPersonal] = useState(false);
@@ -252,6 +255,7 @@ const ProfilePage = () => {
     const fullName = personalInfo.fullName.trim();
     const phone = personalInfo.phone.trim();
     const birthday = personalInfo.birthday;
+
     if (!fullName) {
       toast.error('Họ và tên không được để trống');
       return;
@@ -273,6 +277,7 @@ const ProfilePage = () => {
       toast.error('Không xác định được người dùng');
       return;
     }
+
     try {
       const payload = {
         username: fullName,
@@ -282,14 +287,19 @@ const ProfilePage = () => {
       };
 
       await dispatch(
-        updateUserInfo({ userId: user._id, data: payload }),
+        updateUserProfile({ userId: user._id, data: payload }),
       ).unwrap();
 
-      toast.success('Cập nhật thành công!');
+      toast.success('Cập nhật thông tin thành công!');
       setIsEditingPersonal(false);
     } catch (err: any) {
-      const errorMessage = err?.message || 'Cập nhật thất bại!';
-      toast.error(errorMessage);
+      const msg = err?.message || 'Cập nhật thất bại!';
+
+      if (msg.includes('không có quyền')) {
+        toast.error('Bạn không được phép chỉnh sửa người dùng khác!');
+      } else {
+        toast.error(msg);
+      }
     }
   };
   const handlePersonalChange = (
