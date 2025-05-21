@@ -13,6 +13,7 @@ import { AxiosError } from 'axios';
 import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
 import { LoginWithGoogle } from '../redux/feature/auth/authActions';
 import Cookies from 'js-cookie';
+import { fetchCurrentUser } from '@/redux/feature/user/userAction';
 
 const Login = () => {
   const emailRef = useRef<HTMLInputElement>(null);
@@ -98,12 +99,16 @@ const Login = () => {
     try {
       await dispatch(LoginUser({ email, password, rememberMe }))
         .unwrap()
-        .then(() => {
+        .then((result) => {
           if (rememberMe) {
             localStorage.setItem('email', email);
           } else {
             localStorage.removeItem('email');
           }
+
+          // ✅ Lấy userId từ kết quả trả về và fetch lại profile
+          const userId = result.user._id;
+          dispatch(fetchCurrentUser({ userId })); // ← THÊM DÒNG NÀY
 
           toast.success('Đăng nhập thành công!');
           navigate('/');
@@ -138,6 +143,9 @@ const Login = () => {
       ).unwrap();
 
       Cookies.set('userInfo', JSON.stringify(result.user), { expires: 1 });
+
+      // ✅ Gọi fetchCurrentUser
+      dispatch(fetchCurrentUser({ userId: result.user._id })); // ← THÊM DÒNG NÀY
 
       toast.success('Đăng nhập Google thành công!');
       navigate('/');

@@ -1,27 +1,30 @@
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import Cookies from 'js-cookie';
-import { jwtDecode } from 'jwt-decode';
-
 import { AppDispatch } from '../redux/store';
-import { fetchCurrentUser } from '../redux/feature/user/userAction'; 
+import { refreshAccessToken } from '@/api/AuthApi';
+import { fetchCurrentUser } from '@/redux/feature/user/userAction';
+import { jwtDecode } from 'jwt-decode';
 import { DecodedToken } from 'types/Auth.type';
 
 const AuthInitializer = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
-    const token = Cookies.get('accessToken');
-    if (!token) return;
+    const init = async () => {
+      try {
+        const res = await refreshAccessToken();
+        if (res?.accessToken) {
+          const decoded = jwtDecode<DecodedToken>(res.accessToken);
+          const userId = decoded.id;
 
-    try {
-      const decoded = jwtDecode<DecodedToken>(token);
-      const userId = decoded.id;
+          dispatch(fetchCurrentUser({ userId }));
+        }
+      } catch (err) {
+        console.error('Không thể refresh access token:', err);
+      }
+    };
 
-      dispatch(fetchCurrentUser({ userId })); 
-    } catch (err) {
-      console.error('Lỗi khi giải mã token:', err);
-    }
+    init();
   }, [dispatch]);
 
   return null;
