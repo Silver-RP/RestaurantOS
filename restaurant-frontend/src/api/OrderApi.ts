@@ -3,7 +3,7 @@ import api from './axiosInstance';
 import {
   OrderQueryParams,
   OrdersResponse,
-  CancelOrderRequest,
+  // CancelOrderRequest,
   CreateOrderRequest,
   OrderDetailResponse,
   PlaceOrderRequest,
@@ -26,11 +26,20 @@ export async function createOrder(data: CreateOrderRequest) {
   return res.data;
 }
 
-export async function cancelOrder(data: CancelOrderRequest) {
-  const res = await api.post('/order/cancel', data);
+export async function cancelOrder(orderId: string, reason: string) {
+  const res = await api.put(`/order/cancel-order/${orderId}`, { reason });
   return res.data;
 }
 
+export async function requestReturn(orderId: string, reason: string) {
+  const res = await api.put(`/order/request-return/${orderId}`, { reason });
+  return res.data;
+}
+
+export async function requestCancel(orderId: string, reason: string) {
+  const res = await api.put(`/order/request-cancel/${orderId}`, { reason });
+  return res.data;
+}
 
 export const placeDirectOrder = async (data: PlaceOrderRequest) => {
   console.log("Placing order with data:", data);
