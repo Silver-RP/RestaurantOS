@@ -7,6 +7,8 @@ import { toggleUserBlockStatus } from '@/api/UserApi';
 import { toast } from 'react-toastify';
 import { FaSearch } from 'react-icons/fa';
 import UserFilterPanel from './UserFilterPanel';
+const CONFIRM_TOAST_ID = 'confirm-toggle-user';
+
 const UserIndexPage: React.FC = () => {
   const {
     users,
@@ -30,28 +32,78 @@ const UserIndexPage: React.FC = () => {
     newParams.set('page', '1');
     setSearchParams(newParams);
   }, [search]);
+  const showConfirmToast = (message: string, onConfirm: () => void) => {
+    toast.dismiss(CONFIRM_TOAST_ID);
+    toast(
+      ({ closeToast }) => (
+        <div className="max-w-[400px] text-gray-900 text-sm p-4">
+          <div className="flex items-start gap-3">
+            <div className="text-yellow-600 text-lg pt-1">⚠️</div>
+            <div className="flex-1">
+              <p className="font-semibold mb-2 leading-snug text-black">
+                {message}
+              </p>
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={closeToast}
+                  className="px-3 py-1 border border-gray-400 text-gray-700 rounded hover:bg-gray-100"
+                >
+                  Huỷ
+                </button>
+                <button
+                  onClick={() => {
+                    onConfirm();
+                    closeToast?.();
+                  }}
+                  className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  Xác nhận
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ),
+      {
+        toastId: CONFIRM_TOAST_ID,
+        icon: false,
+        position: 'top-center',
+        autoClose: false,
+        closeButton: false,
+        draggable: false,
+        closeOnClick: false,
+        hideProgressBar: true,
+        theme: 'light', // hoặc bỏ nếu bạn đã kiểm soát toàn bộ màu bên trong
+      },
+    );
+  };
 
   const handleToggleBlock = async (
     userId: string,
     isCurrentlyBlocked: boolean,
   ) => {
-    const confirmed = window.confirm(
+    showConfirmToast(
       isCurrentlyBlocked
         ? 'Bạn có chắc chắn muốn mở khóa người dùng này?'
         : 'Bạn có chắc chắn muốn khóa người dùng này?',
-    );
-    if (!confirmed) return;
+      async () => {
+        try {
+          await toggleUserBlockStatus(userId);
+          toast.success(
+            isCurrentlyBlocked
+              ? 'Đã mở khóa người dùng!'
+              : 'Đã khóa người dùng!',
+          );
+          await fetchUsers();
+        } catch (err: any) {
+          const msg =
+            err?.response?.data?.message?.trim?.() ||
+            'Có lỗi khi cập nhật trạng thái người dùng!';
 
-    try {
-      await toggleUserBlockStatus(userId);
-      toast.success(
-        isCurrentlyBlocked ? 'Đã mở khóa người dùng!' : 'Đã khóa người dùng!',
-      );
-      await fetchUsers();
-    } catch (err) {
-      toast.error('Có lỗi khi cập nhật trạng thái người dùng!');
-      console.error('Lỗi khi khóa/mở user:', err);
-    }
+          toast.error(msg);
+        }
+      },
+    );
   };
 
   function handleEnter(event: React.KeyboardEvent<HTMLInputElement>): void {
@@ -153,6 +205,7 @@ const UserIndexPage: React.FC = () => {
                 <th className="px-4 py-2">Trạng thái</th>
                 <th className="px-4 py-2">Khóa</th>
                 <th className="px-4 py-2">Vai trò</th>
+                <th className="px-4 py-2">Số đơn hàng</th>
                 <th className="px-4 py-2">Hành động</th>
               </tr>
             </thead>
@@ -226,6 +279,10 @@ const UserIndexPage: React.FC = () => {
                       '—'
                     )}
                   </td>
+                  <td className="px-4 py-2">
+                    {user.ordersCount || 0}
+                  </td>
+                  
                   <td className="px-4 py-2 space-x-2">
                     <button
                       onClick={() => navigate(`/admin/users/edit/${user._id}`)}
