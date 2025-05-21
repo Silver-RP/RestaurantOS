@@ -285,7 +285,7 @@ class AuthService {
     try {
       let user;
       const otp = crypto.randomInt(100000, 999999).toString();
-      const expireAt = new Date(Date.now() + 5 * 60 * 1000);
+      const expireAt = new Date(Date.now() + 1 * 60 * 1000); // 1 phút
 
       const phoneRegex = /^(\+84|0)(3|5|7|8|9)\d{8}$/;
       const emailRegex =
@@ -334,8 +334,8 @@ class AuthService {
         const mailOptions = {
           from: process.env.MAIL_FROM_ADDRESS,
           to: identifier,
-          subject: 'OTP for password reset',
-          text: `Your OTP is ${otp}. It will expire in 5 minutes`,
+          subject: 'Xác minh OTP',
+          text: `Mã OTP của bạn là ${otp}. Sẽ hết hạn trong 1 phút.`,
         };
 
         await transporter.sendMail(mailOptions);
@@ -358,7 +358,7 @@ class AuthService {
     }
 
     const otp = crypto.randomInt(100000, 999999).toString();
-    const otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+    const otpExpiry = new Date(Date.now() + 1 * 60 * 1000); // 1 phút
 
     const now = new Date();
     const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
@@ -386,7 +386,7 @@ class AuthService {
       from: process.env.MAIL_FROM_ADDRESS,
       to: email,
       subject: 'Verify Your Email Address',
-      text: `Your verification OTP is ${otp}. It will expire in 5 minutes.`,
+      text: `Your verification OTP is ${otp}. It will expire in 1 minute.`,
     };
 
     await transporter.sendMail(mailOptions);
