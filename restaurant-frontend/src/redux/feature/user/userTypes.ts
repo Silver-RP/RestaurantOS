@@ -15,6 +15,7 @@ export interface User {
   
   export interface UserState {
     user: User | null;
+    selectedUser: User | null;   
     loading: boolean;
     error: string | null;
     loadingUpdate: boolean;

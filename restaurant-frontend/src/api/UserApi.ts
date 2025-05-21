@@ -1,5 +1,5 @@
 import axiosInstance from './axiosInstance';
-import { User } from 'types/User.type';
+import { FilterUserParams, User } from 'types/User.type';
 
 export type UserQueryParams = {
   keyword?: string;
@@ -53,6 +53,8 @@ export const updateUserInfoAPI = async (
   data: Partial<User>
 ): Promise<{ status: string; message: string; data: User }> => {
   const res = await axiosInstance.put(`/user/updateUser/${userId}`, data);
+  console.log(res.data);
+  
   return res.data;
 };
 
@@ -76,4 +78,33 @@ export const checkUserPassword = async (
   });
 
   return response.data;
+};
+
+export const toggleUserBlockStatus = async (userId: string) => {
+  const res = await axiosInstance.post(`/user/blockUser/${userId}`);
+    console.log(res.data);
+  return res.data;
+};
+
+
+export const filterUsers = async (
+  params: FilterUserParams,
+): Promise<{
+  users: User[];
+  totalDocs: number;
+  totalPages: number;
+  page: number;
+  pageSize: number;
+}> => {
+  const response = await axiosInstance.get('/user/filterUser', { params });
+
+  const data = response.data?.data || {};
+
+  return {
+    users: data.users || [],
+    totalDocs: data.metadata?.total || 0,
+    totalPages: data.metadata?.totalPages || 1,
+    page: data.metadata?.page || 1,
+    pageSize: data.metadata?.pageSize || 10,
+  };
 };

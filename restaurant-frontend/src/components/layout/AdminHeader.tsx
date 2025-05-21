@@ -5,8 +5,9 @@ import { RootState } from '@/redux/store';
 import { useSelector } from 'react-redux';
 
 const AdminHeader: React.FC = () => {
-  const { user } = useSelector((state: RootState) => state.user);
-
+    const { user } = useSelector((state: RootState) => state.user);
+    console.log('user in header', user);
+    
   return (
     <header className="h-20 px-6 flex items-center justify-between backdrop-blur-md bg-white/80 border-b border-gray-200 shadow-md sticky top-0 z-30">
       <div className="flex items-center gap-3 text-admintext font-bold text-2xl">

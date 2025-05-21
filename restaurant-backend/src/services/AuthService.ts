@@ -95,9 +95,11 @@ class AuthService {
     const { email, password, rememberMe } = loginUser;
 
     const user = await User.findOne({ email }).populate('roles', 'name');
-
     if (!user) {
       throw new Error('Email not registered');
+    }
+    if (user.status === 'block') {
+      throw new Error('Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.');
     }
 
     const isMatch = await bcrypt.compare(password, user.password || '');
