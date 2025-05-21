@@ -1,6 +1,7 @@
 import { Address } from "./Address.type";
 
 export type DeliveryStatus = 
+  | 'PENDING' 
   | 'PENDING_PICKUP' 
   | 'PICKED_UP' 
   | 'IN_TRANSIT' 

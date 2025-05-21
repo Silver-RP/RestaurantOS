@@ -298,9 +298,6 @@ class OrderService {
     }
   }
 
-
-
-
   async getOrderById(orderId: mongoose.Types.ObjectId) {
     try {
       const order = await Order.findById(orderId).populate('address_id').lean();
@@ -403,6 +400,113 @@ class OrderService {
     }
 
     return OrderStatus.PENDING;
+  }
+
+  async cancelOrder(orderId: mongoose.Types.ObjectId, reason: string) {
+    try {
+      const order = await Order.findById(orderId);
+      if (!order) {
+        throw { statusCode: 404, message: 'Order not found' };
+      }
+
+      if (order.status !== 'PENDING' || order.delivery_status !== 'PENDING') {
+        throw { 
+          statusCode: 400, 
+          message: 'Order can only be cancelled when status and delivery_status are PENDING' 
+        };
+      }
+
+      order.status = 'CANCELLED';
+      order.delivery_status = 'CANCELLED';
+      order.cancelled_at = new Date();
+      order.cancelled_reason = reason;
+
+      await order.save();
+
+      return order;
+    } catch (error: any) {
+      throw {
+        statusCode: error.statusCode || 500,
+        message: error.message || 'Error cancelling order',
+      };
+    }
+  }
+
+  async requestReturn(orderId: mongoose.Types.ObjectId, reason: string) {
+    try {
+      const order = await Order.findById(orderId);
+      if (!order) {
+        throw { statusCode: 404, message: 'Order not found' };
+      }
+
+      if (order.status !== 'COMPLETED' || order.delivery_status !== 'DELIVERED') {
+        throw {
+          statusCode: 400,
+          message: 'Return can only be requested when status is COMPLETED and delivery_status is DELIVERED',
+        };
+      }
+
+      // Kiểm tra thời gian từ khi giao hàng
+      if (!order.delivered_at) {
+        throw {
+          statusCode: 400,
+          message: 'Cannot request return: delivery time not found',
+        };
+      }
+
+      const deliveryTime = new Date(order.delivered_at);
+      const now = new Date();
+      const timeDiffInMinutes = (now.getTime() - deliveryTime.getTime()) / (1000 * 60);
+
+      if (timeDiffInMinutes > 30) {
+        throw {
+          statusCode: 400,
+          message: 'Return request must be made within 30 minutes of delivery',
+        };
+      }
+
+      order.status = 'RETURN_REQUESTED';
+      order.delivery_status = 'RETURN_REQUESTED';
+      order.returned_at = new Date();
+      order.cancelled_reason = reason;
+
+      await order.save();
+
+      return order;
+    } catch (error: any) {
+      throw {
+        statusCode: error.statusCode || 500,
+        message: error.message || 'Error requesting return',
+      };
+    }
+  }
+
+  async requestCancel(orderId: mongoose.Types.ObjectId, reason: string) {
+    try {
+      const order = await Order.findById(orderId);
+      if (!order) {
+        throw { statusCode: 404, message: 'Order not found' };
+      }
+
+      if (order.status !== 'PREPARING' || order.delivery_status !== 'PENDING_PICKUP') {
+        throw {
+          statusCode: 400,
+          message: 'Cancel request chỉ được phép khi status = PREPARING và delivery_status = PENDING_PICKUP',
+        };
+      }
+
+      order.status = 'CANCEL_REQUESTED';
+      order.delivery_status = 'CANCEL_REQUESTED';
+      order.cancelled_at = new Date();
+      order.cancelled_reason = reason;
+      await order.save();
+      return order;
+    } catch (error: any) {
+      throw {
+        statusCode: error.statusCode || 500,
+        message: error.message || 'Error requesting cancel',
+      };
+    }
   }
 }
 

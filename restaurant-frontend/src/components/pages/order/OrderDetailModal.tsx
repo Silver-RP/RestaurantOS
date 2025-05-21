@@ -39,7 +39,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
     );
 
   const order = data.order;
-  const formatPrice = (price: number) => price.toLocaleString('vi-VN') + '₫';
+  const formatPrice = (price: number) => price.toLocaleString('vi-VN') + ' VND';
   const address =
     typeof order.address_id === 'object' && order.address_id !== null
       ? order.address_id
@@ -96,11 +96,19 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                             ? 'Đã trả hàng'
                             : order.status === 'PENDING'
                               ? 'Chờ xác nhận'
-                              : order.status}
+                              : order.status === 'PREPARING'
+                                ? 'Đang chuẩn bị'
+                                : order.delivery_status === 'CANCEL_REQUESTED'
+                                  ? 'Đang yêu cầu hủy đơn'
+                                  : order.delivery_status === 'RETURN_REQUESTED'
+                                    ? 'Đang yêu cầu hoàn trả'
+                                    : order.status === 'COMPLETED'
+                                      ? 'Đã hoàn thành'
+                                      : order.status}
                   </span>
                 </div>
                 <div className="flex gap-2 items-center">
-                  <span className="font-semibold">Giao hàng:</span>
+                  <span className="font-semibold">Trạng thái giao hàng:</span>
                   <span className="text-md">
                     {order.delivery_status === 'IN_TRANSIT'
                       ? 'Đang vận chuyển'
@@ -112,7 +120,15 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                             ? 'Đã trả hàng'
                             : order.delivery_status === 'PENDING_PICKUP'
                               ? 'Chờ lấy hàng'
-                              : order.delivery_status}
+                              : order.delivery_status === 'PENDING'
+                                ? 'Chờ xác nhận'
+                                : order.delivery_status === 'CANCEL_REQUESTED'
+                                  ? 'Đang yêu cầu hủy đơn'
+                                  : order.delivery_status === 'RETURN_REQUESTED'
+                                    ? 'Đang yêu cầu hoàn trả'
+                                    : order.delivery_status === 'DELIVERED'
+                                      ? 'Đã giao'
+                                      : order.delivery_status}
                   </span>
                 </div>
                 <div className="flex gap-2 items-center">
@@ -164,7 +180,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                   </span>
                 </div>
                 <div className="flex gap-2 items-center">
-                  <span className="font-semibold">Trạng thái:</span>
+                  <span className="font-semibold">Trạng thái thanh toán:</span>
                   <span className="text-md">
                     {order.is_paid ? 'Đã thanh toán' : 'Chưa thanh toán'}
                   </span>

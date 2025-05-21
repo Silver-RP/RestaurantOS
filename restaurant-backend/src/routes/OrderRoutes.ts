@@ -8,5 +8,8 @@ router.get('/all-orders', OrderController.getAllOrders);
 router.get('/user-orders', OrderController.getUserOrders);
 router.get('/:id', OrderController.getOrderById);
 router.put('/order-status/:id', OrderController.updateOrderStatus);
+router.put('/cancel-order/:id', OrderController.cancelOrder);
+router.put('/request-return/:id', OrderController.requestReturn);
+router.put('/request-cancel/:id', OrderController.requestCancel);
 
 export default router;
