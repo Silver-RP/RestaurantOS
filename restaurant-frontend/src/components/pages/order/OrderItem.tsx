@@ -3,6 +3,63 @@ import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { Order, OrderItem } from '@/types/Order.type';
 import { deliveryStatusMapping } from './NavigationOrder';
 import OrderDetailModal from './OrderDetailModal';
+import { useCancelOrder, useRequestCancel, useRequestReturn } from '@/hooks/useOrder';
+import { toast } from 'react-toastify';
+
+interface ReasonModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (reason: string) => void;
+  title: string;
+}
+
+const ReasonModal: React.FC<ReasonModalProps> = ({ isOpen, onClose, onSubmit, title }) => {
+  const [reason, setReason] = useState('');
+
+  if (!isOpen) return null;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reason.trim()) {
+      toast.error('Vui lòng nhập lý do');
+      return;
+    }
+    onSubmit(reason);
+    setReason('');
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
+      <div className="bg-bodyBackground rounded-xl shadow-2xl p-6 w-full max-w-md border border-white/10">
+        <h2 className="text-xl font-bold mb-4 text-secondaryColor">{title}</h2>
+        <form onSubmit={handleSubmit}>
+          <textarea
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder="Nhập lý do..."
+            className="w-full h-32 p-3 rounded-lg bg-[#14324a] text-white border border-white/20 focus:border-secondaryColor focus:outline-none resize-none"
+          />
+          <div className="flex justify-end gap-3 mt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-sm bg-transparent border border-white/20 text-white hover:bg-white/10 rounded-lg"
+            >
+              Hủy
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 text-sm bg-secondaryColor text-headerBackground hover:bg-secondaryColor/90 rounded-lg"
+            >
+              Xác nhận
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
 
 interface OrderItemProps {
   order: Order;
@@ -12,7 +69,46 @@ interface OrderItemProps {
 const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
   const [showMore, setShowMore] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isReasonModalOpen, setIsReasonModalOpen] = useState(false);
+  const [reasonModalType, setReasonModalType] = useState<'cancel' | 'request-cancel' | 'return'>('cancel');
+  
+  const cancelOrderMutation = useCancelOrder();
+  const requestCancelMutation = useRequestCancel();
+  const requestReturnMutation = useRequestReturn();
+
   const items = order.order_items || [];
+
+  const handleReasonSubmit = (reason: string) => {
+    switch (reasonModalType) {
+      case 'cancel':
+        cancelOrderMutation.mutate(
+          { orderId: order._id, reason },
+          {
+            onSuccess: () => toast.success('Đã hủy đơn hàng thành công'),
+            onError: (error: Error) => toast.error(error.message || 'Có lỗi xảy ra khi hủy đơn hàng'),
+          }
+        );
+        break;
+      case 'request-cancel':
+        requestCancelMutation.mutate(
+          { orderId: order._id, reason },
+          {
+            onSuccess: () => toast.success('Đã gửi yêu cầu hủy đơn thành công'),
+            onError: (error: Error) => toast.error(error.message || 'Có lỗi xảy ra khi yêu cầu hủy đơn'),
+          }
+        );
+        break;
+      case 'return':
+        requestReturnMutation.mutate(
+          { orderId: order._id, reason },
+          {
+            onSuccess: () => toast.success('Đã gửi yêu cầu hoàn trả thành công'),
+            onError: (error: Error) => toast.error(error.message || 'Có lỗi xảy ra khi yêu cầu hoàn trả'),
+          }
+        );
+        break;
+    }
+  };
 
   if (!items.length) {
     return <div className="text-white">Không có sản phẩm trong đơn hàng này.</div>;
@@ -138,19 +234,59 @@ const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
 
       {/* Các nút hành động */}
       <div className="mt-3 flex justify-end flex-wrap gap-2">
-        <button
-          className="px-4 py-1.5 text-xs font-medium bg-transparent border border-secondaryColor text-white font-normal font-sans hover:bg-secondaryColor hover:text-headerBackground focus:ring-bodyBackground active:bg-secondaryColor/90 active:text-headerBackground"
-          onClick={() => alert('Đánh giá đơn hàng')}
-        >
-          Đánh giá
-        </button>
+        {order.status === 'PENDING' && order.delivery_status === 'PENDING' && (
+          <button
+            className="px-4 py-1.5 text-xs bg-transparent border border-secondaryColor text-white font-normal font-sans hover:bg-secondaryColor hover:text-headerBackground focus:ring-bodyBackground active:bg-secondaryColor/90 active:text-headerBackground"
+            onClick={() => {
+              setReasonModalType('cancel');
+              setIsReasonModalOpen(true);
+            }}
+          >
+            Hủy đơn hàng
+          </button>
+        )}
 
-        <button
-          className="px-4 py-1.5 text-xs bg-transparent border border-secondaryColor text-white font-normal font-sans hover:bg-secondaryColor hover:text-headerBackground focus:ring-bodyBackground active:bg-secondaryColor/90 active:text-headerBackground"
-          onClick={() => alert('Mua lại đơn hàng')}
-        >
-          Mua lại
-        </button>
+        {order.status === 'PREPARING' && order.delivery_status === 'PENDING_PICKUP' && (
+          <button
+            className="px-4 py-1.5 text-xs bg-transparent border border-secondaryColor text-white font-normal font-sans hover:bg-secondaryColor hover:text-headerBackground focus:ring-bodyBackground active:bg-secondaryColor/90 active:text-headerBackground"
+            onClick={() => {
+              setReasonModalType('request-cancel');
+              setIsReasonModalOpen(true);
+            }}
+          >
+            Yêu cầu hủy đơn
+          </button>
+        )}
+
+        {order.status === 'CANCEL_REQUESTED' && order.delivery_status === 'CANCEL_REQUESTED' && (
+          <button
+            className="px-4 py-1.5 text-xs bg-transparent border border-secondaryColor text-white font-normal font-sans"
+            disabled
+          >
+            Đang yêu cầu hủy đơn
+          </button>
+        )}
+
+        {order.status === 'COMPLETED' && order.delivery_status === 'DELIVERED' && (
+          <button
+            className="px-4 py-1.5 text-xs bg-transparent border border-secondaryColor text-white font-normal font-sans hover:bg-secondaryColor hover:text-headerBackground focus:ring-bodyBackground active:bg-secondaryColor/90 active:text-headerBackground"
+            onClick={() => {
+              setReasonModalType('return');
+              setIsReasonModalOpen(true);
+            }}
+          >
+            Yêu cầu hoàn trả
+          </button>
+        )}
+
+        {order.status === 'RETURN_REQUESTED' && order.delivery_status === 'RETURN_REQUESTED' && (
+          <button
+            className="px-4 py-1.5 text-xs bg-transparent border border-secondaryColor text-white font-normal font-sans"
+            disabled
+          >
+            Đang yêu cầu hoàn trả
+          </button>
+        )}
 
         <button
           className="px-4 py-1.5 text-xs bg-transparent border border-secondaryColor text-white font-normal font-sans hover:bg-secondaryColor hover:text-headerBackground focus:ring-bodyBackground active:bg-secondaryColor/90 active:text-headerBackground"
@@ -165,6 +301,20 @@ const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
         isOpen={isModalOpen}
         orderId={order._id}
         onClose={() => setIsModalOpen(false)}
+      />
+
+      {/* Modal nhập lý do */}
+      <ReasonModal
+        isOpen={isReasonModalOpen}
+        onClose={() => setIsReasonModalOpen(false)}
+        onSubmit={handleReasonSubmit}
+        title={
+          reasonModalType === 'cancel'
+            ? 'Lý do hủy đơn hàng'
+            : reasonModalType === 'request-cancel'
+            ? 'Lý do yêu cầu hủy đơn'
+            : 'Lý do yêu cầu hoàn trả'
+        }
       />
     </div>
   );

@@ -91,7 +91,8 @@ class OrderController {
       }
 
       const userId = (req.user as IUser).id as Types.ObjectId;
-      const deliveryStatus = typeof req.query.delivery_status === 'string' ? req.query.delivery_status : null;
+      const deliveryStatus =
+        typeof req.query.delivery_status === 'string' ? req.query.delivery_status : null;
       const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
       const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 5;
 
@@ -141,6 +142,60 @@ class OrderController {
       });
     } catch (error: any) {
       console.error('Error updating order status:', error.message);
+      next(error);
+      return res
+        .status(error.statusCode || 500)
+        .json({ message: error.message || 'Internal Server Error' });
+    }
+  }
+
+  async cancelOrder(req: Request, res: Response, next: NextFunction): Promise<any> {
+    try {
+      const orderId = new Types.ObjectId(req.params.id);
+      const { reason } = req.body;
+      const updatedOrder = await OrderService.cancelOrder(orderId, reason);
+      return res.status(200).json({
+        message: 'Order cancelled successfully',
+        order: updatedOrder,
+      });
+    } catch (error: any) {
+      console.error('Error cancelling order:', error.message);
+      next(error);
+      return res
+        .status(error.statusCode || 500)
+        .json({ message: error.message || 'Internal Server Error' });
+    }
+  }
+
+  async requestReturn(req: Request, res: Response, next: NextFunction): Promise<any> {
+    try {
+      const orderId = new Types.ObjectId(req.params.id);
+      const { reason } = req.body;
+      const updatedOrder = await OrderService.requestReturn(orderId, reason);
+      return res.status(200).json({
+        message: 'Return requested successfully',
+        order: updatedOrder,
+      });
+    } catch (error: any) {
+      console.error('Error requesting return:', error.message);
+      next(error);
+      return res
+        .status(error.statusCode || 500)
+        .json({ message: error.message || 'Internal Server Error' });
+    }
+  }
+
+  async requestCancel(req: Request, res: Response, next: NextFunction): Promise<any> {
+    try {
+      const orderId = new Types.ObjectId(req.params.id);
+      const { reason } = req.body;
+      const updatedOrder = await OrderService.requestCancel(orderId, reason);
+      return res.status(200).json({
+        message: 'Cancel requested successfully',
+        order: updatedOrder,
+      });
+    } catch (error: any) {
+      console.error('Error requesting cancel:', error.message);
       next(error);
       return res
         .status(error.statusCode || 500)

@@ -15,8 +15,9 @@ export interface IOrder extends Document {
     | 'DELIVERY_FAILED'
     | 'RETURN_REQUESTED'
     | 'RETURNED'
+    | 'CANCEL_REQUESTED'
     | 'CANCELLED';
-  status: 'PENDING' | 'PREPARING' | 'SHIPPING' | 'COMPLETED' | 'CANCELLED' | 'RETURNED';
+  status: 'PENDING' | 'PREPARING' | 'SHIPPING' | 'COMPLETED' | 'CANCELLED' | 'CANCEL_REQUESTED' | 'RETURNED';
   shipping_fee: number;
   vat_amount: number;
   items_price: number;
@@ -58,6 +59,7 @@ const OrderSchema = new Schema<IOrder>(
     delivery_status: {
       type: String,
       enum: [
+        'PENDING',
         'PENDING_PICKUP',
         'PICKED_UP',
         'IN_TRANSIT',
@@ -65,13 +67,14 @@ const OrderSchema = new Schema<IOrder>(
         'DELIVERY_FAILED',
         'RETURN_REQUESTED',
         'RETURNED',
+        'CANCEL_REQUESTED',
         'CANCELLED',
       ],
       default: 'PENDING_PICKUP',
     },
     status: {
       type: String,
-      enum: ['PENDING', 'PREPARING', 'SHIPPING', 'COMPLETED', 'CANCELLED', 'RETURNED'],
+      enum: ['PENDING', 'PREPARING', 'SHIPPING', 'COMPLETED', 'CANCELLED', 'CANCEL_REQUESTED', 'RETURNED'],
       default: 'PENDING',
     },
     shipping_fee: { type: Number, required: true, default: 0 },

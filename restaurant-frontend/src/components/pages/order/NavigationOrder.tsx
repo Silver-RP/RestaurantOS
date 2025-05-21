@@ -16,12 +16,12 @@ export type DeliveryStatusMapping = {
 
 export const deliveryStatusMapping: Record<string, DeliveryStatusMapping> = {
   'Tất cả đơn hàng': { delivery_status: null },
-  'Chờ xác nhận': { delivery_status: 'PENDING_CONFIRMATION' },
+  'Chờ xác nhận': { delivery_status: 'PENDING' },
   'Đang chuẩn bị': { delivery_status: 'PENDING_PICKUP' },
   'Đang giao hàng': { delivery_status: 'IN_TRANSIT' },
   'Đã giao hàng': { delivery_status: 'DELIVERED' },
   'Đã hủy': { delivery_status: 'CANCELLED' },
-  'Đã trả hàng': { delivery_status: 'RETURNED' },
+  'Đã trả hàng': { delivery_status:  'RETURNED' },
 };
 
 interface NavigationOrderProps {

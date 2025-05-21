@@ -1,24 +1,25 @@
 'use client';
-import React from 'react';
 import { useCategories } from '@hooks/useCategories';
 import FoodForm from './FoodForm';
 import { useNavigate } from 'react-router-dom';
+import { useCUDFoods } from '../../../../hooks/useCUDFoods';
 
 const CreateFoodPage = () => {
   const { categories } = useCategories();
+  const { createFood } = useCUDFoods();
   const navigate = useNavigate();
+  
 
-  const handleSubmit = () => {
-    console.log('Submited form');
-    // await createFood(safeFormData);
+  const handleSubmit = (formData: FormData) => {
+    createFood(formData);
   };
 
   return (
-    <div className="relative">
+    <div>
       <button
         onClick={() => navigate('/admin/foods')}
         type="button"
-        className="absolute top-0 left-0 text-admintext hover:underline text-sm"
+        className="relative mb-4 text-admintext text-sm hover:after:w-full after:transition-all after:duration-300 after:content-[''] after:absolute after:left-0 after:bottom-0 after:h-[1px] after:w-0 after:bg-admintext"
       >
         ← Quay lại danh sách
       </button>

@@ -7,6 +7,7 @@ import Cart from '../models/CartModel';
 import { Dish } from '../models/DishModel';
 
 enum DeliveryStatus {
+  PENDING = 'PENDING',
   PENDING_PICKUP = 'PENDING_PICKUP',
   PICKED_UP = 'PICKED_UP',
   IN_TRANSIT = 'IN_TRANSIT',
@@ -41,7 +42,6 @@ class OrderService {
     throw { statusCode: 400, message: 'Address is required' };
   }
 
-  // tôi muốn truyền tổng số lượng sản phẩm vào database
   async createOrder(userId: string, finalAddressId: string, payment_method: string, delivery_type: string, totalAmount: number, order_type: string, delivery_time_type: string, total_quantity: number, note: string, scheduled_time: Date | null, session: any) {
     const items_price = totalAmount;
     const vat_amount = items_price * 0.08;
@@ -58,7 +58,7 @@ class OrderService {
       shipping_fee,
       total_price,
       total_quantity,
-      delivery_status: 'PENDING_PICKUP',
+      delivery_status: 'PENDING',
       order_type,
       delivery_time_type,
       note,
@@ -298,9 +298,6 @@ class OrderService {
     }
   }
 
-
-
-
   async getOrderById(orderId: mongoose.Types.ObjectId) {
     try {
       const order = await Order.findById(orderId).populate('address_id').lean();
@@ -381,6 +378,8 @@ class OrderService {
       }
     } else if (orderType === 'ONLINE') {
       switch (deliveryStatus) {
+        case DeliveryStatus.PENDING:
+          return OrderStatus.PENDING;
         case DeliveryStatus.PENDING_PICKUP:
           return OrderStatus.PREPARING;
         case DeliveryStatus.PICKED_UP:
@@ -401,6 +400,113 @@ class OrderService {
     }
 
     return OrderStatus.PENDING;
+  }
+
+  async cancelOrder(orderId: mongoose.Types.ObjectId, reason: string) {
+    try {
+      const order = await Order.findById(orderId);
+      if (!order) {
+        throw { statusCode: 404, message: 'Order not found' };
+      }
+
+      if (order.status !== 'PENDING' || order.delivery_status !== 'PENDING') {
+        throw { 
+          statusCode: 400, 
+          message: 'Order can only be cancelled when status and delivery_status are PENDING' 
+        };
+      }
+
+      order.status = 'CANCELLED';
+      order.delivery_status = 'CANCELLED';
+      order.cancelled_at = new Date();
+      order.cancelled_reason = reason;
+
+      await order.save();
+
+      return order;
+    } catch (error: any) {
+      throw {
+        statusCode: error.statusCode || 500,
+        message: error.message || 'Error cancelling order',
+      };
+    }
+  }
+
+  async requestReturn(orderId: mongoose.Types.ObjectId, reason: string) {
+    try {
+      const order = await Order.findById(orderId);
+      if (!order) {
+        throw { statusCode: 404, message: 'Order not found' };
+      }
+
+      if (order.status !== 'COMPLETED' || order.delivery_status !== 'DELIVERED') {
+        throw {
+          statusCode: 400,
+          message: 'Return can only be requested when status is COMPLETED and delivery_status is DELIVERED',
+        };
+      }
+
+      // Kiểm tra thời gian từ khi giao hàng
+      if (!order.delivered_at) {
+        throw {
+          statusCode: 400,
+          message: 'Cannot request return: delivery time not found',
+        };
+      }
+
+      const deliveryTime = new Date(order.delivered_at);
+      const now = new Date();
+      const timeDiffInMinutes = (now.getTime() - deliveryTime.getTime()) / (1000 * 60);
+
+      if (timeDiffInMinutes > 30) {
+        throw {
+          statusCode: 400,
+          message: 'Return request must be made within 30 minutes of delivery',
+        };
+      }
+
+      order.status = 'RETURN_REQUESTED';
+      order.delivery_status = 'RETURN_REQUESTED';
+      order.returned_at = new Date();
+      order.cancelled_reason = reason;
+
+      await order.save();
+
+      return order;
+    } catch (error: any) {
+      throw {
+        statusCode: error.statusCode || 500,
+        message: error.message || 'Error requesting return',
+      };
+    }
+  }
+
+  async requestCancel(orderId: mongoose.Types.ObjectId, reason: string) {
+    try {
+      const order = await Order.findById(orderId);
+      if (!order) {
+        throw { statusCode: 404, message: 'Order not found' };
+      }
+
+      if (order.status !== 'PREPARING' || order.delivery_status !== 'PENDING_PICKUP') {
+        throw {
+          statusCode: 400,
+          message: 'Cancel request chỉ được phép khi status = PREPARING và delivery_status = PENDING_PICKUP',
+        };
+      }
+
+      order.status = 'CANCEL_REQUESTED';
+      order.delivery_status = 'CANCEL_REQUESTED';
+      order.cancelled_at = new Date();
+      order.cancelled_reason = reason;
+      await order.save();
+      return order;
+    } catch (error: any) {
+      throw {
+        statusCode: error.statusCode || 500,
+        message: error.message || 'Error requesting cancel',
+      };
+    }
   }
 }
 

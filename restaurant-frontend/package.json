@@ -5,11 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "clean": "rimraf dist",
+    "build": "npm run clean && vite build",
     "preview": "vite preview",
     "start": "vite preview",
     "lint": "eslint . --ext .ts,.tsx",
-    "format": "prettier --write ."
+    "lint:fix": "eslint . --ext .ts,.tsx --fix",
+    "format": "prettier --write .",
+    "check-types": "tsc --noEmit"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.2",
@@ -71,6 +74,7 @@
     "lint-staged": "15.2.11",
     "postcss": "^8.4.49",
     "prettier": "3.4.2",
+    "rimraf": "^6.0.1",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.3",
     "typescript-eslint": "8.18.1",

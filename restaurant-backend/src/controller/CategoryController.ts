@@ -61,15 +61,6 @@ class CategoryController {
     await CategoryService.DeleteCategory(req, res);
   }
 
-  async SearchCategory(req: Request, res: Response): Promise<any> {
-    try {
-      const result = await SearchService.search(Category, req.query, ['Cate_name']);
-      return res.status(200).json(result);
-    } catch (error: any) {
-      return res.status(400).json({ message: error.message || 'An error occurred' });
-    }
-  }
-
   async PaginateCate(req: Request, res: Response): Promise<void> {
     await PaginateService.paginate(Category, req, res);
   }
