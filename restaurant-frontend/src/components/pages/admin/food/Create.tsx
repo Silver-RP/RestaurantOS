@@ -1,15 +1,14 @@
-'use client';
+
 import { useCategories } from '@hooks/useCategories';
 import FoodForm from './FoodForm';
 import { useNavigate } from 'react-router-dom';
-import { useCUDFoods } from '../../../../hooks/useCUDFoods';
+import { useCRUDFoods } from '../../../../hooks/useCRUDFoods';
 
 const CreateFoodPage = () => {
   const { categories } = useCategories();
-  const { createFood } = useCUDFoods();
+  const { createFood } = useCRUDFoods();
   const navigate = useNavigate();
   
-
   const handleSubmit = (formData: FormData) => {
     createFood(formData);
   };

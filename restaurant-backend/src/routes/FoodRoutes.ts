@@ -13,12 +13,11 @@ const upload = multer({
 const router = Router();
 
 // API upload ảnh lên Cloudinary
-router.post('/createfood', upload.array('images'), FoodController.createFood);
+router.post('/createfood', upload.array('images', 5), FoodController.createFood);
 router.get('/getallfood', FoodController.getAllFood);
 router.get('/getfoodbyid/:id', FoodController.getFoodById);
 router.get('/getfoodbyslug/:slug', FoodController.getFoodBySlug);
-router.put('/updatefood/:id', FoodController.updateFood);
-router.delete('/deletefood/:id', FoodController.deleteFood);
+router.put('/updatefood/:id',  upload.array('images', 5), FoodController.updateFood);
 router.get('/getFoodByCategory', FoodController.getFoodByCategory);
 router.get('/getFoodNewest', FoodController.getFoodByNewest);
 router.get('/getFoodBest4', FoodController.getFoodBest4);
@@ -28,5 +27,11 @@ router.get('/getFoodByFavorites', FoodController.getFoodByFavorites);
 router.post('/favorite', AuthMiddleWare.verifyToken, FoodController.toggleFavorite);
 router.get('/getFavoriteFoods', AuthMiddleWare.verifyToken, FoodController.getFavoriteFoods);
 router.post('/countFoodView/:foodId', FoodController.countFoodView);
+
+// API Delete food
+router.delete('/softDeleteFood/:foodId', FoodController.softDeleteDish);
+router.get('/trashFood', FoodController.getTrashFood);
+router.patch('/restoreDish/:foodId', FoodController.restoreFood);
+router.delete('/deleteFood/:foodId', FoodController.permanentlyDeleteFood);
 
 export default router;

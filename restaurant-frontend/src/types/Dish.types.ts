@@ -13,6 +13,7 @@ export interface FoodType {
 }
 
 export interface FoodDetail {
+
   _id: string;
   name: string;
   slug: string;
@@ -27,6 +28,7 @@ export interface FoodDetail {
   shortDescription?: string;
   ingredients?: string;
   images: string[];
+  imagesPreview: string[];
   countInStock: number;
   views: number;
   ordered_count: number;
@@ -39,6 +41,8 @@ export interface FoodDetail {
   alcohol_content?: number;
   volume?: number;
   createdAt: string;
+  isDeleted: boolean;
+  deletedAt: string | number | Date;
 }
 
 

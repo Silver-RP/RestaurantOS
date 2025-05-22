@@ -9,7 +9,7 @@ const axiosInstance = axios.create({
 
 let isRefreshing = false;
 let failedQueue: any[] = [];
-let redirectingToLogin = false; // Thêm flag kiểm tra việc chuyển hướng
+let redirectingToLogin = false;
 
 const processQueue = (error: any, token: string | null = null) => {
   failedQueue.forEach(prom => {
@@ -22,7 +22,6 @@ const processQueue = (error: any, token: string | null = null) => {
   failedQueue = [];
 };
 
-// Interceptor Request
 axiosInstance.interceptors.request.use(config => {
   const accessToken = Cookies.get('accessToken');
   if (accessToken) {
@@ -31,13 +30,11 @@ axiosInstance.interceptors.request.use(config => {
   return config;
 });
 
-// Interceptor Response
 axiosInstance.interceptors.response.use(
   res => res,
   async err => {
     const originalRequest = err.config;
 
-    // Kiểm tra lỗi 401
     if (err.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
@@ -52,18 +49,17 @@ axiosInstance.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        // Kiểm tra xem đã chuyển hướng đến login chưa
         if (redirectingToLogin) {
           return Promise.reject(err);
         }
 
-        redirectingToLogin = true; // Đánh dấu đã chuyển hướng
+        redirectingToLogin = true;
         const response = await refreshAccessToken();
         const newAccessToken = response?.accessToken;
 
         if (!newAccessToken) throw new Error('No access token received');
         Cookies.set('accessToken', newAccessToken, {
-          expires: 1 / (24 * 60), // token hết hạn sau 1 phút (có thể thay đổi tùy ý)
+          expires: 1 / (24 * 60),
           sameSite: 'Lax',
           secure: false,
         });

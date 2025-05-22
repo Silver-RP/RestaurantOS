@@ -7,6 +7,7 @@ import {
   fetchFoodNewest,
   fetchFoodBest4,
   FetchFoodsParams,
+  getSoftDeleteFood,
 } from '../api/FoodApi';
 import { FoodResponse, FoodDetail } from '../types/Dish.types';
 import { useQuery } from '@tanstack/react-query';
@@ -116,6 +117,88 @@ export const useFoodsAdmin = () => {
   };
 };
 
+export const useFoodsTrash = () => {
+  const [foods, setFoods] = useState<FoodResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    limit: 12,
+    hasPrevPage: false,
+    hasNextPage: false,
+    prevPage: 1,
+    nextPage: 2,
+  });
+
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const parseFiltersFromSearchParams = (
+    params: URLSearchParams
+  ): FetchFoodsParams => {
+    const getNumber = (key: string) => {
+      const value = params.get(key);
+      return value ? Number(value) : undefined;
+    };
+
+    return {
+      page: getNumber('page') || 1,
+      limit: getNumber('limit') || 12,
+      sort: params.get('sort') || 'default',
+      search: params.get('keyword') || undefined, 
+    };
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadFoods = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const filters = parseFiltersFromSearchParams(searchParams);
+        const data = await getSoftDeleteFood(filters);
+
+        if (isMounted) {
+          setFoods(data);
+          setPagination({
+            currentPage: data.page,
+            totalPages: data.totalPages,
+            limit: data.limit,
+            hasPrevPage: data.hasPrevPage,
+            hasNextPage: data.hasNextPage,
+            prevPage: data.prevPage ?? 1,
+            nextPage: data.nextPage ?? data.totalPages,
+          });
+        }
+      } catch (error) {
+        if (isMounted) {
+          const err = error as AxiosError<{ message?: string }>;
+          setError(err.response?.data?.message || 'Đã xảy ra lỗi khi tải món ăn');
+        }
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    loadFoods();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [searchParams]);
+
+  return {
+    foods,
+    loading,
+    error,
+    pagination,
+    setPagination,
+    searchParams,
+    setSearchParams,
+  };
+};
 
 export const useFoods = () => {
   const [foods, setFoods] = useState<FoodResponse | null>(null);

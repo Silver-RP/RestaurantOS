@@ -43,6 +43,10 @@ export function getSortQuery(sort: string) {
             return { status: 1 };
         case 'statusZA':
             return { status: -1 };
+        case 'deletedAtOld':
+            return { deletedAt: 1 };
+        case 'deletedAtNew':
+            return { deletedAt: -1 };
         default:
             return { createdAt: -1 };
     }

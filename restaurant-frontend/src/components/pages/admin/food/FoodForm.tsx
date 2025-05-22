@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import slugify from 'slugify';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCategories } from '@hooks/useCategories';
 import { FoodDetail } from '../../../../types/Dish.types';
 import ImageUploadPreview from '../ImageUploadPreview';
 import { Category } from 'types/Category.type';
 import { FaChevronDown } from 'react-icons/fa';
-import { toast } from 'react-toastify';
+import { useFoodLogic } from '@/hooks/useFoodsAdminLogic';
+import ConfirmModal from '@/components/common/ConfirmModal';
+import { FiTrash2 } from "react-icons/fi"
 
 interface FoodFormProps {
   initialData?: FoodDetail;
@@ -15,181 +15,90 @@ interface FoodFormProps {
   submitLabel: string;
 }
 
-const FoodForm: React.FC<FoodFormProps> = ({ initialData, onSubmit }) => {
+const FoodForm: React.FC<FoodFormProps> = ({
+  initialData,
+  onSubmit,
+  categories,
+}) => {
   const navigate = useNavigate();
-  const { categories } = useCategories();
-
-  const [name, setName] = useState('');
-  const [slug, setSlug] = useState('');
-  const [categoryId, setCategoryId] = useState('');
-  const [status, setStatus] = useState<'hidden' | 'available' | 'soldout'>(
-    'available',
-  );
-  const [price, setPrice] = useState(0);
-  const [discountPrice, setDiscountPrice] = useState(0);
-  const [discountUntil, setDiscountUntil] = useState<Date | null>(null);
-  const [isDishNew, setIsDishNew] = useState(false);
-  const [newUntil, setNewUntil] = useState<Date | null>(null);
-  const [description, setDescription] = useState('');
-  const [shortDescription, setShortDescription] = useState('');
-  const [ingredients, setIngredients] = useState('');
-  const [images, setImages] = useState<(File | string)[]>([]);
-  const [countInStock, setCountInStock] = useState(0);
-  const [origin, setOrigin] = useState('');
-  const [alcoholType, setAlcoholType] = useState('');
-  const [alcoholContent, setAlcoholContent] = useState(0);
-  const [volume, setVolume] = useState(0);
-
-  const selectedCategory = categories?.data.find((c) => c._id === categoryId);
-  const isAlcoholCategory =
-    selectedCategory?.Cate_name.toLowerCase().includes('đồ uống có cồn');
-
-  useEffect(() => {
-    if (initialData) {
-      setName(initialData.name);
-      setSlug(initialData.slug);
-      setCategoryId(initialData.categories?.[0]?._id || '');
-      setStatus(initialData.status);
-      setPrice(initialData.price);
-      setDiscountPrice(initialData.discount_price || 0);
-      setDiscountUntil(initialData.discountUntil || null);
-      setIsDishNew(initialData.isDishNew || false);
-      setNewUntil(initialData.newUntil || null);
-      setDescription(initialData.description || '');
-      setShortDescription(initialData.shortDescription || '');
-      setIngredients(initialData.ingredients || '');
-      setImages(initialData.images || []);
-      setCountInStock(initialData.countInStock);
-      setOrigin(initialData.origin || '');
-      setAlcoholType(initialData.alcohol_type || '');
-      setAlcoholContent(initialData.alcohol_content || 0);
-      setVolume(initialData.volume || 0);
-    }
-  }, [initialData]);
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const fileList = e.target.files;
-    if (!fileList) return;
-
-    const newFiles = Array.from(fileList);
-    if (images.length + newFiles.length > 5) {
-      toast.error('Chỉ được tải lên tối đa 5 ảnh');
-      return;
-    }
-
-    setImages((prev) => [...prev, ...newFiles]);
-  };
-
-  const handleRemoveImage = (index: number) => {
-    setImages((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const generateSlug = (value: string) =>
-    slugify(value, { lower: true, strict: true });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!name.trim() || name.trim().length < 3) {
-      toast.error('Tên món ăn phải có ít nhất 3 ký tự');
-      return;
-    }
-
-    if (price < 0) {
-      toast.error('Giá phải lớn hơn hoặc bằng 0');
-      return;
-    }
-
-    if (discountPrice < 0 || discountPrice > price) {
-      toast.error('Giá khuyến mãi phải nhỏ hơn hoặc bằng giá gốc và >= 0');
-      return;
-    }
-
-    if (countInStock < 0) {
-      toast.error('Số lượng tồn kho phải lớn hơn hoặc bằng 0');
-      return;
-    }
-
-    if (!description.trim()) {
-      toast.error('Mô tả không được để trống');
-      return;
-    }
-
-    if (!categoryId) {
-      toast.error('Phải chọn danh mục cho món ăn');
-      return;
-    }
-
-    if (!['hidden', 'available', 'soldout'].includes(status)) {
-      toast.error('Trạng thái không hợp lệ');
-      return;
-    }
-
-    if (isDishNew && newUntil !== null && newUntil <= new Date()) {
-      toast.error('Ngày kết thúc "Món mới" phải lớn hơn ngày hiện tại');
-      return;
-    }
-    
-
-    if (discountPrice > 0 && discountUntil !== null && discountUntil <= new Date()) {
-      toast.error('Ngày kết thúc khuyến mãi phải lớn hơn ngày hiện tại');
-      return;
-    }
-
-    if (images.length === 0) {
-      toast.error('Phải chọn ít nhất 1 ảnh');
-      return;
-    }
-    if (images.length > 5) {
-      toast.error('Chỉ được tải lên tối đa 5 ảnh');
-      return;
-    }
-
-    if (alcoholContent < 0 || alcoholContent > 100) {
-      toast.error('Nồng độ cồn phải từ 0 đến 100');
-      return;
-    }
-    if (volume && volume < 0) {
-      toast.error('Thể tích phải lớn hơn hoặc bằng 0');
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('name', name.trim());
-    formData.append('slug', slug.trim());
-    formData.append('price', String(price));
-    formData.append('discount_price', String(discountPrice));
-    formData.append('countInStock', String(countInStock));
-    formData.append('description', description.trim());
-    formData.append('shortDescription', shortDescription.trim());
-    formData.append('ingredients', ingredients.trim());
-    formData.append('category', categoryId);
-    formData.append('status', status);
-    formData.append('isDishNew', String(isDishNew));
-    if (isDishNew && newUntil) {
-      formData.append('newUntil', newUntil.toISOString());
-    }
-    if (discountPrice > 0 && discountUntil) {
-      formData.append('discountUntil', discountUntil.toISOString());
-    }
-    if (isAlcoholCategory) {
-      formData.append('origin', origin.trim());
-      formData.append('alcohol_type', alcoholType.trim());
-      formData.append('alcohol_content', String(alcoholContent));
-      formData.append('volume', String(volume));
-    }
-    images.forEach((img) => {
-      if (img instanceof File) formData.append('images', img);
-    });
-
-    onSubmit(formData);
-  };
+  
+  const {
+    name,
+    setName,
+    slug,
+    setSlug,
+    categoryId,
+    setCategoryId,
+    status,
+    setStatus,
+    price,
+    setPrice,
+    discountPrice,
+    setDiscountPrice,
+    discountUntil,
+    setDiscountUntil,
+    isDishNew,
+    setIsDishNew,
+    newUntil,
+    setNewUntil,
+    description,
+    setDescription,
+    shortDescription,
+    setShortDescription,
+    ingredients,
+    setIngredients,
+    images,
+    handleImageChange,
+    handleRemoveImage,
+    countInStock,
+    setCountInStock,
+    origin,
+    setOrigin,
+    alcoholType,
+    setAlcoholType,
+    alcoholContent,
+    setAlcoholContent,
+    volume,
+    setVolume,
+    handleSubmit,
+    generateSlug,
+    isAlcoholCategory,
+    handleDeleteClick,
+    showConfirm,
+    setShowConfirm,
+    handleConfirmDelete
+  } = useFoodLogic({ initialData, categories, onSubmit });
 
   return (
     <div className="p-6 bg-white shadow-lg rounded-lg w-full max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4 text-admintext">
-        {initialData ? 'Chỉnh sửa món ăn' : 'Thêm món ăn mới'}
-      </h1>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold text-admintext">
+          {initialData ? 'Chỉnh sửa món ăn' : 'Thêm món ăn mới'}
+        </h1>
+
+        {initialData && (
+          <button
+          type="button"
+          onClick={handleDeleteClick}
+          className="flex items-center px-4 py-2 bg-red-50 text-red-600 rounded hover:bg-red-100 gap-2"
+          title="Xoá món ăn"
+        >
+          <FiTrash2 />
+          <span className="hidden sm:inline">Xoá</span>
+        </button>
+        
+        )}
+      </div>
+
+      {showConfirm && (
+        <ConfirmModal
+          title="Xác nhận xoá"
+          description={`Bạn có chắc chắn muốn xoá "${initialData?.name || 'món ăn'}"?`}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setShowConfirm(false)}
+        />
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -236,7 +145,7 @@ const FoodForm: React.FC<FoodFormProps> = ({ initialData, onSubmit }) => {
               required
             >
               <option value="">-- Chọn danh mục --</option>
-              {categories?.data.map((c) => (
+              {categories.map((c) => (
                 <option key={c._id} value={c._id}>
                   {c.Cate_name}
                 </option>

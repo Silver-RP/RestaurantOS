@@ -129,14 +129,13 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ initialData, onSubmit, subm
           </select>
         </div>
 
-        {/* Ảnh */}
         <ImageUploadPreview
           images={image ? [image] : []}
-          onChange={handleImageChange}
-        />
+          onChange={handleImageChange} onRemove={function (index: number): void {
+            throw new Error('Function not implemented.');
+          } }        />
         {errors.image && <p className="text-red-500 text-sm mt-1">{errors.image}</p>}
 
-        {/* Buttons */}
         <div className="flex justify-end gap-2">
           <button
             type="button"

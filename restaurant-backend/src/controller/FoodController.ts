@@ -9,19 +9,19 @@ class FoodController {
   async createFood(req: Request, res: Response): Promise<any> {
     try {
       const { name, slug, price, description, category } = req.body;
-  
+
       if (!name || !price || !slug || !description || !category) {
         return res.status(400).json({ message: 'Thiếu thông tin bắt buộc: name, price, slug, description, category' });
       }
       if (!mongoose.Types.ObjectId.isValid(category)) {
         return res.status(400).json({ message: 'Category không hợp lệ' });
       }
-  
+
       const files = req.files as Express.Multer.File[];
       if (!files || files.length === 0) {
         return res.status(400).json({ message: 'Phải có ít nhất một hình ảnh' });
       }
-  
+
       const newFood = await FoodService.createFoodWithImages(req.body, files);
       return res.status(201).json({ message: 'Tạo món ăn thành công', data: newFood });
     } catch (error: any) {
@@ -29,7 +29,33 @@ class FoodController {
       return res.status(500).json({ message: 'Lỗi máy chủ', error: error.message });
     }
   }
-  
+
+  async updateFood(req: Request, res: Response): Promise<any> {
+    try {
+      const { id } = req.params;
+      const { name, slug, price, description, category } = req.body;
+
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ message: 'ID món ăn không hợp lệ' });
+      }
+
+      if (!name || !price || !slug || !description || !category) {
+        return res.status(400).json({ message: 'Thiếu thông tin bắt buộc: name, price, slug, description, category' });
+      }
+
+      if (!mongoose.Types.ObjectId.isValid(category)) {
+        return res.status(400).json({ message: 'Category không hợp lệ' });
+      }
+
+      const files = req.files as Express.Multer.File[];
+
+      const updatedFood = await FoodService.updateFoodWithImages(id, req.body, files);
+      return res.status(200).json({ message: 'Cập nhật món ăn thành công', data: updatedFood });
+    } catch (error: any) {
+      console.error('Error updating food:', error);
+      return res.status(500).json({ message: 'Lỗi máy chủ', error: error.message });
+    }
+  }
 
   async getTopFavoriteFood(req: Request, res: Response): Promise<void> {
     try {
@@ -120,26 +146,6 @@ class FoodController {
         success: false,
         message: 'Error getting food by newest',
       });
-    }
-  }
-
-  async updateFood(req: Request, res: Response): Promise<any> {
-    try {
-      const { id } = req.params;
-      const updatedFood = await FoodService.updateFood(id, req.body);
-      res.status(200).json(updatedFood);
-    } catch {
-      throw new Error('Error updating food');
-    }
-  }
-
-  async deleteFood(req: Request, res: Response): Promise<any> {
-    try {
-      const { id } = req.params;
-      const deletedFood = await FoodService.deleteFood(id);
-      res.status(200).json(deletedFood);
-    } catch {
-      throw new Error('Error deleting food');
     }
   }
 
@@ -293,5 +299,61 @@ class FoodController {
       return res.status(500).json({ message: 'Internal server error' });
     }
   }
+
+  async softDeleteDish(req: Request, res: Response): Promise<any> {
+    try {
+      const id = req.params.foodId;
+      const deletedDish = await FoodService.softDeleteDish(id);
+      return res.status(200).json({ message: 'Dish deleted successfully', data: deletedDish });
+    } catch (error) {
+      console.error('Error soft deleting dish:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
+  async getTrashFood(req: Request, res: Response): Promise<any> {
+    try {
+      const params = parseFoodQueryParams(req.query);
+
+      const foods = await FoodService.getTrashFood(params);
+
+      return res.status(200).json({
+        success: true,
+        message: 'All deleted food retrieved successfully',
+        data: foods,
+      });
+    } catch (error: any) {
+      console.error('Error in getTrashFood:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Error getting deleted food',
+        error: error.message,
+      });
+    }
+  }
+
+  async restoreFood(req: Request, res: Response): Promise<any> {
+    try {
+       const id = req.params.foodId;
+       console.log('RestoreFood ID:', id);
+      const restoredDish = await FoodService.restoreDish(id);
+      return res.status(200).json({ message: 'Dish restored successfully', data: restoredDish });
+    } catch (error) {
+      console.error('Error restoring dish:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
+  async permanentlyDeleteFood(req: Request, res: Response): Promise<any> {
+    try {
+       const id = req.params.foodId;
+      const deletedDish = await FoodService.permanentlyDeleteDish(id);
+      return res.status(200).json({ message: 'Dish permanently deleted successfully', data: deletedDish });
+    } catch (error) {
+      console.error('Error permanently deleting dish:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
 }
 export default new FoodController();
