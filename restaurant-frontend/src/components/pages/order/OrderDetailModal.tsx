@@ -99,9 +99,9 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                               : order.status === 'PREPARING'
                                 ? 'Đang chuẩn bị'
                                 : order.delivery_status === 'CANCEL_REQUESTED'
-                                  ? 'Đang yêu cầu hủy đơn'
+                                  ? 'Đã yêu cầu hủy đơn'
                                   : order.delivery_status === 'RETURN_REQUESTED'
-                                    ? 'Đang yêu cầu hoàn trả'
+                                    ? 'Đã yêu cầu hoàn trả'
                                     : order.status === 'COMPLETED'
                                       ? 'Đã hoàn thành'
                                       : order.status}
@@ -123,9 +123,9 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                               : order.delivery_status === 'PENDING'
                                 ? 'Chờ xác nhận'
                                 : order.delivery_status === 'CANCEL_REQUESTED'
-                                  ? 'Đang yêu cầu hủy đơn'
+                                  ? 'Đã yêu cầu hủy đơn'
                                   : order.delivery_status === 'RETURN_REQUESTED'
-                                    ? 'Đang yêu cầu hoàn trả'
+                                    ? 'Đã yêu cầu hoàn trả'
                                     : order.delivery_status === 'DELIVERED'
                                       ? 'Đã giao'
                                       : order.delivery_status}
