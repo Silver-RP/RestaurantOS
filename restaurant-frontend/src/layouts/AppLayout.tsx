@@ -38,7 +38,7 @@ const LayoutContent: React.FC = () => {
           {/* Desktop Sidebars */}
           <div className="hidden xl:block">
             <div
-              className={`fixed top-0 left-0 z-60 h-full w-16 transition-transform duration-300 ${
+              className={`fixed top-0 left-0 z-[100] h-full w-16 transition-transform duration-300 ${
                 isSidebarOpen && !isExtended ? 'translate-x-0' : '-translate-x-16'
               }`}
             >
@@ -46,7 +46,7 @@ const LayoutContent: React.FC = () => {
             </div>
 
             <div
-              className={`fixed top-0 left-0 z-60 h-full transition-transform duration-300 ${
+              className={`fixed top-0 left-0 z-[100] h-full transition-transform duration-300 ${
                 isSidebarOpen && isExtended ? 'translate-x-0' : '-translate-x-72'
               } ${height >= 600 ? 'w-72' : 'w-64'}`}
             >

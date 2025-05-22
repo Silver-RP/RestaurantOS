@@ -48,33 +48,33 @@ const Tab: React.FC<SingleTabProps> = ({ item, isOpen, onToggle }) => {
   }, [isOpen]);
   
   return (
-    <div className="border rounded-lg border-hr px-3 my-4">
-      <button
-        onClick={() => onToggle(item.id)}
-        className="w-full flex justify-between items-center text-left py-4 px-1 text-white font-medium"
-      >
-        <span>{item.title}</span>
-        <span className="text-gray-400">
-          {isOpen ? <FaMinus /> : <FaPlus />}
-        </span>
-      </button>
-      
-      <div 
-        ref={contentRef}
-        style={{ 
-          maxHeight: height,
-          overflow: 'hidden',
-          transition: 'max-height 0.3s ease-in-out'
-        }}
-        className="px-1 my-2"
-      >
-        {typeof item.content === 'string' ? (
-          <div className="text-white py-4">{item.content}</div>
-        ) : (
-          item.content
-        )}
-      </div>
+    <div className="border border-hr rounded-lg px-4 mb-4">
+    <button
+      onClick={() => onToggle(item.id)}
+      className="w-full flex items-center justify-between text-left py-4 text-white font-medium"
+    >
+      <span className="leading-none">{item.title}</span>
+      <span className="text-gray-400 text-lg">
+        {isOpen ? <FaMinus /> : <FaPlus />}
+      </span>
+    </button>
+  
+    <div 
+      ref={contentRef}
+      style={{ 
+        maxHeight: height,
+        overflow: 'hidden',
+        transition: 'max-height 0.3s ease-in-out'
+      }}
+      className="px-2"
+    >
+      {typeof item.content === 'string' ? (
+        <div className="text-white py-4 leading-relaxed">{item.content}</div>
+      ) : (
+        item.content
+      )}
     </div>
+  </div>
   );
 };
 
