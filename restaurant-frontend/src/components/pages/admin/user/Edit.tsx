@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,6 +7,7 @@ import { editUserSchema, EditUserFormValues } from '@/utils/zodSchemas';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { useRoles } from '@/hooks/useRoles';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
 
 interface RoleOption {
   value: string;
@@ -25,6 +26,8 @@ const EditUserForm: React.FC<EditUserFormProps> = ({
   onSubmit,
   disableRoleAndStatus,
 }) => {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
   const roleOptions: RoleOption[] = roles.map((role) => ({
     value: role._id,
@@ -144,29 +147,41 @@ const EditUserForm: React.FC<EditUserFormProps> = ({
           )}
         </div>
 
-        <div>
+        <div className="relative">
           <label className="block text-sm mb-1">
             Mật khẩu <span className="text-red-600">*</span>
           </label>
           <input
-            type="password"
+            type={showPassword ? 'text' : 'password'}
             {...register('password')}
-            className="w-full border px-3 py-2 rounded"
+            className="w-full border px-3 py-2 rounded pr-10"
           />
+            <span
+            className="absolute right-3 top-[38px] cursor-pointer text-gray-500"
+            onClick={(): void => setShowPassword((prev: boolean) => !prev)}
+            >
+            {showPassword ? <FiEyeOff /> : <FiEye />}
+            </span>
           {errors.password && (
             <p className="text-red-500 text-sm">{errors.password.message}</p>
           )}
         </div>
 
-        <div>
+        <div className="relative">
           <label className="block text-sm mb-1">
             Xác nhận mật khẩu <span className="text-red-600">*</span>
           </label>
           <input
-            type="password"
+            type={showConfirmPassword ? 'text' : 'password'}
             {...register('confirmPassword')}
-            className="w-full border px-3 py-2 rounded"
+            className="w-full border px-3 py-2 rounded pr-10"
           />
+            <span
+            className="absolute right-3 top-[38px] cursor-pointer text-gray-500"
+            onClick={(): void => setShowConfirmPassword((prev: boolean) => !prev)}
+            >
+            {showConfirmPassword ? <FiEyeOff /> : <FiEye />}
+            </span>
           {errors.confirmPassword && (
             <p className="text-red-500 text-sm">
               {errors.confirmPassword.message}
