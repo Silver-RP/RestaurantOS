@@ -11,17 +11,17 @@ export const tabs = [
 ];
 
 export type DeliveryStatusMapping = {
-  delivery_status: string | string[] | null;
+  delivery_status: string[] | null;
 };
 
 export const deliveryStatusMapping: Record<string, DeliveryStatusMapping> = {
   'Tất cả đơn hàng': { delivery_status: null },
-  'Chờ xác nhận': { delivery_status: 'PENDING' },
-  'Đang chuẩn bị': { delivery_status: 'PENDING_PICKUP' },
-  'Đang giao hàng': { delivery_status: 'IN_TRANSIT' },
-  'Đã giao hàng': { delivery_status: 'DELIVERED' },
-  'Đã hủy': { delivery_status: 'CANCELLED' },
-  'Đã trả hàng': { delivery_status:  'RETURNED' },
+  'Chờ xác nhận': { delivery_status: ['PENDING'] },
+  'Đang chuẩn bị': { delivery_status: ['PENDING_PICKUP', 'CANCEL_REQUESTED'] },
+  'Đang giao hàng': { delivery_status: ['PICKED_UP', 'IN_TRANSIT'] },
+  'Đã giao hàng': { delivery_status: ['DELIVERED', 'RETURN_REQUESTED'] },
+  'Đã hủy': { delivery_status: ['CANCELLED'] },
+  'Đã trả hàng': { delivery_status: ['RETURNED'] }
 };
 
 interface NavigationOrderProps {

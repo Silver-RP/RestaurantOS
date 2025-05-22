@@ -263,7 +263,7 @@ const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
             className="px-4 py-1.5 text-xs bg-transparent border border-secondaryColor text-white font-normal font-sans"
             disabled
           >
-            Đang yêu cầu hủy đơn
+            Đã yêu cầu hủy đơn
           </button>
         )}
 
@@ -284,7 +284,7 @@ const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
             className="px-4 py-1.5 text-xs bg-transparent border border-secondaryColor text-white font-normal font-sans"
             disabled
           >
-            Đang yêu cầu hoàn trả
+            Đã yêu cầu hoàn trả
           </button>
         )}
 
