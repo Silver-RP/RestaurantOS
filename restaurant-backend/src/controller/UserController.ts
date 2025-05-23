@@ -115,18 +115,18 @@ class UserController {
         return;
       }
 
-      // ===== Lấy thông tin role name =====
+      // ===== Lấy role name của requester =====
       const roleDocs = await Role.find({ _id: { $in: requester.roles } });
       const roleNames = roleDocs.map((r) => r.name);
 
-      // ===== Xác định vai trò cao nhất =====
-      type RoleName = 'user' | 'admin' | 'superadmin';
+      // ===== Xác định vai trò cao nhất của requester =====
+      type RoleName = 'user' | 'manager' | 'superadmin';
       let highestRole: RoleName = 'user';
       if (roleNames.includes('superadmin')) highestRole = 'superadmin';
-      else if (roleNames.includes('admin')) highestRole = 'admin';
+      else if (roleNames.includes('manager')) highestRole = 'manager';
 
-      // ===== Kiểm tra quyền sửa người khác nếu là user =====
-      if (highestRole === 'user' && requester._id !== userId) {
+      // ===== Nếu là user thì chỉ được chỉnh sửa chính mình =====
+      if (highestRole === 'user' && String(requester._id) !== String(userId)) {
         res.status(403).json({
           status: 'ERROR',
           message: 'Bạn không có quyền chỉnh sửa người dùng khác',
@@ -134,9 +134,10 @@ class UserController {
         return;
       }
 
+      // ===== Danh sách field được phép chỉnh sửa theo vai trò =====
       const editableFieldsByRole: Record<RoleName, string[]> = {
         user: ['username', 'phone', 'birthday', 'gender'],
-        admin: ['username', 'phone', 'birthday', 'gender', 'status', 'roles', 'email'],
+        manager: ['username', 'phone', 'birthday', 'gender', 'status', 'roles', 'email'],
         superadmin: [
           'username',
           'phone',
@@ -151,7 +152,7 @@ class UserController {
 
       const allowedFields = editableFieldsByRole[highestRole];
 
-      // ===== Loại bỏ các field không được phép =====
+      // ===== Lọc bỏ những trường không được phép sửa =====
       Object.keys(updateData).forEach((key) => {
         if (!allowedFields.includes(key)) {
           delete updateData[key];
@@ -168,6 +169,7 @@ class UserController {
       });
     }
   }
+
   async changeUserPassword(req: Request, res: Response): Promise<void> {
     try {
       const userId = req.params.userId;
@@ -200,10 +202,11 @@ class UserController {
       const { password } = req.body;
 
       if (!password) {
-        return res.status(400).json({
+        res.status(400).json({
           status: 'ERROR',
           message: 'Missing password to check',
         });
+        return;
       }
 
       const result = await UserService.checkUserPassword(userId, password);

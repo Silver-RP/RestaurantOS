@@ -87,7 +87,7 @@ export const canManageUserByRole = async (req: Request, res: Response, next: Nex
         if (targetCurrentRoles.includes('user') || newRoleNames.includes('user')) {
           return res
             .status(403)
-            .json({ message: 'Manager không được chỉnh sửa người dùng thông thường (user)' });
+            .json({ message: 'Manager không được chỉnh sửa người dùng thông thường' });
         }
 
         const canEditOld = targetCurrentRoles.every((r) => allowed.includes(r));
