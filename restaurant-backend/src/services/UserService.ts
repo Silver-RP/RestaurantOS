@@ -24,9 +24,17 @@ interface GetAllUserParams {
   page?: number;
   limit?: number;
   keyword?: string;
+  sort?: string;
+  order?: string;
 }
 class UserService {
-  getAllUser = async ({ page = 1, limit = 10, keyword = '' }: GetAllUserParams) => {
+  getAllUser = async ({
+    page = 1,
+    limit = 10,
+    keyword = '',
+    sort = '',
+    order = 'asc',
+  }: GetAllUserParams) => {
     const query: any = {};
 
     if (keyword) {
@@ -38,9 +46,19 @@ class UserService {
 
     const skip = (page - 1) * limit;
 
+    const sortOption: any = {};
+    if (sort) {
+      sortOption[sort] = order === 'desc' ? -1 : 1;
+    }
+
     try {
       const [docs, totalDocs] = await Promise.all([
-        User.find(query).skip(skip).limit(limit).populate('roles', 'name'),
+        User.find(query)
+          .sort(sortOption)
+          .skip(skip)
+          .limit(limit)
+          .populate('roles', 'name')
+          .select('-password'),
         User.countDocuments(query),
       ]);
 

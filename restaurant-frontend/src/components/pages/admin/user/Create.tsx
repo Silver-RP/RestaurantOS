@@ -254,23 +254,33 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
           <Controller
             name="roles"
             control={control}
-            render={({ field }) => (
-              <Select
-                isMulti
-                options={filteredRoleOptions}
-                value={filteredRoleOptions.filter((opt) =>
-                  (field.value ?? []).includes(opt.value),
+            render={({ field, fieldState }) => (
+              <>
+                <Select
+                  isMulti={false}
+                  options={filteredRoleOptions}
+                  value={
+                    filteredRoleOptions.find(
+                      (opt) => field.value?.[0] === opt.value,
+                    ) || null
+                  }
+                  onChange={(selected) => {
+                    field.onChange(selected ? [selected.value] : []);
+                    field.onBlur(); // ⚠️ Trigger validate
+                  }}
+                  onBlur={field.onBlur}
+                  placeholder="-- Chọn vai trò --"
+                  classNamePrefix="react-select"
+                />
+                {fieldState.error && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {fieldState.error.message}
+                  </p>
                 )}
-                onChange={(selected) => {
-                  field.onChange(selected.map((opt) => opt.value));
-                  field.onBlur(); // ← Thêm dòng này để trigger validation
-                }}
-              />
+              </>
             )}
           />
-          {errors.roles && (
-            <p className="text-red-500 text-sm">{errors.roles.message}</p>
-          )}
+         
         </div>
 
         {/* Submit */}

@@ -16,11 +16,23 @@ export const useUsers = () => {
   const [totalDocs, setTotalDocs] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const [limit, setLimit] = useState(12);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [searchParams, setSearchParams] = useSearchParams();
-
+  useEffect(() => {
+    if (!searchParams.get('limit')) {
+      const newParams = new URLSearchParams(searchParams.toString());
+      newParams.set('limit', '12');
+      setSearchParams(newParams);
+    }
+  }, []);
+  useEffect(() => {
+    const limitParam = Number(searchParams.get('limit') || 12);
+    if (limit !== limitParam) {
+      setLimit(limitParam);
+    }
+  }, [searchParams]);
   const fetchUsers = async () => {
     try {
       setLoading(true);
@@ -51,7 +63,9 @@ export const useUsers = () => {
         setPage(res.page);
         setLimit(res.pageSize);
       } else {
-        const query: UserQueryParams = { keyword, page, limit };
+        const sort = searchParams.get('sort') || '';
+        const order = searchParams.get('order') || '';
+        const query: UserQueryParams = { keyword, page, limit, sort, order };
         const res = await getAllUsers(query);
         setUsers(res.users);
         setTotalDocs(res.totalDocs);

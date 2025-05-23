@@ -6,18 +6,20 @@ import mongoose from 'mongoose';
 class UserController {
   async getAllUser(req: Request, res: Response): Promise<void> {
     try {
-      const { page = 1, limit = 10, keyword = '' } = req.query;
+      const { page = 1, limit = 10, keyword = '', sort = '', order = 'asc' } = req.query;
 
       const result = await UserService.getAllUser({
         page: Number(page),
         limit: Number(limit),
         keyword: String(keyword),
+        sort: String(sort),
+        order: String(order),
       });
 
       res.status(200).json({
         status: 'OK',
         message: 'Fetched users successfully',
-        data: result, // docs, totalDocs, totalPages, page, limit
+        data: result,
       });
     } catch (error: any) {
       console.error('Error fetching users:', error.message);
@@ -86,7 +88,7 @@ class UserController {
         startDate: req.query.birthdayFrom ? new Date(req.query.birthdayFrom as string) : undefined,
         endDate: req.query.birthdayTo ? new Date(req.query.birthdayTo as string) : undefined,
         page: req.query.page ? parseInt(req.query.page as string) : 1,
-        pageSize: req.query.pageSize ? parseInt(req.query.pageSize as string) : 10,
+        pageSize: req.query.pageSize ? parseInt(req.query.pageSize as string) : 12,
       };
 
       const result = await UserService.filterUsers(filterOptions);

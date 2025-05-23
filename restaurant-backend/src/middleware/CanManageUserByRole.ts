@@ -64,12 +64,16 @@ export const canManageUserByRole = async (req: Request, res: Response, next: Nex
       const newRoles = await Roles.find({ _id: { $in: targetRoleIds } });
       const newRoleNames = newRoles.map((r) => r.name);
 
-      // Superadmin không được chỉnh sửa người có role superadmin
+      // ❌ Không được chỉnh sửa người có role là 'user' (dù là vai trò hiện tại hay gán mới)
+      if (targetCurrentRoles.includes('user') || newRoleNames.includes('user')) {
+        return res
+          .status(403)
+          .json({ message: 'Không được chỉnh sửa người dùng có vai trò là user' });
+      }
       if (isSuperadmin && targetCurrentRoles.includes('superadmin')) {
         return res.status(403).json({ message: 'Không được chỉnh sửa người có quyền superadmin' });
       }
 
-      // Superadmin không được gán superadmin cho người khác
       if (isSuperadmin && newRoleNames.includes('superadmin') && targetUserId !== currentUser.id) {
         return res.status(403).json({
           message: 'Superadmin không được gán vai trò superadmin cho người khác',
@@ -80,11 +84,18 @@ export const canManageUserByRole = async (req: Request, res: Response, next: Nex
 
       if (isManager) {
         const allowed = ['staff', 'cashier'];
+        if (targetCurrentRoles.includes('user') || newRoleNames.includes('user')) {
+          return res
+            .status(403)
+            .json({ message: 'Manager không được chỉnh sửa người dùng thông thường (user)' });
+        }
+
         const canEditOld = targetCurrentRoles.every((r) => allowed.includes(r));
         const canEditNew = newRoleNames.every((r) => allowed.includes(r));
         if (!canEditOld || !canEditNew) {
           return res.status(403).json({ message: 'Manager không được chỉnh sửa vượt cấp' });
         }
+
         return next();
       }
 

@@ -158,9 +158,8 @@ export const editUserSchema = z
         'Ngày sinh không hợp lệ',
       ),
 
-    gender: z.enum(['Nam', 'Nữ', 'Khác'], {
-      errorMap: () => ({ message: 'Giới tính không hợp lệ' }),
-    }),
+    // option gender 
+    gender: z.enum(['Nam', 'Nữ', 'Khác']).optional().or(z.literal('')),
 
     status: z.enum(['active', 'inactive', 'block'], {
       errorMap: () => ({ message: 'Trạng thái không hợp lệ' }),
