@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { FaFacebookF, FaTwitter, FaYoutube, FaPinterest, FaInstagram, FaClock } from "react-icons/fa";
 
 const Footer = () => {
@@ -35,11 +36,11 @@ const Footer = () => {
           <div className="flex flex-col items-center xs:block col-span-8 xs:col-span-4 md:col-span-3 xl:col-span-4 pl-0 md:pl-10">
             <h3 className="md:text-lg text:md font-bold mb-4 mt-5 text-white">HỖ TRỢ KHÁCH HÀNG</h3>
             <ul className="space-y-2 flex flex-col items-center xs:block  mt-0 xs:mt-7">
-              <li><a href="#" className="text-sm hover:text-secondaryColor transition">Câu hỏi thường gặp</a></li>
-              <li><a href="#" className="text-sm hover:text-secondaryColor transition">Hỗ trợ đặt bàn</a></li>
-              <li><a href="#" className="text-sm hover:text-secondaryColor transition">Chính sách giao hàng</a></li>
-              <li><a href="#" className="text-sm hover:text-secondaryColor transition">Điều khoản và điều kiện</a></li>
-              <li><a href="#" className="text-sm hover:text-secondaryColor transition">Khiếu nại và góp ý</a></li>
+              <li><Link to="profile/faqs" className="text-sm hover:text-secondaryColor transition">Câu hỏi thường gặp</Link></li>
+              <li><Link to="profile/faqs" className="text-sm hover:text-secondaryColor transition">Hỗ trợ đặt bàn</Link></li>
+              <li><Link to="profile/faqs" className="text-sm hover:text-secondaryColor transition">Chính sách giao hàng</Link></li>
+              <li><Link to="profile/faqs" className="text-sm hover:text-secondaryColor transition">Điều khoản và điều kiện</Link></li>
+              <li><Link to="contact" className="text-sm hover:text-secondaryColor transition">Khiếu nại và góp ý</Link></li>
             </ul>
           </div>
           <div className="flex flex-col items-center xs:block col-span-8 md:col-span-3 xl:col-span-4">

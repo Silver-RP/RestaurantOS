@@ -34,11 +34,7 @@ const TrashTable: React.FC = () => {
     handlePermanentDeleteClick,
     handleConfirmPermanentDelete,
   } = useFoodsTrashLogic();
-
-  useEffect(() => {
-    console.log('ShowConfirm has changed:', showConfirm);
-  }, [showConfirm]);
-
+  
   const renderSortIcon = (field: typeof sortField) => {
     const iconType = getSortIcon(field);
     if (iconType === 'asc') return <FaArrowUp />;

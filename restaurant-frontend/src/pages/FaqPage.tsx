@@ -122,7 +122,7 @@ export default function FaqPage() {
         <div className="text-center">
           <h1 className="text-white text-4xl font-bold mb-2">FAQs</h1>
           <p className="text-white text-lg opacity-80">
-            Frequently Asked Questions
+            Những câu hỏi thường gặp
           </p>
         </div>
       </div>
