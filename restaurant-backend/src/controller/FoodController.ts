@@ -4,14 +4,16 @@ import mongoose from 'mongoose';
 import { Types } from 'mongoose';
 import { IUser } from '../models/UserModel';
 import { parseFoodQueryParams } from '../utils/queryParser';
-
+import jwt from 'jsonwebtoken';
 class FoodController {
   async createFood(req: Request, res: Response): Promise<any> {
     try {
       const { name, slug, price, description, category } = req.body;
 
       if (!name || !price || !slug || !description || !category) {
-        return res.status(400).json({ message: 'Thiếu thông tin bắt buộc: name, price, slug, description, category' });
+        return res
+          .status(400)
+          .json({ message: 'Thiếu thông tin bắt buộc: name, price, slug, description, category' });
       }
       if (!mongoose.Types.ObjectId.isValid(category)) {
         return res.status(400).json({ message: 'Category không hợp lệ' });
@@ -40,7 +42,9 @@ class FoodController {
       }
 
       if (!name || !price || !slug || !description || !category) {
-        return res.status(400).json({ message: 'Thiếu thông tin bắt buộc: name, price, slug, description, category' });
+        return res
+          .status(400)
+          .json({ message: 'Thiếu thông tin bắt buộc: name, price, slug, description, category' });
       }
 
       if (!mongoose.Types.ObjectId.isValid(category)) {
@@ -80,7 +84,27 @@ class FoodController {
     try {
       const params = parseFoodQueryParams(req.query);
 
-      const foods = await FoodService.getAllFood(params);
+      let userId: string | undefined = undefined;
+      let roleNames: string[] = [];
+
+      const authHeader = req.headers['authorization'];
+      const token = authHeader && typeof authHeader === 'string' ? authHeader.split(' ')[1] : null;
+
+      if (token) {
+        try {
+          const decoded = jwt.verify(token, process.env.ACCESS_TOKEN as string) as IUser & {
+            roles: string[];
+            id: string;
+          };
+          userId = decoded.id;
+          roleNames = decoded.roles || [];
+        } catch (err: any) {
+          console.warn('⚠️ Token decode failed:', err.message);
+          // Không throw để vẫn trả data được cho user chưa login
+        }
+      }
+
+      const foods = await FoodService.getAllFood(params, userId, roleNames);
 
       return res.status(200).json({
         success: true,
@@ -334,8 +358,8 @@ class FoodController {
 
   async restoreFood(req: Request, res: Response): Promise<any> {
     try {
-       const id = req.params.foodId;
-       console.log('RestoreFood ID:', id);
+      const id = req.params.foodId;
+      console.log('RestoreFood ID:', id);
       const restoredDish = await FoodService.restoreDish(id);
       return res.status(200).json({ message: 'Dish restored successfully', data: restoredDish });
     } catch (error) {
@@ -346,14 +370,15 @@ class FoodController {
 
   async permanentlyDeleteFood(req: Request, res: Response): Promise<any> {
     try {
-       const id = req.params.foodId;
+      const id = req.params.foodId;
       const deletedDish = await FoodService.permanentlyDeleteDish(id);
-      return res.status(200).json({ message: 'Dish permanently deleted successfully', data: deletedDish });
+      return res
+        .status(200)
+        .json({ message: 'Dish permanently deleted successfully', data: deletedDish });
     } catch (error) {
       console.error('Error permanently deleting dish:', error);
       return res.status(500).json({ message: 'Internal server error' });
     }
   }
-
 }
 export default new FoodController();

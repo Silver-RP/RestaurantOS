@@ -81,13 +81,17 @@ class FoodService {
     }
   }
 
-  async getAllFood(filters: FoodFilter) {
+  async getAllFood(filters: FoodFilter, userId?: string | null, roleNames: string[] = []) {
     const { page = 1, limit = 10, sort = 'newest' } = filters;
 
     const query = await buildQuery(filters);
-    // Bổ sung điều kiện mặc định
-    query.status = { $in: ['available', 'soldout'] };
-    query.isDeleted = false;
+
+    const isUserOrGuest = !userId || roleNames.length === 0 || roleNames.includes('user');
+
+    if (isUserOrGuest) {
+      query.status = { $in: ['available', 'soldout'] };
+      query.isDeleted = false;
+    }
 
     const sortQuery = getSortQuery(sort);
 

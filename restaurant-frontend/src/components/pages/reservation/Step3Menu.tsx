@@ -36,7 +36,7 @@ const Step3Menu: React.FC<Step3MenuProps> = ({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedFood, setSelectedFood] = useState<Food | null>(null);
-  const [chooseLater, setChooseLater] = useState<boolean | null>(null);
+  const [chooseLater, setChooseLater] = useState<boolean>(false);
   const { foods, loading, error, pagination, setSearchParams, setPagination } =
     useFoods();
 
@@ -56,35 +56,6 @@ const Step3Menu: React.FC<Step3MenuProps> = ({
 
   return (
     <div className="px-4 md:px-8 flex gap-8 py-10 w-full max-w-[1500px] mx-auto text-white">
-      {chooseLater === null && (
-        <div className="flex flex-col items-center w-full justify-center gap-6 py-10">
-          <p className="text-xl text-white text-center">
-            Bạn muốn chọn món trước hay gọi món tại nhà hàng?
-          </p>
-
-          <div className="flex flex-wrap justify-center gap-4">
-            <ButtonComponents
-              onClick={() => setChooseLater(false)}
-              size="medium"
-              className="min-w-[200px]"
-            >
-              CHỌN MÓN NGAY
-            </ButtonComponents>
-
-            <ButtonComponents
-              variant="outline"
-              onClick={() => {
-                setChooseLater(true);
-                onNext();
-              }}
-              size="medium"
-              className="min-w-[200px] border-2"
-            >
-              SẼ CHỌN TẠI NHÀ HÀNG
-            </ButtonComponents>
-          </div>
-        </div>
-      )}
       {chooseLater === false && (
         <>
           {isFilterOpen && (
@@ -256,13 +227,17 @@ const Step3Menu: React.FC<Step3MenuProps> = ({
                 Quay lại
               </ButtonComponents>
               <ButtonComponents
-                variant="filled"
-                size="small"
-                onClick={onNext}
-                disabled={formData.selectedItems.length === 0}
-              >
-                Tiếp tục
-              </ButtonComponents>
+  variant="filled"
+  size="small"
+  onClick={() => {
+    if (formData.selectedItems.length === 0) {
+      setChooseLater(true);
+    }
+    onNext();
+  }}
+>
+  {formData.selectedItems.length === 0 ? 'Sẽ chọn tại nhà hàng' : 'Tiếp tục'}
+</ButtonComponents>
             </div>
           </main>
           {isSidebarOpen && (
@@ -272,14 +247,22 @@ const Step3Menu: React.FC<Step3MenuProps> = ({
             />
           )}
           <ReservationOrderSidebar
-            items={formData.selectedItems}
-            isOpen={isSidebarOpen}
-            onClose={() => setIsSidebarOpen(false)}
-            onCheckout={() => {
-              setIsSidebarOpen(false);
-              onNext();
-            }}
-          />
+  items={formData.selectedItems}
+  isOpen={isSidebarOpen}
+  onClose={() => setIsSidebarOpen(false)}
+  onCheckout={() => {
+    setIsSidebarOpen(false);
+    onNext();
+  }}
+  onRemoveItem={(id, note) => {
+    setFormData((prev) => ({
+      ...prev,
+      selectedItems: prev.selectedItems.filter(
+        (item) => !(item.id === id && item.note === note),
+      ),
+    }));
+  }}
+/>
           <AddReservationItemModal
             isOpen={modalOpen}
             onClose={() => setModalOpen(false)}
