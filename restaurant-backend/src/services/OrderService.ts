@@ -250,15 +250,15 @@ class OrderService {
 
   async getUserOrders(
     userId: mongoose.Types.ObjectId,
-    deliveryStatus: string | null,
+    deliveryStatuses: string[] | null,
     page: number = 1,
     limit: number = 5,
   ) {
     try {
       const query: any = { user_id: userId };
 
-      if (deliveryStatus) {
-        query.delivery_status = deliveryStatus;
+      if (deliveryStatuses && deliveryStatuses.length > 0) {
+        query.delivery_status = { $in: deliveryStatuses };
       }
 
       const totalItems = await Order.countDocuments(query);

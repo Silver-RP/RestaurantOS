@@ -2,11 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminPagination from '../AdminPagination';
 import { useUsers } from '@/hooks/useUsers';
-import { FaLock, FaLockOpen } from 'react-icons/fa';
+import {
+  FaLock,
+  FaLockOpen,
+  FaSearch,
+  FaSort,
+  FaArrowUp,
+  FaArrowDown,
+} from 'react-icons/fa';
 import { toggleUserBlockStatus } from '@/api/UserApi';
 import { toast } from 'react-toastify';
-import { FaSearch } from 'react-icons/fa';
 import UserFilterPanel from './UserFilterPanel';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/redux/store';
 const CONFIRM_TOAST_ID = 'confirm-toggle-user';
 
 const UserIndexPage: React.FC = () => {
@@ -22,10 +30,74 @@ const UserIndexPage: React.FC = () => {
     setSearchParams,
     fetchUsers,
   } = useUsers();
+  
   const [search, setSearch] = useState(searchParams.get('keyword') || '');
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const navigate = useNavigate();
+  const currentUser = useSelector((state: RootState) => state.user.user);
+  // const { roles: allRoles } = useRoles();
 
+  const getRoleNames = (roles: any[]): string[] =>
+    roles
+      .map((r) => (typeof r === 'string' ? r : r.name?.toLowerCase?.()))
+      .filter(Boolean);
+
+  // ↓↓↓ THÊM VÀO ĐÂY ↓↓↓
+  const handleEditUser = (targetUser: any) => {
+    const currentRoles = getRoleNames(currentUser?.roles || []);
+    const targetRoles = getRoleNames(targetUser?.roles || []);
+
+    const isSuperadmin = currentRoles.includes('superadmin');
+    const isManager = currentRoles.includes('manager');
+    const isEditingSelf = currentUser && targetUser._id === currentUser._id;
+
+    if (isEditingSelf) {
+      return toast.error('Không được chỉnh sửa chính mình');
+    }
+
+    if (isSuperadmin && targetRoles.includes('user')) {
+      return toast.error(
+        'Superadmin không được chỉnh sửa người dùng role user',
+      );
+    }
+
+    if (isManager && targetRoles.includes('user')) {
+      return toast.error('Manager không được chỉnh sửa người dùng role user');
+    }
+
+    if (isSuperadmin) return navigate(`/admin/users/edit/${targetUser._id}`);
+
+    const managerAllowed = ['staff', 'cashier'];
+    const canManagerEdit =
+      isManager && targetRoles.every((r) => managerAllowed.includes(r));
+
+    if (canManagerEdit) return navigate(`/admin/users/edit/${targetUser._id}`);
+
+    return toast.error('Bạn không có quyền chỉnh sửa người dùng này');
+  };
+
+  const sortField = searchParams.get('sort') || '';
+  const sortOrder = searchParams.get('order') || '';
+  const handleSort = (field: string) => {
+    const newParams = new URLSearchParams(searchParams.toString());
+    const currentSort = searchParams.get('sort');
+    const currentOrder = searchParams.get('order');
+
+    if (currentSort === field) {
+      // Toggle asc <=> desc
+      newParams.set('order', currentOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      newParams.set('sort', field);
+      newParams.set('order', 'asc');
+    }
+
+    newParams.set('page', '1');
+    setSearchParams(newParams);
+  };
+  const getSortIcon = (field: string) => {
+    if (sortField !== field) return <FaSort />;
+    return sortOrder === 'asc' ? <FaArrowUp /> : <FaArrowDown />;
+  };
   useEffect(() => {
     const newParams = new URLSearchParams(searchParams.toString());
     newParams.set('keyword', search);
@@ -73,7 +145,7 @@ const UserIndexPage: React.FC = () => {
         draggable: false,
         closeOnClick: false,
         hideProgressBar: true,
-        theme: 'light', // hoặc bỏ nếu bạn đã kiểm soát toàn bộ màu bên trong
+        theme: 'light', 
       },
     );
   };
@@ -173,10 +245,11 @@ const UserIndexPage: React.FC = () => {
           onApply={(filters) => {
             const newParams = new URLSearchParams(searchParams.toString());
             Object.entries(filters).forEach(([key, value]) => {
-              if (value) newParams.set(key, value);
+              if (value) newParams.set(key, String(value));
               else newParams.delete(key);
             });
             newParams.set('page', '1');
+            newParams.set('limit', '12');
             setSearchParams(newParams);
             setShowFilterPanel(false);
           }}
@@ -197,15 +270,58 @@ const UserIndexPage: React.FC = () => {
             <thead>
               <tr className="bg-gray-100 text-left">
                 <th className="px-4 py-2">No.</th>
-                <th className="px-4 py-2">Tên</th>
-                <th className="px-4 py-2">Email</th>
+                <th
+                  className="px-4 py-2 cursor-pointer whitespace-nowrap"
+                  onClick={() => handleSort('username')}
+                >
+                  <span className="flex items-center gap-1">
+                    Tên {getSortIcon('username')}
+                  </span>
+                </th>
+                <th
+                  className="px-4 py-2 cursor-pointer whitespace-nowrap"
+                  onClick={() => handleSort('email')}
+                >
+                  <span className="flex items-center gap-1">
+                    Email {getSortIcon('email')}
+                  </span>
+                </th>
                 <th className="px-4 py-2">Số điện thoại</th>
-                <th className="px-4 py-2">Ngày sinh</th>
-                <th className="px-4 py-2">Giới tính</th>
+                <th
+                  className="px-4 py-2 cursor-pointer"
+                  onClick={() => handleSort('birthday')}
+                >
+                  <span className="flex items-center gap-1">
+                    Ngày sinh {getSortIcon('birthday')}
+                  </span>
+                </th>
+                <th
+                  className="px-4 py-2 cursor-pointer"
+                  onClick={() => handleSort('gender')}
+                >
+                  <span className="flex items-center gap-1">
+                    Giới tính {getSortIcon('gender')}
+                  </span>
+                </th>
+
                 <th className="px-4 py-2">Trạng thái</th>
                 <th className="px-4 py-2">Khóa</th>
-                <th className="px-4 py-2">Vai trò</th>
-                <th className="px-4 py-2">Số đơn hàng</th>
+                <th
+                  className="px-4 py-2 cursor-pointer"
+                  onClick={() => handleSort('roles')}
+                >
+                  <span className="flex items-center gap-1">
+                    Vai trò {getSortIcon('roles')}
+                  </span>
+                </th>
+                <th
+                  className="px-4 py-2 cursor-pointer"
+                  onClick={() => handleSort('ordersCount')}
+                >
+                  <span className="flex items-center gap-1">
+                    Số đơn hàng {getSortIcon('ordersCount')}
+                  </span>
+                </th>
                 <th className="px-4 py-2">Hành động</th>
               </tr>
             </thead>
@@ -279,13 +395,12 @@ const UserIndexPage: React.FC = () => {
                       '—'
                     )}
                   </td>
-                  <td className="px-4 py-2">
-                    {user.ordersCount || 0}
-                  </td>
-                  
+                  <td className="px-4 py-2">{user.ordersCount || 0}</td>
+
+
                   <td className="px-4 py-2 space-x-2">
                     <button
-                      onClick={() => navigate(`/admin/users/edit/${user._id}`)}
+                      onClick={() => handleEditUser(user)}
                       className="text-blue-500 hover:underline"
                     >
                       Sửa

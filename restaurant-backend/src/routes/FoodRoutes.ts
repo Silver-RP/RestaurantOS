@@ -17,7 +17,7 @@ router.post('/createfood', upload.array('images', 5), FoodController.createFood)
 router.get('/getallfood', FoodController.getAllFood);
 router.get('/getfoodbyid/:id', FoodController.getFoodById);
 router.get('/getfoodbyslug/:slug', FoodController.getFoodBySlug);
-router.put('/updatefood/:id',  upload.array('images', 5), FoodController.updateFood);
+router.put('/updatefood/:id', upload.array('images', 5), FoodController.updateFood);
 router.get('/getFoodByCategory', FoodController.getFoodByCategory);
 router.get('/getFoodNewest', FoodController.getFoodByNewest);
 router.get('/getFoodBest4', FoodController.getFoodBest4);

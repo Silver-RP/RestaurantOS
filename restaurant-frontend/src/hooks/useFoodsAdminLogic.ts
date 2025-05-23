@@ -401,8 +401,6 @@ export function useFoodsTrashLogic() {
     }
   }
 
-
-
   return {
     foods,
     loading,

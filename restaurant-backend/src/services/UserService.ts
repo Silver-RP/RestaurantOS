@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 
+
 dayjs.extend(customParseFormat);
 interface FilterUserOptions {
   keyword?: string;
@@ -24,13 +25,21 @@ interface GetAllUserParams {
   page?: number;
   limit?: number;
   keyword?: string;
+  sort?: string;
+  order?: string;
 }
 class UserService {
-  getAllUser = async ({ page = 1, limit = 10, keyword = '' }: GetAllUserParams) => {
-    const query: any = {};
+  getAllUser = async ({
+    page = 1,
+    limit = 10,
+    keyword = '',
+    sort = '',
+    order = 'asc',
+  }: GetAllUserParams) => {
+    const matchStage: any = {};
 
     if (keyword) {
-      query.$or = [
+      matchStage.$or = [
         { username: { $regex: keyword, $options: 'i' } },
         { email: { $regex: keyword, $options: 'i' } },
       ];
@@ -38,27 +47,58 @@ class UserService {
 
     const skip = (page - 1) * limit;
 
-    try {
-      const [docs, totalDocs] = await Promise.all([
-        User.find(query).skip(skip).limit(limit).populate('roles', 'name'),
-        User.countDocuments(query),
-      ]);
-
-      const totalPages = Math.ceil(totalDocs / limit);
-
-      return {
-        docs,
-        totalDocs,
-        totalPages,
-        page,
-        limit,
-      };
-    } catch (error: any) {
-      console.error('Error in getAllUser:', error.message);
-      throw new Error('Failed to fetch users');
+    const sortStage: any = {};
+    if (sort) {
+      sortStage[sort] = order === 'desc' ? -1 : 1;
     }
-  };
 
+    const aggregatePipeline = [
+      { $match: matchStage },
+      {
+        $lookup: {
+          from: 'orders', 
+          localField: '_id',
+          foreignField: 'user_id',
+          as: 'orders',
+        },
+      },
+      {
+        $addFields: {
+          ordersCount: { $size: '$orders' },
+        },
+      },
+      { $unset: 'orders' }, 
+      { $sort: Object.keys(sortStage).length ? sortStage : { _id: -1 } },
+      { $skip: skip },
+      { $limit: limit },
+      {
+        $lookup: {
+          from: 'roles',
+          localField: 'roles',
+          foreignField: '_id',
+          as: 'roles',
+        },
+      },
+      {
+        $project: {
+          password: 0,
+        },
+      },
+    ];
+
+    const [users, totalDocs] = await Promise.all([
+      User.aggregate(aggregatePipeline),
+      User.countDocuments(matchStage),
+    ]);
+
+    return {
+      docs: users,
+      totalDocs,
+      totalPages: Math.ceil(totalDocs / limit),
+      page,
+      limit,
+    };
+  };
   async getAllUserByUserRole(page: number = 1, pageSize: number = 10): Promise<any> {
     try {
       // const allUserByUserRole = await User.find();

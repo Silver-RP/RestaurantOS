@@ -22,11 +22,11 @@ export interface IDish extends mongoose.Document {
   newUntil?: Date;
   totalSoldQuantity?: number;
   discountUntil?: Date;
-  alcohol_type?: string; // Loại rượu
-  origin?: string; // Xuất xứ
-  alcohol_content?: number; // Nồng độ cồn
+  alcohol_type?: string;
+  origin?: string;
+  alcohol_content?: number;
   volume?: number;
-  images: string[]; 
+  images: string[];
   isDeleted: boolean;
   deletedAt: Date;
 }

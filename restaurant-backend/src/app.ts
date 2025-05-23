@@ -32,21 +32,24 @@ import './swaggers/CartSwagger';
 import './swaggers/StaffSwagger';
 import './swaggers/UserSwagger';
 import './swaggers/CategorySwagger';
+import ReviewRoutes from './routes/ReviewRoutes';
 
 dotenv.config();
 connectDB();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors({
-  origin: (origin, callback) => {
-    if (origin === 'http://localhost:4173' || origin === 'http://localhost:5173' || !origin) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (origin === 'http://localhost:4173' || origin === 'http://localhost:5173' || !origin) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
+  }),
+);
 
 const port = process.env.PORT || 4000;
 
@@ -113,6 +116,7 @@ app.use('/api/order', AuthMiddleWare.verifyToken, OrderRoutes);
 app.use('/api/cart', AuthMiddleWare.verifyToken, CartRouter);
 app.use('/api/favorite', AuthMiddleWare.verifyToken, FavoriteRoutes);
 app.use('/api/address', AuthMiddleWare.verifyToken, AddressRouter);
+app.use('/api/review', ReviewRoutes);
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
   console.log('Mongo URI:', process.env.MONGO_URI);

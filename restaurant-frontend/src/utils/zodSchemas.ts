@@ -158,9 +158,8 @@ export const editUserSchema = z
         'Ngày sinh không hợp lệ',
       ),
 
-    gender: z.enum(['Nam', 'Nữ', 'Khác'], {
-      errorMap: () => ({ message: 'Giới tính không hợp lệ' }),
-    }),
+    // option gender
+    gender: z.enum(['Nam', 'Nữ', 'Khác']).optional().or(z.literal('')),
 
     status: z.enum(['active', 'inactive', 'block'], {
       errorMap: () => ({ message: 'Trạng thái không hợp lệ' }),
@@ -168,8 +167,7 @@ export const editUserSchema = z
 
     isEmailVerified: z
       .union([z.boolean(), z.literal('true'), z.literal('false')])
-      .transform((v) => v === 'true' || v === true),
-
+      .transform((val) => val === true || val === 'true'),
     roles: z
       .array(z.string(), {
         required_error: 'Vai trò là bắt buộc',

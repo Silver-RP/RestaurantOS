@@ -8,7 +8,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { useRoles } from '@/hooks/useRoles';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
-
+import { SubmitErrorHandler } from 'react-hook-form';
 interface RoleOption {
   value: string;
   label: string;
@@ -17,7 +17,7 @@ interface EditUserFormProps {
   roles: { _id: string; name: string }[];
   userData: any;
   onSubmit: (data: any) => void;
-  disableRoleAndStatus?: boolean; // ← thêm
+  disableRoleAndStatus?: boolean;
 }
 
 const EditUserForm: React.FC<EditUserFormProps> = ({
@@ -26,6 +26,7 @@ const EditUserForm: React.FC<EditUserFormProps> = ({
   onSubmit,
   disableRoleAndStatus,
 }) => {
+  const [changePassword, setChangePassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
@@ -35,7 +36,6 @@ const EditUserForm: React.FC<EditUserFormProps> = ({
   }));
   const currentUser = useSelector((state: RootState) => state.user.user);
   const { roles: allRoles } = useRoles();
-  console.log('allRoles', allRoles);
 
   const filteredRoleOptions = useMemo(() => {
     if (!currentUser || !Array.isArray(currentUser.roles)) return [];
@@ -76,6 +76,8 @@ const EditUserForm: React.FC<EditUserFormProps> = ({
     setValue,
   } = useForm<EditUserFormValues>({
     resolver: zodResolver(editUserSchema),
+    mode: 'onTouched',
+    shouldUnregister: true,
     defaultValues: {
       username: '',
       email: '',
@@ -84,7 +86,7 @@ const EditUserForm: React.FC<EditUserFormProps> = ({
       gender: undefined,
       status: 'inactive',
       isEmailVerified: false,
-      roles: [],
+      roles: userData?.roles || [],
       password: '',
       confirmPassword: '',
     },
@@ -92,104 +94,66 @@ const EditUserForm: React.FC<EditUserFormProps> = ({
 
   useEffect(() => {
     if (userData) {
+      console.log('[DEBUG] userData.roles =', userData.roles);
+
       Object.entries(userData).forEach(([key, value]) => {
         if (key === 'birthday' && typeof value === 'string') {
           setValue('birthday', value.slice(0, 10));
         } else if (key === 'roles' && Array.isArray(value)) {
-          setValue('roles', value);
+          const roleIds = value.map((r: any) =>
+            typeof r === 'string' ? r : r._id,
+          );
+          setValue('roles', roleIds);
         } else {
-          setValue(key as keyof EditUserFormValues, value);
+          setValue(key as keyof EditUserFormValues, value as EditUserFormValues[keyof EditUserFormValues]);
         }
       });
     }
   }, [userData, setValue]);
 
   const onValid = (data: EditUserFormValues) => {
-    const { confirmPassword, ...payload } = data;
-
-    if (!payload.password) {
+    const payload = { ...data };
+    if (!changePassword) {
       delete payload.password;
     }
 
     onSubmit({ ...userData, ...payload });
   };
+  
 
+  const onInvalid: SubmitErrorHandler<EditUserFormValues> = (errors) => {
+    console.log('Validation failed', errors); 
+  };
   return (
     <div className="p-6 bg-white shadow-md rounded-md max-w-3xl mx-auto">
-      <h1 className="text-2xl font-semibold mb-4">Chỉnh sửa người dùng</h1>
-      <form
-        onSubmit={handleSubmit(onValid as (data: any) => void)}
-        className="space-y-4"
-      >
-        <div>
-          <label className="block text-sm mb-1">
-            Tên người dùng <span className="text-red-600">*</span>
-          </label>
-          <input
-            {...register('username')}
-            className="w-full border px-3 py-2 rounded"
-          />
-          {errors.username && (
-            <p className="text-red-500 text-sm">{errors.username.message}</p>
-          )}
-        </div>
-
-        <div>
-          <label className="block text-sm mb-1">
-            Email <span className="text-red-600">*</span>
-          </label>
-          <input
-            {...register('email')}
-            className="w-full border px-3 py-2 rounded"
-          />
-          {errors.email && (
-            <p className="text-red-500 text-sm">{errors.email.message}</p>
-          )}
-        </div>
-
-        <div className="relative">
-          <label className="block text-sm mb-1">
-            Mật khẩu <span className="text-red-600">*</span>
-          </label>
-          <input
-            type={showPassword ? 'text' : 'password'}
-            {...register('password')}
-            className="w-full border px-3 py-2 rounded pr-10"
-          />
-            <span
-            className="absolute right-3 top-[38px] cursor-pointer text-gray-500"
-            onClick={(): void => setShowPassword((prev: boolean) => !prev)}
-            >
-            {showPassword ? <FiEyeOff /> : <FiEye />}
-            </span>
-          {errors.password && (
-            <p className="text-red-500 text-sm">{errors.password.message}</p>
-          )}
-        </div>
-
-        <div className="relative">
-          <label className="block text-sm mb-1">
-            Xác nhận mật khẩu <span className="text-red-600">*</span>
-          </label>
-          <input
-            type={showConfirmPassword ? 'text' : 'password'}
-            {...register('confirmPassword')}
-            className="w-full border px-3 py-2 rounded pr-10"
-          />
-            <span
-            className="absolute right-3 top-[38px] cursor-pointer text-gray-500"
-            onClick={(): void => setShowConfirmPassword((prev: boolean) => !prev)}
-            >
-            {showConfirmPassword ? <FiEyeOff /> : <FiEye />}
-            </span>
-          {errors.confirmPassword && (
-            <p className="text-red-500 text-sm">
-              {errors.confirmPassword.message}
-            </p>
-          )}
-        </div>
-
+      <h1 className="text-2xl font-semibold mb-6">Chỉnh sửa người dùng</h1>
+      <form onSubmit={handleSubmit(onValid, onInvalid)} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm mb-1">
+              Tên người dùng <span className="text-red-600">*</span>
+            </label>
+            <input
+              {...register('username')}
+              className="w-full border px-3 py-2 rounded"
+            />
+            {errors.username && (
+              <p className="text-red-500 text-sm">{errors.username.message}</p>
+            )}
+          </div>
+          <div>
+            <label className="block text-sm mb-1">
+              Email <span className="text-red-600">*</span>
+            </label>
+            <input
+              {...register('email')}
+              disabled
+              className="w-full border px-3 py-2 rounded"
+            />
+            {errors.email && (
+              <p className="text-red-500 text-sm">{errors.email.message}</p>
+            )}
+          </div>
           <div>
             <label className="block text-sm mb-1">
               Số điện thoại <span className="text-red-600">*</span>
@@ -216,46 +180,85 @@ const EditUserForm: React.FC<EditUserFormProps> = ({
               <p className="text-red-500 text-sm">{errors.birthday.message}</p>
             )}
           </div>
+          <div>
+            <label className="block text-sm mb-1">Giới tính</label>
+            <select
+              {...register('gender')}
+              className="w-full border px-3 py-2 rounded"
+            >
+              <option value="">-- Chọn giới tính --</option>
+              <option value="Nam">Nam</option>
+              <option value="Nữ">Nữ</option>
+              <option value="Khác">Khác</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm mb-1">Trạng thái tài khoản</label>
+            <select
+              {...register('status')}
+              className="w-full border px-3 py-2 rounded"
+              disabled={disableRoleAndStatus}
+            >
+              <option value="active">Hoạt động</option>
+              <option value="inactive">Không hoạt động</option>
+              <option value="block">Bị khóa</option>
+            </select>
+          </div>
         </div>
 
         <div>
-          <label className="block text-sm mb-1">Giới tính </label>
-          <select
-            {...register('gender')}
-            className="w-full border px-3 py-2 rounded"
-          >
-            <option value="">-- Chọn giới tính --</option>
-            <option value="Nam">Nam</option>
-            <option value="Nữ">Nữ</option>
-            <option value="Khác">Khác</option>
-          </select>
+          <label className="inline-flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={changePassword}
+              onChange={() => setChangePassword(!changePassword)}
+            />
+            <span>Đổi mật khẩu người dùng</span>
+          </label>
         </div>
 
-        <div>
-          <label className="block text-sm mb-1">Trạng thái tài khoản</label>
-          <select
-            {...register('status')}
-            className="w-full border px-3 py-2 rounded"
-            disabled={disableRoleAndStatus}
-          >
-            <option value="active">Hoạt động</option>
-            <option value="inactive">Không hoạt động</option>
-            <option value="block">Bị khóa</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm mb-1">Xác minh email</label>
-          <select
-            {...register('isEmailVerified', {
-              setValueAs: (v) => v === 'true',
-            })}
-            className="w-full border px-3 py-2 rounded"
-          >
-            <option value="false">Chưa xác minh</option>
-            <option value="true">Đã xác minh</option>
-          </select>
-        </div>
+        {changePassword && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="relative">
+              <label className="block text-sm mb-1">Mật khẩu</label>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                {...register('password')}
+                className="w-full border px-3 py-2 rounded pr-10"
+              />
+              <span
+                className="absolute right-3 top-[38px] cursor-pointer text-gray-500"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <FiEyeOff /> : <FiEye />}
+              </span>
+              {errors.password && (
+                <p className="text-red-500 text-sm">
+                  {errors.password.message}
+                </p>
+              )}
+            </div>
+            <div className="relative">
+              <label className="block text-sm mb-1">Xác nhận mật khẩu</label>
+              <input
+                type={showConfirmPassword ? 'text' : 'password'}
+                {...register('confirmPassword')}
+                className="w-full border px-3 py-2 rounded pr-10"
+              />
+              <span
+                className="absolute right-3 top-[38px] cursor-pointer text-gray-500"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              >
+                {showConfirmPassword ? <FiEyeOff /> : <FiEye />}
+              </span>
+              {errors.confirmPassword && (
+                <p className="text-red-500 text-sm">
+                  {errors.confirmPassword.message}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
 
         <div>
           <label className="block text-sm mb-1">
@@ -264,27 +267,33 @@ const EditUserForm: React.FC<EditUserFormProps> = ({
           <Controller
             name="roles"
             control={control}
-            render={({ field }) => (
-              <Select
-                isMulti
-                options={filteredRoleOptions}
-                isDisabled={disableRoleAndStatus}
-                value={filteredRoleOptions.filter((opt) =>
-                  field.value.includes(opt.value),
-                )}
-                onChange={(selected) =>
-                  field.onChange(selected.map((opt) => opt.value))
-                }
-              />
+            render={({ field, fieldState }) => (
+              <>
+                <Select
+                  options={filteredRoleOptions}
+                  isDisabled={disableRoleAndStatus}
+                  isMulti={false}
+                  value={
+                    filteredRoleOptions.find(
+                      (opt) => opt.value === field.value?.[0],
+                    ) || null
+                  }
+                  onChange={(selected) => {
+                    field.onChange(selected ? [selected.value] : []);
+                    field.onBlur();
+                  }}
+                  onBlur={field.onBlur}
+                  classNamePrefix="react-select"
+                />
+              </>
             )}
           />
-
           {errors.roles && (
             <p className="text-red-500 text-sm">{errors.roles.message}</p>
           )}
         </div>
 
-        <div className="flex justify-end gap-2">
+        <div className="flex justify-end gap-2 mt-6">
           <button
             type="button"
             onClick={() => navigate('/admin/users')}
