@@ -20,7 +20,7 @@ const CategoriesPage: React.FC = () => {
   const [showSortDropdown, setShowSortDropdown] = useState(false);
 
   const page = Number(searchParams.get('page')) || 1;
-
+   
   useEffect(() => {
     const params = new URLSearchParams();
     if (search) params.set('keyword', search);

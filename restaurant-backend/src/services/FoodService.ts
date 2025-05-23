@@ -388,7 +388,6 @@ class FoodService {
 
   async softDeleteDish(id: string) {
     try {
-      console.log('Soft deleting dish with ID:', id);
       const food = await Dish.findById(id);
       if (!food) {
         throw new Error('Food not found');

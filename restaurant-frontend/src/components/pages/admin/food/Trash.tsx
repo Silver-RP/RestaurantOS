@@ -1,12 +1,13 @@
 import { useFoodsTrashLogic } from '../../../../hooks/useFoodsAdminLogic';
-import { useCRUDFoods } from '@/hooks/useCRUDFoods';
-import React from 'react';
+import React, { useEffect } from 'react';
 import AdminPagination from '../AdminPagination';
 import { FaSort, FaArrowUp, FaArrowDown, FaSearch } from 'react-icons/fa';
 import { FaUndoAlt } from 'react-icons/fa';
 import { FaTrashAlt } from 'react-icons/fa';
 import { BiUndo } from 'react-icons/bi';
 import ConfirmModal from '@/components/common/ConfirmModal';
+import { useFoodLogic } from '@/hooks/useFoodsAdminLogic';
+
 
 const TrashTable: React.FC = () => {
   const {
@@ -33,7 +34,7 @@ const TrashTable: React.FC = () => {
     handlePermanentDeleteClick,
     handleConfirmPermanentDelete,
   } = useFoodsTrashLogic();
-
+  
   const renderSortIcon = (field: typeof sortField) => {
     const iconType = getSortIcon(field);
     if (iconType === 'asc') return <FaArrowUp />;
@@ -187,16 +188,17 @@ const TrashTable: React.FC = () => {
                       <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 normal-case">
                         Khôi phục
                       </span>
-
-                      {showConfirm && foodIdToRestore === item._id && (
+                    </button>
+                    {showConfirm && foodIdToRestore === item._id && (
                         <ConfirmModal
                           title="Xác nhận khôi phục"
                           description={`Bạn có chắc chắn muốn khôi phục "${item?.name || 'món ăn'}"?`}
                           onConfirm={() => handleConfirmRestore(item._id)}
-                          onCancel={() => setShowConfirm(false)}
+                          onCancel={() => {
+                            setShowConfirm(false); 
+                          }}
                         />
                       )}
-                    </button>
 
                     <button
                       className="relative group text-red-600 hover:underline"
@@ -206,8 +208,8 @@ const TrashTable: React.FC = () => {
                       <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 normal-case">
                         Xoá vĩnh viễn
                       </span>
-
-                      {showConfirm && foodIdToDelete === item._id && (
+                    </button>
+                    {showConfirm && foodIdToDelete === item._id && (
                         <ConfirmModal
                           title="Xác nhận xoá vĩnh viễn"
                           description={`Bạn có chắc chắn muốn xoá vĩnh viễn "${item?.name || 'món ăn'}"?`}
@@ -217,7 +219,6 @@ const TrashTable: React.FC = () => {
                           onCancel={() => setShowConfirm(false)}
                         />
                       )}
-                    </button>
                   </td>
                 </tr>
               ))}

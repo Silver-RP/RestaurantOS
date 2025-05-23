@@ -5,7 +5,7 @@ import { refreshAccessToken } from './AuthApi';
 
 const axiosInstance = axios.create({
   baseURL: 'http://localhost:4000/api',
-  withCredentials: true, 
+  withCredentials: true,
 });
 
 let isRefreshing = false;
@@ -23,6 +23,23 @@ const processQueue = (error: any, token: string | null = null) => {
   failedQueue = [];
 };
 
+const redirectToLogin = () => {
+  if (redirectingToLogin || window.location.pathname === '/login') return;
+  
+  redirectingToLogin = true;
+  Cookies.remove('accessToken');
+  Cookies.remove('refreshToken');
+  
+  // Reset redirect flag after navigation
+  const resetRedirectFlag = () => {
+    redirectingToLogin = false;
+    window.removeEventListener('unload', resetRedirectFlag);
+  };
+  window.addEventListener('unload', resetRedirectFlag);
+  
+  window.location.href = '/login';
+};
+
 axiosInstance.interceptors.request.use(config => {
   const accessToken = Cookies.get('accessToken');
   if (accessToken) {
@@ -32,35 +49,35 @@ axiosInstance.interceptors.request.use(config => {
 });
 
 axiosInstance.interceptors.response.use(
-  res => res,
-  async err => {
-    const originalRequest = err.config;
+  response => response,
+  async error => {
+    const originalRequest = error.config;
 
-    if (err.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
-        }).then(token => {
-          originalRequest.headers['Authorization'] = 'Bearer ' + token;
-          return axiosInstance(originalRequest);
-        }).catch(error => Promise.reject(error));
+        })
+          .then(token => {
+            originalRequest.headers['Authorization'] = 'Bearer ' + token;
+            return axiosInstance(originalRequest);
+          })
+          .catch(() => Promise.reject(error));
       }
 
       originalRequest._retry = true;
       isRefreshing = true;
 
       try {
-        if (redirectingToLogin) {
-          return Promise.reject(err);
-        }
-
-        redirectingToLogin = true;
         const response = await refreshAccessToken();
         const newAccessToken = response?.accessToken;
 
-        if (!newAccessToken) throw new Error('No access token received');
+        if (!newAccessToken) {
+          throw new Error('No access token received');
+        }
+
         Cookies.set('accessToken', newAccessToken, {
-          expires: 1 / (24 * 60),
+          expires: 1 / (24 * 60), 
           sameSite: 'Lax',
           secure: false,
         });
@@ -68,22 +85,19 @@ axiosInstance.interceptors.response.use(
         processQueue(null, newAccessToken);
         originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
         return axiosInstance(originalRequest);
-      } catch (err) {
-        Cookies.remove('accessToken');
-        processQueue(err, null);
-
-        if (window.location.pathname !== '/login') {
-          redirectingToLogin = true;
-          window.location.href = '/login';
-        }
-
-        return Promise.reject(err);
+      } catch (refreshError) {
+        redirectToLogin();
+        return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
       }
     }
 
-    return Promise.reject(err);
+    if (error.response?.status === 401) {
+      redirectToLogin();
+    }
+
+    return Promise.reject(error);
   }
 );
 

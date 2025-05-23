@@ -3,6 +3,7 @@ import OrderService from '../services/OrderService';
 import { IUser } from '../models/UserModel';
 import { Types } from 'mongoose';
 import OrderValidate from '../validators/orderValidator';
+import { Order } from '../models/OrderModel';
 
 class OrderController {
   async placeOrder(req: Request, res: Response): Promise<any> {
@@ -61,6 +62,7 @@ class OrderController {
       const parsedPage = parseInt(page as string, 10);
       const parsedLimit = parseInt(limit as string, 10);
       const filtersObject = filters ? (filters as { [key: string]: string }) : {};
+
       const options = {
         page: parsedPage,
         limit: parsedLimit,
@@ -73,11 +75,10 @@ class OrderController {
 
       return res.status(200).json({
         message: 'Orders retrieved successfully',
-        orders,
+        ...orders,
       });
     } catch (error: any) {
       console.error('Error retrieving orders:', error.message);
-      next(error);
       return res
         .status(error.statusCode || 500)
         .json({ message: error.message || 'Internal Server Error' });
@@ -107,7 +108,6 @@ class OrderController {
       });
     } catch (error: any) {
       console.error('Error retrieving orders:', error.message);
-      next(error);
       return res
         .status(error.statusCode || 500)
         .json({ message: error.message || 'Internal Server Error' });
@@ -125,7 +125,6 @@ class OrderController {
       });
     } catch (error: any) {
       console.error('Error retrieving order:', error.message);
-      next(error);
       return res
         .status(error.statusCode || 500)
         .json({ message: error.message || 'Internal Server Error' });
@@ -137,6 +136,25 @@ class OrderController {
       const orderId = new Types.ObjectId(req.params.id);
       const { status } = req.body;
 
+      // Validate status
+      const validStatuses = [
+        'PENDING',
+        'PENDING_PICKUP',
+        'PICKED_UP',
+        'IN_TRANSIT',
+        'DELIVERED',
+        'DELIVERY_FAILED',
+        'RETURN_REQUESTED',
+        'RETURNED',
+        'CANCEL_REQUESTED',
+        'CANCELLED',
+      ];
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({
+          message: 'Invalid status value',
+        });
+      }
+
       const updatedOrder = await OrderService.updateOrderStatus(orderId, status);
 
       return res.status(200).json({
@@ -145,7 +163,6 @@ class OrderController {
       });
     } catch (error: any) {
       console.error('Error updating order status:', error.message);
-      next(error);
       return res
         .status(error.statusCode || 500)
         .json({ message: error.message || 'Internal Server Error' });
@@ -157,13 +174,13 @@ class OrderController {
       const orderId = new Types.ObjectId(req.params.id);
       const { reason } = req.body;
       const updatedOrder = await OrderService.cancelOrder(orderId, reason);
+
       return res.status(200).json({
         message: 'Order cancelled successfully',
         order: updatedOrder,
       });
     } catch (error: any) {
       console.error('Error cancelling order:', error.message);
-      next(error);
       return res
         .status(error.statusCode || 500)
         .json({ message: error.message || 'Internal Server Error' });
@@ -175,13 +192,13 @@ class OrderController {
       const orderId = new Types.ObjectId(req.params.id);
       const { reason } = req.body;
       const updatedOrder = await OrderService.requestReturn(orderId, reason);
+
       return res.status(200).json({
         message: 'Return requested successfully',
         order: updatedOrder,
       });
     } catch (error: any) {
       console.error('Error requesting return:', error.message);
-      next(error);
       return res
         .status(error.statusCode || 500)
         .json({ message: error.message || 'Internal Server Error' });
@@ -193,13 +210,13 @@ class OrderController {
       const orderId = new Types.ObjectId(req.params.id);
       const { reason } = req.body;
       const updatedOrder = await OrderService.requestCancel(orderId, reason);
+
       return res.status(200).json({
         message: 'Cancel requested successfully',
         order: updatedOrder,
       });
     } catch (error: any) {
       console.error('Error requesting cancel:', error.message);
-      next(error);
       return res
         .status(error.statusCode || 500)
         .json({ message: error.message || 'Internal Server Error' });

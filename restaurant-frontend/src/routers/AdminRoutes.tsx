@@ -16,6 +16,7 @@ import UserIndexPage from "@/components/pages/admin/user";
 import CreateUserPage from "@/components/pages/admin/user/CreateUserPage";
 import SearchResults from "@/components/pages/admin/food/SearchResults";
 import TrashPage from "@/components/pages/admin/food/Trash";
+import OrderPage from "@components/pages/admin/order";
 
 import EditUserPage from '@/components/pages/admin/user/EditUserPage';
 import ProtectedRoute from '@/utils/ProtectedRoute';
@@ -36,6 +37,7 @@ const adminRoutes = [
       { path: "foods/trash", element: <TrashPage /> },
       { path: "foods/search", element: <SearchResults /> },
       { path: 'categories', element: <CategoriesPage />},
+      { path: 'orders', element: <OrderPage /> },
       { path: "categories/create", element: <CreateCategoryPage /> },
       { path: "categories/edit/:id", element: <EditCategoryPage /> },
       { path: "users", element: <ProtectedRoute><UserIndexPage /></ProtectedRoute> },

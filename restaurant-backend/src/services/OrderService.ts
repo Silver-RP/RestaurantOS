@@ -5,6 +5,7 @@ import { Order } from '../models/OrderModel';
 import { OrderDetail } from '../models/OrderDetailModel';
 import Cart from '../models/CartModel';
 import { Dish } from '../models/DishModel';
+import SearchService from './SearchService';
 
 enum DeliveryStatus {
   PENDING = 'PENDING',
@@ -38,7 +39,6 @@ class OrderService {
       const savedAddress = await newAddress.save({ session });
       return (savedAddress._id as string).toString();
     }
-    throw { statusCode: 400, message: 'Address is required' };
   }
 
   async createOrder(
@@ -191,7 +191,6 @@ class OrderService {
       };
     }
   }
-
   async getAllOrders(options: {
     page: number;
     limit: number;
@@ -199,43 +198,54 @@ class OrderService {
     sortOrder: 1 | -1;
     filters: any;
   }) {
-    const { page, limit, sortBy, sortOrder, filters } = options;
+    try {
+      const { page, limit, sortBy, sortOrder, filters } = options;
 
-    const allowedSortBy = [
-      'createdAt',
-      'total_price',
-      'status',
-      'payment_method',
-      'delivery_type',
-      'order_type',
-    ];
-    const sortField = allowedSortBy.includes(sortBy) ? sortBy : 'createdAt';
+      const searchOptions = {
+        page,
+        limit,
+        sortBy,
+        sortOrder,
+        populate: ['user_id', 'address_id'],
+        searchFields: [
+          'user_id.username',
+          'user_id.phone',
+          'address_id.full_name',
+          'address_id.phone',
+        ],
+        searchTerm: filters.keyword || '',
+        filters: {
+          status: filters.status,
+          payment_method: filters.payment_method,
+          delivery_type: filters.delivery_type,
+          order_type: filters.order_type,
+        },
+        dateRange: {
+          field: 'createdAt',
+          start: filters.createdAtStart ? new Date(filters.createdAtStart) : undefined,
+          end: filters.createdAtEnd ? new Date(filters.createdAtEnd) : undefined,
+        },
+        numberRange: [
+          {
+            field: 'total_price',
+            min: filters.total_priceMin ? Number(filters.total_priceMin) : undefined,
+            max: filters.total_priceMax ? Number(filters.total_priceMax) : undefined,
+          },
+        ],
+      };
 
-    const allowedFilters = ['status', 'payment_method', 'delivery_type', 'order_type'];
-    const query: any = {};
+      const result = await SearchService.search(Order, searchOptions);
 
-    allowedFilters.forEach((key) => {
-      if (filters[key]) {
-        query[key] = filters[key];
-      }
-    });
-
-    const skip = (page - 1) * limit;
-    const [orders, total] = await Promise.all([
-      Order.find(query)
-        .sort({ [sortField]: sortOrder })
-        .skip(skip)
-        .limit(limit)
-        .populate('user_id address_id'),
-      Order.countDocuments(query),
-    ]);
-
-    return {
-      orders,
-      total,
-      currentPage: page,
-      totalPages: Math.ceil(total / limit),
-    };
+      return {
+        orders: result.items,
+        total: result.total,
+        currentPage: result.currentPage,
+        totalPages: result.totalPages,
+      };
+    } catch (error) {
+      console.error('Error in getAllOrders:', error);
+      throw error;
+    }
   }
 
   async getUserOrders(
@@ -377,6 +387,7 @@ class OrderService {
     }
   }
 
+  
   mapDeliveryStatusToOrderStatus(
     deliveryStatus: DeliveryStatus,
     orderType: 'DINE_IN' | 'ONLINE',
