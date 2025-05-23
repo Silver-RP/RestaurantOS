@@ -105,7 +105,7 @@ const EditUserForm: React.FC<EditUserFormProps> = ({
           );
           setValue('roles', roleIds);
         } else {
-          setValue(key as keyof EditUserFormValues, value);
+          setValue(key as keyof EditUserFormValues, value as EditUserFormValues[keyof EditUserFormValues]);
         }
       });
     }

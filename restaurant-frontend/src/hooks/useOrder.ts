@@ -14,6 +14,7 @@ import {
   // CancelOrderRequest,
   CreateOrderRequest,
   PlaceOrderRequest,
+  OrdersResponse,
 } from '../types/Order.type';
 
 export const useOrders = (params: OrderQueryParams) => {

@@ -47,7 +47,3 @@ export const placeDirectOrder = async (data: PlaceOrderRequest) => {
   return res.data;
 };
 
-export const getUserOrders = async (): Promise<OrdersResponse> => {
-  const res = await api.get('/order/user-orders');
-  return res.data;
-};

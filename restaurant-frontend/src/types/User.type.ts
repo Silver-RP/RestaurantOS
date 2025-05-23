@@ -14,6 +14,7 @@ export interface User {
   roles: { _id: string; name: string }[];
   createdAt: string;
   updatedAt: string;
+  ordersCount?: number;
 }
 export type FilterUserParams = {
   keyword?: string;

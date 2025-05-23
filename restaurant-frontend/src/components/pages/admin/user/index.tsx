@@ -13,7 +13,6 @@ import {
 import { toggleUserBlockStatus } from '@/api/UserApi';
 import { toast } from 'react-toastify';
 import UserFilterPanel from './UserFilterPanel';
-import { useRoles } from '@/hooks/useRoles';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 const CONFIRM_TOAST_ID = 'confirm-toggle-user';
@@ -31,6 +30,7 @@ const UserIndexPage: React.FC = () => {
     setSearchParams,
     fetchUsers,
   } = useUsers();
+  
   const [search, setSearch] = useState(searchParams.get('keyword') || '');
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const navigate = useNavigate();
@@ -145,7 +145,7 @@ const UserIndexPage: React.FC = () => {
         draggable: false,
         closeOnClick: false,
         hideProgressBar: true,
-        theme: 'light', // hoặc bỏ nếu bạn đã kiểm soát toàn bộ màu bên trong
+        theme: 'light', 
       },
     );
   };
@@ -396,6 +396,7 @@ const UserIndexPage: React.FC = () => {
                     )}
                   </td>
                   <td className="px-4 py-2">{user.ordersCount || 0}</td>
+
 
                   <td className="px-4 py-2 space-x-2">
                     <button
