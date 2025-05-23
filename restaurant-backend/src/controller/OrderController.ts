@@ -91,9 +91,9 @@ class OrderController {
       }
 
       const userId = (req.user as IUser).id as Types.ObjectId;
-      const deliveryStatuses = req.query.delivery_status 
-        ? Array.isArray(req.query.delivery_status) 
-          ? req.query.delivery_status 
+      const deliveryStatuses = req.query.delivery_status
+        ? Array.isArray(req.query.delivery_status)
+          ? req.query.delivery_status
           : [req.query.delivery_status]
         : null;
       const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;

@@ -1,4 +1,4 @@
-
+import React from 'react';
 import { useCategories } from '@hooks/useCategories';
 import FoodForm from './FoodForm';
 import { useNavigate } from 'react-router-dom';
@@ -8,7 +8,7 @@ const CreateFoodPage = () => {
   const { categories } = useCategories();
   const { createFood } = useCRUDFoods();
   const navigate = useNavigate();
-  
+
   const handleSubmit = (formData: FormData) => {
     createFood(formData);
   };

@@ -6,13 +6,19 @@ import PrimarySidebar from '../components/layout/sidebar/PrimarySidebar';
 import MobileSidebar from '../components/layout/sidebar/MobileSidebar';
 import { SidebarProvider, useSidebar } from '../contexts/SidebarContext';
 import { useFetchFavorites } from '@/hooks/useFetchFavorites'; 
+import { useSelector } from 'react-redux';
+import { RootState } from '@/redux/store';
+
+
 const LayoutContent: React.FC = () => {
   const location = useLocation();
   const { fetchFavorites } = useFetchFavorites();
-
+  const currentUser = useSelector((state: RootState) => state.user.user);
   useEffect(() => {
-    fetchFavorites();
-  }, [fetchFavorites]);
+    if (currentUser?._id) {
+      fetchFavorites();
+    }
+  }, [currentUser?._id, fetchFavorites]);
   const hideSidebarFooter = [
     '/login',
     '/register',

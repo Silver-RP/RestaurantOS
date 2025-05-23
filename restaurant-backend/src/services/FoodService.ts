@@ -9,7 +9,6 @@ import UploadService from './UploadImageService';
 import { OrderDetail } from '../models/OrderDetailModel';
 
 class FoodService {
-
   async createFoodWithImages(foodData: any, files: Express.Multer.File[]) {
     const categoryId = foodData.category?.toString();
     const category = await Category.findById(categoryId);
@@ -20,10 +19,10 @@ class FoodService {
     const categorySlug = category.Cate_slug;
 
     const uploadedImages = await Promise.all(
-      files.map(file => UploadService.UploadImage(file, `dishes/${categorySlug}`))
+      files.map((file) => UploadService.UploadImage(file, `dishes/${categorySlug}`)),
     );
 
-    const formattedImages = uploadedImages.map(img => img.url);
+    const formattedImages = uploadedImages.map((img) => img.url);
 
     const food = {
       ...foodData,
@@ -65,10 +64,17 @@ class FoodService {
 
   async getTopFavoriteFood() {
     try {
-      const food = await Dish.find().sort({ favorites_count: -1 }).limit(5);
+      const food = await Dish.find({
+        status: { $in: ['available', 'soldout'] },
+        isDeleted: false,
+      })
+        .sort({ favorites_count: -1 })
+        .limit(5);
+
       if (!food || food.length === 0) {
         return { message: 'No food found' };
       }
+
       return food;
     } catch {
       throw new Error('Error getting top favorite food');
@@ -79,6 +85,10 @@ class FoodService {
     const { page = 1, limit = 10, sort = 'newest' } = filters;
 
     const query = await buildQuery(filters);
+    // Bổ sung điều kiện mặc định
+    query.status = { $in: ['available', 'soldout'] };
+    query.isDeleted = false;
+
     const sortQuery = getSortQuery(sort);
 
     const options = {
@@ -110,10 +120,18 @@ class FoodService {
 
   async getFoodByNewest() {
     try {
-      const foodNewest = await Dish.find().sort({ createdAt: -1 }).limit(10).populate('categories');
+      const foodNewest = await Dish.find({
+        status: { $in: ['available', 'soldout'] },
+        isDeleted: false,
+      })
+        .sort({ createdAt: -1 })
+        .limit(10)
+        .populate('categories');
+
       return foodNewest;
     } catch (error) {
       console.error('Error in getFoodByNewest:', error);
+      throw new Error('Error fetching newest food');
     }
   }
 
@@ -129,11 +147,13 @@ class FoodService {
   async getFoodByCategoryType(cateType: string) {
     try {
       const categories = await Category.find({ Cate_type: cateType });
-
       const categoryIds = categories.map((cat) => cat._id);
 
-      // B2: Tìm dish có categories nằm trong danh sách categoryIds
-      const food = await Dish.find({ categories: { $in: categoryIds } });
+      const food = await Dish.find({
+        categories: { $in: categoryIds },
+        status: { $in: ['available', 'soldout'] },
+        isDeleted: false,
+      });
 
       return food;
     } catch {
@@ -145,6 +165,8 @@ class FoodService {
     try {
       return await Dish.find({
         price: { $gte: pricemin, $lte: pricemax },
+        status: { $in: ['available', 'soldout'] },
+        isDeleted: false,
       });
     } catch {
       throw new Error('Error getting food by price');
@@ -153,7 +175,11 @@ class FoodService {
 
   async getFoodByRating(rating: number) {
     try {
-      return await Dish.find({ rating: rating });
+      return await Dish.find({
+        rating,
+        status: { $in: ['available', 'soldout'] },
+        isDeleted: false,
+      });
     } catch {
       throw new Error('Error getting food by rating');
     }
@@ -165,14 +191,14 @@ class FoodService {
 
       const foodNewest = await Dish.aggregate([
         {
-          $match: { categories: { $in: [objectId] } },
+          $match: {
+            categories: { $in: [objectId] },
+            status: { $in: ['available', 'soldout'] },
+            isDeleted: false,
+          },
         },
-        {
-          $sort: { favorites_count: -1 },
-        },
-        {
-          $limit: 20,
-        },
+        { $sort: { favorites_count: -1 } },
+        { $limit: 20 },
         {
           $lookup: {
             from: 'categories',
@@ -194,7 +220,11 @@ class FoodService {
     try {
       const dishes = await Dish.aggregate([
         {
-          $match: { favorites_count: favorites },
+          $match: {
+            favorites_count: favorites,
+            status: { $in: ['available', 'soldout'] },
+            isDeleted: false,
+          },
         },
         {
           $lookup: {
@@ -234,6 +264,12 @@ class FoodService {
   async getTopFavoriteFoods(type: string) {
     try {
       const dishes = await Dish.aggregate([
+        {
+          $match: {
+            status: { $in: ['available', 'soldout'] },
+            isDeleted: false,
+          },
+        },
         {
           $lookup: {
             from: 'categories',
@@ -320,7 +356,11 @@ class FoodService {
         };
       }
 
-      return favorites.map((fav) => fav.dishId);
+      const filteredFavorites = favorites
+        .map((fav) => fav.dishId)
+        .filter((dish: any) => dish && dish.status !== 'hidden' && dish.isDeleted !== true);
+
+      return filteredFavorites;
     } catch (error) {
       console.error('Error getting favorite foods:', error);
       throw new Error('Error getting favorite foods');
@@ -451,17 +491,20 @@ class FoodService {
     }
   }
 
-  private async uploadNewImages(files: Express.Multer.File[] | undefined, folder: string): Promise<string[]> {
+  private async uploadNewImages(
+    files: Express.Multer.File[] | undefined,
+    folder: string,
+  ): Promise<string[]> {
     if (!files || files.length === 0) return [];
 
     const uploaded = await Promise.all(
-      files.map(file => UploadService.UploadImage(file, `dishes/${folder}`))
+      files.map((file) => UploadService.UploadImage(file, `dishes/${folder}`)),
     );
-    return uploaded.map(img => img.url);
+    return uploaded.map((img) => img.url);
   }
 
   private async deleteRemovedImages(original: string[], updated: string[]) {
-    const toRemove = original.filter(img => !updated.includes(img));
+    const toRemove = original.filter((img) => !updated.includes(img));
     if (toRemove.length > 0) {
       await UploadService.deleteImages(toRemove);
     }
@@ -476,9 +519,6 @@ class FoodService {
       images,
     };
   }
-
-
-
 }
 
 export default new FoodService();

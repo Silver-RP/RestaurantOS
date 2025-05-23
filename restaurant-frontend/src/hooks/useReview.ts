@@ -12,12 +12,18 @@ import {
 } from '@/api/ReviewApi';
 import { IReview } from '@/types/Review.types';
 import { toast } from 'react-toastify';
-
+import { useSelector } from 'react-redux';
+import { RootState } from '@/redux/store';
 export const useReview = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  const currentUser = useSelector((state: RootState) => state.user.user); 
   const createReview = async (data: ReviewPayload): Promise<IReview | null> => {
+    if (!currentUser?._id) {
+      toast.error('Vui lòng đăng nhập để gửi đánh giá');
+      return null;
+    }
+
     try {
       setLoading(true);
       const review = await createReviewApi(data);

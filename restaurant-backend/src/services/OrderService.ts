@@ -28,7 +28,6 @@ enum OrderStatus {
 }
 
 class OrderService {
-
   async handleAddress(userId: string, address_id: string | null, address: any, session: any) {
     if (address_id) {
       await OrderValidator.validateAddress(address_id);
@@ -42,7 +41,19 @@ class OrderService {
     throw { statusCode: 400, message: 'Address is required' };
   }
 
-  async createOrder(userId: string, finalAddressId: string, payment_method: string, delivery_type: string, totalAmount: number, order_type: string, delivery_time_type: string, total_quantity: number, note: string, scheduled_time: Date | null, session: any) {
+  async createOrder(
+    userId: string,
+    finalAddressId: string,
+    payment_method: string,
+    delivery_type: string,
+    totalAmount: number,
+    order_type: string,
+    delivery_time_type: string,
+    total_quantity: number,
+    note: string,
+    scheduled_time: Date | null,
+    session: any,
+  ) {
     const items_price = totalAmount;
     const vat_amount = items_price * 0.08;
     const shipping_fee = 5000;
@@ -79,7 +90,7 @@ class OrderService {
             countInStock: -1 * item.quantity,
           },
         },
-        { session }
+        { session },
       );
     });
 
@@ -92,23 +103,38 @@ class OrderService {
       {
         $pull: {
           items: {
-            dishId: { $in: orderedDishIds }
-          }
-        }
+            dishId: { $in: orderedDishIds },
+          },
+        },
       },
-      { session }
+      { session },
     );
   }
 
   async placeOrder(input: any) {
-    const { userId, address_id, address, payment_method, delivery_type, items, order_type, delivery_time_type, scheduled_time, note } = input;
+    const {
+      userId,
+      address_id,
+      address,
+      payment_method,
+      delivery_type,
+      items,
+      order_type,
+      delivery_time_type,
+      scheduled_time,
+      note,
+    } = input;
     const session = await mongoose.startSession();
     session.startTransaction();
 
     try {
       const finalAddressId = await this.handleAddress(userId, address_id, address, session);
 
-      const { orderItems, totalAmount } = await OrderValidator.validateCartAndItems(userId, items, session);
+      const { orderItems, totalAmount } = await OrderValidator.validateCartAndItems(
+        userId,
+        items,
+        session,
+      );
 
       const total_quantity = orderItems.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -123,7 +149,7 @@ class OrderService {
         total_quantity,
         note,
         scheduled_time,
-        session
+        session,
       );
 
       if (!savedOrder) {
@@ -149,7 +175,7 @@ class OrderService {
       // Update dish counts
       await this.updateDishCounts(orderItems, session);
 
-      const orderedDishIds = items.map((item: { dish_id: any; }) => item.dish_id);
+      const orderedDishIds = items.map((item: { dish_id: any }) => item.dish_id);
       await this.updateCart(userId, orderedDishIds, session);
 
       await session.commitTransaction();
@@ -216,7 +242,7 @@ class OrderService {
     userId: mongoose.Types.ObjectId,
     deliveryStatuses: string[] | null,
     page: number = 1,
-    limit: number = 5
+    limit: number = 5,
   ) {
     try {
       const query: any = { user_id: userId };
@@ -265,9 +291,7 @@ class OrderService {
 
         const mappedItems = details.map((detail) => {
           const dish = detail.dish_id;
-          const categoryNames = (dish?.categories || []).map(
-            (cat: any) => cat.Cate_name
-          );
+          const categoryNames = (dish?.categories || []).map((cat: any) => cat.Cate_name);
 
           return {
             ...detail,
@@ -410,9 +434,9 @@ class OrderService {
       }
 
       if (order.status !== 'PENDING' || order.delivery_status !== 'PENDING') {
-        throw { 
-          statusCode: 400, 
-          message: 'Order can only be cancelled when status and delivery_status are PENDING' 
+        throw {
+          statusCode: 400,
+          message: 'Order can only be cancelled when status and delivery_status are PENDING',
         };
       }
 
@@ -442,7 +466,8 @@ class OrderService {
       if (order.status !== 'COMPLETED' || order.delivery_status !== 'DELIVERED') {
         throw {
           statusCode: 400,
-          message: 'Return can only be requested when status is COMPLETED and delivery_status is DELIVERED',
+          message:
+            'Return can only be requested when status is COMPLETED and delivery_status is DELIVERED',
         };
       }
 
@@ -491,7 +516,8 @@ class OrderService {
       if (order.status !== 'PREPARING' || order.delivery_status !== 'PENDING_PICKUP') {
         throw {
           statusCode: 400,
-          message: 'Cancel request chỉ được phép khi status = PREPARING và delivery_status = PENDING_PICKUP',
+          message:
+            'Cancel request chỉ được phép khi status = PREPARING và delivery_status = PENDING_PICKUP',
         };
       }
 

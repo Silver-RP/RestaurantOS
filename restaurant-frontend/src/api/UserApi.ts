@@ -5,6 +5,8 @@ export type UserQueryParams = {
   keyword?: string;
   page?: number;
   limit?: number;
+  sort?: string;
+  order?: string;
 };
 
 export const getUserById = async (userId: string): Promise<User> => {
