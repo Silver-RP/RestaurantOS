@@ -8,16 +8,21 @@ import {
   OrderDetailResponse,
   PlaceOrderRequest,
 } from '../types/Order.type';
+import { SearchParams } from '@/types/search.type';
 
-export async function getOrders(params?: OrderQueryParams): Promise<OrdersResponse> {
+export async function getOrders(
+  params?: OrderQueryParams,
+): Promise<OrdersResponse> {
   const res = await api.get('/order/user-orders', { params });
   console.log(res.data);
   return res.data;
 }
 
-export async function getOrderById(orderId: string): Promise<OrderDetailResponse> {
+export async function getOrderById(
+  orderId: string,
+): Promise<OrderDetailResponse> {
   const res = await api.get(`/order/${orderId}`);
-  console.log(res.data);  
+  console.log(res.data);
   return res.data;
 }
 
@@ -42,12 +47,25 @@ export async function requestCancel(orderId: string, reason: string) {
 }
 
 export const placeDirectOrder = async (data: PlaceOrderRequest) => {
-  console.log("Placing order with data:", data);
+  console.log('Placing order with data:', data);
   const res = await api.post('/order/place-order', data);
   return res.data;
 };
 
+export async function getAllOrders(
+  params: SearchParams,
+): Promise<OrdersResponse> {
+  const res = await api.get('/order/all-orders', { params });
+  return res.data;
+}
+
 export const getUserOrders = async (): Promise<OrdersResponse> => {
   const res = await api.get('/order/user-orders');
+  return res.data;
+};
+
+
+export const updateOrderStatus = async (orderId: string, status: string) => {
+  const res = await api.put(`/order/order-status/${orderId}`, { status });
   return res.data;
 };

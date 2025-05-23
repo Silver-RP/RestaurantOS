@@ -10,6 +10,7 @@ import {
   FaAngleLeft,
   FaAngleRight,
   FaUser,
+  FaCartPlus
 } from 'react-icons/fa';
 import { GiHotMeal } from 'react-icons/gi';
 import classNames from 'classnames';
@@ -60,6 +61,12 @@ const AdminLayout: React.FC = () => {
               href="/admin/categories"
               icon={<GiHotMeal />}
               label="Danh mục"
+              expanded={isSidebarOpen}
+            />
+            <NavItem
+              href="/admin/orders"
+              icon={<FaCartPlus />}
+              label="Đơn hàng"
               expanded={isSidebarOpen}
             />
             <NavItem
