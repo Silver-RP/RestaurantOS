@@ -285,11 +285,6 @@ const EditUserForm: React.FC<EditUserFormProps> = ({
                   onBlur={field.onBlur}
                   classNamePrefix="react-select"
                 />
-                {fieldState.error && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {fieldState.error.message}
-                  </p>
-                )}
               </>
             )}
           />
