@@ -4,7 +4,7 @@ import mongoosePaginate from 'mongoose-paginate-v2';
 export interface IOrder extends Document {
   user_id: Types.ObjectId;
   cashier_order_id?: Types.ObjectId | null;
-  address_id: Types.ObjectId;
+  address_id: Types.ObjectId | null;
   payment_method: 'CASH' | 'BANKING' | 'VNPAY' | 'MOMO' | 'CREDIT_CARD';
   delivery_type: 'DELIVERY' | 'PICKUP';
   delivery_status:
@@ -33,6 +33,8 @@ export interface IOrder extends Document {
   is_paid?: boolean;
   paid_at?: Date | null;
   note?: string;
+  receiver?: string | null;
+  receiver_phone?: string | null;
   cancelled_reason?: string | null;
   cancelled_at?: Date | null;
   returned_at?: Date | null;
@@ -52,7 +54,7 @@ const OrderSchema = new Schema<IOrder>(
       ref: 'Order',
       default: null,
     },
-    address_id: { type: Schema.Types.ObjectId, ref: 'Address', required: true },
+    address_id: { type: Schema.Types.ObjectId, ref: 'Address', required: false },
     payment_method: {
       type: String,
       enum: ['CASH', 'BANKING', 'VNPAY', 'MOMO'],
@@ -100,6 +102,8 @@ const OrderSchema = new Schema<IOrder>(
     is_paid: { type: Boolean, default: false },
     paid_at: { type: Date, default: null },
     note: { type: String, default: null },
+    receiver: { type: String, default: null },
+    receiver_phone: { type: String, default: null },
     cancelled_reason: { type: String, default: null },
     cancelled_at: { type: Date, default: null },
     returned_at: { type: Date, default: null },

@@ -108,7 +108,7 @@ class OrderValidator {
         unit_price: unitPrice,
         quantity: cartItem.quantity,
         total_amount: itemTotal,
-        note: cartItem.note || null,
+        note: clientItem.note || null,
       });
 
     }

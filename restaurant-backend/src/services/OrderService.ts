@@ -16,6 +16,7 @@ enum DeliveryStatus {
   DELIVERY_FAILED = 'DELIVERY_FAILED',
   RETURN_REQUESTED = 'RETURN_REQUESTED',
   RETURNED = 'RETURNED',
+  CANCEL_REQUESTED = 'CANCEL_REQUESTED', 
   CANCELLED = 'CANCELLED',
 }
 
@@ -24,12 +25,19 @@ enum OrderStatus {
   PREPARING = 'PREPARING',
   SHIPPING = 'SHIPPING',
   COMPLETED = 'COMPLETED',
+  CANCEL_REQUESTED = 'CANCEL_REQUESTED',
   CANCELLED = 'CANCELLED',
+  RETURN_REQUESTED = 'RETURN_REQUESTED',
   RETURNED = 'RETURNED',
 }
 
 class OrderService {
-  async handleAddress(userId: string, address_id: string | null, address: any, session: any) {
+  async handleAddress(userId: string, address_id: string | null, address: any, session: any, delivery_type: string) {
+    // Nếu là pickup, không cần địa chỉ
+    if (delivery_type === 'PICKUP') {
+      return null;
+    }
+
     if (address_id) {
       await OrderValidator.validateAddress(address_id);
       return address_id;
@@ -43,7 +51,7 @@ class OrderService {
 
   async createOrder(
     userId: string,
-    finalAddressId: string,
+    finalAddressId: string | undefined | null,
     payment_method: string,
     delivery_type: string,
     totalAmount: number,
@@ -51,6 +59,8 @@ class OrderService {
     delivery_time_type: string,
     total_quantity: number,
     note: string,
+    receiver: string | null,
+    receiver_phone: string | null,
     scheduled_time: Date | null,
     session: any,
   ) {
@@ -73,6 +83,8 @@ class OrderService {
       order_type,
       delivery_time_type,
       note,
+      receiver,
+      receiver_phone,
       scheduled_time,
     });
 
@@ -123,12 +135,20 @@ class OrderService {
       delivery_time_type,
       scheduled_time,
       note,
+      receiver,
+      receiver_phone,
     } = input;
     const session = await mongoose.startSession();
     session.startTransaction();
 
     try {
-      const finalAddressId = await this.handleAddress(userId, address_id, address, session);
+      const finalAddressId = await this.handleAddress(
+        userId,
+        address_id,
+        address,
+        session,
+        delivery_type
+      );
 
       const { orderItems, totalAmount } = await OrderValidator.validateCartAndItems(
         userId,
@@ -148,6 +168,8 @@ class OrderService {
         delivery_time_type,
         total_quantity,
         note,
+        receiver,
+        receiver_phone,
         scheduled_time,
         session,
       );
@@ -208,10 +230,10 @@ class OrderService {
         sortOrder,
         populate: ['user_id', 'address_id'],
         searchFields: [
-          'user_id.username',
-          'user_id.phone',
           'address_id.full_name',
-          'address_id.phone',
+          'address_id.phone', 
+          'receiver',
+          'receiver_phone',
         ],
         searchTerm: filters.keyword || '',
         filters: {
@@ -368,13 +390,13 @@ class OrderService {
         | 'DELIVERY_FAILED'
         | 'RETURN_REQUESTED'
         | 'RETURNED'
+        | 'CANCEL_REQUESTED'
         | 'CANCELLED';
 
       const mappedStatus = this.mapDeliveryStatusToOrderStatus(
         order.delivery_status as DeliveryStatus,
         order.order_type,
-      );
-      order.status = mappedStatus;
+      );      order.status = mappedStatus.toString() as any;
 
       await order.save();
 
@@ -387,7 +409,6 @@ class OrderService {
     }
   }
 
-  
   mapDeliveryStatusToOrderStatus(
     deliveryStatus: DeliveryStatus,
     orderType: 'DINE_IN' | 'ONLINE',
@@ -406,6 +427,8 @@ class OrderService {
         case DeliveryStatus.RETURN_REQUESTED:
         case DeliveryStatus.RETURNED:
           return OrderStatus.RETURNED;
+        case DeliveryStatus.CANCEL_REQUESTED:
+          return OrderStatus.CANCEL_REQUESTED;
         case DeliveryStatus.CANCELLED:
           return OrderStatus.CANCELLED;
         default:
@@ -427,6 +450,8 @@ class OrderService {
         case DeliveryStatus.RETURN_REQUESTED:
         case DeliveryStatus.RETURNED:
           return OrderStatus.RETURNED;
+        case DeliveryStatus.CANCEL_REQUESTED:
+          return OrderStatus.CANCEL_REQUESTED;
         case DeliveryStatus.CANCELLED:
           return OrderStatus.CANCELLED;
         default:
@@ -499,10 +524,8 @@ class OrderService {
           statusCode: 400,
           message: 'Return request must be made within 30 minutes of delivery',
         };
-      }
-
-      order.status = 'RETURN_REQUESTED';
-      order.delivery_status = 'RETURN_REQUESTED';
+      }      order.status = OrderStatus.RETURN_REQUESTED.toString() as any;
+      order.delivery_status = DeliveryStatus.RETURN_REQUESTED.toString() as any;
       order.returned_at = new Date();
       order.cancelled_reason = reason;
 
@@ -527,8 +550,7 @@ class OrderService {
       if (order.status !== 'PREPARING' || order.delivery_status !== 'PENDING_PICKUP') {
         throw {
           statusCode: 400,
-          message:
-            'Cancel request chỉ được phép khi status = PREPARING và delivery_status = PENDING_PICKUP',
+          message: 'Cancel request chỉ được phép khi status = PREPARING và delivery_status = PENDING_PICKUP',
         };
       }
 
