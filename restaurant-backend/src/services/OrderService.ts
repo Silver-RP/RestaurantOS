@@ -1,11 +1,12 @@
 import mongoose from 'mongoose';
 import OrderValidator from '../validators/orderValidator';
 import { Address } from '../models/AddressModel';
-import { Order } from '../models/OrderModel';
+import { Order, IOrder } from '../models/OrderModel';
 import { OrderDetail } from '../models/OrderDetailModel';
 import Cart from '../models/CartModel';
 import { Dish } from '../models/DishModel';
 import SearchService from './SearchService';
+import { createVNPayPaymentUrl } from '../services/payments/VnPayService';
 
 enum DeliveryStatus {
   PENDING = 'PENDING',
@@ -27,7 +28,6 @@ enum OrderStatus {
   CANCELLED = 'CANCELLED',
   RETURNED = 'RETURNED',
 }
-
 class OrderService {
   async handleAddress(userId: string, address_id: string | null, address: any, session: any) {
     if (address_id) {
@@ -111,6 +111,67 @@ class OrderService {
     );
   }
 
+  async handlePostPaymentLogic(order: IOrder, clientIp: string) {
+    const payment_method = order.payment_method;
+    let redirectUrl = null;
+    let bankingInfo = null;
+
+    switch (payment_method) {
+      case 'BANKING':
+        bankingInfo = {
+          bank_name: 'Vietcombank',
+          account_number: '0123456789',
+          account_name: 'Công ty ABC',
+          qr_code: 'https://example.com/qr.png',
+          transfer_note: `ORDER-${order._id}`
+        };
+        break;
+
+      // case 'MOMO':
+      //   redirectUrl = await momoService.createPaymentUrl(order);
+      //   break;
+
+      case 'VNPAY':
+        redirectUrl = createVNPayPaymentUrl(order, clientIp);
+        break;
+
+      // case 'CREDIT_CARD':
+      //   redirectUrl = await creditCardService.createPaymentUrl(order);
+      //   break;
+    }
+
+    return {
+      type: payment_method,
+      redirectUrl,
+      bankingInfo
+    };
+  }
+
+  async markOrderPaid(orderId: string, amount: number) {
+    const order = await Order.findById(orderId);
+    if (!order) throw new Error('Order not found');
+
+    if (order.total_price !== amount) {
+      throw new Error('Paid amount does not match order total');
+    }
+
+    order.payment_status = 'PAID';
+    order.paid_at = new Date();
+    await order.save();
+
+    return order;
+  }
+
+  async markOrderFailed(orderId: string) {
+    const order = await Order.findById(orderId);
+    if (!order) throw new Error('Order not found');
+  
+    order.payment_status = 'FAILED'; 
+    await order.save();
+  
+    return order;
+  }
+
   async placeOrder(input: any) {
     const {
       userId,
@@ -140,7 +201,7 @@ class OrderService {
 
       const savedOrder = await this.createOrder(
         userId,
-        finalAddressId,
+        finalAddressId || '',
         payment_method,
         delivery_type,
         totalAmount,
@@ -156,7 +217,6 @@ class OrderService {
         throw { statusCode: 500, message: 'Order placement failed' };
       }
 
-      // Save order details
       const orderDetailPromises = orderItems.map((item) => {
         const orderDetail = new OrderDetail({
           order_id: savedOrder._id,
@@ -172,9 +232,7 @@ class OrderService {
 
       await Promise.all(orderDetailPromises);
 
-      // Update dish counts
       await this.updateDishCounts(orderItems, session);
-
       const orderedDishIds = items.map((item: { dish_id: any }) => item.dish_id);
       await this.updateCart(userId, orderedDishIds, session);
 
@@ -191,6 +249,7 @@ class OrderService {
       };
     }
   }
+
   async getAllOrders(options: {
     page: number;
     limit: number;
@@ -387,7 +446,6 @@ class OrderService {
     }
   }
 
-  
   mapDeliveryStatusToOrderStatus(
     deliveryStatus: DeliveryStatus,
     orderType: 'DINE_IN' | 'ONLINE',
@@ -444,7 +502,7 @@ class OrderService {
         throw { statusCode: 404, message: 'Order not found' };
       }
 
-      if (order.status !== 'PENDING' || order.delivery_status !== 'PENDING') {
+      if (order.status !== 'PENDING' || order.delivery_status !== 'PENDING_PICKUP') {
         throw {
           statusCode: 400,
           message: 'Order can only be cancelled when status and delivery_status are PENDING',
@@ -501,7 +559,7 @@ class OrderService {
         };
       }
 
-      order.status = 'RETURN_REQUESTED';
+      order.status = 'RETURN_REQUESTED' as OrderStatus; // Update type to include 'RETURN_REQUESTED'
       order.delivery_status = 'RETURN_REQUESTED';
       order.returned_at = new Date();
       order.cancelled_reason = reason;

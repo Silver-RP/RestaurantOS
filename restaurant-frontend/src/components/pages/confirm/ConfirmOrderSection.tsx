@@ -186,6 +186,11 @@ const OrderConfirmation = () => {
 
       toast.success("Đặt hàng thành công!");
 
+      if (response.postPayment?.redirectUrl) {
+        window.location.href = response.postPayment.redirectUrl;
+        return;
+      }
+      
       // Navigate to success page
       navigate('/order-success');
     } catch (error) {

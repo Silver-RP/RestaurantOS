@@ -226,7 +226,7 @@ class SearchService {
         cancelled_reason: 1,
         delivered_at: 1,
         returned_at: 1,
-        is_paid: 1,
+        payment_status: 1,
         paid_at: 1,
       },
     });

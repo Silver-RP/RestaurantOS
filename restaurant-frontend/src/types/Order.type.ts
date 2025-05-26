@@ -100,7 +100,7 @@ export interface Order {
   items_price: number;
   total_price: number;
   total_quantity: number;
-  is_paid: boolean;
+  payment_status?: 'UNPAID' | 'PAID' | 'FAILED' | 'REFUNDED';
   paid_at: string | null;
   note: string | null;
   cancelled_reason: string | null;

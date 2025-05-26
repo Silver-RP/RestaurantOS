@@ -41,7 +41,7 @@ interface OrderItem {
   items_price: number;
   total_price: number;
   total_quantity: number;
-  is_paid: boolean;
+  payment_status: 'UNPAID' | 'PAID' | 'FAILED' | 'REFUNDED';
   paid_at: string | null;
   note: string | null;
   cancelled_reason: string | null;
@@ -399,9 +399,11 @@ const OrderTable: React.FC = () => {
                           {getPaymentMethodText(order.payment_method)}
                         </span>
                         <span
-                          className={`text-xs ${order.is_paid ? 'text-green-600' : 'text-red-600'}`}
+                          className={`text-xs ${order.payment_status === 'PAID' ? 'text-green-600' : 'text-red-600'}`}
                         >
-                          {order.is_paid ? 'Đã thanh toán' : 'Chưa thanh toán'}
+                          {order.payment_status === 'PAID'
+                            ? 'Đã thanh toán'
+                            : 'Chưa thanh toán'}
                         </span>
                       </div>
                     </td>

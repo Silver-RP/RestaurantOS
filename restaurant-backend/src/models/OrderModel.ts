@@ -2,35 +2,36 @@ import { Schema, model, Document, Types, PaginateModel } from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
 
 export interface IOrder extends Document {
+  _id: Types.ObjectId;
   user_id: Types.ObjectId;
   cashier_order_id?: Types.ObjectId | null;
   address_id: Types.ObjectId;
   payment_method: 'CASH' | 'BANKING' | 'VNPAY' | 'MOMO' | 'CREDIT_CARD';
   delivery_type: 'DELIVERY' | 'PICKUP';
   delivery_status:
-    | 'PENDING_PICKUP'
-    | 'PICKED_UP'
-    | 'IN_TRANSIT'
-    | 'DELIVERED'
-    | 'DELIVERY_FAILED'
-    | 'RETURN_REQUESTED'
-    | 'RETURNED'
-    | 'CANCEL_REQUESTED'
-    | 'CANCELLED';
+  | 'PENDING_PICKUP'
+  | 'PICKED_UP'
+  | 'IN_TRANSIT'
+  | 'DELIVERED'
+  | 'DELIVERY_FAILED'
+  | 'RETURN_REQUESTED'
+  | 'RETURNED'
+  | 'CANCEL_REQUESTED'
+  | 'CANCELLED';
   status:
-    | 'PENDING'
-    | 'PREPARING'
-    | 'SHIPPING'
-    | 'COMPLETED'
-    | 'CANCELLED'
-    | 'CANCEL_REQUESTED'
-    | 'RETURNED';
+  | 'PENDING'
+  | 'PREPARING'
+  | 'SHIPPING'
+  | 'COMPLETED'
+  | 'CANCELLED'
+  | 'CANCEL_REQUESTED'
+  | 'RETURNED';
   shipping_fee: number;
   vat_amount: number;
   items_price: number;
   total_price?: number;
   total_quantity: number;
-  is_paid?: boolean;
+  payment_status:'UNPAID' | 'PAID' | 'FAILED' | 'REFUNDED',
   paid_at?: Date | null;
   note?: string;
   cancelled_reason?: string | null;
@@ -97,7 +98,11 @@ const OrderSchema = new Schema<IOrder>(
     items_price: { type: Number, required: true, default: 0 },
     total_price: { type: Number, default: 0 },
     total_quantity: { type: Number, required: true, default: 0 },
-    is_paid: { type: Boolean, default: false },
+    payment_status: {
+      type: String,
+      enum: ['UNPAID', 'PAID', 'FAILED', 'REFUNDED'],
+      default: 'UNPAID',
+    },
     paid_at: { type: Date, default: null },
     note: { type: String, default: null },
     cancelled_reason: { type: String, default: null },
