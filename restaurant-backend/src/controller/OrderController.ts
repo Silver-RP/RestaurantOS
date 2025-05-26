@@ -47,9 +47,13 @@ class OrderController {
         receiver_phone,
       });
 
+      const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
+      const postPayment = await OrderService.handlePostPaymentLogic(order, clientIp.toString());
+
       return res.status(201).json({
         message: 'Order placed successfully',
         order,
+        postPayment,
       });
     } catch (error: any) {
       console.error('Error placing order:', error.message);
@@ -103,9 +107,12 @@ class OrderController {
         : null;
       const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
       const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 5;
-
-      const result = await OrderService.getUserOrders(userId, deliveryStatuses, page, limit);
-
+      const cleanDeliveryStatuses = deliveryStatuses?.filter(
+        (status): status is string => typeof status === 'string'
+      ) ?? null;
+      
+      const result = await OrderService.getUserOrders(userId, cleanDeliveryStatuses, page, limit);
+      
       return res.status(200).json({
         message: 'Orders retrieved successfully',
         ...result,

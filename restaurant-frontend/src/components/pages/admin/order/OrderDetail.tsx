@@ -259,9 +259,11 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
                   : order.payment_method}
               </p>
               <p
-                className={`text-sm ${order.is_paid ? 'text-green-600' : 'text-red-600'}`}
+                className={`text-sm ${order.payment_status === 'PAID' ? 'text-green-600' : 'text-red-600'}`}
               >
-                {order.is_paid ? 'Đã thanh toán' : 'Chưa thanh toán'}
+                {order.payment_status === 'PAID'
+                  ? 'Đã thanh toán'
+                  : 'Chưa thanh toán'}
               </p>
             </div>
             <div>

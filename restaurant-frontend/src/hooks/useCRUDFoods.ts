@@ -72,8 +72,16 @@ export const useCRUDFoods = () => {
             await permanentlyDeleteFoodAPI(foodId);
             toast.success('Xóa vĩnh viễn món ăn thành công');
             setTimeout(() => { navigate(0); }, 1500);
-        } catch (error) {
-            toast.error('Xóa vĩnh viễn món ăn thất bại');
+        } catch (error: any) {
+            let errorMessage = 'Không thể xoá';
+          
+            if (error.response && error.response.data?.message) {
+              errorMessage = error.response.data.message;
+            } else if (error.message) {
+              errorMessage = error.message;
+            }
+          
+            toast.error(errorMessage);
             console.error('Lỗi khi xóa vĩnh viễn món ăn:', error);
         } finally {
             dispatch(hideOverlayLoading());

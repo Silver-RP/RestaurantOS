@@ -25,7 +25,6 @@ class CartController {
 
   static async AddItemToCart(req: Request, res: Response): Promise<void> {
     try {
-      console.log('AddItemToCart called: ', req.user);
       const { dishId, quantity } = req.body;
       const userId = (req.user as IUser).id?.toString();
 

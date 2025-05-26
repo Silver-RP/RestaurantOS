@@ -8,6 +8,7 @@ import CateRoutes from './routes/CategoryRoutes';
 import ReservationContactRoutes from './routes/ReservationContactRoutes';
 import ReservationDetailContactRoutes from './routes/ReservationDetailContactRoutes';
 import ProfileRoutes from './routes/ProfileRoutes';
+import BannerRoutes from './routes/BannerRoutes';
 
 import StaffRoutes from './routes/StaffRoutes';
 import FoodRoutes from './routes/FoodRoutes';
@@ -17,6 +18,8 @@ import AuthMiddleWare from './middleware/AuthMiddleWare';
 import CartRouter from './routes/CartRoutes';
 import FavoriteRoutes from './routes/FavoriteRoutes';
 import AddressRouter from './routes/AddressRoutes';
+import PaymentRoutes from './routes/PaymentRoutes';
+
 import dotenv from 'dotenv';
 import connectDB from './config/db';
 import cookieParser from 'cookie-parser';
@@ -100,6 +103,7 @@ app.use(
 );
 app.use('/api/permission', PermissionRoutes);
 app.use('/api/category', CateRoutes);
+app.use('/api/banner', BannerRoutes);
 app.use('/api/reservationcontact', ReservationContactRoutes);
 app.use('/api/reservationdetailcontact', ReservationDetailContactRoutes);
 app.use(
@@ -114,6 +118,7 @@ app.use('/api/order', AuthMiddleWare.verifyToken, OrderRoutes);
 app.use('/api/cart', AuthMiddleWare.verifyToken, CartRouter);
 app.use('/api/favorite', AuthMiddleWare.verifyToken, FavoriteRoutes);
 app.use('/api/address', AuthMiddleWare.verifyToken, AddressRouter);
+app.use('/api/payment', PaymentRoutes); 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
   console.log('Mongo URI:', process.env.MONGO_URI);
