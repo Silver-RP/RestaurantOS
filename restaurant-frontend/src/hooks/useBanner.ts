@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react';
 import BannerApi, { IBanner } from '../api/BannerApi';
-import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
 
 // Hook lấy danh sách banner
@@ -13,16 +12,13 @@ export const useGetBanners = () => {
     try {
       setLoading(true);
       setError(null);
-      console.log('Fetching banners...');
       const response = await BannerApi.getAllBanners();
-      console.log('Banner response:', response);
       
-      if (response?.data?.success && Array.isArray(response.data.data)) {
+      if (response?.data.data) {
         setBanners(response.data.data);
-        console.log('Banners set:', response.data.data);
       } else {
         setBanners([]);
-        console.warn('Invalid banner data received:', response);
+        setError('Dữ liệu danh sách banner không hợp lệ');
       }
     } catch (error) {
       console.error('Error fetching banners:', error);
@@ -45,10 +41,19 @@ export const useGetActiveBanners = () => {
   const fetchActiveBanners = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
       const response = await BannerApi.getActiveBanners();
-      setActiveBanners(response.data || []);
+      
+      if (response?.data.data) {
+        setActiveBanners(response.data.data);
+      } else {
+        setActiveBanners([]);
+        setError('Dữ liệu banner hoạt động không hợp lệ');
+      }
     } catch (error) {
       console.error('Error fetching active banners:', error);
+      setError('Lỗi khi tải danh sách banner hoạt động');
+      setActiveBanners([]);
     } finally {
       setLoading(false);
     }
@@ -66,11 +71,21 @@ export const useGetBannerById = () => {
   const getBannerById = useCallback(async (id: string) => {
     try {
       setLoading(true);
+      setError(null);
       const response = await BannerApi.getBannerById(id);
-      setSelectedBanner(response.data);
-      return response.data;
+
+      if (response?.data.data) {
+        setSelectedBanner(response.data.data);
+        return response.data.data;
+      } else {
+        setSelectedBanner(null);
+        setError('Không tìm thấy thông tin banner');
+        return null;
+      }
     } catch (error) {
-      console.error('Error fetching banner:', error);
+      console.error('Error fetching banner by ID:', error);
+      setSelectedBanner(null);
+      setError('Lỗi khi tải thông tin banner');
       return null;
     } finally {
       setLoading(false);
@@ -89,26 +104,23 @@ export const useCreateBanner = () => {
     try {
       setLoading(true);
       setError(null);
-      console.log('Sending form data:', Object.fromEntries(formData.entries()));
-      
       const response = await BannerApi.createBanner(formData);
-      console.log('Create banner response:', response);
       
-      if (response.data && response.data.success === false) {
-        const errorMessage = response.data.message;
+      if (response?.data) {
+        return response.data;
+      } else {
+        const errorMessage = 'Có lỗi xảy ra khi tạo banner';
         setError(errorMessage);
         throw new Error(errorMessage);
       }
-      
-      return response.data;
     } catch (error) {
       console.error('Error creating banner:', error);
-      if (error instanceof AxiosError) {
-        const errorMessage = error.response?.data?.message || 'Có lỗi xảy ra khi tạo banner';
-        setError(errorMessage);
-        throw new Error(errorMessage);
+      if (error instanceof AxiosError && error.response?.data?.message) {
+        setError(error.response.data.message);
+        throw new Error(error.response.data.message);
       }
-      throw error;
+      setError('Có lỗi xảy ra khi tạo banner');
+      throw new Error('Có lỗi xảy ra khi tạo banner');
     } finally {
       setLoading(false);
     }
@@ -126,18 +138,23 @@ export const useUpdateBanner = () => {
     try {
       setLoading(true);
       setError(null);
-      console.log('Sending update data:', Object.fromEntries(formData.entries()));
-      
       const response = await BannerApi.updateBanner(id, formData);
-      return response.data;
+      
+      if (response?.data) {
+        return response.data;
+      } else {
+        const errorMessage = 'Có lỗi xảy ra khi cập nhật banner';
+        setError(errorMessage);
+        throw new Error(errorMessage);
+      }
     } catch (error) {
       console.error('Error updating banner:', error);
-      if (error instanceof AxiosError) {
-        const errorMessage = error.response?.data?.message || 'Có lỗi xảy ra khi cập nhật banner';
-        setError(errorMessage);
-        throw error;
+      if (error instanceof AxiosError && error.response?.data?.message) {
+        setError(error.response.data.message);
+        throw new Error(error.response.data.message);
       }
-      throw error;
+      setError('Có lỗi xảy ra khi cập nhật banner');
+      throw new Error('Có lỗi xảy ra khi cập nhật banner');
     } finally {
       setLoading(false);
     }
@@ -156,15 +173,22 @@ export const useDeleteBanner = () => {
       setLoading(true);
       setError(null);
       const response = await BannerApi.deleteBanner(id);
-      return response.data;
+
+      if (response?.data) {
+        return response.data;
+      } else {
+        const errorMessage = 'Có lỗi xảy ra khi xóa banner';
+        setError(errorMessage);
+        throw new Error(errorMessage);
+      }
     } catch (error) {
       console.error('Error deleting banner:', error);
-      if (error instanceof AxiosError) {
-        const errorMessage = error.response?.data?.message || 'Có lỗi xảy ra khi xóa banner';
-        setError(errorMessage);
-        throw error;
+      if (error instanceof AxiosError && error.response?.data?.message) {
+        setError(error.response.data.message);
+        throw new Error(error.response.data.message);
       }
-      throw error;
+      setError('Có lỗi xảy ra khi xóa banner');
+      throw new Error('Có lỗi xảy ra khi xóa banner');
     } finally {
       setLoading(false);
     }

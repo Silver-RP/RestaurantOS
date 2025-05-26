@@ -50,9 +50,21 @@ class BannerService {
         image: url,
         order,
         status: req.body.status || 'active',
-        start_date: req.body.start_date ? new Date(req.body.start_date) : undefined,
-        end_date: req.body.end_date ? new Date(req.body.end_date) : undefined
       };
+
+      // Xử lý start_date
+      if (req.body.start_date === 'null') {
+        bannerData.start_date = undefined;
+      } else if (req.body.start_date) {
+        bannerData.start_date = new Date(req.body.start_date);
+      }
+
+      // Xử lý end_date
+      if (req.body.end_date === 'null') {
+        bannerData.end_date = undefined;
+      } else if (req.body.end_date) {
+        bannerData.end_date = new Date(req.body.end_date);
+      }
 
       console.log('Creating banner with data:', bannerData);
 
@@ -93,9 +105,25 @@ class BannerService {
         description: req.body.description || '',
         order,
         status: req.body.status || 'active',
-        start_date: req.body.start_date ? new Date(req.body.start_date) : undefined,
-        end_date: req.body.end_date ? new Date(req.body.end_date) : undefined
       };
+
+      // Xử lý start_date
+      if (req.body.start_date === 'null') {
+        updateData.$unset = { start_date: 1 };
+      } else if (req.body.start_date) {
+        updateData.start_date = new Date(req.body.start_date);
+      }
+
+      // Xử lý end_date
+      if (req.body.end_date === 'null') {
+        if (updateData.$unset) {
+          updateData.$unset.end_date = 1;
+        } else {
+          updateData.$unset = { end_date: 1 };
+        }
+      } else if (req.body.end_date) {
+        updateData.end_date = new Date(req.body.end_date);
+      }
       
       if (req.file) {
         // Xóa ảnh cũ từ Cloudinary nếu tồn tại

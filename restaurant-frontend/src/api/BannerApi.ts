@@ -1,8 +1,6 @@
 import api from './axiosInstance';
 
 export interface IBanner {
-  success: boolean;
-  message: string;
   _id: string;
   title: string;
   image: string;
@@ -13,6 +11,12 @@ export interface IBanner {
   end_date?: Date;
   created_at: Date;
   updated_at: Date;
+}
+
+export interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
 }
 
 export interface CreateBannerData {
@@ -32,22 +36,22 @@ export interface UpdateBannerData extends Partial<CreateBannerData> {
 const BannerApi = {
   // Lấy banner hoạt động
   getActiveBanners: () => {
-    return api.get<IBanner[]>('/banner/getActiveBanners');    
+    return api.get<ApiResponse<IBanner[]>>('/banner/getActiveBanners');    
   },
 
   // Lấy danh sách banner
   getAllBanners: () => {
-    return api.get<IBanner[]>('/banner/getAllBanners');
+    return api.get<ApiResponse<IBanner[]>>('/banner/getAllBanners');
   },
 
   // Lấy banner theo ID
   getBannerById: (id: string) => {
-    return api.get<IBanner>(`/banner/getBannerById/${id}`);
+    return api.get<ApiResponse<IBanner>>(`/banner/getBannerById/${id}`);
   },
 
   // Tạo banner mới
   createBanner: (data: FormData) => {
-    return api.post<IBanner>('/banner/createBanner', data, {
+    return api.post<ApiResponse<IBanner>>('/banner/createBanner', data, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -56,7 +60,7 @@ const BannerApi = {
 
   // Cập nhật banner
   updateBanner: (id: string, data: FormData) => {
-    return api.put<IBanner>(`/banner/updateBanner/${id}`, data, {
+    return api.put<ApiResponse<IBanner>>(`/banner/updateBanner/${id}`, data, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -65,7 +69,7 @@ const BannerApi = {
 
   // Xóa banner
   deleteBanner: (id: string) => {
-    return api.delete<IBanner>(`/banner/deleteBanner/${id}`);
+    return api.delete<ApiResponse<IBanner>>(`/banner/deleteBanner/${id}`);
   },
 };
 

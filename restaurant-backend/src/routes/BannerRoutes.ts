@@ -1,6 +1,6 @@
 import express from 'express';
-import BannerController from '../controllers/BannerController';
 import upload from '../middleware/UploadMiddleWare';
+import BannerController from '../controller/BannerController';
 
 const router = express.Router();
 

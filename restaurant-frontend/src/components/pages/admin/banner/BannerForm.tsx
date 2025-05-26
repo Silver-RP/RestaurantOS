@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import ImageUploadPreview from '../ImageUploadPreview';
 import { IBanner } from '../../../../api/BannerApi';
 import { toast } from 'react-toastify';
+import { AxiosError } from 'axios';
 
 interface BannerFormProps {
   onSubmit: (formData: FormData) => Promise<void>;
@@ -32,7 +33,6 @@ const BannerForm: React.FC<BannerFormProps> = ({ onSubmit, initialData, loading 
     end_date: ''
   });
 
-  // Lấy ngày hiện tại để set min date
   const today = new Date().toISOString().split('T')[0];
 
   useEffect(() => {
@@ -122,18 +122,26 @@ const BannerForm: React.FC<BannerFormProps> = ({ onSubmit, initialData, loading 
       submitData.append('description', formData.description);
       submitData.append('order', formData.order.toString());
       submitData.append('status', formData.status);
-      if (formData.start_date) {
+      
+      if (formData.start_date === '') {
+        submitData.append('start_date', 'null');
+      } else if (formData.start_date) {
         submitData.append('start_date', formData.start_date);
       }
-      if (formData.end_date) {
+
+      if (formData.end_date === '') {
+        submitData.append('end_date', 'null');
+      } else if (formData.end_date) {
         submitData.append('end_date', formData.end_date);
       }
 
       await onSubmit(submitData);
       navigate('/admin/banners');
-    } catch (error: any) {
-      console.error('Error submitting form:', error);
-      toast.error(error.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại');
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        console.error('Error submitting form:', error);
+        toast.error(error.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại');
+      }
     }
   };
 
