@@ -7,7 +7,10 @@ import { ToastConfigAdmin } from '@/components/common/ToastConfig';
 import { confirmAlert } from 'react-confirm-alert';
 
 import { toast } from 'react-toastify';
+import { FaArrowUp, FaArrowDown, FaSort } from 'react-icons/fa';
 const CategoriesPage: React.FC = () => {
+  const [sortField, setSortField] = useState<string>(''); // tên trường được sort
+  const [order, setOrder] = useState<'asc' | 'desc'>('asc'); // thứ tự
   const { handleDeleteCategory } = useDeleteCategory();
 
   const { categories, loading, error, refetch, setCategories } =
@@ -20,14 +23,15 @@ const CategoriesPage: React.FC = () => {
   const [showSortDropdown, setShowSortDropdown] = useState(false);
 
   const page = Number(searchParams.get('page')) || 1;
-   
+
   useEffect(() => {
     const params = new URLSearchParams();
     if (search) params.set('keyword', search);
-    if (sortType) params.set('sort', sortType);
+    if (sortField) params.set('sort', sortField);
+    if (order) params.set('order', order);
     params.set('page', '1');
     setSearchParams(params);
-  }, [search, sortType]);
+  }, [search, sortField, order]);
 
   const filteredData = useMemo(() => {
     if (!categories?.data) return [];
@@ -36,14 +40,30 @@ const CategoriesPage: React.FC = () => {
       c.Cate_name.toLowerCase().includes(search.toLowerCase()),
     );
 
-    if (sortType === 'asc')
-      data = [...data].sort((a, b) => a.Cate_name.localeCompare(b.Cate_name));
-    if (sortType === 'desc')
-      data = [...data].sort((a, b) => b.Cate_name.localeCompare(a.Cate_name));
+    if (sortField) {
+      data = [...data].sort((a, b) => {
+        const aField = a[sortField]?.toString().toLowerCase() ?? '';
+        const bField = b[sortField]?.toString().toLowerCase() ?? '';
+        return order === 'asc'
+          ? aField.localeCompare(bField)
+          : bField.localeCompare(aField);
+      });
+    }
 
     return data;
-  }, [categories, search, sortType]);
-
+  }, [categories, search, sortField, order]);
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortField(field);
+      setOrder('asc');
+    }
+  };
+  const getSortIcon = (field: string) => {
+    if (sortField !== field) return <FaSort />;
+    return order === 'asc' ? <FaArrowUp /> : <FaArrowDown />;
+  };
   const perPage = 10;
   const totalPages = Math.ceil(filteredData.length / perPage);
   const currentPageData = filteredData.slice(
@@ -78,8 +98,6 @@ const CategoriesPage: React.FC = () => {
                   handleDeleteCategory(id, {
                     onSuccess: () => {
                       toast.success('Xoá danh mục thành công!');
-
-                      // ✅ Cập nhật danh sách ngay mà không cần gọi lại API
                       setCategories((prev) => {
                         if (!prev) return prev;
                         return {
@@ -182,10 +200,39 @@ const CategoriesPage: React.FC = () => {
             <thead className="bg-gray-100 text-left">
               <tr>
                 <th className="p-3 border-b">Ảnh</th>
-                <th className="p-3 border-b">Tên danh mục</th>
-                <th className="p-3 border-b">Slug</th>
-                <th className="p-3 border-b">Loại</th>
-                <th className="p-3 border-b">Số món</th>
+                <th
+                  className="p-3 border-b cursor-pointer"
+                  onClick={() => handleSort('Cate_name')}
+                >
+                  <div className="flex items-center gap-1">
+                    Tên danh mục {getSortIcon('Cate_name')}
+                  </div>
+                </th>
+                <th
+                  className="p-3 border-b cursor-pointer"
+                  onClick={() => handleSort('Cate_slug')}
+                >
+                  <div className="flex items-center gap-1">
+                    Slug {getSortIcon('Cate_slug')}
+                  </div>
+                </th>
+                <th
+                  className="p-3 border-b cursor-pointer"
+                  onClick={() => handleSort('Cate_type')}
+                >
+                  <div className="flex items-center gap-1">
+                    Loại {getSortIcon('Cate_type')}
+                  </div>
+                </th>
+
+                <th
+                  className="p-3 border-b cursor-pointer"
+                  onClick={() => handleSort('foodCount')}
+                >
+                  <div className="flex items-center gap-1">
+                    Số món ăn {getSortIcon('foodCount')}
+                  </div>
+                </th>
                 <th className="p-3 border-b">Hành động</th>
               </tr>
             </thead>

@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useRoles } from '@/hooks/useRoles';
 
+// Define the UserFiltersType interface
+export interface UserFiltersType {
+  role: string;
+  gender: string;
+  status: string;
+  isVerified: string;
+  birthdayFrom: string;
+  birthdayTo: string;
+}
+
 interface Props {
   initialFilters?: Partial<UserFiltersType>;
   searchParams: URLSearchParams;

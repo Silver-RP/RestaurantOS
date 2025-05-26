@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import ModalSelectAddress, { Address } from './ModalSelectAddress';
 import { AddAddressModal } from '../address/AddAddressModal';
+import { toast } from 'react-toastify'; 
 import ModalSelectDeliveryTime, {
   DeliveryTime,
 } from './ModalSelectDeliveryTime';
-
 
 interface Props {
   addresses: Address[];
@@ -15,7 +15,7 @@ interface Props {
   initialDeliveryTime?: DeliveryTime;
   deliveryMethod?: 'delivery' | 'pickup';
   onDeliveryMethodChange?: (method: 'delivery' | 'pickup') => void;
-  refetch: () => void; 
+  refetch: () => void;
 }
 
 const ShippingAddressSection = ({
@@ -27,17 +27,15 @@ const ShippingAddressSection = ({
   initialDeliveryTime = { type: 'now' },
   deliveryMethod = 'delivery',
   onDeliveryMethodChange = () => {},
+  refetch,
 }: Props) => {
-
-
- 
   const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isDeliveryTimeModalOpen, setIsDeliveryTimeModalOpen] = useState(false);
   const [deliveryTime, setDeliveryTime] =
     useState<DeliveryTime>(initialDeliveryTime);
 
-const selected = addresses.find((addr) => addr.id === String(selectedId));
+  const selected = addresses.find((addr) => addr.id === String(selectedId));
 
   useEffect(() => {
     if (!selectedId && addresses.length > 0) {
@@ -66,27 +64,35 @@ const selected = addresses.find((addr) => addr.id === String(selectedId));
   };
 
   const handleSaveAddress = (
-    address: string,
+    province: string,
+    district: string,
+    ward: string,
+    street_address: string,
+    full_name: string,
     lat: number,
     lon: number,
-    name: string,
     phone: string,
     addressType: string,
   ) => {
     onAdd({
       address_type: addressType,
-      full_name: name,
+      full_name,
       phone,
-      province: address,
-      district: address,
-      ward: address,
-      street_address: address,
+      province,
+      district,
+      ward,
+      street_address,
       lat,
       lon,
       is_default: addresses.length === 0,
     });
     setIsAddModalOpen(false);
-    refetch();
+    toast.success('Đã thêm địa chỉ thành công');
+    try {
+      refetch();
+    } catch (err) {
+      console.error('⚠️ refetch lỗi hoặc không định nghĩa:', err);
+    }
   };
 
   const handleDeliveryTimeSelect = (selectedTime: DeliveryTime) => {
@@ -225,6 +231,7 @@ const selected = addresses.find((addr) => addr.id === String(selectedId));
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSave={handleSaveAddress}
+        total={addresses.length}
       />
     </div>
   );

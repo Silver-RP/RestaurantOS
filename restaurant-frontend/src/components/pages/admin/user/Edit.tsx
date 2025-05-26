@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,7 +7,7 @@ import { editUserSchema, EditUserFormValues } from '@/utils/zodSchemas';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { useRoles } from '@/hooks/useRoles';
-import { FiEye, FiEyeOff } from 'react-icons/fi';
+// import { FiEye, FiEyeOff } from 'react-icons/fi';
 import { SubmitErrorHandler } from 'react-hook-form';
 interface RoleOption {
   value: string;
@@ -26,15 +26,18 @@ const EditUserForm: React.FC<EditUserFormProps> = ({
   onSubmit,
   disableRoleAndStatus,
 }) => {
-  const [changePassword, setChangePassword] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const currentUser = useSelector((state: RootState) => state.user.user);
+  // const targetUserRoleNames = useMemo(() => {
+  //   return (userData?.roles || []).map((r: any) =>
+  //     typeof r === 'string' ? r : r.name?.toLowerCase?.(),
+  //   );
+  // }, [userData]);
   const navigate = useNavigate();
   const roleOptions: RoleOption[] = roles.map((role) => ({
     value: role._id,
     label: role.name,
   }));
-  const currentUser = useSelector((state: RootState) => state.user.user);
+
   const { roles: allRoles } = useRoles();
 
   const filteredRoleOptions = useMemo(() => {
@@ -105,7 +108,10 @@ const EditUserForm: React.FC<EditUserFormProps> = ({
           );
           setValue('roles', roleIds);
         } else {
-          setValue(key as keyof EditUserFormValues, value as EditUserFormValues[keyof EditUserFormValues]);
+          setValue(
+            key as keyof EditUserFormValues,
+            value as EditUserFormValues[keyof EditUserFormValues],
+          );
         }
       });
     }
@@ -113,17 +119,24 @@ const EditUserForm: React.FC<EditUserFormProps> = ({
 
   const onValid = (data: EditUserFormValues) => {
     const payload = { ...data };
-    if (!changePassword) {
-      delete payload.password;
-    }
+    // if (!changePassword) {
+    //   delete payload.password;
+    // }
 
     onSubmit({ ...userData, ...payload });
   };
-  
 
   const onInvalid: SubmitErrorHandler<EditUserFormValues> = (errors) => {
-    console.log('Validation failed', errors); 
+    console.log('Validation failed', errors);
   };
+  // const handleSendResetLink = async () => {
+  //   console.log('[DEBUG] Sending reset link to:');
+  // };
+
+  // const [changePassword, setChangePassword] = useState(false);
+  // const [showPassword, setShowPassword] = useState(false);
+  // const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   return (
     <div className="p-6 bg-white shadow-md rounded-md max-w-3xl mx-auto">
       <h1 className="text-2xl font-semibold mb-6">Chỉnh sửa người dùng</h1>
@@ -206,59 +219,73 @@ const EditUserForm: React.FC<EditUserFormProps> = ({
           </div>
         </div>
 
-        <div>
-          <label className="inline-flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={changePassword}
-              onChange={() => setChangePassword(!changePassword)}
-            />
-            <span>Đổi mật khẩu người dùng</span>
-          </label>
-        </div>
+        {/* {(() => {
+          if (!currentUser || !Array.isArray(currentUser.roles)) return false;
+          const roleIds: string[] = currentUser.roles.map((role: any) =>
+            typeof role === 'string' ? role : role._id,
+          );
+          const roleNames = roleIds
+            .map((roleId: string) => {
+              const found = allRoles.find((r) => r._id === roleId);
+              return found?.name?.toLowerCase();
+            })
+            .filter(Boolean);
+          return (
+            roleNames.includes('superadmin') &&
+            targetUserRoleNames.includes('manager')
+          );
+        })() && (
+          <button
+            onClick={() => handleSendResetLink(userData.email)}
+            className="text-blue-600 hover:underline"
+          >
+            Gửi liên kết đặt lại mật khẩu
+          </button>
+        )} */}
+        {/* {!targetUserRoleNames.includes('manager') && (
+          <>
+            <label className="flex items-center gap-2 mt-4 mb-2">
+              <input
+                type="checkbox"
+                checked={changePassword}
+                onChange={() => setChangePassword(!changePassword)}
+              />
+              Đổi mật khẩu người dùng
+            </label>
 
-        {changePassword && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="relative">
-              <label className="block text-sm mb-1">Mật khẩu</label>
-              <input
-                type={showPassword ? 'text' : 'password'}
-                {...register('password')}
-                className="w-full border px-3 py-2 rounded pr-10"
-              />
-              <span
-                className="absolute right-3 top-[38px] cursor-pointer text-gray-500"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? <FiEyeOff /> : <FiEye />}
-              </span>
-              {errors.password && (
-                <p className="text-red-500 text-sm">
-                  {errors.password.message}
-                </p>
-              )}
-            </div>
-            <div className="relative">
-              <label className="block text-sm mb-1">Xác nhận mật khẩu</label>
-              <input
-                type={showConfirmPassword ? 'text' : 'password'}
-                {...register('confirmPassword')}
-                className="w-full border px-3 py-2 rounded pr-10"
-              />
-              <span
-                className="absolute right-3 top-[38px] cursor-pointer text-gray-500"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              >
-                {showConfirmPassword ? <FiEyeOff /> : <FiEye />}
-              </span>
-              {errors.confirmPassword && (
-                <p className="text-red-500 text-sm">
-                  {errors.confirmPassword.message}
-                </p>
-              )}
-            </div>
-          </div>
-        )}
+            {changePassword && (
+              <>
+                <div>
+                  <label>Mật khẩu</label>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    {...register('password')}
+                    className="w-full border px-3 py-2 rounded"
+                  />
+                  {errors.password && (
+                    <p className="text-red-500 text-sm">
+                      {errors.password.message}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label>Xác nhận mật khẩu</label>
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    {...register('confirmPassword')}
+                    className="w-full border px-3 py-2 rounded"
+                  />
+                  {errors.confirmPassword && (
+                    <p className="text-red-500 text-sm">
+                      {errors.confirmPassword.message}
+                    </p>
+                  )}
+                </div>
+              </>
+            )}
+          </>
+        )} */}
 
         <div>
           <label className="block text-sm mb-1">

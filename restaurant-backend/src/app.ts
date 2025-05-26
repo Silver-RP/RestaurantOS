@@ -8,6 +8,7 @@ import CateRoutes from './routes/CategoryRoutes';
 import ReservationContactRoutes from './routes/ReservationContactRoutes';
 import ReservationDetailContactRoutes from './routes/ReservationDetailContactRoutes';
 import ProfileRoutes from './routes/ProfileRoutes';
+import BannerRoutes from './routes/BannerRoutes';
 
 import StaffRoutes from './routes/StaffRoutes';
 import FoodRoutes from './routes/FoodRoutes';
@@ -34,7 +35,6 @@ import './swaggers/CartSwagger';
 import './swaggers/StaffSwagger';
 import './swaggers/UserSwagger';
 import './swaggers/CategorySwagger';
-import ReviewRoutes from './routes/ReviewRoutes';
 
 dotenv.config();
 connectDB();
@@ -42,13 +42,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (origin === 'http://localhost:4173' || origin === 'http://localhost:5173' || !origin) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
+    origin: 'http://localhost:5173',
     credentials: true,
   }),
 );
@@ -101,9 +95,15 @@ app.get('/', (req, res) => {
 app.use('/api/auth', AuthRoutes);
 app.use('/api/user', UserRoutes);
 app.use('/api/profile', AuthMiddleWare.verifyToken, ProfileRoutes);
-app.use('/api/role', RoleRoutes);
+app.use(
+  '/api/role',
+  AuthMiddleWare.verifyToken,
+  AuthMiddleWare.verifyRole(['superadmin', 'manager']),
+  RoleRoutes,
+);
 app.use('/api/permission', PermissionRoutes);
 app.use('/api/category', CateRoutes);
+app.use('/api/banner', BannerRoutes);
 app.use('/api/reservationcontact', ReservationContactRoutes);
 app.use('/api/reservationdetailcontact', ReservationDetailContactRoutes);
 app.use(
@@ -119,7 +119,6 @@ app.use('/api/cart', AuthMiddleWare.verifyToken, CartRouter);
 app.use('/api/favorite', AuthMiddleWare.verifyToken, FavoriteRoutes);
 app.use('/api/address', AuthMiddleWare.verifyToken, AddressRouter);
 app.use('/api/payment', PaymentRoutes); 
-app.use('/api/review', ReviewRoutes);
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
   console.log('Mongo URI:', process.env.MONGO_URI);
