@@ -153,6 +153,7 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
       toast.error('Bạn đã đạt giới hạn 5 địa chỉ. Không thể thêm mới.');
       return;
     }
+
     const isValid = await trigger([
       'full_name',
       'phone',
@@ -178,6 +179,7 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
 
     if (!lat || !lon) {
       toast.error('Không thể xác định vị trí. Vui lòng kiểm tra lại địa chỉ.');
+      return;
     }
 
     const fullSubmitData = {
@@ -188,32 +190,46 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
       ward: selectedWard,
       street_address: normalizeStreet(data.street_address),
       address_type: addressType.toUpperCase() as 'HOME' | 'WORK' | 'OTHER',
-      is_default: isDefault,
+      is_default: isDefault || total === 0, // đảm bảo địa chỉ đầu tiên được đánh dấu mặc định
       lat,
       lon,
     };
 
     try {
       await createAddress(fullSubmitData);
-      reset();
-      setIsDuplicate(false);
-      onClose();
-      onSave(
-        selectedCity,
-        selectedDistrict,
-        selectedWard,
-        normalizeStreet(data.street_address),
-        data.full_name,
-        lat,
-        lon,
-        data.phone,
-        addressType,
-      );
+      console.log('✅ Tạo địa chỉ thành công:', fullSubmitData);
+
+      // Bọc riêng từng hàm để dễ phát hiện lỗi
+      try {
+        onClose();
+        console.log('✅ Modal đóng thành công');
+      } catch (err) {
+        console.error('❌ Lỗi khi gọi onClose():', err);
+      }
+
+      try {
+        onSave(
+          selectedCity,
+          selectedDistrict,
+          selectedWard,
+          normalizeStreet(data.street_address),
+          data.full_name,
+          lat,
+          lon,
+          data.phone,
+          addressType,
+        );
+        console.log('✅ Gọi onSave thành công');
+      } catch (err) {
+        console.error('❌ Lỗi khi gọi onSave():', err);
+      }
+
       reset();
       setIsDuplicate(false);
     } catch (error: any) {
+      console.error('❌ Lỗi khi gọi createAddress:', error);
       if (error.response?.status === 409) {
-        setIsDuplicate(true); // đánh dấu địa chỉ trùng
+        setIsDuplicate(true);
         toast.error('Địa chỉ này đã tồn tại!');
       } else {
         toast.error('Tạo địa chỉ thất bại. Vui lòng thử lại sau.');
@@ -486,7 +502,6 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
               Không tìm thấy vị trí phù hợp. Vui lòng kiểm tra lại tên đường.
             </p>
           )}
-          
 
           {/* Address Type */}
           <div>

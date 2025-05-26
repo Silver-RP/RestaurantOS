@@ -149,7 +149,7 @@ export const editUserSchema = z
 
     phone: z
       .string({ required_error: 'Số điện thoại là bắt buộc' })
-      .regex(/^0\d{9,10}$/, 'Số điện thoại không hợp lệ'),
+      .regex(/^0\d{8,9}$/, 'Số điện thoại không hợp lệ'),
 
     birthday: z
       .string({ required_error: 'Ngày sinh là bắt buộc' })
