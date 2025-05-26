@@ -13,47 +13,9 @@ import OrderFilterPanel from './OrderFilterPanel';
 import OrderDetail from './OrderDetail';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
+import { AllOrder } from '@/types/Order.type';
 
-interface OrderItem {
-  _id: string;
-  user_id: {
-    _id: string;
-    username: string;
-    email: string;
-    phone: string;
-  } | null;
-  address_id: {
-    _id: string;
-    full_name: string;
-    phone: string;
-    province: string;
-    district: string;
-    ward: string;
-    street_address: string;
-    address_type: string;
-  } | null;
-  payment_method: string;
-  delivery_type: string;
-  delivery_status: string;
-  status: string;
-  shipping_fee: number;
-  vat_amount: number;
-  items_price: number;
-  total_price: number;
-  total_quantity: number;
-  is_paid: boolean;
-  paid_at: string | null;
-  note: string | null;
-  cancelled_reason: string | null;
-  cancelled_at: string | null;
-  returned_at: string | null;
-  delivered_at: string | null;
-  order_type: string;
-  delivery_time_type: string;
-  scheduled_time: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
+
 
 const OrderTable: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -193,21 +155,30 @@ const OrderTable: React.FC = () => {
         return type;
     }
   };
-
-  const getCustomerName = (order: OrderItem) => {
-    // Nếu có user_id, lấy tên từ user
-    if (order.user_id) {
-      return `${order.user_id.username}`;
+  const getCustomerName = (order: AllOrder) => {
+    // Handle both address_id and address cases (for normal get and search)
+    if (order.address_id?.full_name ) {
+      const name = order.address_id?.full_name;
+      console.log('Customer name:', name);
+      return name;
     }
-    if (order.address_id) {
-      return order.address_id.full_name;
+    if (order.receiver) {
+      console.log('Receiver:', order.receiver);
+      return order.receiver;
     }
-    return 'Khách vãng lai';
+    return "Chưa có tên khách hàng";
   };
 
-  const getCustomerPhone = (order: OrderItem) => {
-    if (order.address_id) {
-      return order.address_id.phone;
+  const getCustomerPhone = (order: AllOrder) => {
+    // Handle both address_id and address cases (for normal get and search)
+    if (order.address_id?.phone) {
+      const phone = order.address_id?.phone;
+      console.log('Customer phone:', phone);
+      return phone;
+    }
+    if (order.receiver_phone) {
+      console.log('Receiver phone:', order.receiver_phone);
+      return order.receiver_phone;
     }
     return 'Chưa có số điện thoại';
   };
@@ -231,10 +202,10 @@ const OrderTable: React.FC = () => {
   };
 
   return (
-    <div>
+    <main className="!p-0 bg-white rounded-lg shadow-md">
       <div className="flex flex-wrap gap-4 mb-4 items-center justify-between">
         <div className="flex gap-4">
-          <div className="w-96 relative">
+          <div className="w-full relative">
             <input
               type="text"
               placeholder="Tìm đơn hàng..."
@@ -362,8 +333,8 @@ const OrderTable: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {(orders?.orders as OrderItem[])?.map(
-                (order: OrderItem, index: number) => (
+              {(orders?.orders as AllOrder[])?.map(
+                (order: AllOrder, index: number) => (
                   <tr key={order._id} className="border-b hover:bg-gray-50">
                     <td className="px-4 py-2">
                       {(Number(searchParams.get('page') || 1) - 1) *
@@ -454,7 +425,7 @@ const OrderTable: React.FC = () => {
           onClose={handleCloseOrderDetail}
         />
       )}
-    </div>
+    </main>
   );
 };
 

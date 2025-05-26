@@ -35,6 +35,8 @@ interface OrderData {
   delivery_time_type: "ASAP" | "SCHEDULED";
   scheduled_time?: string;
   note?: string;
+  receiver?: string | null;
+  receiver_phone?: string | undefined;
   shipping_fee: number;
   items_price: number;
   vat_amount: number;
@@ -149,7 +151,9 @@ const OrderConfirmation = () => {
           quantity: item.quantity,
           note: item.note
         })),
-        note: orderData.note
+        note: orderData.note,
+        receiver: orderData.receiver || "",
+        receiver_phone: orderData.receiver_phone || "",
       };
 
       // Add address if delivery type is DELIVERY
@@ -164,17 +168,13 @@ const OrderConfirmation = () => {
         };
       }
 
+
       // Add scheduled time if delivery time type is SCHEDULED
       if (orderData.delivery_time_type === "SCHEDULED" && orderData.scheduled_time) {
         apiOrderData.scheduled_time = orderData.scheduled_time;
       }
-
-      console.log("Submitting order to API:", apiOrderData);
-
-      // Call the API through our hook
       const response = await placeDirectOrderMutation.mutateAsync(apiOrderData);
 
-      console.log("Order placed successfully:", response);
 
       // Set a flag in session storage to indicate a successful order
       sessionStorage.setItem('recentOrderSuccess', 'true');
@@ -222,6 +222,12 @@ const OrderConfirmation = () => {
                 <InfoItem label="Họ tên" value={orderData.address.full_name} />
                 <InfoItem label="Số điện thoại" value={orderData.address.phone} />
                 <InfoItem label="Địa chỉ" value={getAddressDisplay()} />
+              </>
+            )}
+            {orderData.receiver && (
+              <>
+                <InfoItem label="Họ tên" value={orderData.receiver || ""} />
+                <InfoItem label="Số điện thoại" value={orderData.receiver_phone || ""} />
               </>
             )}
             {/* {orderData.delivery_time_type === "SCHEDULED" && (

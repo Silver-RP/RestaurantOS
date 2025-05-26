@@ -15,6 +15,9 @@ interface Props {
   initialDeliveryTime?: DeliveryTime;
   deliveryMethod?: 'delivery' | 'pickup';
   onDeliveryMethodChange?: (method: 'delivery' | 'pickup') => void;
+  receiver?: string;
+  receiverPhone?: string; 
+  onReceiverChange?: (name: string, phone: string) => void;
   refetch: () => void;
 }
 
@@ -27,13 +30,17 @@ const ShippingAddressSection = ({
   initialDeliveryTime = { type: 'now' },
   deliveryMethod = 'delivery',
   onDeliveryMethodChange = () => {},
+  receiver = '',
+  receiverPhone = '',
+  onReceiverChange = () => {},
   refetch,
 }: Props) => {
   const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isDeliveryTimeModalOpen, setIsDeliveryTimeModalOpen] = useState(false);
-  const [deliveryTime, setDeliveryTime] =
-    useState<DeliveryTime>(initialDeliveryTime);
+  const [deliveryTime, setDeliveryTime] = useState<DeliveryTime>(initialDeliveryTime);
+  const [localReceiver, setLocalReceiver] = useState(receiver);
+  const [localReceiverPhone, setLocalReceiverPhone] = useState(receiverPhone);
 
   const selected = addresses.find((addr) => addr.id === String(selectedId));
 
@@ -46,6 +53,12 @@ const ShippingAddressSection = ({
       }
     }
   }, [addresses, selectedId]);
+
+  // Update local state when props change
+  useEffect(() => {
+    setLocalReceiver(receiver);
+    setLocalReceiverPhone(receiverPhone);
+  }, [receiver, receiverPhone]);
 
   const getFormattedAddress = (address: Address) => {
     return [
@@ -199,10 +212,38 @@ const ShippingAddressSection = ({
         </>
       ) : (
         <>
-          <h3 className="font-semibold text-white mb-2">Nhà Hàng Nhận Hàng</h3>
+          <h3 className="font-semibold text-white mb-2">Địa chỉ nhận hàng</h3>
           <div className="text-white text-sm">
             Nhà Hàng BeefBeef – 161 Quốc Hương, Thảo Điền, Quận 2 (055 1234
             5678)
+          </div>
+          <div className="mt-4">
+            <label className="block mb-1 text-sm text-white/70">
+              Tên người nhận hàng
+            </label>
+            <input
+              type="text"
+              placeholder="Nhập tên người nhận"
+              value={localReceiver}
+              onChange={(e) => {
+                setLocalReceiver(e.target.value);
+                onReceiverChange(e.target.value, localReceiverPhone);
+              }}
+              className="w-full p-2 border border-white/20 rounded bg-transparent text-white focus:outline-none focus:border-blue-500"
+            />
+            <label className="block mt-3 mb-1 text-sm text-white/70">
+              Số điện thoại người nhận hàng
+            </label>
+            <input
+              type="text"
+              placeholder="Nhập số điện thoại"
+              value={localReceiverPhone}
+              onChange={(e) => {
+                setLocalReceiverPhone(e.target.value);
+                onReceiverChange(localReceiver, e.target.value);
+              }}
+              className="w-full p-2 border border-white/20 rounded bg-transparent text-white focus:outline-none focus:border-blue-500"
+            />
           </div>
         </>
       )}

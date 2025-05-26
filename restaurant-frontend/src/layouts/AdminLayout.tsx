@@ -111,7 +111,7 @@ const AdminLayout: React.FC = () => {
       {/* Main Content Area */}
       <div
         className={classNames(
-          'flex-1 flex flex-col transition-all duration-300',
+          'flex-1 flex flex-col transition-all duration-300 bg-white',
           isSidebarOpen ? 'ml-64' : 'ml-16',
         )}
       >
@@ -119,7 +119,7 @@ const AdminLayout: React.FC = () => {
         <AdminHeader />
 
         {/* Page content */}
-        <main className="flex-1 p-6 transition-all duration-300">
+        <main className="flex-1 bg-white p-6 transition-all duration-300">
           <div className="w-full h-full overflow-auto">
             <Outlet />
           </div>
