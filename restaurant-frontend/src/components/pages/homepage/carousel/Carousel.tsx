@@ -8,8 +8,7 @@ const Carousel = () => {
     {
       id: 1,
       backgroundImage: "/assets/images/banner/banner1.webp",
-      title: "Sự Tận Tâm",
-      subtitle: "Trong Từng Hương Vị",
+      title: "Sự Tận Tâm Trong Từng Hương Vị",
       description:
         "Sứ mệnh của chúng tôi là mang đến những bữa ăn đánh thức mọi giác quan - khơi nguồn cảm xúc, thử thách vị giác và làm phong phú tâm hồn.",
       icon: <MdRestaurant />,
@@ -17,8 +16,7 @@ const Carousel = () => {
     {
       id: 2,
       backgroundImage: "/assets/images/banner/banner2.webp",
-      title: "Hương Vị Tuyệt Vời",
-      subtitle: "Trong Mỗi Món Ăn",
+      title: "Hương Vị Tuyệt Vời Trong Mỗi Món Ăn",
       description:
         "Khám phá sự đa dạng của ẩm thực với các nguyên liệu tươi ngon và cách chế biến độc đáo.",
       icon: <BiDrink />,
@@ -26,8 +24,7 @@ const Carousel = () => {
     {
       id: 3,
       backgroundImage: "/assets/images/banner/banner3.webp",
-      title: "Trải Nghiệm Đẳng Cấp",
-      subtitle: "Trong Không Gian Sang Trọng",
+      title: "Trải Nghiệm Đẳng Cấp Trong Không Gian Sang Trọng",
       description:
         "Chúng tôi mang đến không gian ấm cúng và trải nghiệm ẩm thực cao cấp.",
       icon: <BsCupHot />,
@@ -127,7 +124,17 @@ const Carousel = () => {
               <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-secondaryColor rounded-full"></span>
             </div>
             <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl leading-snug font-medium font-restora text-white mb-6 drop-shadow-lg animate-fade-down">
-              {slide.title} <br /> {slide.subtitle}
+              {(() => {
+                const words = slide.title.split(' ');
+                const midPoint = Math.ceil(words.length / 2);
+                const line1 = words.slice(0, midPoint).join(' ');
+                const line2 = words.slice(midPoint).join(' ');
+                return (
+                  <>
+                    {line1} <br /> {line2}
+                  </>
+                );
+              })()}
             </h1>
             <p className="text-xs sm:text-sm md:text-base lg:text-lg text-gray-300 max-w-xs sm:max-w-md md:max-w-lg lg:max-w-2xl mx-auto mb-8 animate-fade-down">
               {slide.description}
