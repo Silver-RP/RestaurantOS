@@ -5,33 +5,38 @@ export interface IOrder extends Document {
   _id: Types.ObjectId;
   user_id: Types.ObjectId;
   cashier_order_id?: Types.ObjectId | null;
-  address_id: Types.ObjectId | null;
+  address_id: Types.ObjectId | null | undefined;
   payment_method: 'CASH' | 'BANKING' | 'VNPAY' | 'MOMO' | 'CREDIT_CARD';
   delivery_type: 'DELIVERY' | 'PICKUP';
   delivery_status:
-  | 'PENDING_PICKUP'
-  | 'PICKED_UP'
-  | 'IN_TRANSIT'
-  | 'DELIVERED'
-  | 'DELIVERY_FAILED'
-  | 'RETURN_REQUESTED'
-  | 'RETURNED'
-  | 'CANCEL_REQUESTED'
-  | 'CANCELLED';
+    | 'ORDER_PLACED'
+    | 'ORDER_CONFIRMED'
+    | 'PENDING_PICKUP'
+    | 'PICKED_UP'
+    | 'IN_TRANSIT'
+    | 'DELIVERED'
+    | 'DELIVERY_FAILED'
+    | 'RETURN_REQUESTED'
+    | 'CANCEL_RETURN_REQUESTED'
+    | 'RETURN_APPROVED'
+    | 'RETURN_REJECTED'
+    | 'RETURNED'
+    | 'CANCEL_REQUESTED'
+    | 'CANCELLED';
   status:
-  | 'PENDING'
-  | 'PREPARING'
-  | 'SHIPPING'
-  | 'COMPLETED'
-  | 'CANCELLED'
-  | 'CANCEL_REQUESTED'
-  | 'RETURNED';
+    | 'PENDING'
+    | 'PREPARING'
+    | 'SHIPPING'
+    | 'COMPLETED'
+    | 'CANCELLED'
+    | 'CANCEL_REQUESTED'
+    | 'RETURNED';
   shipping_fee: number;
   vat_amount: number;
   items_price: number;
   total_price?: number;
   total_quantity: number;
-  payment_status:'UNPAID' | 'PAID' | 'FAILED' | 'REFUNDED',
+  payment_status: 'UNPAID' | 'PAID' | 'FAILED' | 'REFUNDED';
   paid_at?: Date | null;
   note?: string;
   receiver?: string | null;
@@ -69,6 +74,8 @@ const OrderSchema = new Schema<IOrder>(
     delivery_status: {
       type: String,
       enum: [
+        'ORDER_PLACED',
+        'ORDER_CONFIRMED',
         'PENDING',
         'PENDING_PICKUP',
         'PICKED_UP',
@@ -76,11 +83,14 @@ const OrderSchema = new Schema<IOrder>(
         'DELIVERED',
         'DELIVERY_FAILED',
         'RETURN_REQUESTED',
+        'CANCEL_RETURN_REQUESTED',
+        'RETURN_APPROVED',
+        'RETURN_REJECTED',
         'RETURNED',
         'CANCEL_REQUESTED',
         'CANCELLED',
       ],
-      default: 'PENDING_PICKUP',
+      default: 'ORDER_PLACED',
     },
     status: {
       type: String,

@@ -7,6 +7,7 @@ import { DeliveryTime } from '@components/pages/checkout/ModalSelectDeliveryTime
 import { useGetCart } from '@hooks/useCart';
 import { useNavigate } from 'react-router-dom';
 import { useUserAddresses } from '@/hooks/useAddress';
+import { toast } from 'react-toastify';
 
 interface Product {
   image: string;
@@ -108,6 +109,7 @@ const CheckoutPage = () => {
       navigate('/cart');
     }
   }, [cart, navigate]);
+  
   useEffect(() => {
     setAddresses(fetchedAddresses);
     setSelectedId(
@@ -215,7 +217,11 @@ const CheckoutPage = () => {
     // Verify receiver info when pickup is chosen
     if (deliveryMethod === 'pickup') {
       if (!receiver || !receiverPhone) {
-        alert('Vui lòng nhập đầy đủ thông tin người nhận hàng');
+        toast.error("Vui lòng nhập thông tin người nhận");
+        return;
+      }
+      if (!/^(0|\+84)[3|5|7|8|9][0-9]{8}$/.test(receiverPhone)) {
+        toast.error('Số điện thoại không đúng định dạng');
         return;
       }
     }
@@ -254,16 +260,17 @@ const CheckoutPage = () => {
       total_price,
       total_quantity,
     };
-
-    if (selectedAddress) {
-      orderData.address = {
-        full_name: selectedAddress.full_name,
-        phone: selectedAddress.phone,
-        street_address: selectedAddress.street_address || '',
-        ward: selectedAddress.ward || '',
-        district: selectedAddress.district || '',
-        province: selectedAddress.province || '',
-      };
+    if (deliveryMethod === 'delivery') {
+      if (selectedAddress) {
+        orderData.address = {
+          full_name: selectedAddress.full_name,
+          phone: selectedAddress.phone,
+          street_address: selectedAddress.street_address || '',
+          ward: selectedAddress.ward || '',
+          district: selectedAddress.district || '',
+          province: selectedAddress.province || '',
+        };
+      }
     }
 
     if (deliveryMethod === 'pickup') {
@@ -301,6 +308,7 @@ const CheckoutPage = () => {
             setReceiver(name);
             setReceiverPhone(phone);
           }}
+
         />
 
         <ProductInfoSection

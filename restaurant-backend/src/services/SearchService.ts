@@ -145,8 +145,8 @@ class SearchService {
     // Search conditions
     if (searchTerm) {
       matchConditions.$or = [
-        { 'user.username': { $regex: searchTerm, $options: 'i' } },
-        { 'user.phone': { $regex: searchTerm, $options: 'i' } },
+        // { 'user.username': { $regex: searchTerm, $options: 'i' } },
+        // { 'user.phone': { $regex: searchTerm, $options: 'i' } },
         { 'address.full_name': { $regex: searchTerm, $options: 'i' } },
         { 'address.phone': { $regex: searchTerm, $options: 'i' } },
         { 'receiver' : { $regex: searchTerm, $options: 'i' } },

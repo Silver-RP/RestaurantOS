@@ -19,6 +19,7 @@ import {
   PlaceOrderRequest,
   OrdersResponse,
 } from '../types/Order.type';
+import { toast } from 'react-toastify';
 
 export const useOrders = (params: OrderQueryParams) => {
   return useQuery({
@@ -105,7 +106,15 @@ export const useUpdateOrderStatus = () => {
       updateOrderStatus(orderId, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['all-orders'] });
       queryClient.invalidateQueries({ queryKey: ['order'] });
+      toast.success('Cập nhật trạng thái đơn hàng thành công');
+    },
+    onError: (error: any) => {
+      const errorMessage =
+        error.response?.data?.message ||
+        'Có lỗi xảy ra khi cập nhật trạng thái đơn hàng';
+      toast.error(errorMessage);
     },
   });
 };

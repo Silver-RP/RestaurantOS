@@ -149,6 +149,8 @@ class OrderController {
 
       // Validate status
       const validStatuses = [
+        'ORDER_PLACED',
+        'ORDER_CONFIRMED',
         'PENDING',
         'PENDING_PICKUP',
         'PICKED_UP',
@@ -156,6 +158,9 @@ class OrderController {
         'DELIVERED',
         'DELIVERY_FAILED',
         'RETURN_REQUESTED',
+        'CANCEL_RETURN_REQUESTED',
+        'RETURN_APPROVED',
+        'RETURN_REJECTED',
         'RETURNED',
         'CANCEL_REQUESTED',
         'CANCELLED',

@@ -9,6 +9,15 @@ class OrderValidator {
   static validatePlaceOrder(req: Request) {
     const { address_id, address, payment_method, delivery_type, items, order_type, delivery_time_type, scheduled_time, note } = req.body;
 
+    if (delivery_type === 'PICKUP' && address_id === '') {
+      req.body.address_id = undefined; 
+    }
+  
+    if (delivery_type === 'DELIVERY') {
+      if (!address_id || address_id === '') {
+        return { valid: false, message: 'address_id is required for DELIVERY orders.' };
+      }
+    }
 
     if (!Array.isArray(items) || items.length === 0) {
       return { valid: false, message: 'Items are required and must be an array.' };

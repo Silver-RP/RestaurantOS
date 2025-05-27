@@ -16,16 +16,15 @@ import { useOrderDetail, useUpdateOrderStatus } from '@/hooks/useOrder';
 import { toast } from 'react-toastify';
 
 const ORDER_STATUSES = [
-  { value: 'PENDING', label: 'Chờ xác nhận' },
-  { value: 'PENDING_PICKUP', label: 'Chờ lấy hàng' },
-  { value: 'PICKED_UP', label: 'Đã lấy hàng' },
-  { value: 'IN_TRANSIT', label: 'Đang vận chuyển' },
-  { value: 'DELIVERED', label: 'Đã giao hàng' },
+  { value: 'ORDER_CONFIRMED', label: 'Xác nhận đơn hàng' },
+  { value: 'PENDING_PICKUP', label: 'Chờ nhận hàng' },
+  { value: 'PICKED_UP', label: 'Đã nhận hàng' },
+  { value: 'IN_TRANSIT', label: 'Đang giao' },
+  { value: 'DELIVERED', label: 'Giao hàng thành công' },
   { value: 'DELIVERY_FAILED', label: 'Giao hàng thất bại' },
-  { value: 'RETURN_REQUESTED', label: 'Yêu cầu trả hàng' },
+  { value: 'RETURN_APPROVED', label: 'Xác nhận trả hàng' },
+  { value: 'RETURN_REJECTED', label: 'Trả hàng bị từ chối' },
   { value: 'RETURNED', label: 'Đã trả hàng' },
-  { value: 'CANCEL_REQUESTED', label: 'Yêu cầu hủy' },
-  { value: 'CANCELLED', label: 'Đã hủy' },
 ];
 
 interface OrderDetailProps {
@@ -57,36 +56,74 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
     return price.toLocaleString('vi-VN') + '₫';
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'PENDING':
-        return 'bg-yellow-100 text-yellow-800'; // Màu vàng cho chờ xác nhận
+  const getStatusColor = (delivery_status: string) => {
+    switch (delivery_status) {
+      case 'ORDER_PLACED':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'ORDER_CONFIRMED':
+        return 'bg-blue-100 text-blue-800';
       case 'PENDING_PICKUP':
-        return 'bg-blue-100 text-blue-800'; // Màu xanh dương cho chờ lấy hàng
+        return 'bg-orange-100 text-orange-800';
       case 'PICKED_UP':
-        return 'bg-indigo-100 text-indigo-800'; // Màu indigo cho đã lấy hàng
+        return 'bg-indigo-100 text-indigo-800';
       case 'IN_TRANSIT':
-        return 'bg-purple-100 text-purple-800'; // Màu tím cho đang vận chuyển
+        return 'bg-purple-100 text-purple-800';
       case 'DELIVERED':
-        return 'bg-green-100 text-green-800'; // Màu xanh lá cho đã giao
+        return 'bg-green-100 text-green-800';
       case 'DELIVERY_FAILED':
-        return 'bg-red-100 text-red-800'; // Màu đỏ cho giao thất bại
+        return 'bg-red-100 text-red-800';
       case 'RETURN_REQUESTED':
-        return 'bg-orange-100 text-orange-800'; // Màu cam cho yêu cầu trả
+        return 'bg-gray-100 text-gray-800';
+      case 'CANCEL_RETURN_REQUESTED':
+        return 'bg-pink-100 text-pink-800';
+      case 'RETURN_APPROVED':
+        return 'bg-teal-100 text-teal-800';
+      case 'RETURN_REJECTED':
+        return 'bg-red-200 text-red-900';
       case 'RETURNED':
-        return 'bg-gray-100 text-gray-800'; // Màu xám cho đã trả
+        return 'bg-gray-200 text-gray-900';
       case 'CANCEL_REQUESTED':
-        return 'bg-pink-100 text-pink-800'; // Màu hồng cho yêu cầu hủy
+        return 'bg-orange-200 text-orange-900';
       case 'CANCELLED':
-        return 'bg-red-100 text-red-800'; // Màu đỏ cho đã hủy
+        return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const getStatusText = (status: string) => {
-    const statusObj = ORDER_STATUSES.find((s) => s.value === status);
-    return statusObj ? statusObj.label : status;
+  const getStatusText = (delivery_status: string) => {
+    switch (delivery_status) {
+      case 'ORDER_PLACED':
+        return 'Đã đặt hàng';
+      case 'ORDER_CONFIRMED':
+        return 'Xác nhận đơn hàng';
+      case 'PENDING_PICKUP':
+        return 'Chờ nhận hàng';
+      case 'PICKED_UP':
+        return 'Đã nhận hàng';
+      case 'IN_TRANSIT':
+        return 'Đang giao';
+      case 'DELIVERED':
+        return 'Giao hàng thành công';
+      case 'DELIVERY_FAILED':
+        return 'Giao hàng thất bại';
+      case 'RETURN_REQUESTED':
+        return 'Yêu cầu trả hàng';
+      case 'CANCEL_RETURN_REQUESTED':
+        return 'Hủy yêu cầu trả hàng';
+      case 'RETURN_APPROVED':
+        return 'Xác nhận trả hàng';
+      case 'RETURN_REJECTED':
+        return 'Trả hàng bị từ chối';
+      case 'RETURNED':
+        return 'Đã trả hàng';
+      case 'CANCEL_REQUESTED':
+        return 'Yêu cầu hủy đơn hàng';
+      case 'CANCELLED':
+        return 'Đã hủy';
+      default:
+        return delivery_status;
+    }
   };
 
   const handleUpdateStatus = async () => {
@@ -96,14 +133,17 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
     }
 
     try {
-      await updateStatusMutation.mutateAsync({
-        orderId,
-        status: newStatus,
-      });
-      toast.success('Cập nhật trạng thái thành công');
-      onClose();
+      await updateStatusMutation.mutateAsync(
+        { orderId, status: newStatus },
+        {
+          onSuccess: () => {
+            setNewStatus(''); // Reset newStatus
+            onClose(); // Close dialog after success
+          },
+        },
+      );
     } catch (error) {
-      toast.error('Có lỗi xảy ra khi cập nhật trạng thái');
+      // Error toast is handled in useUpdateOrderStatus
     }
   };
 
@@ -128,14 +168,15 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      {' '}
       <DialogTitle className="bg-gray-50 flex justify-between items-center">
         <div className="flex items-center gap-3">
-          <span>Chi tiết đơn hàng #{order._id}</span>
+          <span className="text-xl font-bold">
+            Chi tiết đơn hàng #{order._id.slice(-6).toUpperCase()}
+          </span>
           <span
-            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}
+            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.delivery_status)}`}
           >
-            {getStatusText(order.status)}
+            {getStatusText(order.delivery_status)}
           </span>
         </div>
         <div className="text-sm font-normal">{formatDate(order.createdAt)}</div>
@@ -144,7 +185,9 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
         <div className="py-4 space-y-6">
           {/* Thông tin khách hàng */}
           <div>
-            <h3 className="text-lg font-medium mb-2">Thông tin khách hàng</h3>
+            <h3 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">
+              Thông tin khách hàng
+            </h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-gray-600">Tên khách hàng</p>
@@ -168,7 +211,9 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
           {/* Thông tin giao hàng */}
           {order.delivery_type === 'DELIVERY' && (
             <div>
-              <h3 className="text-lg font-medium mb-2">Thông tin giao hàng</h3>
+              <h3 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">
+                Thông tin giao hàng
+              </h3>
               <div>
                 <p className="text-gray-600">Địa chỉ giao hàng</p>
                 <p className="font-medium">
@@ -181,7 +226,9 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
 
           {/* Chi tiết đơn hàng */}
           <div>
-            <h3 className="text-lg font-medium mb-2">Chi tiết đơn hàng</h3>
+            <h3 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">
+              Chi tiết đơn hàng
+            </h3>
             <table className="w-full">
               <thead>
                 <tr className="border-b">
@@ -252,6 +299,9 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
           {/* Thông tin thanh toán và giao hàng */}
           <div className="grid grid-cols-2 gap-4">
             <div>
+              <h3 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">
+                Thông tin thanh toán
+              </h3>
               <p className="text-gray-600">Phương thức thanh toán</p>
               <p className="font-medium">
                 {order.payment_method === 'CASH'
@@ -267,46 +317,54 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
               </p>
             </div>
             <div>
+              <h3 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">
+                Phương thức giao hàng
+              </h3>
               <p className="text-gray-600">Phương thức giao hàng</p>
               <p className="font-medium">
                 {order.delivery_type === 'DELIVERY'
                   ? 'Giao hàng'
                   : 'Nhận tại cửa hàng'}
               </p>
-              {/* kiểm tra thêm điều kiện là order.delivery_type === DELIVERY thì mới show Loại đơn hàng  */}
-              {order.delivery_type === 'DELIVERY' && order.delivery_time_type && (
-                <div className="mt-2">
-                  <p className="text-gray-600">Loại đơn hàng</p>
-                  <p className="font-medium">
-                    {order.delivery_time_type === 'ASAP'
-                      ? 'Giao ngay'
-                      : 'Đặt trước'}
-                  </p>
-                  {order.delivery_time_type === 'SCHEDULED' &&
-                    order.scheduled_time && (
-                      <p className="text-sm text-blue-600">
-                        Thời gian giao: {formatDate(order.scheduled_time)}
-                      </p>
-                    )}
-                </div>
-              )}
+              {order.delivery_type === 'DELIVERY' &&
+                order.delivery_time_type && (
+                  <div className="mt-2">
+                    <p className="text-gray-600">Loại đơn hàng</p>
+                    <p className="font-medium">
+                      {order.delivery_time_type === 'ASAP'
+                        ? 'Giao ngay'
+                        : 'Đặt trước'}
+                    </p>
+                    {order.delivery_time_type === 'SCHEDULED' &&
+                      order.scheduled_time && (
+                        <p className="text-sm text-blue-600">
+                          Thời gian giao: {formatDate(order.scheduled_time)}
+                        </p>
+                      )}
+                  </div>
+                )}
             </div>
           </div>
 
           {/* Ghi chú đơn hàng */}
           {order.note && (
             <div className="pt-4">
-              <p className="text-gray-600 mb-1">Ghi chú đơn hàng</p>
+              <h3 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">
+                Ghi chú đơn hàng
+              </h3>
               <p className="p-3 bg-gray-50 rounded-md">{order.note}</p>
             </div>
           )}
 
           {/* Cập nhật trạng thái */}
           <div className="pt-4">
+            <h3 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">
+              Cập nhật trạng thái
+            </h3>
             <FormControl fullWidth>
               <InputLabel>Trạng thái đơn hàng</InputLabel>
               <Select
-                value={newStatus || order.status}
+                value={newStatus || order.delivery_status}
                 onChange={(e) => setNewStatus(e.target.value)}
                 label="Trạng thái đơn hàng"
               >
@@ -328,7 +386,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
           onClick={handleUpdateStatus}
           color="primary"
           variant="contained"
-          disabled={!newStatus || newStatus === order.status}
+          disabled={!newStatus || newStatus === order.delivery_status}
         >
           Cập nhật trạng thái
         </Button>

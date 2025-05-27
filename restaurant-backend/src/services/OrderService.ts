@@ -9,6 +9,8 @@ import SearchService from './SearchService';
 import { createVNPayPaymentUrl } from '../services/payments/VnPayService';
 
 enum DeliveryStatus {
+  ORDER_PLACED = 'ORDER_PLACED',
+  ORDER_CONFIRMED = 'ORDER_CONFIRMED',
   PENDING = 'PENDING',
   PENDING_PICKUP = 'PENDING_PICKUP',
   PICKED_UP = 'PICKED_UP',
@@ -16,6 +18,9 @@ enum DeliveryStatus {
   DELIVERED = 'DELIVERED',
   DELIVERY_FAILED = 'DELIVERY_FAILED',
   RETURN_REQUESTED = 'RETURN_REQUESTED',
+  CANCEL_RETURN_REQUESTED = 'CANCEL_RETURN_REQUESTED',
+  RETURN_APPROVED = 'RETURN_APPROVED',
+  RETURN_REJECTED = 'RETURN_REJECTED',
   RETURNED = 'RETURNED',
   CANCEL_REQUESTED = 'CANCEL_REQUESTED', 
   CANCELLED = 'CANCELLED',
@@ -32,8 +37,49 @@ enum OrderStatus {
   RETURNED = 'RETURNED',
 }
 class OrderService {
-  async handleAddress(userId: string, address_id: string | null, address: any, session: any, delivery_type: string) {
-    // Nếu là pickup, không cần địa chỉ
+
+  private getStatusText(delivery_status: string): string {
+    switch (delivery_status) {
+      case 'ORDER_PLACED':
+        return 'Đã đặt hàng';
+      case 'ORDER_CONFIRMED':
+        return 'Xác nhận đơn hàng';
+      case 'PENDING_PICKUP':
+        return 'Chờ nhận hàng';
+      case 'PICKED_UP':
+        return 'Đã nhận hàng';
+      case 'IN_TRANSIT':
+        return 'Đang giao';
+      case 'DELIVERED':
+        return 'Đã giao';
+      case 'DELIVERY_FAILED':
+        return 'Giao hàng thất bại';
+      case 'RETURN_REQUESTED':
+        return 'Yêu cầu trả hàng';
+      case 'CANCEL_RETURN_REQUESTED':
+        return 'Hủy yêu cầu trả hàng';
+      case 'RETURN_APPROVED':
+        return 'Xác nhận trả hàng';
+      case 'RETURN_REJECTED':
+        return 'Trả hàng bị từ chối';
+      case 'RETURNED':
+        return 'Đã trả hàng';
+      case 'CANCEL_REQUESTED':
+        return 'Yêu cầu hủy đơn hàng';
+      case 'CANCELLED':
+        return 'Đã hủy';
+      default:
+        return delivery_status;
+    }
+  }
+
+  async handleAddress(
+    userId: string,
+    address_id: string | null,
+    address: any,
+    session: any,
+    delivery_type: string,
+  ) {
     if (delivery_type === 'PICKUP') {
       return null;
     }
@@ -135,7 +181,7 @@ class OrderService {
           account_number: '0123456789',
           account_name: 'Công ty ABC',
           qr_code: 'https://example.com/qr.png',
-          transfer_note: `ORDER-${order._id}`
+          transfer_note: `ORDER-${order._id}`,
         };
         break;
 
@@ -155,7 +201,7 @@ class OrderService {
     return {
       type: payment_method,
       redirectUrl,
-      bankingInfo
+      bankingInfo,
     };
   }
 
@@ -177,10 +223,10 @@ class OrderService {
   async markOrderFailed(orderId: string) {
     const order = await Order.findById(orderId);
     if (!order) throw new Error('Order not found');
-  
-    order.payment_status = 'FAILED'; 
+
+    order.payment_status = 'FAILED';
     await order.save();
-  
+
     return order;
   }
 
@@ -208,7 +254,7 @@ class OrderService {
         address_id,
         address,
         session,
-        delivery_type
+        delivery_type,
       );
 
       const { orderItems, totalAmount } = await OrderValidator.validateCartAndItems(
@@ -221,7 +267,7 @@ class OrderService {
 
       const savedOrder = await this.createOrder(
         userId,
-        finalAddressId || '',
+        finalAddressId,
         payment_method,
         delivery_type,
         totalAmount,
@@ -288,12 +334,7 @@ class OrderService {
         sortBy,
         sortOrder,
         populate: ['user_id', 'address_id'],
-        searchFields: [
-          'address_id.full_name',
-          'address_id.phone', 
-          'receiver',
-          'receiver_phone',
-        ],
+        searchFields: ['address_id.full_name', 'address_id.phone', 'receiver', 'receiver_phone'],
         searchTerm: filters.keyword || '',
         filters: {
           status: filters.status,
@@ -441,21 +482,70 @@ class OrderService {
         throw { statusCode: 404, message: 'Order not found' };
       }
 
-      order.delivery_status = status as
-        | 'PENDING_PICKUP'
-        | 'PICKED_UP'
-        | 'IN_TRANSIT'
-        | 'DELIVERED'
-        | 'DELIVERY_FAILED'
-        | 'RETURN_REQUESTED'
-        | 'RETURNED'
-        | 'CANCEL_REQUESTED'
-        | 'CANCELLED';
+      // Validate status
+      const validStatuses: string[] = Object.values(DeliveryStatus);
+      if (!validStatuses.includes(status)) {
+        throw { statusCode: 400, message: 'Invalid delivery status' };
+      }
 
-      const mappedStatus = this.mapDeliveryStatusToOrderStatus(
-        order.delivery_status as DeliveryStatus,
-        order.order_type,
-      );      order.status = mappedStatus.toString() as any;
+      // Restrict admin updates to admin-relevant statuses
+      const adminStatuses = [
+        DeliveryStatus.ORDER_CONFIRMED,
+        DeliveryStatus.PENDING_PICKUP,
+        DeliveryStatus.PICKED_UP,
+        DeliveryStatus.IN_TRANSIT,
+        DeliveryStatus.DELIVERED,
+        DeliveryStatus.DELIVERY_FAILED,
+        DeliveryStatus.RETURN_APPROVED,
+        DeliveryStatus.RETURN_REJECTED,
+        DeliveryStatus.RETURNED,
+      ];
+      if (!adminStatuses.includes(status as DeliveryStatus)) {
+        throw { statusCode: 403, message: 'Status not allowed for admin update' };
+      }
+
+      // Define valid status transitions
+      const validTransitions: { [key: string]: string[] } = {
+        [DeliveryStatus.ORDER_PLACED]: [DeliveryStatus.ORDER_CONFIRMED, DeliveryStatus.CANCELLED],
+        [DeliveryStatus.ORDER_CONFIRMED]: [DeliveryStatus.PENDING_PICKUP, DeliveryStatus.CANCELLED],
+        [DeliveryStatus.PENDING_PICKUP]: [
+          DeliveryStatus.PICKED_UP,
+          DeliveryStatus.CANCEL_REQUESTED,
+        ],
+        [DeliveryStatus.PICKED_UP]: [DeliveryStatus.IN_TRANSIT],
+        [DeliveryStatus.IN_TRANSIT]: [DeliveryStatus.DELIVERED, DeliveryStatus.DELIVERY_FAILED],
+        [DeliveryStatus.DELIVERED]: [DeliveryStatus.RETURN_REQUESTED], // DELIVERED can only transition to RETURN_REQUESTED
+        [DeliveryStatus.DELIVERY_FAILED]: [DeliveryStatus.PENDING_PICKUP, DeliveryStatus.CANCELLED], // Allow retry or cancel
+        [DeliveryStatus.RETURN_REQUESTED]: [
+          DeliveryStatus.RETURN_APPROVED,
+          DeliveryStatus.RETURN_REJECTED,
+        ],
+        [DeliveryStatus.RETURN_APPROVED]: [DeliveryStatus.RETURNED],
+        [DeliveryStatus.RETURN_REJECTED]: [], // No further transitions
+        [DeliveryStatus.RETURNED]: [], // No further transitions
+        [DeliveryStatus.CANCEL_REQUESTED]: [DeliveryStatus.CANCELLED],
+        [DeliveryStatus.CANCELLED]: [], // No further transitions
+        [DeliveryStatus.CANCEL_RETURN_REQUESTED]: [DeliveryStatus.CANCELLED],
+      };
+
+      if (
+        validTransitions[order.delivery_status] &&
+        !validTransitions[order.delivery_status].includes(status)
+      ) {
+        throw {
+          statusCode: 400,
+          message: `Không thể chuyển từ trạng thái "${this.getStatusText(
+            order.delivery_status,
+          )}" sang "${this.getStatusText(status)}"`,
+        };
+      }
+
+      order.delivery_status = status as DeliveryStatus;
+
+      // Set delivered_at timestamp for DELIVERED status
+      if (status === DeliveryStatus.DELIVERED) {
+        order.delivered_at = new Date();
+      }
 
       await order.save();
 
@@ -583,7 +673,8 @@ class OrderService {
           statusCode: 400,
           message: 'Return request must be made within 30 minutes of delivery',
         };
-      }      order.status = OrderStatus.RETURN_REQUESTED.toString() as any;
+      }
+      order.status = OrderStatus.RETURN_REQUESTED.toString() as any;
       order.delivery_status = DeliveryStatus.RETURN_REQUESTED.toString() as any;
       order.returned_at = new Date();
       order.cancelled_reason = reason;
@@ -609,7 +700,8 @@ class OrderService {
       if (order.status !== 'PREPARING' || order.delivery_status !== 'PENDING_PICKUP') {
         throw {
           statusCode: 400,
-          message: 'Cancel request chỉ được phép khi status = PREPARING và delivery_status = PENDING_PICKUP',
+          message:
+            'Cancel request chỉ được phép khi status = PREPARING và delivery_status = PENDING_PICKUP',
         };
       }
 
