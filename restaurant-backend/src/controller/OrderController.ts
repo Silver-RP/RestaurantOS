@@ -27,9 +27,12 @@ class OrderController {
         delivery_time_type,
         scheduled_time,
         note,
+        shipping_fee,
         receiver,
         receiver_phone,
       } = req.body;
+
+      console.log('Placing order with data:', req.body);
 
       const order = await OrderService.placeOrder({
         userId,
@@ -42,6 +45,7 @@ class OrderController {
         delivery_time_type,
         scheduled_time,
         note,
+        shipping_fee,
         receiver,
         receiver_phone,
       });

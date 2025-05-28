@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ButtonComponents from '@components/common/ButtonComponents';
-import { FiMenu, FiX, FiHome, FiBook, FiCalendar, FiPhone, FiInfo } from "react-icons/fi";
 import { usePlaceDirectOrder } from "@/hooks/useOrder";
 import { PlaceOrderRequest } from "@/types/Order.type";
 import { toast } from "react-toastify";
@@ -153,6 +152,7 @@ const OrderConfirmation = () => {
           note: item.note
         })),
         note: orderData.note,
+        shipping_fee: orderData.shipping_fee,
         receiver: orderData.receiver || "",
         receiver_phone: orderData.receiver_phone || "",
       };

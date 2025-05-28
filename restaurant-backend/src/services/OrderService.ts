@@ -111,6 +111,7 @@ class OrderService {
     delivery_time_type: string,
     total_quantity: number,
     note: string,
+    shipping_fee: number,
     receiver: string | null,
     receiver_phone: string | null,
     scheduled_time: Date | null,
@@ -118,7 +119,6 @@ class OrderService {
   ) {
     const items_price = totalAmount;
     const vat_amount = items_price * 0.08;
-    const shipping_fee = 5000;
     const total_price = items_price + vat_amount + shipping_fee;
 
     const newOrder = new Order({
@@ -262,6 +262,7 @@ class OrderService {
       delivery_time_type,
       scheduled_time,
       note,
+      shipping_fee,
       receiver,
       receiver_phone,
     } = input;
@@ -295,6 +296,7 @@ class OrderService {
         delivery_time_type,
         total_quantity,
         note,
+        shipping_fee,
         receiver,
         receiver_phone,
         scheduled_time,

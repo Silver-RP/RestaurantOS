@@ -127,7 +127,6 @@ interface Order {
   total_quantity: number;
   payment_status?: 'UNPAID' | 'PAID' | 'FAILED' | 'REFUNDED';
   paid_at: string | null;
-  payment_status?: string; // Thêm tùy chọn
   note: string | null;
   receiver: string | null;
   receiver_phone: string | null;
@@ -208,6 +207,8 @@ export interface PlaceOrderRequest {
   };
   address_id?: string;
   note?: string;
+  voucher_id?: string;
+  shipping_fee?: number;
   scheduled_time?: string;
   receiver?: string;
   receiver_phone?: string;
