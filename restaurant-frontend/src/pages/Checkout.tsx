@@ -30,7 +30,7 @@ interface OrderData {
     district: string;
     province: string;
   };
-  payment_method: 'CASH' | 'BANKING' | 'VNPAY' | 'MOMO';
+  payment_method: 'CASH' | 'BANKING' | 'VNPAY' | 'MOMO' | 'MOMO_ATM' | 'CREDIT_CARD';
   delivery_type: 'DELIVERY' | 'PICKUP';
   items: Array<{
     dish_id: string;
@@ -57,7 +57,7 @@ interface OrderData {
 const CheckoutPage = () => {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState('CASH');
+  const [paymentMethod, setPaymentMethod] = useState<string>('');
   const [deliveryMethod, setDeliveryMethod] = useState<'delivery' | 'pickup'>(
     'delivery',
   );
@@ -224,6 +224,11 @@ const CheckoutPage = () => {
         toast.error('Số điện thoại không đúng định dạng');
         return;
       }
+    }
+
+    if (!paymentMethod) {
+      toast.error('Vui lòng chọn phương thức thanh toán');
+      return;
     }
 
     const items_price = products.reduce((sum, item) => {
