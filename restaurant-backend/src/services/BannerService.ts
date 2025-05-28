@@ -8,20 +8,65 @@ class BannerService {
     return await Banner.find({
       status: 'active',
       $and: [
-        {
-          $or: [
-            { start_date: { $exists: false } },
-            { start_date: { $lte: now } }
-          ]
-        },
-        {
-          $or: [
-            { end_date: { $exists: false } },
-            { end_date: { $gt: now } }
-          ]
-        }
-      ]
+        { $or: [{ start_date: { $exists: false } }, { start_date: { $lte: now } }] },
+        { $or: [{ end_date: { $exists: false } }, { end_date: { $gt: now } }] },
+      ],
     }).sort({ order: 1 });
+  }
+
+  // Hàm kiểm tra và cập nhật trạng thái banner dựa trên end_date
+  private async checkAndUpdateBannerStatus(): Promise<void> {
+    const now = new Date();
+    await Banner.updateMany(
+      {
+        status: 'active',
+        end_date: { $lte: now },
+      },
+      {
+        $set: { status: 'inactive' },
+      }
+    );
+  }
+
+  // Hàm điều chỉnh thứ tự banner khi tạo mới
+  private async adjustBannerOrderForCreate(order: number): Promise<void> {
+    // Tìm banner có order hiện tại hoặc lớn hơn
+    const existingBanners = await Banner.find({ order: { $gte: order } }).sort({ order: 1 });
+
+    if (existingBanners.length > 0) {
+      // Nếu có banner có thứ tự >= order mới,
+      // tăng order của tất cả các banner này lên 1
+      await Banner.updateMany(
+        { order: { $gte: order } },
+        { $inc: { order: 1 } }
+      );
+    }
+  }
+
+  // Hàm điều chỉnh thứ tự banner khi cập nhật
+  private async adjustBannerOrderForUpdate(
+    oldOrder: number,
+    newOrder: number,
+    bannerId: string
+  ): Promise<void> {
+    if (oldOrder === newOrder) return;
+
+    // Nếu tăng order (ví dụ: 2 -> 4)
+    if (newOrder > oldOrder) {
+      // Giảm order của các banner ở giữa và banner ở newOrder
+      await Banner.updateMany(
+        { order: { $gt: oldOrder, $lte: newOrder }, _id: { $ne: bannerId } },
+        { $inc: { order: -1 } }
+      );
+    }
+    // Nếu giảm order (ví dụ: 4 -> 1)
+    else {
+      // Tăng order của tất cả banner có order >= newOrder và < oldOrder
+      await Banner.updateMany(
+        { order: { $gte: newOrder, $lt: oldOrder }, _id: { $ne: bannerId } },
+        { $inc: { order: 1 } }
+      );
+    }
   }
 
   async createBanner(req: Request): Promise<IBanner> {
@@ -35,16 +80,13 @@ class BannerService {
       }
 
       const order = parseInt(req.body.order) || 1;
-      
-      // Kiểm tra order trùng lặp
-      const existingBanner = await Banner.findOne({ order });
-      if (existingBanner) {
-        throw new Error(`Đã tồn tại banner với thứ tự ${order}. Vui lòng chọn thứ tự khác.`);
-      }
+
+      // Điều chỉnh thứ tự các banner khác
+      await this.adjustBannerOrderForCreate(order);
 
       const { url } = await UploadImageService.UploadImage(req.file, 'banners');
-      
-      const bannerData = {
+
+      const bannerData: Partial<IBanner> = {
         title: req.body.title,
         description: req.body.description || '',
         image: url,
@@ -66,11 +108,8 @@ class BannerService {
         bannerData.end_date = new Date(req.body.end_date);
       }
 
-      console.log('Creating banner with data:', bannerData);
-
-      const banner = new Banner(bannerData);
+      const banner = new Banner(bannerData as IBanner);
       const savedBanner = await banner.save();
-      console.log('Banner created successfully:', savedBanner);
       return savedBanner;
     } catch (error) {
       console.error('Error creating banner:', error);
@@ -79,6 +118,8 @@ class BannerService {
   }
 
   async getAllBanners(): Promise<IBanner[]> {
+    // Kiểm tra và cập nhật trạng thái trước khi lấy danh sách
+    await this.checkAndUpdateBannerStatus();
     return await Banner.find().sort({ order: 1 });
   }
 
@@ -93,12 +134,14 @@ class BannerService {
       }
 
       const order = parseInt(req.body.order) || 1;
+      const oldBanner = await Banner.findById(id);
 
-      // Kiểm tra order trùng lặp (trừ banner hiện tại)
-      const existingBanner = await Banner.findOne({ order, _id: { $ne: id } });
-      if (existingBanner) {
-        throw new Error(`Đã tồn tại banner với thứ tự ${order}. Vui lòng chọn thứ tự khác.`);
+      if (!oldBanner) {
+        throw new Error('Không tìm thấy banner');
       }
+
+      // Điều chỉnh thứ tự các banner khác
+      await this.adjustBannerOrderForUpdate(oldBanner.order, order, id);
 
       const updateData: any = {
         title: req.body.title,
@@ -114,27 +157,36 @@ class BannerService {
         updateData.start_date = new Date(req.body.start_date);
       }
 
-      // Xử lý end_date
-      if (req.body.end_date === 'null') {
+      // Xử lý end_date và status
+      if (req.body.status === 'active' && oldBanner.status === 'inactive') {
+        // Nếu chuyển từ inactive sang active, xóa end_date
         if (updateData.$unset) {
           updateData.$unset.end_date = 1;
         } else {
           updateData.$unset = { end_date: 1 };
         }
-      } else if (req.body.end_date) {
-        updateData.end_date = new Date(req.body.end_date);
+      } else {
+        // Xử lý end_date bình thường nếu không phải chuyển từ inactive sang active
+        if (req.body.end_date === 'null') {
+          if (updateData.$unset) {
+            updateData.$unset.end_date = 1;
+          } else {
+            updateData.$unset = { end_date: 1 };
+          }
+        } else if (req.body.end_date) {
+          updateData.end_date = new Date(req.body.end_date);
+        }
       }
-      
+
       if (req.file) {
         // Xóa ảnh cũ từ Cloudinary nếu tồn tại
-        const oldBanner = await Banner.findById(id);
-        if (oldBanner?.image) {
+        if (oldBanner.image) {
           const publicId = UploadImageService.extractPublicIdFromUrl(oldBanner.image);
           if (publicId) {
             await UploadImageService.DeleteImage(publicId);
           }
         }
-        
+
         // Tải lên ảnh mới
         const { url } = await UploadImageService.UploadImage(req.file, 'banners');
         updateData.image = url;
@@ -164,6 +216,13 @@ class BannerService {
           await UploadImageService.DeleteImage(publicId);
         }
       }
+
+      // Điều chỉnh thứ tự các banner sau khi xóa
+      await Banner.updateMany(
+        { order: { $gt: banner.order } },
+        { $inc: { order: -1 } }
+      );
+
       return await Banner.findByIdAndDelete(id);
     } catch (error) {
       console.error('Error deleting banner:', error);

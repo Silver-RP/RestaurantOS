@@ -36,7 +36,7 @@ const Carousel = () => {
 
   useEffect(() => {
     if (activeBanners.length > 0) {
-      startInterval();
+    startInterval();
     }
     return () => stopInterval();
   }, [activeBanners]);
