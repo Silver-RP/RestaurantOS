@@ -174,8 +174,8 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                           ? 'Chuyển khoản'
                           : order.payment_method === 'MOMO'
                             ? 'Momo'
-                            : order.payment_method === 'ZALOPAY'
-                              ? 'ZaloPay'
+                            : order.payment_method === 'MOMO_ATM'
+                              ? 'Momo ATM/Thẻ'
                               : order.payment_method}
                   </span>
                 </div>

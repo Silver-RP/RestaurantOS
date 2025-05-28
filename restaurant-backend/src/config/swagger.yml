@@ -4,127 +4,6 @@
 #   version: 1.0.0
 #   description: API for managing restaurant
 
-<<<<<<< HEAD
-# servers:
-#   - url: http://localhost:4000
-#     description: Local server
-# paths:
-#   /api/auth/login:
-#     post:
-#       tags:
-#         - Auth
-#       summary: Login
-#       description: Login to the application
-#       requestBody:
-#         required: true
-#         content:
-#           application/json:
-#             schema:
-#               type: object
-#               properties:
-#                 username:
-#                   type: string
-#                   example: 'user123'
-#                 password:
-#                   type: string
-#                   example: 'password123'
-#       responses:
-#         '200':
-#           description: Login successful
-#           content:
-#             application/json:
-#               schema:
-#                 type: object
-#                 properties:
-#                   message:
-#                     type: string
-#                     example: 'Login successful'
-#         '400':
-#           description: Invalid request
-#           content:
-#             application/json:
-#               schema:
-#                 type: object
-#                 properties:
-#                   message:
-#                     type: string
-#                     example: 'Invalid username or password'
-#         '401':
-#           description: Unauthorized
-#           content:
-#             application/json:
-#               schema:
-#                 type: object
-#                 properties:
-#                   message:
-#                     type: string
-#                     example: 'Unauthorized access'
-#         '500':
-#           description: Internal server error
-#           content:
-#             application/json:
-#               schema:
-#                 type: object
-#                 properties:
-#                   message:
-#                     type: string
-#                     example: 'Internal server error'
-
-#   # Staff Controller
-#   /api/staff/getAllStaff:
-#     get:
-#       tags:
-#         - Staff
-#       summary: Get all staff
-#       description: Fetches a list of all staff with pagination support
-#       parameters:
-#         - in: query
-#           name: page
-#           required: false
-#           schema:
-#             type: integer
-#             default: 1
-#           description: Page number for pagination (defaults to 1)
-#         - in: query
-#           name: pageSize
-#           required: false
-#           schema:
-#             type: integer
-#             default: 10
-#           description: Number of staff records per page (defaults to 10)
-#       responses:
-#         '200':
-#           description: A list of staff
-#           content:
-#             application/json:
-#               schema:
-#                 type: array
-#                 items:
-#                   type: object
-#                   properties:
-#                     id:
-#                       type: integer
-#                       example: 1
-#                     name:
-#                       type: string
-#                       example: 'John Doe'
-#                     role:
-#                       type: string
-#                       example: 'Manager'
-#                     email:
-#                       type: string
-#                       example: 'johndoe@example.com'
-#         '500':
-#           description: Internal server error
-#           content:
-#             application/json:
-#               schema:
-#                 type: object
-#                 properties:
-#                   message:
-#                     type: string
-#                     example: 'Error fetching staff'
-=======
 servers:
   - url: http://localhost:4000
     description: Local server
@@ -579,7 +458,6 @@ paths:
                   message:
                     type: string
                     example: 'Error fetching staff'
->>>>>>> 9c4a43f0818496da05aedd45d40c75f55c49b530
 
 #   /api/staff/createStaff:
 #     post:
@@ -899,59 +777,6 @@ paths:
 #                     type: string
 #                     example: 'Server error: [error message]'
   
-<<<<<<< HEAD
-#   # User Controller
-#   /api/user/getAllUser:
-#     get:
-#       tags:
-#         - User
-#       summary: Get all users
-#       description: Fetch a list of all users from the system
-#       security:
-#         - bearer: []  # Đây là nơi bạn khai báo yêu cầu xác thực với JWT (thêm phần bảo mật nếu cần)
-#       responses:
-#         '200':
-#           description: Successfully retrieved the list of users
-#           content:
-#             application/json:
-#               schema:
-#                 type: array
-#                 items:
-#                   type: object
-#                   properties:
-#                     userId:
-#                       type: integer
-#                       example: 1
-#                     username:
-#                       type: string
-#                       example: 'john_doe'
-#                     email:
-#                       type: string
-#                       example: 'john.doe@example.com'
-#                     status:
-#                       type: string
-#                       example: 'active'
-#                     createdAt:
-#                       type: string
-#                       format: date-time
-#                       example: '2025-02-07T12:00:00Z'
-#         '500':
-#           description: Error fetching users
-#           content:
-#             application/json:
-#               schema:
-#                 type: object
-#                 properties:
-#                   status:
-#                     type: string
-#                     example: 'ERROR'
-#                   message:
-#                     type: string
-#                     example: 'Failed to fetch all users'
-#                   error:
-#                     type: string
-#                     example: 'Internal Server Error'
-=======
   # User Controller
   /api/user/getAllUser:
     get:
@@ -1001,7 +826,6 @@ paths:
                   error:
                     type: string
                     example: 'Internal Server Error'
->>>>>>> 9c4a43f0818496da05aedd45d40c75f55c49b530
   
 #   /api/user/getAllUserByUserRole:
 #     get:

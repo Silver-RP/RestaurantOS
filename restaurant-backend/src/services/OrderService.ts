@@ -7,6 +7,7 @@ import Cart from '../models/CartModel';
 import { Dish } from '../models/DishModel';
 import SearchService from './SearchService';
 import { createVNPayPaymentUrl } from '../services/payments/VnPayService';
+import { createMomoPaymentUrl  } from '../services/payments/MomoService';
 
 enum DeliveryStatus {
   ORDER_PLACED = 'ORDER_PLACED',
@@ -185,9 +186,13 @@ class OrderService {
         };
         break;
 
-      // case 'MOMO':
-      //   redirectUrl = await momoService.createPaymentUrl(order);
-      //   break;
+      case 'MOMO':
+        redirectUrl = await createMomoPaymentUrl(order, 'wallet');
+        break;
+      
+      case 'MOMO_ATM':
+        redirectUrl = await createMomoPaymentUrl(order, 'atm');
+        break;
 
       case 'VNPAY':
         redirectUrl = createVNPayPaymentUrl(order, clientIp);
@@ -540,7 +545,7 @@ class OrderService {
         };
       }
 
-      order.delivery_status = status as DeliveryStatus;
+      order.delivery_status = status as "ORDER_PLACED" | "ORDER_CONFIRMED" | "PENDING_PICKUP" | "PICKED_UP" | "IN_TRANSIT" | "DELIVERED" | "DELIVERY_FAILED" | "RETURN_REQUESTED" | "CANCEL_RETURN_REQUESTED" | "RETURN_APPROVED" | "RETURN_REJECTED" | "RETURNED" | "CANCEL_REQUESTED" | "CANCELLED";
 
       // Set delivered_at timestamp for DELIVERED status
       if (status === DeliveryStatus.DELIVERED) {

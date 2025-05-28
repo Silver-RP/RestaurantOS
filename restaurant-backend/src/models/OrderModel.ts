@@ -6,7 +6,7 @@ export interface IOrder extends Document {
   user_id: Types.ObjectId;
   cashier_order_id?: Types.ObjectId | null;
   address_id: Types.ObjectId | null | undefined;
-  payment_method: 'CASH' | 'BANKING' | 'VNPAY' | 'MOMO' | 'CREDIT_CARD';
+  payment_method: 'CASH' | 'BANKING' | 'VNPAY' | 'MOMO' | 'MOMO_ATM' | 'CREDIT_CARD';
   delivery_type: 'DELIVERY' | 'PICKUP';
   delivery_status:
     | 'ORDER_PLACED'
@@ -63,7 +63,7 @@ const OrderSchema = new Schema<IOrder>(
     address_id: { type: Schema.Types.ObjectId, ref: 'Address', required: false },
     payment_method: {
       type: String,
-      enum: ['CASH', 'BANKING', 'VNPAY', 'MOMO'],
+      enum: ['CASH', 'BANKING', 'VNPAY', 'MOMO', 'MOMO_ATM', 'CREDIT_CARD'],
       required: true,
     },
     delivery_type: {

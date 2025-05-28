@@ -14,8 +14,11 @@ class OrderValidator {
     }
   
     if (delivery_type === 'DELIVERY') {
-      if (!address_id || address_id === '') {
-        return { valid: false, message: 'address_id is required for DELIVERY orders.' };
+      const hasAddressId = !!address_id && address_id !== '';
+      const hasNewAddress = address && typeof address === 'object';
+    
+      if (!hasAddressId && !hasNewAddress) {
+        return { valid: false, message: 'Either address_id or address is required for DELIVERY orders.' };
       }
     }
 
@@ -44,7 +47,7 @@ class OrderValidator {
       }
     }
 
-    if (!['CASH', 'BANKING', 'VNPAY', 'MOMO', 'CREDIT_CARD'].includes(payment_method)) {
+    if (!['CASH', 'BANKING', 'VNPAY', 'MOMO', 'MOMO_ATM', 'CREDIT_CARD'].includes(payment_method)) {
       return { valid: false, message: 'Invalid payment method.' };
     }
 
