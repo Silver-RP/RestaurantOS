@@ -13,7 +13,7 @@ const paymentMethods = [
   { value: 'MOMO', label: 'Thanh toán với Momo (QR)' },
   { value: 'MOMO_ATM', label: 'Thanh toán thẻ MoMo (ATM/Card)' },
   { value: 'VNPAY', label: 'Thanh toán với VNPay' },
-  { value: 'CREDIT_CARD', label: 'Thẻ tín dụng' },
+  { value: 'CREDIT_CARD', label: 'Thẻ tín dụng (Paypal)' },
   { value: 'BANKING', label: 'Chuyển khoản ngân hàng' },
   { value: 'CASH', label: 'Tiền mặt khi nhận hàng' },
 ];

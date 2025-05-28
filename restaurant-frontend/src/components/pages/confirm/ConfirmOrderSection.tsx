@@ -104,7 +104,8 @@ const OrderConfirmation = () => {
       "BANKING": "Chuyển khoản ngân hàng",
       "VNPAY": "Thanh toán qua VNPAY",
       "MOMO": "Thanh toán qua MOMO",
-      "CREDIT_CARD": "Thanh toán bằng thẻ tín dụng"
+      "MOMO_ATM": "Thanh toán thẻ qua MOMO",
+      "CREDIT_CARD": "Thanh toán bằng thẻ tín dụng qua PayPal",
     };
 
     return paymentMethodMap[orderData.payment_method] || orderData.payment_method;

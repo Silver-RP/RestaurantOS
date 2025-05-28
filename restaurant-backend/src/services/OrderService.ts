@@ -7,7 +7,9 @@ import Cart from '../models/CartModel';
 import { Dish } from '../models/DishModel';
 import SearchService from './SearchService';
 import { createVNPayPaymentUrl } from '../services/payments/VnPayService';
-import { createMomoPaymentUrl  } from '../services/payments/MomoService';
+import { createMomoPaymentUrl } from '../services/payments/MomoService';
+import { createPayPalOrder } from '../services/payments/PaypalService';
+import { IOrderDetail } from '../models/OrderDetailModel';
 
 enum DeliveryStatus {
   ORDER_PLACED = 'ORDER_PLACED',
@@ -23,7 +25,7 @@ enum DeliveryStatus {
   RETURN_APPROVED = 'RETURN_APPROVED',
   RETURN_REJECTED = 'RETURN_REJECTED',
   RETURNED = 'RETURNED',
-  CANCEL_REQUESTED = 'CANCEL_REQUESTED', 
+  CANCEL_REQUESTED = 'CANCEL_REQUESTED',
   CANCELLED = 'CANCELLED',
 }
 
@@ -38,6 +40,9 @@ enum OrderStatus {
   RETURNED = 'RETURNED',
 }
 class OrderService {
+  getStripeSession(sessionId: any) {
+    throw new Error('Method not implemented.');
+  }
 
   private getStatusText(delivery_status: string): string {
     switch (delivery_status) {
@@ -172,7 +177,7 @@ class OrderService {
 
   async handlePostPaymentLogic(order: IOrder, clientIp: string) {
     const payment_method = order.payment_method;
-    let redirectUrl = null;
+    let redirectUrl: string | null = null;
     let bankingInfo = null;
 
     switch (payment_method) {
@@ -189,7 +194,7 @@ class OrderService {
       case 'MOMO':
         redirectUrl = await createMomoPaymentUrl(order, 'wallet');
         break;
-      
+
       case 'MOMO_ATM':
         redirectUrl = await createMomoPaymentUrl(order, 'atm');
         break;
@@ -198,9 +203,14 @@ class OrderService {
         redirectUrl = createVNPayPaymentUrl(order, clientIp);
         break;
 
-      // case 'CREDIT_CARD':
-      //   redirectUrl = await creditCardService.createPaymentUrl(order);
-      //   break;
+      case 'CREDIT_CARD':
+        const orderWithItems = await this.getOrderById(order._id);
+        redirectUrl = await createPayPalOrder(orderWithItems as any);
+        break;
+
+      default:
+        redirectUrl = null;
+        break;
     }
 
     return {
@@ -211,10 +221,15 @@ class OrderService {
   }
 
   async markOrderPaid(orderId: string, amount: number) {
+    const paidAmount = Number(amount); // từ PayPal (USD)
+
     const order = await Order.findById(orderId);
+
     if (!order) throw new Error('Order not found');
 
-    if (order.total_price !== amount) {
+    const allowedDifference = 1000;
+
+    if (order.total_price !== undefined && Math.abs(order.total_price - paidAmount) > allowedDifference) {
       throw new Error('Paid amount does not match order total');
     }
 

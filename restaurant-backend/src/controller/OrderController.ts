@@ -3,7 +3,6 @@ import OrderService from '../services/OrderService';
 import { IUser } from '../models/UserModel';
 import { Types } from 'mongoose';
 import OrderValidate from '../validators/orderValidator';
-import { Order } from '../models/OrderModel';
 
 class OrderController {
   async placeOrder(req: Request, res: Response): Promise<any> {
@@ -110,9 +109,9 @@ class OrderController {
       const cleanDeliveryStatuses = deliveryStatuses?.filter(
         (status): status is string => typeof status === 'string'
       ) ?? null;
-      
+
       const result = await OrderService.getUserOrders(userId, cleanDeliveryStatuses, page, limit);
-      
+
       return res.status(200).json({
         message: 'Orders retrieved successfully',
         ...result,
