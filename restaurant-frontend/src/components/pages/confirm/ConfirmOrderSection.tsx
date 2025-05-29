@@ -176,6 +176,9 @@ const OrderConfirmation = () => {
       }
       const response = await placeDirectOrderMutation.mutateAsync(apiOrderData);
 
+      if (response.postPayment?.bankingInfo) {
+        sessionStorage.setItem('recentBankingInfo', JSON.stringify(response.postPayment.bankingInfo));
+      }
 
       // Set a flag in session storage to indicate a successful order
       sessionStorage.setItem('recentOrderSuccess', 'true');

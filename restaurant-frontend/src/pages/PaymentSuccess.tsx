@@ -1,11 +1,31 @@
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ButtonComponents from '../components/common/ButtonComponents';
 import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
 import { AiOutlineCheckCircle } from 'react-icons/ai';
 import { motion } from 'framer-motion';
+import { FiDownload } from 'react-icons/fi';
 
 const PaymentSuccess = () => {
   const navigate = useNavigate();
+  const [bankingInfo, setBankingInfo] = useState<null | {
+    bank_name: string;
+    account_name: string;
+    account_number: string;
+    qr_code: string;
+    transfer_note: string;
+  }>(null);
+
+  const shortOrderId = bankingInfo?.transfer_note
+    ? bankingInfo.transfer_note.slice(-6).toUpperCase()
+    : '';
+
+  useEffect(() => {
+    const storedInfo = sessionStorage.getItem('recentBankingInfo');
+    if (storedInfo) {
+      setBankingInfo(JSON.parse(storedInfo));
+    }
+  }, []);
 
   return (
     <>
@@ -15,7 +35,7 @@ const PaymentSuccess = () => {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="flex flex-col items-center bg-bodyBackground text-center pt-36 pb-48 "
+        className="flex flex-col items-center bg-bodyBackground text-center pt-24 pb-20"
       >
         <motion.div
           initial={{ scale: 0 }}
@@ -29,11 +49,12 @@ const PaymentSuccess = () => {
         <h1 className="text-3xl font-bold mb-2 text-white">
           Thanh toán thành công!
         </h1>
-        <p className="mb-6 text-gray-400">
-          Cảm ơn bạn đã đặt hàng. Đơn hàng của bạn đang được xử lý.
+        <p className="mb-6 text-gray-400 max-w-md">
+          Cảm ơn bạn đã đặt hàng. Đơn hàng đang được xử lý. Vui lòng kiểm tra
+          email hoặc trang lịch sử đơn hàng để theo dõi trạng thái.
         </p>
 
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-4 justify-center">
           <ButtonComponents onClick={() => navigate('/menu')}>
             Tiếp tục mua sắm
           </ButtonComponents>
@@ -45,6 +66,64 @@ const PaymentSuccess = () => {
           </ButtonComponents>
         </div>
       </motion.div>
+
+      {bankingInfo && (
+        <div className="bg-bodyBackground flex justify-center px-4 pb-24">
+          <div className="bg-white/10 backdrop-blur-md shadow-xl rounded-2xl p-6 w-full max-w-2xl text-left text-white border border-white/10">
+            <h2 className="text-2xl font-semibold mb-4 text-white">
+              Thông tin chuyển khoản
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+              <div className="space-y-2">
+                <p>
+                  <strong>Ngân hàng:</strong> {bankingInfo.bank_name}
+                </p>
+                <p>
+                  <strong>Chủ tài khoản:</strong> {bankingInfo.account_name}
+                </p>
+                <p>
+                  <strong>Số tài khoản:</strong> {bankingInfo.account_number}
+                </p>
+                <p>
+                  <strong>Nội dung chuyển khoản:</strong> <br />
+                  <span className="font-semibold text-yellow-300">
+                    ORDER-{shortOrderId}
+                  </span>
+                </p>
+                <p>
+                  <strong>Mã đơn hàng:</strong>{' '}
+                  <span className="font-semibold text-green-300">
+                    {shortOrderId}
+                  </span>
+                </p>
+                <p className="text-red-400 text-sm font-medium">
+                  ⚠️ Vui lòng nhập chính xác nội dung chuyển khoản{' '}
+                  <strong className="text-yellow-300">
+                    ORDER-{shortOrderId}
+                  </strong>{' '}
+                  để hệ thống xác nhận tự động.
+                </p>
+              </div>
+
+              <div className="flex flex-col items-center justify-center gap-4">
+                <img
+                  src={bankingInfo.qr_code}
+                  alt="QR Code"
+                  className="w-52 h-52 object-contain border rounded-xl shadow-lg bg-white"
+                />
+                <a
+                  href={bankingInfo.qr_code}
+                  download={`QR_ORDER_${shortOrderId}.png`}
+                  className="flex items-center gap-2 text-sm px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition duration-200"
+                >
+                  <FiDownload />
+                  Tải mã QR
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

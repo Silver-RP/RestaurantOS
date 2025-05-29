@@ -9,7 +9,7 @@ import SearchService from './SearchService';
 import { createVNPayPaymentUrl } from '../services/payments/VnPayService';
 import { createMomoPaymentUrl } from '../services/payments/MomoService';
 import { createPayPalOrder } from '../services/payments/PaypalService';
-import { IOrderDetail } from '../models/OrderDetailModel';
+import axios from 'axios';
 
 enum DeliveryStatus {
   ORDER_PLACED = 'ORDER_PLACED',
@@ -181,16 +181,35 @@ class OrderService {
     let bankingInfo = null;
 
     switch (payment_method) {
-      case 'BANKING':
+      case 'BANKING': {
+        const bank_name = 'Vietcombank';
+        const bank_code = '970436'; 
+        const account_number = '0123456789';
+        const account_name = 'Công ty TNHH BeefBeef';
+        const transfer_note = `ORDER-${order._id}`;
+        const amount = order.total_price || 0;
+  
+        const qrRes = await axios.post('https://api.vietqr.io/v2/generate', {
+          accountNo: account_number,
+          accountName: account_name,
+          acqId: bank_code,
+          amount,
+          addInfo: transfer_note,
+          format: 'base64',
+        });
+  
+        const qr_base64 = qrRes?.data?.data?.qrDataURL;
+  
         bankingInfo = {
-          bank_name: 'Vietcombank',
-          account_number: '0123456789',
-          account_name: 'Công ty ABC',
-          qr_code: 'https://example.com/qr.png',
-          transfer_note: `ORDER-${order._id}`,
+          bank_name,
+          account_number,
+          account_name,
+          qr_code: qr_base64,
+          transfer_note,
         };
         break;
-
+      }
+  
       case 'MOMO':
         redirectUrl = await createMomoPaymentUrl(order, 'wallet');
         break;
