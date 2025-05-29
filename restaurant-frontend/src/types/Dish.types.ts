@@ -24,6 +24,8 @@ export interface FoodDetail {
   discountUntil?: Date;
   isDishNew?: boolean;
   newUntil?: Date;
+  isRecommend?: boolean;
+  recommendUntil?: Date;
   description: string;
   shortDescription?: string;
   ingredients?: string;
