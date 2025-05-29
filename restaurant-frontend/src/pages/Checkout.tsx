@@ -8,6 +8,8 @@ import { useGetCart } from '@hooks/useCart';
 import { useNavigate } from 'react-router-dom';
 import { useUserAddresses } from '@/hooks/useAddress';
 import { toast } from 'react-toastify';
+import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
+
 
 interface Product {
   image: string;
@@ -30,7 +32,13 @@ interface OrderData {
     district: string;
     province: string;
   };
-  payment_method: 'CASH' | 'BANKING' | 'VNPAY' | 'MOMO' | 'MOMO_ATM' | 'CREDIT_CARD';
+  payment_method:
+    | 'CASH'
+    | 'BANKING'
+    | 'VNPAY'
+    | 'MOMO'
+    | 'MOMO_ATM'
+    | 'CREDIT_CARD';
   delivery_type: 'DELIVERY' | 'PICKUP';
   items: Array<{
     dish_id: string;
@@ -109,7 +117,7 @@ const CheckoutPage = () => {
       navigate('/cart');
     }
   }, [cart, navigate]);
-  
+
   useEffect(() => {
     setAddresses(fetchedAddresses);
     setSelectedId(
@@ -217,7 +225,7 @@ const CheckoutPage = () => {
     // Verify receiver info when pickup is chosen
     if (deliveryMethod === 'pickup') {
       if (!receiver || !receiverPhone) {
-        toast.error("Vui lòng nhập thông tin người nhận");
+        toast.error('Vui lòng nhập thông tin người nhận');
         return;
       }
       if (!/^(0|\+84)[3|5|7|8|9][0-9]{8}$/.test(receiverPhone)) {
@@ -293,42 +301,44 @@ const CheckoutPage = () => {
   };
 
   return (
-    <div className="flex py-10 bg-bodyBackground min-h-screen text-white">
-      <div className="w-11/12 md:w-container95 lg:w-container90 xl:w-container85 2xl:w-mainContainer mx-auto space-y-6">
-        <h1 className="text-2xl font-bold">Thanh toán</h1>
+    <>
+      <BreadCrumbComponents />
+      <div className="flex py-10 bg-bodyBackground min-h-screen text-white">
+        <div className="w-11/12 md:w-container95 lg:w-container90 xl:w-container85 2xl:w-mainContainer mx-auto space-y-6">
+          <h1 className="text-2xl font-bold">Thanh toán</h1>
 
-        <ShippingAddressSection
-          addresses={addresses}
-          refetch={refetch}
-          selectedId={selectedId}
-          onSelect={setSelectedId}
-          onAdd={handleAddAddress}
-          onDeliveryTimeChange={handleDeliveryTimeChange}
-          initialDeliveryTime={deliveryTime}
-          deliveryMethod={deliveryMethod}
-          onDeliveryMethodChange={setDeliveryMethod}
-          receiver={receiver}
-          receiverPhone={receiverPhone}
-          onReceiverChange={(name, phone) => {
-            setReceiver(name);
-            setReceiverPhone(phone);
-          }}
+          <ShippingAddressSection
+            addresses={addresses}
+            refetch={refetch}
+            selectedId={selectedId}
+            onSelect={setSelectedId}
+            onAdd={handleAddAddress}
+            onDeliveryTimeChange={handleDeliveryTimeChange}
+            initialDeliveryTime={deliveryTime}
+            deliveryMethod={deliveryMethod}
+            onDeliveryMethodChange={setDeliveryMethod}
+            receiver={receiver}
+            receiverPhone={receiverPhone}
+            onReceiverChange={(name, phone) => {
+              setReceiver(name);
+              setReceiverPhone(phone);
+            }}
+          />
 
-        />
-
-        <ProductInfoSection
-          products={products}
-          note={orderNote}
-          shippingFee={shippingFee}
-          paymentMethod={paymentMethod}
-          onPaymentMethodChange={setPaymentMethod}
-          vouchers={vouchers}
-          onProceedToPayment={handleProceedToPayment}
-          onNoteChange={handleOrderNoteChange}
-          onProductNoteChange={handleProductNotes}
-        />
+          <ProductInfoSection
+            products={products}
+            note={orderNote}
+            shippingFee={shippingFee}
+            paymentMethod={paymentMethod}
+            onPaymentMethodChange={setPaymentMethod}
+            vouchers={vouchers}
+            onProceedToPayment={handleProceedToPayment}
+            onNoteChange={handleOrderNoteChange}
+            onProductNoteChange={handleProductNotes}
+          />
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

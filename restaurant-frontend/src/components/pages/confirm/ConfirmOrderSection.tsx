@@ -193,7 +193,7 @@ const OrderConfirmation = () => {
       }
       
       // Navigate to success page
-      navigate('/order-success');
+      navigate('/payment-success');
     } catch (error) {
       console.error("Error placing order:", error);
       toast.error("Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại.");

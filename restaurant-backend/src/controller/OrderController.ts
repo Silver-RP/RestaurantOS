@@ -32,8 +32,6 @@ class OrderController {
         receiver_phone,
       } = req.body;
 
-      console.log('Placing order with data:', req.body);
-
       const order = await OrderService.placeOrder({
         userId,
         address_id,

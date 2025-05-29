@@ -47,7 +47,6 @@ export async function requestCancel(orderId: string, reason: string) {
 }
 
 export const placeDirectOrder = async (data: PlaceOrderRequest) => {
-  console.log('Placing order with data:', data);
   const res = await api.post('/order/place-order', data);
   return res.data;
 };
