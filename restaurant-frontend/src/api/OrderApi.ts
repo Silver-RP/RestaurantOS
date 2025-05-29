@@ -68,3 +68,8 @@ export const updateOrderStatus = async (orderId: string, status: string) => {
   const res = await api.put(`/order/order-status/${orderId}`, { status });
   return res.data;
 };
+
+export const updatePaymentStatus = async (orderId: string, paidAmount: number ) => {
+  const res = await api.put(`/payment/payment-status/${orderId}`, { paidAmount });
+  return res.data;
+}

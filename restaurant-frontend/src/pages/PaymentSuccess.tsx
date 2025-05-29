@@ -15,6 +15,7 @@ const PaymentSuccess = () => {
     qr_code: string;
     transfer_note: string;
   }>(null);
+  const orderTotal = parseFloat(sessionStorage.getItem('orderTotal') || '0');
 
   const shortOrderId = bankingInfo?.transfer_note
     ? bankingInfo.transfer_note.slice(-6).toUpperCase()
@@ -25,7 +26,18 @@ const PaymentSuccess = () => {
     if (storedInfo) {
       setBankingInfo(JSON.parse(storedInfo));
     }
+
+    const orderTotal = sessionStorage.getItem('orderTotal');
+    if (orderTotal) {
+      const total = parseFloat(orderTotal);
+      if (isNaN(total)) {
+        console.error('Invalid order total in sessionStorage');
+      }
+    } else {
+      console.error('Order total not found in sessionStorage');
+    }
   }, []);
+
 
   return (
     <>
@@ -83,6 +95,15 @@ const PaymentSuccess = () => {
                 </p>
                 <p>
                   <strong>Số tài khoản:</strong> {bankingInfo.account_number}
+                </p>
+                <p>
+                  <strong>Số tiền:</strong> 
+                  <span className="ml-1 font-semibold text-green-300">
+                    {orderTotal.toLocaleString('vi-VN', {
+                      style: 'currency',
+                      currency: 'VND',
+                    })}
+                  </span>
                 </p>
                 <p>
                   <strong>Nội dung chuyển khoản:</strong> <br />

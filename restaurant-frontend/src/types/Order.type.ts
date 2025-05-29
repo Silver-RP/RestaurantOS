@@ -1,4 +1,3 @@
-import { Address } from './Address.type';
 
 export type DeliveryStatus =
   | 'PENDING'
@@ -97,7 +96,7 @@ interface User {
   status: string;
 }
 
-interface Order {
+export interface Order {
   _id: string;
   user_id: User; // Sửa từ string thành User
   address_id: {

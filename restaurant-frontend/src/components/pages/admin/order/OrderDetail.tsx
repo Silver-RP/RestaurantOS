@@ -14,6 +14,8 @@ import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { useOrderDetail, useUpdateOrderStatus } from '@/hooks/useOrder';
 import { toast } from 'react-toastify';
+import PaymentInfo from './PaymentInfo';
+import { Order } from '../../../../types/Order.type';
 
 const ORDER_STATUSES = [
   { value: 'ORDER_CONFIRMED', label: 'Xác nhận đơn hàng' },
@@ -41,6 +43,11 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
   const { data: orderDetail, isLoading } = useOrderDetail(orderId);
   const updateStatusMutation = useUpdateOrderStatus();
   const [newStatus, setNewStatus] = useState('');
+  const [orderPayment, setOrderPayment] = useState<Order | null>(null);
+
+  function handlePaymentConfirmed(updatedOrder: Order) {
+    setOrderPayment(updatedOrder);
+  }
 
   const formatDate = (dateString: string) => {
     try {
@@ -298,24 +305,15 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
 
           {/* Thông tin thanh toán và giao hàng */}
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <h3 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">
-                Thông tin thanh toán
-              </h3>
-              <p className="text-gray-600">Phương thức thanh toán</p>
-              <p className="font-medium">
-                {order.payment_method === 'CASH'
-                  ? 'Tiền mặt'
-                  : order.payment_method}
-              </p>
-              <p
-                className={`text-sm ${order.payment_status === 'PAID' ? 'text-green-600' : 'text-red-600'}`}
-              >
-                {order.payment_status === 'PAID'
-                  ? 'Đã thanh toán'
-                  : 'Chưa thanh toán'}
-              </p>
-            </div>
+            {order ? (
+              <PaymentInfo
+                order={order}
+                onPaymentConfirmed={handlePaymentConfirmed}
+              />
+            ) : (
+              <p>Đang tải đơn hàng...</p>
+            )}
+
             <div>
               <h3 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">
                 Phương thức giao hàng

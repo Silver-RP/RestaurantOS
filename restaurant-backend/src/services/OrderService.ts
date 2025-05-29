@@ -1,15 +1,18 @@
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import OrderValidator from '../validators/orderValidator';
 import { Address } from '../models/AddressModel';
 import { Order, IOrder } from '../models/OrderModel';
 import { OrderDetail } from '../models/OrderDetailModel';
 import Cart from '../models/CartModel';
 import { Dish } from '../models/DishModel';
+import Payment  from '../models/PaymentModel';
 import SearchService from './SearchService';
 import { createVNPayPaymentUrl } from '../services/payments/VnPayService';
 import { createMomoPaymentUrl } from '../services/payments/MomoService';
 import { createPayPalOrder } from '../services/payments/PaypalService';
+
 import axios from 'axios';
+import { IUser } from '../models/UserModel';
 
 enum DeliveryStatus {
   ORDER_PLACED = 'ORDER_PLACED',
@@ -179,93 +182,125 @@ class OrderService {
     const payment_method = order.payment_method;
     let redirectUrl: string | null = null;
     let bankingInfo = null;
-
+  
+    const amount = order.total_price || 0;
+  
+    if (payment_method === 'BANKING') {
+      const bank_name = 'Vietcombank';
+      const bank_code = '970436';
+      const account_number = '0123456789';
+      const account_name = 'Công ty TNHH BeefBeef';
+      const transfer_note = `ORDER-${order._id}`;
+  
+      const qrRes = await axios.post('https://api.vietqr.io/v2/generate', {
+        accountNo: account_number,
+        accountName: account_name,
+        acqId: bank_code,
+        amount,
+        addInfo: transfer_note,
+        format: 'base64',
+      });
+  
+      const qr_base64 = qrRes?.data?.data?.qrDataURL;
+  
+      bankingInfo = {
+        bank_name,
+        account_number,
+        account_name,
+        qr_code: qr_base64,
+        transfer_note,
+      };
+    }
+  
     switch (payment_method) {
-      case 'BANKING': {
-        const bank_name = 'Vietcombank';
-        const bank_code = '970436'; 
-        const account_number = '0123456789';
-        const account_name = 'Công ty TNHH BeefBeef';
-        const transfer_note = `ORDER-${order._id}`;
-        const amount = order.total_price || 0;
-  
-        const qrRes = await axios.post('https://api.vietqr.io/v2/generate', {
-          accountNo: account_number,
-          accountName: account_name,
-          acqId: bank_code,
-          amount,
-          addInfo: transfer_note,
-          format: 'base64',
-        });
-  
-        const qr_base64 = qrRes?.data?.data?.qrDataURL;
-  
-        bankingInfo = {
-          bank_name,
-          account_number,
-          account_name,
-          qr_code: qr_base64,
-          transfer_note,
-        };
-        break;
-      }
-  
       case 'MOMO':
         redirectUrl = await createMomoPaymentUrl(order, 'wallet');
         break;
-
       case 'MOMO_ATM':
         redirectUrl = await createMomoPaymentUrl(order, 'atm');
         break;
-
       case 'VNPAY':
         redirectUrl = createVNPayPaymentUrl(order, clientIp);
         break;
-
       case 'CREDIT_CARD':
         const orderWithItems = await this.getOrderById(order._id);
         redirectUrl = await createPayPalOrder(orderWithItems as any);
         break;
-
       default:
         redirectUrl = null;
         break;
     }
+  
+    await Payment.create({
+      orderId: order._id,
+      payment_method,
+      payment_status: 'UNPAID',
+      amount,
+      transaction_code: null,
+      bankingInfo: bankingInfo,
+    });
 
     return {
       type: payment_method,
       redirectUrl,
       bankingInfo,
+      orderTotal: order.total_price,
     };
   }
 
-  async markOrderPaid(orderId: string, amount: number) {
-    const paidAmount = Number(amount); // từ PayPal (USD)
-
+  async markOrderPaid(orderId: string, paidAmount: number, transactionCode: string, userId: string | null) {
     const order = await Order.findById(orderId);
-
     if (!order) throw new Error('Order not found');
-
+  
+    const payment = await Payment.findOne({
+      orderId: orderId,
+      payment_status: 'UNPAID',
+    });
+  
+    if (!payment) throw new Error('No UNPAID payment found for this order');
+  
     const allowedDifference = 1000;
-
-    if (order.total_price !== undefined && Math.abs(order.total_price - paidAmount) > allowedDifference) {
-      throw new Error('Paid amount does not match order total');
+  
+    if (Math.abs((payment.amount || 0) - paidAmount) > allowedDifference) {
+      throw new Error('Paid amount does not match expected payment amount');
     }
 
-    order.payment_status = 'PAID';
-    order.paid_at = new Date();
-    await order.save();
+    payment.payment_status = 'PAID';
+    payment.payment_date = new Date();
+    payment.transaction_code = transactionCode;
+    payment.amount = paidAmount;
 
-    return order;
+    if (userId) {
+      payment.confirmed_by = new mongoose.Types.ObjectId(userId);
+    }
+
+    await payment.save();
+  
+    if (order.payment_status !== 'PAID') {
+      order.payment_status = 'PAID';
+      order.paid_at = new Date();
+      await order.save();
+    }
+  
+    return { order, payment };
   }
 
-  async markOrderFailed(orderId: string) {
+  async markOrderFailed(orderId: string, reason?: string) {
     const order = await Order.findById(orderId);
     if (!order) throw new Error('Order not found');
-
+  
     order.payment_status = 'FAILED';
     await order.save();
-
+  
+    await Payment.updateMany(
+      { order_id: orderId, payment_status: 'UNPAID' },
+      {
+        payment_status: 'FAILED',
+        failure_reason: reason || 'Unknown failure',
+        payment_date: new Date(),
+      }
+    );
+  
     return order;
   }
 
