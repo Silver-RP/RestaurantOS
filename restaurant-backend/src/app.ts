@@ -8,7 +8,7 @@ import CateRoutes from './routes/CategoryRoutes';
 import ReservationContactRoutes from './routes/ReservationContactRoutes';
 import ReservationDetailContactRoutes from './routes/ReservationDetailContactRoutes';
 import ProfileRoutes from './routes/ProfileRoutes';
-
+import BannerRoutes from './routes/BannerRoutes';
 import StaffRoutes from './routes/StaffRoutes';
 import FoodRoutes from './routes/FoodRoutes';
 import PermissionRoutes from './routes/PermissionRoutes';
@@ -18,13 +18,17 @@ import CartRouter from './routes/CartRoutes';
 import FavoriteRoutes from './routes/FavoriteRoutes';
 import AddressRouter from './routes/AddressRoutes';
 import FaqRoutes from './routes/FaqRoutes';
+import PaymentRoutes from './routes/PaymentRoutes';
+import ChatRoutes from './routes/ChatRoutes';
 import dotenv from 'dotenv';
 import connectDB from './config/db';
 import cookieParser from 'cookie-parser';
 import passport from 'passport';
 import cors from 'cors';
+import http from 'http';
+import { Server as SocketIOServer } from 'socket.io';
+import { initSocket } from './socket/socket';
 const app = express();
-
 // Import file authSwagger để đăng ký metadata
 import './swaggers/AuthSwagger';
 import './swaggers/OrderSwagger';
@@ -44,6 +48,13 @@ app.use(
     credentials: true,
   }),
 );
+
+const server = http.createServer(app);
+const io = new SocketIOServer(server, {
+  cors: {
+    origin: '*', // đổi nếu deploy thật
+  },
+});
 
 const port = process.env.PORT || 4000;
 
@@ -101,6 +112,7 @@ app.use(
 );
 app.use('/api/permission', PermissionRoutes);
 app.use('/api/category', CateRoutes);
+app.use('/api/banner', BannerRoutes);
 app.use('/api/reservationcontact', ReservationContactRoutes);
 app.use('/api/reservationdetailcontact', ReservationDetailContactRoutes);
 app.use(
@@ -116,6 +128,10 @@ app.use('/api/cart', AuthMiddleWare.verifyToken, CartRouter);
 app.use('/api/favorite', AuthMiddleWare.verifyToken, FavoriteRoutes);
 app.use('/api/address', AuthMiddleWare.verifyToken, AddressRouter);
 app.use('/api/faq', FaqRoutes);
+app.use('/api/payment', PaymentRoutes);
+app.use('/api/chat', AuthMiddleWare.verifyToken, ChatRoutes);
+app.set('io', io);
+initSocket(io);
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
   console.log('Mongo URI:', process.env.MONGO_URI);

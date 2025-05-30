@@ -220,7 +220,7 @@ const FoodForm: React.FC<FoodFormProps> = ({
                     type="date"
                     value={
                       discountUntil
-                        ? discountUntil.toISOString().split('T')[0]
+                        ? new Date(discountUntil).toISOString().split('T')[0]
                         : ''
                     }
                     onChange={(e) => setDiscountUntil(new Date(e.target.value))}
@@ -258,7 +258,7 @@ const FoodForm: React.FC<FoodFormProps> = ({
                     <input
                       type="date"
                       value={
-                        newUntil ? newUntil.toISOString().split('T')[0] : ''
+                        newUntil ? new Date(newUntil).toISOString().split('T')[0] : ''
                       }
                       onChange={(e) => setNewUntil(new Date(e.target.value))}
                       className="border rounded px-4 py-2 w-full"

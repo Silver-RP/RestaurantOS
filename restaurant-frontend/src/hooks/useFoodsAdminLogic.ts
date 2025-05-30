@@ -237,8 +237,14 @@ export function useFoodLogic({ initialData, categories, onSubmit }: UseFoodFormP
     formData.append('category', categoryId);
     formData.append('status', status);
     formData.append('isDishNew', String(isDishNew));
-    if (isDishNew && newUntil) formData.append('newUntil', newUntil.toISOString());
-    if (discountPrice > 0 && discountUntil) formData.append('discountUntil', discountUntil.toISOString());
+    if (isDishNew && newUntil) {
+      const date = new Date(newUntil); 
+      formData.append('newUntil', date.toISOString());
+    }
+    
+    if (discountPrice > 0 && discountUntil) {
+      formData.append('discountUntil', new Date(discountUntil).toISOString());
+    }
     if (isAlcoholCategory) {
       formData.append('origin', origin.trim());
       formData.append('alcohol_type', alcoholType.trim());

@@ -17,9 +17,14 @@ import CreateUserPage from "@/components/pages/admin/user/CreateUserPage";
 import SearchResults from "@/components/pages/admin/food/SearchResults";
 import TrashPage from "@/components/pages/admin/food/Trash";
 import OrderPage from "@components/pages/admin/order";
+import BannerPage from '@/components/pages/admin/banner';
+import CreateBannerPage from '@/components/pages/admin/banner/Create';
+import EditBannerPage from '@/components/pages/admin/banner/Edit';
 
 import EditUserPage from '@/components/pages/admin/user/EditUserPage';
 import ProtectedRoute from '@/utils/ProtectedRoute';
+import ChatAdminPanel from '@/components/common/ChatAdminPanel';
+
 
 const adminRoutes = [
   {
@@ -43,7 +48,12 @@ const adminRoutes = [
       { path: "users", element: <ProtectedRoute><UserIndexPage /></ProtectedRoute> },
       { path: "users/create", element: <CreateUserPage /> },
       { path: "users/edit/:id", element: <EditUserPage /> },
+      { path: "banners", element: <BannerPage /> },
+      { path: "banners/create", element: <CreateBannerPage /> },
+      { path: "banners/edit/:id", element: <EditBannerPage /> }, 
+      { path: "/admin/chat",  element: <ChatAdminPanel /> },
       { path: "*", element: <Navigate to="/admin" /> },
+      
     ],
   },
 ];

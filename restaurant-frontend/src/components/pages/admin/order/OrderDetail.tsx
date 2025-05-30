@@ -149,7 +149,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
               <div>
                 <p className="text-gray-600">Tên khách hàng</p>
                 <p className="font-medium">
-                  {order.user_id?.username ||
+                  {order.receiver ||
                     order.address_id?.full_name ||
                     'Khách vãng lai'}
                 </p>
@@ -157,7 +157,9 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
               <div>
                 <p className="text-gray-600">Số điện thoại</p>
                 <p className="font-medium">
-                  {order.address_id?.phone || 'Chưa có số điện thoại'}
+                  {order.address_id?.phone ||
+                    order.receiver_phone ||
+                    'Chưa có số điện thoại'}
                 </p>
               </div>
             </div>
@@ -257,9 +259,11 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
                   : order.payment_method}
               </p>
               <p
-                className={`text-sm ${order.is_paid ? 'text-green-600' : 'text-red-600'}`}
+                className={`text-sm ${order.payment_status === 'PAID' ? 'text-green-600' : 'text-red-600'}`}
               >
-                {order.is_paid ? 'Đã thanh toán' : 'Chưa thanh toán'}
+                {order.payment_status === 'PAID'
+                  ? 'Đã thanh toán'
+                  : 'Chưa thanh toán'}
               </p>
             </div>
             <div>
@@ -269,7 +273,8 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
                   ? 'Giao hàng'
                   : 'Nhận tại cửa hàng'}
               </p>
-              {order.delivery_time_type && (
+              {/* kiểm tra thêm điều kiện là order.delivery_type === DELIVERY thì mới show Loại đơn hàng  */}
+              {order.delivery_type === 'DELIVERY' && order.delivery_time_type && (
                 <div className="mt-2">
                   <p className="text-gray-600">Loại đơn hàng</p>
                   <p className="font-medium">

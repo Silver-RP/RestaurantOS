@@ -13,4 +13,14 @@ export const createFaqSchema = z.object({
     .max(1000, 'Câu trả lời không được quá 1000 ký tự'),
   category: z.string().trim().max(100, 'Danh mục không được quá 100 ký tự').optional(),
 });
+
+export const updateFaqSchema = createFaqSchema
+  .extend({
+    is_active: z.preprocess((val) => {
+      if (typeof val === 'string') return val === 'true';
+      return val;
+    }, z.boolean().optional()),
+  })
+  .partial();
+
 export type CreateFaqFormValues = z.infer<typeof createFaqSchema>;

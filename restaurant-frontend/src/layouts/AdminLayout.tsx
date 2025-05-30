@@ -10,15 +10,21 @@ import {
   FaAngleLeft,
   FaAngleRight,
   FaUser,
-  FaCartPlus
+  FaCartPlus,
+  FaImage,
+
 } from 'react-icons/fa';
 import { GiHotMeal } from 'react-icons/gi';
 import classNames from 'classnames';
 import { useAdminSidebar } from '../contexts/AdminSidebarContext';
 import AdminHeader from '../components/layout/AdminHeader';
+import { ChatIconWithBadge } from '@/components/common/ChatIconWithBadge';
 
 const AdminLayout: React.FC = () => {
   const { isSidebarOpen, toggleSidebarExtend } = useAdminSidebar();
+  const unreadCount = Number(
+    localStorage.getItem('admin-unread-chat-count') || 0,
+  ); // 👈 thêm ở đây
 
   return (
     <div className="flex min-h-screen bg-adminbg text-admintext">
@@ -75,10 +81,17 @@ const AdminLayout: React.FC = () => {
               label="Bài viết"
               expanded={isSidebarOpen}
             />
-              <NavItem
+            <NavItem
               href="/admin/users"
               icon={<FaUser />}
               label="Người dùng"
+              expanded={isSidebarOpen}
+            />
+
+            <NavItem
+              href="/admin/banners"
+              icon={<FaImage />}
+              label="Banner"
               expanded={isSidebarOpen}
             />
             <NavItem
@@ -87,11 +100,17 @@ const AdminLayout: React.FC = () => {
               label="Giới thiệu"
               expanded={isSidebarOpen}
             />
-            
+
             <NavItem
               href="/admin/contact"
               icon={<FaEnvelope />}
               label="Liên hệ"
+              expanded={isSidebarOpen}
+            />
+            <NavItem
+              href="/admin/chat"
+              icon={<ChatIconWithBadge count={unreadCount} />}
+              label="Trò chuyện"
               expanded={isSidebarOpen}
             />
           </nav>
@@ -111,7 +130,7 @@ const AdminLayout: React.FC = () => {
       {/* Main Content Area */}
       <div
         className={classNames(
-          'flex-1 flex flex-col transition-all duration-300',
+          'flex-1 flex flex-col transition-all duration-300 bg-white',
           isSidebarOpen ? 'ml-64' : 'ml-16',
         )}
       >
@@ -119,7 +138,7 @@ const AdminLayout: React.FC = () => {
         <AdminHeader />
 
         {/* Page content */}
-        <main className="flex-1 p-6 transition-all duration-300">
+        <main className="flex-1 bg-white p-6 transition-all duration-300">
           <div className="w-full h-full overflow-auto">
             <Outlet />
           </div>

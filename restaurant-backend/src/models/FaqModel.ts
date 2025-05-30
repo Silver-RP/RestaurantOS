@@ -6,6 +6,7 @@ export interface IFAQ extends Document {
   category: string;
   is_active: boolean;
   updated_at: Date;
+  normalized_question: string;
 }
 
 const FAQSchema: Schema = new Schema(

@@ -1,3 +1,4 @@
+// ✅ Chatbox.tsx – Thêm hiệu ứng bot gõ và trả lời tự động
 import React, { useEffect, useState } from 'react';
 import ChatToggleButton from './ChatToggleButton';
 import ChatWindow from './ChatWindow';
@@ -21,26 +22,41 @@ const Chatbox: React.FC = () => {
   };
 
   const handleFAQClick = (question: string) => {
-    setMessages((prev) => [...prev, { sender: 'user', text: question }]);
+    if (question === 'typing-response') {
+      setMessages((prev) => [
+        ...prev,
+        { sender: 'bot', text: 'Đang soạn trả lời...' },
+      ]);
+      setTimeout(() => {
+        setMessages((prev) => [
+          ...prev.slice(0, -1),
+          { sender: 'bot', text: 'Đây là thông tin bạn cần...' },
+        ]);
+      }, 1000);
+      return;
+    }
+
+    // Hiển thị phần nhập tin nhắn nếu chưa bật
+    if (!showInput) setShowInput(true);
+
+    // Gửi câu hỏi từ FAQ lên UI
+    setMessages((prev) => [
+      ...prev,
+      { sender: 'user', text: question },
+    ]);
+
+    // Bot trả lời sau một chút delay
     setTimeout(() => {
       setMessages((prev) => [
         ...prev,
         { sender: 'bot', text: 'Đây là thông tin bạn cần...' },
       ]);
-      if (!isOpen) setUnreadCount((prev) => prev + 1);
     }, 500);
   };
 
   const handleSend = () => {
     if (!input.trim()) return;
     setMessages((prev) => [...prev, { sender: 'user', text: input }]);
-    setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        { sender: 'bot', text: 'Cảm ơn bạn, chúng tôi sẽ phản hồi sớm!' },
-      ]);
-      if (!isOpen) setUnreadCount((prev) => prev + 1);
-    }, 500);
     setInput('');
   };
 

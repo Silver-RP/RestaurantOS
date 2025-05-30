@@ -1,45 +1,39 @@
-import { Address } from "./Address.type";
+import { Address } from './Address.type';
 
-export type DeliveryStatus = 
-  | 'PENDING' 
-  | 'PENDING_PICKUP' 
-  | 'PICKED_UP' 
-  | 'IN_TRANSIT' 
-  | 'DELIVERED' 
+export type DeliveryStatus =
+  | 'PENDING'
+  | 'PENDING_PICKUP'
+  | 'PICKED_UP'
+  | 'IN_TRANSIT'
+  | 'DELIVERED'
   | 'FAILED'
   | 'CANCELLED'
   | 'DELIVERY_FAILED'
   | 'RETURN_REQUESTED'
   | 'RETURNED';
 
-export type OrderStatus = 
-  | 'PENDING' 
-  | 'CONFIRMED' 
-  | 'PREPARING' 
-  | 'READY' 
-  | 'COMPLETED' 
-  | 'CANCELLED' 
+export type OrderStatus =
+  | 'PENDING'
+  | 'CONFIRMED'
+  | 'PREPARING'
+  | 'READY'
+  | 'COMPLETED'
+  | 'CANCELLED'
   | 'RETURNED'
   | 'SHIPPING';
 
-export type PaymentMethod = 
-  | 'CASH' 
-  | 'CREDIT_CARD' 
-  | 'BANK_TRANSFER' 
-  | 'MOMO' 
+export type PaymentMethod =
+  | 'CASH'
+  | 'CREDIT_CARD'
+  | 'BANK_TRANSFER'
+  | 'MOMO'
   | 'ZALOPAY';
 
-export type DeliveryType = 
-  | 'DELIVERY' 
-  | 'PICKUP';
+export type DeliveryType = 'DELIVERY' | 'PICKUP';
 
-export type OrderType = 
-  | 'ONLINE' 
-  | 'IN_STORE';
+export type OrderType = 'ONLINE' | 'IN_STORE';
 
-export type DeliveryTimeType = 
-  | 'ASAP' 
-  | 'SCHEDULED';
+export type DeliveryTimeType = 'ASAP' | 'SCHEDULED';
 
 export interface Dish {
   _id: string;
@@ -86,40 +80,74 @@ export interface OrderItem {
   __v: number;
 }
 
-export interface Order {
+interface User {
   _id: string;
-  user_id: string;
+  username: string;
+  email: string;
+  phone: string;
+  isEmailVerified: boolean;
+  roles: string[];
+  otpVerifiedForChangePassword: boolean;
+  otpSentCount: number;
+  lastOtpSentAt: string;
+  createdAt: string;
+  updatedAt: string;
+  birthday: string;
+  gender: string;
+  status: string;
+}
+
+interface Order {
+  _id: string;
+  user_id: User; // Sửa từ string thành User
+  address_id: {
+    _id: string;
+    user_id: string;
+    full_name: string;
+    phone: string;
+    province: string;
+    district: string;
+    ward: string;
+    street_address: string;
+    address_type: string;
+    is_default: boolean;
+    createdAt: string;
+    updatedAt: string;
+    id: string;
+  } | null; // Cho phép null
   cashier_order_id: string | null;
-  address_id: Address | null;
-  payment_method: PaymentMethod | string;
-  delivery_type: DeliveryType | string;
-  delivery_status: DeliveryStatus | string;
-  status: OrderStatus | string;
+  payment_method: string;
+  delivery_type: string;
+  delivery_status: string;
+  status: string;
   shipping_fee: number;
   vat_amount: number;
   items_price: number;
   total_price: number;
   total_quantity: number;
-  is_paid: boolean;
+  payment_status?: 'UNPAID' | 'PAID' | 'FAILED' | 'REFUNDED';
   paid_at: string | null;
+  payment_status?: string; // Thêm tùy chọn
   note: string | null;
+  receiver: string | null;
+  receiver_phone: string | null;
   cancelled_reason: string | null;
   cancelled_at: string | null;
   returned_at: string | null;
   delivered_at: string | null;
-  order_type: OrderType;
+  order_type: string;
+  delivery_time_type: string;
+  scheduled_time: string | null;
   createdAt: string;
   updatedAt: string;
+  order_items?: OrderItem[] | undefined;
   __v: number;
-  delivery_time_type: DeliveryTimeType;
-  scheduled_time: string | null;
-  order_items?: OrderItem[];
 }
 
 export interface OrdersResponse {
   message: string;
   orders: Order[];
-  totalItems: number; 
+  total: number;
   currentPage: number;
   totalPages: number;
 }
@@ -156,11 +184,13 @@ export interface OrderQueryParams {
   page?: number;
   limit?: number;
   status?: OrderStatus;
-  delivery_status?: DeliveryStatus | DeliveryStatus[]; 
+  delivery_status?: DeliveryStatus | DeliveryStatus[];
   startDate?: string;
   endDate?: string;
+  sortBy?: string;
   sort?: 'createdAt' | 'total_price' | 'updatedAt';
-  order?: 'asc' | 'desc';
+  sortOrder?: 'asc' | 'desc';
+  filters: { [key: string]: string } | null;
 }
 
 export interface PlaceOrderRequest {
@@ -179,9 +209,72 @@ export interface PlaceOrderRequest {
   address_id?: string;
   note?: string;
   scheduled_time?: string;
+  receiver?: string;
+  receiver_phone?: string;
   items: Array<{
     dish_id: string;
     quantity: number;
     note?: string;
   }>;
+}
+
+export interface AllOrder {
+  _id: string;
+  user_id: {
+    _id: string;
+    username: string;
+    email: string;
+    phone: string;
+    isEmailVerified: boolean;
+    roles: string[];
+    otpVerifiedForChangePassword: boolean;
+    otpSentCount: number;
+    lastOtpSentAt: string;
+    createdAt: string;
+    updatedAt: string;
+    birthday: string;
+    gender: string;
+    status: string;
+  };
+  address_id: {
+    _id: string;
+    user_id: string;
+    full_name: string;
+    phone: string;
+    province: string;
+    district: string;
+    ward: string;
+    street_address: string;
+    address_type: string;
+    is_default: boolean;
+    createdAt: string;
+    updatedAt: string;
+    id: string;
+  } | null; // Cho phép null
+  cashier_order_id: string | null;
+  payment_method: string;
+  delivery_type: string;
+  delivery_status: string;
+  status: string;
+  shipping_fee: number;
+  vat_amount: number;
+  items_price: number;
+  total_price: number;
+  total_quantity: number;
+  is_paid: boolean;
+  paid_at: string | null;
+  payment_status?: string; // Thêm trường payment_status (tùy chọn)
+  note: string | null;
+  receiver: string | null;
+  receiver_phone: string | null;
+  cancelled_reason: string | null;
+  cancelled_at: string | null;
+  returned_at: string | null;
+  delivered_at: string | null;
+  order_type: string;
+  delivery_time_type: string;
+  scheduled_time: string | null;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
 }

@@ -1,4 +1,5 @@
 import FAQModel, { IFAQ } from '../models/FaqModel';
+import { CreateFaqDto } from '../types/faq.types';
 class FaqService {
   async getAllFaqs() {
     try {
@@ -12,7 +13,7 @@ class FaqService {
       }
     }
   }
-  async createFaq(data: { question: string; answer: string; category?: string }): Promise<IFAQ> {
+  async createFaq(data: CreateFaqDto): Promise<IFAQ> {
     const normalizedQuestion = data.question.trim().toLowerCase();
 
     const exists = await FAQModel.findOne({
@@ -32,6 +33,36 @@ class FaqService {
     });
 
     return await faq.save();
+  }
+  async getFaqById(id: string) {
+    return await FAQModel.findById(id);
+  }
+  async updateFaq(id: string, data: Partial<CreateFaqDto> & { is_active?: boolean }) {
+    const faq = await FAQModel.findById(id);
+    if (!faq) {
+      throw new Error('FAQ not found');
+    }
+
+    if (data.question) {
+      faq.question = data.question.trim();
+      faq.normalized_question = faq.question.toLowerCase();
+    }
+    if (data.answer) {
+      faq.answer = data.answer.trim();
+    }
+    if (data.category !== undefined) {
+      faq.category = data.category?.trim() || '';
+    }
+    if (data.is_active !== undefined) {
+      faq.is_active = data.is_active;
+    }
+
+    faq.updated_at = new Date();
+
+    return await faq.save();
+  }
+  async deleteFaq(id: string) {
+    return await FAQModel.findByIdAndDelete(id);
   }
 }
 export default new FaqService();

@@ -1,11 +1,12 @@
 import mongoose from 'mongoose';
 import OrderValidator from '../validators/orderValidator';
 import { Address } from '../models/AddressModel';
-import { Order } from '../models/OrderModel';
+import { Order, IOrder } from '../models/OrderModel';
 import { OrderDetail } from '../models/OrderDetailModel';
 import Cart from '../models/CartModel';
 import { Dish } from '../models/DishModel';
 import SearchService from './SearchService';
+import { createVNPayPaymentUrl } from '../services/payments/VnPayService';
 
 enum DeliveryStatus {
   PENDING = 'PENDING',
@@ -16,6 +17,7 @@ enum DeliveryStatus {
   DELIVERY_FAILED = 'DELIVERY_FAILED',
   RETURN_REQUESTED = 'RETURN_REQUESTED',
   RETURNED = 'RETURNED',
+  CANCEL_REQUESTED = 'CANCEL_REQUESTED', 
   CANCELLED = 'CANCELLED',
 }
 
@@ -24,12 +26,18 @@ enum OrderStatus {
   PREPARING = 'PREPARING',
   SHIPPING = 'SHIPPING',
   COMPLETED = 'COMPLETED',
+  CANCEL_REQUESTED = 'CANCEL_REQUESTED',
   CANCELLED = 'CANCELLED',
+  RETURN_REQUESTED = 'RETURN_REQUESTED',
   RETURNED = 'RETURNED',
 }
-
 class OrderService {
-  async handleAddress(userId: string, address_id: string | null, address: any, session: any) {
+  async handleAddress(userId: string, address_id: string | null, address: any, session: any, delivery_type: string) {
+    // Nếu là pickup, không cần địa chỉ
+    if (delivery_type === 'PICKUP') {
+      return null;
+    }
+
     if (address_id) {
       await OrderValidator.validateAddress(address_id);
       return address_id;
@@ -43,7 +51,7 @@ class OrderService {
 
   async createOrder(
     userId: string,
-    finalAddressId: string,
+    finalAddressId: string | undefined | null,
     payment_method: string,
     delivery_type: string,
     totalAmount: number,
@@ -51,6 +59,8 @@ class OrderService {
     delivery_time_type: string,
     total_quantity: number,
     note: string,
+    receiver: string | null,
+    receiver_phone: string | null,
     scheduled_time: Date | null,
     session: any,
   ) {
@@ -73,6 +83,8 @@ class OrderService {
       order_type,
       delivery_time_type,
       note,
+      receiver,
+      receiver_phone,
       scheduled_time,
     });
 
@@ -111,6 +123,67 @@ class OrderService {
     );
   }
 
+  async handlePostPaymentLogic(order: IOrder, clientIp: string) {
+    const payment_method = order.payment_method;
+    let redirectUrl = null;
+    let bankingInfo = null;
+
+    switch (payment_method) {
+      case 'BANKING':
+        bankingInfo = {
+          bank_name: 'Vietcombank',
+          account_number: '0123456789',
+          account_name: 'Công ty ABC',
+          qr_code: 'https://example.com/qr.png',
+          transfer_note: `ORDER-${order._id}`
+        };
+        break;
+
+      // case 'MOMO':
+      //   redirectUrl = await momoService.createPaymentUrl(order);
+      //   break;
+
+      case 'VNPAY':
+        redirectUrl = createVNPayPaymentUrl(order, clientIp);
+        break;
+
+      // case 'CREDIT_CARD':
+      //   redirectUrl = await creditCardService.createPaymentUrl(order);
+      //   break;
+    }
+
+    return {
+      type: payment_method,
+      redirectUrl,
+      bankingInfo
+    };
+  }
+
+  async markOrderPaid(orderId: string, amount: number) {
+    const order = await Order.findById(orderId);
+    if (!order) throw new Error('Order not found');
+
+    if (order.total_price !== amount) {
+      throw new Error('Paid amount does not match order total');
+    }
+
+    order.payment_status = 'PAID';
+    order.paid_at = new Date();
+    await order.save();
+
+    return order;
+  }
+
+  async markOrderFailed(orderId: string) {
+    const order = await Order.findById(orderId);
+    if (!order) throw new Error('Order not found');
+  
+    order.payment_status = 'FAILED'; 
+    await order.save();
+  
+    return order;
+  }
+
   async placeOrder(input: any) {
     const {
       userId,
@@ -123,12 +196,20 @@ class OrderService {
       delivery_time_type,
       scheduled_time,
       note,
+      receiver,
+      receiver_phone,
     } = input;
     const session = await mongoose.startSession();
     session.startTransaction();
 
     try {
-      const finalAddressId = await this.handleAddress(userId, address_id, address, session);
+      const finalAddressId = await this.handleAddress(
+        userId,
+        address_id,
+        address,
+        session,
+        delivery_type
+      );
 
       const { orderItems, totalAmount } = await OrderValidator.validateCartAndItems(
         userId,
@@ -140,7 +221,7 @@ class OrderService {
 
       const savedOrder = await this.createOrder(
         userId,
-        finalAddressId,
+        finalAddressId || '',
         payment_method,
         delivery_type,
         totalAmount,
@@ -148,6 +229,8 @@ class OrderService {
         delivery_time_type,
         total_quantity,
         note,
+        receiver,
+        receiver_phone,
         scheduled_time,
         session,
       );
@@ -156,7 +239,6 @@ class OrderService {
         throw { statusCode: 500, message: 'Order placement failed' };
       }
 
-      // Save order details
       const orderDetailPromises = orderItems.map((item) => {
         const orderDetail = new OrderDetail({
           order_id: savedOrder._id,
@@ -172,9 +254,7 @@ class OrderService {
 
       await Promise.all(orderDetailPromises);
 
-      // Update dish counts
       await this.updateDishCounts(orderItems, session);
-
       const orderedDishIds = items.map((item: { dish_id: any }) => item.dish_id);
       await this.updateCart(userId, orderedDishIds, session);
 
@@ -191,6 +271,7 @@ class OrderService {
       };
     }
   }
+
   async getAllOrders(options: {
     page: number;
     limit: number;
@@ -208,10 +289,10 @@ class OrderService {
         sortOrder,
         populate: ['user_id', 'address_id'],
         searchFields: [
-          'user_id.username',
-          'user_id.phone',
           'address_id.full_name',
-          'address_id.phone',
+          'address_id.phone', 
+          'receiver',
+          'receiver_phone',
         ],
         searchTerm: filters.keyword || '',
         filters: {
@@ -368,13 +449,13 @@ class OrderService {
         | 'DELIVERY_FAILED'
         | 'RETURN_REQUESTED'
         | 'RETURNED'
+        | 'CANCEL_REQUESTED'
         | 'CANCELLED';
 
       const mappedStatus = this.mapDeliveryStatusToOrderStatus(
         order.delivery_status as DeliveryStatus,
         order.order_type,
-      );
-      order.status = mappedStatus;
+      );      order.status = mappedStatus.toString() as any;
 
       await order.save();
 
@@ -387,7 +468,6 @@ class OrderService {
     }
   }
 
-  
   mapDeliveryStatusToOrderStatus(
     deliveryStatus: DeliveryStatus,
     orderType: 'DINE_IN' | 'ONLINE',
@@ -406,6 +486,8 @@ class OrderService {
         case DeliveryStatus.RETURN_REQUESTED:
         case DeliveryStatus.RETURNED:
           return OrderStatus.RETURNED;
+        case DeliveryStatus.CANCEL_REQUESTED:
+          return OrderStatus.CANCEL_REQUESTED;
         case DeliveryStatus.CANCELLED:
           return OrderStatus.CANCELLED;
         default:
@@ -427,6 +509,8 @@ class OrderService {
         case DeliveryStatus.RETURN_REQUESTED:
         case DeliveryStatus.RETURNED:
           return OrderStatus.RETURNED;
+        case DeliveryStatus.CANCEL_REQUESTED:
+          return OrderStatus.CANCEL_REQUESTED;
         case DeliveryStatus.CANCELLED:
           return OrderStatus.CANCELLED;
         default:
@@ -444,7 +528,7 @@ class OrderService {
         throw { statusCode: 404, message: 'Order not found' };
       }
 
-      if (order.status !== 'PENDING' || order.delivery_status !== 'PENDING') {
+      if (order.status !== 'PENDING' || order.delivery_status !== 'PENDING_PICKUP') {
         throw {
           statusCode: 400,
           message: 'Order can only be cancelled when status and delivery_status are PENDING',
@@ -499,10 +583,8 @@ class OrderService {
           statusCode: 400,
           message: 'Return request must be made within 30 minutes of delivery',
         };
-      }
-
-      order.status = 'RETURN_REQUESTED';
-      order.delivery_status = 'RETURN_REQUESTED';
+      }      order.status = OrderStatus.RETURN_REQUESTED.toString() as any;
+      order.delivery_status = DeliveryStatus.RETURN_REQUESTED.toString() as any;
       order.returned_at = new Date();
       order.cancelled_reason = reason;
 
@@ -527,8 +609,7 @@ class OrderService {
       if (order.status !== 'PREPARING' || order.delivery_status !== 'PENDING_PICKUP') {
         throw {
           statusCode: 400,
-          message:
-            'Cancel request chỉ được phép khi status = PREPARING và delivery_status = PENDING_PICKUP',
+          message: 'Cancel request chỉ được phép khi status = PREPARING và delivery_status = PENDING_PICKUP',
         };
       }
 

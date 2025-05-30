@@ -123,7 +123,7 @@ class SearchService {
       },
       { $unwind: '$user' },
 
-      // Lookup để join với bảng addresses
+      // Lookup để join với bảng addresses, nhưng không bắt buộc phải có địa chỉ
       {
         $lookup: {
           from: 'addresses',
@@ -132,7 +132,11 @@ class SearchService {
           as: 'address',
         },
       },
-      { $unwind: '$address' },
+      {
+        $addFields: {
+          address: { $arrayElemAt: ['$address', 0] },
+        },
+      },
     ];
 
     // Xây dựng match conditions
@@ -145,6 +149,8 @@ class SearchService {
         { 'user.phone': { $regex: searchTerm, $options: 'i' } },
         { 'address.full_name': { $regex: searchTerm, $options: 'i' } },
         { 'address.phone': { $regex: searchTerm, $options: 'i' } },
+        { 'receiver' : { $regex: searchTerm, $options: 'i' } },
+        { 'receiver_phone' : { $regex: searchTerm, $options: 'i' } },
       ];
     }
 
@@ -219,6 +225,8 @@ class SearchService {
         order_type: 1,
         delivery_time_type: 1,
         note: 1,
+        receiver: 1,
+        receiver_phone: 1,
         scheduled_time: 1,
         createdAt: 1,
         updatedAt: 1,
@@ -226,7 +234,7 @@ class SearchService {
         cancelled_reason: 1,
         delivered_at: 1,
         returned_at: 1,
-        is_paid: 1,
+        payment_status: 1,
         paid_at: 1,
       },
     });

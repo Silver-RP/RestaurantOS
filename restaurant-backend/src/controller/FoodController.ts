@@ -375,10 +375,12 @@ class FoodController {
       return res
         .status(200)
         .json({ message: 'Dish permanently deleted successfully', data: deletedDish });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error permanently deleting dish:', error);
-      return res.status(500).json({ message: 'Internal server error' });
+      return res.status(500).json({ message: error.message || 'Lỗi khi xoá món ăn vĩnh viễn' });
     }
   }
+
+  
 }
 export default new FoodController();
