@@ -15,7 +15,11 @@ interface Props {
   initialDeliveryTime?: DeliveryTime;
   deliveryMethod?: 'delivery' | 'pickup';
   onDeliveryMethodChange?: (method: 'delivery' | 'pickup') => void;
+  receiver?: string;
+  receiverPhone?: string; 
+  onReceiverChange?: (name: string, phone: string) => void;
   refetch: () => void;
+  onValidationRef?: (validateFn: () => boolean) => void;
 }
 
 const ShippingAddressSection = ({
@@ -27,13 +31,22 @@ const ShippingAddressSection = ({
   initialDeliveryTime = { type: 'now' },
   deliveryMethod = 'delivery',
   onDeliveryMethodChange = () => {},
+  receiver = '',
+  receiverPhone = '',
+  onReceiverChange = () => {},
   refetch,
+  onValidationRef = () => {},
 }: Props) => {
   const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isDeliveryTimeModalOpen, setIsDeliveryTimeModalOpen] = useState(false);
-  const [deliveryTime, setDeliveryTime] =
-    useState<DeliveryTime>(initialDeliveryTime);
+  const [deliveryTime, setDeliveryTime] = useState<DeliveryTime>(initialDeliveryTime);
+  const [localReceiver, setLocalReceiver] = useState(receiver);
+  const [localReceiverPhone, setLocalReceiverPhone] = useState(receiverPhone);
+  
+  // Validation states
+  const [receiverError, setReceiverError] = useState(false);
+  const [phoneError, setPhoneError] = useState(false);
 
   const selected = addresses.find((addr) => addr.id === String(selectedId));
 
@@ -46,6 +59,84 @@ const ShippingAddressSection = ({
       }
     }
   }, [addresses, selectedId]);
+
+  // Update local state when props change
+  useEffect(() => {
+    setLocalReceiver(receiver);
+    setLocalReceiverPhone(receiverPhone);
+  }, [receiver, receiverPhone]);
+
+  // Validation functions
+  const validatePhone = (phone: string): boolean => {
+    // Vietnamese phone number regex
+    const phoneRegex = /^(0|\+84)[3|5|7|8|9][0-9]{8}$/;
+    return phoneRegex.test(phone.replace(/\s/g, ''));
+  };
+
+  const validateReceiver = (name: string): boolean => {
+    return name.trim().length > 0;
+  };
+
+  const handleReceiverChange = (value: string) => {
+    setLocalReceiver(value);
+    
+    // Validate on change
+    if (receiverError && value.trim().length > 0) {
+      setReceiverError(false);
+    }
+    
+    onReceiverChange(value, localReceiverPhone);
+  };
+
+  const handlePhoneChange = (value: string) => {
+    setLocalReceiverPhone(value);
+    
+    // Validate on change
+    if (phoneError && validatePhone(value)) {
+      setPhoneError(false);
+    }
+    
+    onReceiverChange(localReceiver, value);
+  };
+
+  const handleReceiverBlur = () => {
+    if (!validateReceiver(localReceiver)) {
+      setReceiverError(true);
+    }
+  };
+
+  const handlePhoneBlur = () => {
+    if (localReceiverPhone.trim() === '') {
+      setPhoneError(true);
+    } else if (!validatePhone(localReceiverPhone)) {
+      setPhoneError(true);
+    }
+  };
+
+  // Public validation method that parent can call
+  const validatePickupInfo = (): boolean => {
+    let isValid = true;
+    
+    if (!validateReceiver(localReceiver)) {
+      setReceiverError(true);
+      isValid = false;
+    }
+    
+    if (localReceiverPhone.trim() === '') {
+      setPhoneError(true);
+      isValid = false;
+    } else if (!validatePhone(localReceiverPhone)) {
+      setPhoneError(true);
+      isValid = false;
+    }
+    
+    return isValid;
+  };
+
+  // Expose validation function to parent via ref
+  React.useEffect(() => {
+    onValidationRef(validatePickupInfo);
+  }, [localReceiver, localReceiverPhone, onValidationRef]);
 
   const getFormattedAddress = (address: Address) => {
     return [
@@ -199,10 +290,56 @@ const ShippingAddressSection = ({
         </>
       ) : (
         <>
-          <h3 className="font-semibold text-white mb-2">Nhà Hàng Nhận Hàng</h3>
+          <h3 className="font-semibold text-white mb-2">Địa chỉ nhận hàng</h3>
           <div className="text-white text-sm">
             Nhà Hàng BeefBeef – 161 Quốc Hương, Thảo Điền, Quận 2 (055 1234
             5678)
+          </div>
+          <div className="mt-4">
+            <label className="block mb-1 text-sm text-white/70">
+              Tên người nhận hàng <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              placeholder="Nhập tên người nhận"
+              value={localReceiver}
+              onChange={(e) => handleReceiverChange(e.target.value)}
+              onBlur={handleReceiverBlur}
+              className={`w-full p-2 border rounded bg-transparent text-white focus:outline-none ${
+                receiverError 
+                  ? 'border-red-500 focus:border-red-500' 
+                  : 'border-white/20 focus:border-blue-500'
+              }`}
+            />
+            {receiverError && (
+              <p className="text-red-500 text-xs mt-1">
+                Vui lòng nhập tên người nhận hàng
+              </p>
+            )}
+            
+            <label className="block mt-3 mb-1 text-sm text-white/70">
+              Số điện thoại người nhận hàng <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              placeholder="Nhập số điện thoại"
+              value={localReceiverPhone}
+              onChange={(e) => handlePhoneChange(e.target.value)}
+              onBlur={handlePhoneBlur}
+              className={`w-full p-2 border rounded bg-transparent text-white focus:outline-none ${
+                phoneError 
+                  ? 'border-red-500 focus:border-red-500' 
+                  : 'border-white/20 focus:border-blue-500'
+              }`}
+            />
+            {phoneError && (
+              <p className="text-red-500 text-xs mt-1">
+                {localReceiverPhone.trim() === '' 
+                  ? 'Vui lòng nhập số điện thoại người nhận hàng'
+                  : 'Số điện thoại không đúng định dạng'
+                }
+              </p>
+            )}
           </div>
         </>
       )}

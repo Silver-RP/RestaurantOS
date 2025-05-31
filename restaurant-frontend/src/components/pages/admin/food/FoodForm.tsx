@@ -41,6 +41,10 @@ const FoodForm: React.FC<FoodFormProps> = ({
     setIsDishNew,
     newUntil,
     setNewUntil,
+    isRecommend,
+    setIsRecommend,
+    recommendUntil,
+    setRecommendUntil,
     description,
     setDescription,
     shortDescription,
@@ -220,7 +224,7 @@ const FoodForm: React.FC<FoodFormProps> = ({
                     type="date"
                     value={
                       discountUntil
-                        ? discountUntil.toISOString().split('T')[0]
+                        ? new Date(discountUntil).toISOString().split('T')[0]
                         : ''
                     }
                     onChange={(e) => setDiscountUntil(new Date(e.target.value))}
@@ -258,9 +262,47 @@ const FoodForm: React.FC<FoodFormProps> = ({
                     <input
                       type="date"
                       value={
-                        newUntil ? newUntil.toISOString().split('T')[0] : ''
+                        newUntil ? new Date(newUntil).toISOString().split('T')[0] : ''
                       }
                       onChange={(e) => setNewUntil(new Date(e.target.value))}
+                      className="border rounded px-4 py-2 w-full"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="md:col-span-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="flex items-center gap-2 mb-2">
+                <input
+                  id="isRecommend"
+                  type="checkbox"
+                  checked={isRecommend}
+                  onChange={(e) => setIsRecommend(e.target.checked)}
+                  className="accent-adminprimary w-4 h-4"
+                />
+                <label
+                  htmlFor="isRecommend"
+                  className="text-sm font-medium text-admintext"
+                >
+                  Đánh dấu là món ăn được đề xuất
+                </label>
+              </div>
+
+              {isRecommend && (
+                <div className="grid grid-cols-1 gap-6">
+                  <div>
+                    <label className="block mb-1 text-sm font-medium text-admintext">
+                      Giữ trạng thái "được đề xuất" đến ngày
+                    </label>
+                    <input
+                      type="date"
+                      value={
+                        recommendUntil ? new Date(recommendUntil).toISOString().split('T')[0] : ''
+                      }
+                      onChange={(e) => setRecommendUntil(new Date(e.target.value))}
                       className="border rounded px-4 py-2 w-full"
                     />
                   </div>

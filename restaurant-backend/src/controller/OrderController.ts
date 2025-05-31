@@ -3,7 +3,6 @@ import OrderService from '../services/OrderService';
 import { IUser } from '../models/UserModel';
 import { Types } from 'mongoose';
 import OrderValidate from '../validators/orderValidator';
-import { Order } from '../models/OrderModel';
 
 class OrderController {
   async placeOrder(req: Request, res: Response): Promise<any> {
@@ -28,6 +27,9 @@ class OrderController {
         delivery_time_type,
         scheduled_time,
         note,
+        shipping_fee,
+        receiver,
+        receiver_phone,
       } = req.body;
 
       const order = await OrderService.placeOrder({
@@ -41,11 +43,18 @@ class OrderController {
         delivery_time_type,
         scheduled_time,
         note,
+        shipping_fee,
+        receiver,
+        receiver_phone,
       });
+
+      const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
+      const postPayment = await OrderService.handlePostPaymentLogic(order, clientIp.toString());
 
       return res.status(201).json({
         message: 'Order placed successfully',
         order,
+        postPayment,
       });
     } catch (error: any) {
       console.error('Error placing order:', error.message);
@@ -99,8 +108,11 @@ class OrderController {
         : null;
       const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
       const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 5;
+      const cleanDeliveryStatuses = deliveryStatuses?.filter(
+        (status): status is string => typeof status === 'string'
+      ) ?? null;
 
-      const result = await OrderService.getUserOrders(userId, deliveryStatuses, page, limit);
+      const result = await OrderService.getUserOrders(userId, cleanDeliveryStatuses, page, limit);
 
       return res.status(200).json({
         message: 'Orders retrieved successfully',
@@ -138,6 +150,8 @@ class OrderController {
 
       // Validate status
       const validStatuses = [
+        'ORDER_PLACED',
+        'ORDER_CONFIRMED',
         'PENDING',
         'PENDING_PICKUP',
         'PICKED_UP',
@@ -145,6 +159,9 @@ class OrderController {
         'DELIVERED',
         'DELIVERY_FAILED',
         'RETURN_REQUESTED',
+        'CANCEL_RETURN_REQUESTED',
+        'RETURN_APPROVED',
+        'RETURN_REJECTED',
         'RETURNED',
         'CANCEL_REQUESTED',
         'CANCELLED',

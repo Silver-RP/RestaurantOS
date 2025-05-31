@@ -1,4 +1,3 @@
-import React from 'react';
 import { Navigate } from 'react-router-dom';
 import AppLayout from '../layouts/AppLayout';
 
@@ -25,6 +24,8 @@ import ConfirmOrder from '../pages/Confirm';
 import PostDetailsPage from '../pages/PostDetailsPage';
 import FavoritePage from '@/pages/FavoritePage';
 import MyReservationsPage from '@/pages/MyReservationsPage';
+import PaymentSuccess from '@/pages/PaymentSuccess';
+import PaymentFailed from '@/pages/PaymentFailed';
 
 const PublicRoutes = [
   {
@@ -55,6 +56,9 @@ const PublicRoutes = [
       { path: '/post-details', element: <PostDetailsPage /> },
       { path: '/confirm', element: <ConfirmOrder /> },
       { path: '/my-reservation', element: <MyReservationsPage /> },
+      { path: '/payment-success', element: <PaymentSuccess /> },
+      { path: '/payment-failed', element: <PaymentFailed /> },
+
     ],
   },
 ];

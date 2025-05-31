@@ -2,18 +2,24 @@ import { Schema, model, Document, Types, PaginateModel } from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
 
 export interface IOrder extends Document {
+  _id: Types.ObjectId;
   user_id: Types.ObjectId;
   cashier_order_id?: Types.ObjectId | null;
-  address_id: Types.ObjectId;
-  payment_method: 'CASH' | 'BANKING' | 'VNPAY' | 'MOMO' | 'CREDIT_CARD';
+  address_id: Types.ObjectId | null | undefined;
+  payment_method: 'CASH' | 'BANKING' | 'VNPAY' | 'MOMO' | 'MOMO_ATM' | 'CREDIT_CARD';
   delivery_type: 'DELIVERY' | 'PICKUP';
   delivery_status:
+    | 'ORDER_PLACED'
+    | 'ORDER_CONFIRMED'
     | 'PENDING_PICKUP'
     | 'PICKED_UP'
     | 'IN_TRANSIT'
     | 'DELIVERED'
     | 'DELIVERY_FAILED'
     | 'RETURN_REQUESTED'
+    | 'CANCEL_RETURN_REQUESTED'
+    | 'RETURN_APPROVED'
+    | 'RETURN_REJECTED'
     | 'RETURNED'
     | 'CANCEL_REQUESTED'
     | 'CANCELLED';
@@ -30,9 +36,11 @@ export interface IOrder extends Document {
   items_price: number;
   total_price?: number;
   total_quantity: number;
-  is_paid?: boolean;
+  payment_status: 'UNPAID' | 'PAID' | 'FAILED' | 'REFUNDED';
   paid_at?: Date | null;
   note?: string;
+  receiver?: string | null;
+  receiver_phone?: string | null;
   cancelled_reason?: string | null;
   cancelled_at?: Date | null;
   returned_at?: Date | null;
@@ -52,10 +60,10 @@ const OrderSchema = new Schema<IOrder>(
       ref: 'Order',
       default: null,
     },
-    address_id: { type: Schema.Types.ObjectId, ref: 'Address', required: true },
+    address_id: { type: Schema.Types.ObjectId, ref: 'Address', required: false },
     payment_method: {
       type: String,
-      enum: ['CASH', 'BANKING', 'VNPAY', 'MOMO'],
+      enum: ['CASH', 'BANKING', 'VNPAY', 'MOMO', 'MOMO_ATM', 'CREDIT_CARD'],
       required: true,
     },
     delivery_type: {
@@ -66,6 +74,8 @@ const OrderSchema = new Schema<IOrder>(
     delivery_status: {
       type: String,
       enum: [
+        'ORDER_PLACED',
+        'ORDER_CONFIRMED',
         'PENDING',
         'PENDING_PICKUP',
         'PICKED_UP',
@@ -73,11 +83,14 @@ const OrderSchema = new Schema<IOrder>(
         'DELIVERED',
         'DELIVERY_FAILED',
         'RETURN_REQUESTED',
+        'CANCEL_RETURN_REQUESTED',
+        'RETURN_APPROVED',
+        'RETURN_REJECTED',
         'RETURNED',
         'CANCEL_REQUESTED',
         'CANCELLED',
       ],
-      default: 'PENDING_PICKUP',
+      default: 'ORDER_PLACED',
     },
     status: {
       type: String,
@@ -97,9 +110,15 @@ const OrderSchema = new Schema<IOrder>(
     items_price: { type: Number, required: true, default: 0 },
     total_price: { type: Number, default: 0 },
     total_quantity: { type: Number, required: true, default: 0 },
-    is_paid: { type: Boolean, default: false },
+    payment_status: {
+      type: String,
+      enum: ['UNPAID', 'PAID', 'FAILED', 'REFUNDED'],
+      default: 'UNPAID',
+    },
     paid_at: { type: Date, default: null },
     note: { type: String, default: null },
+    receiver: { type: String, default: null },
+    receiver_phone: { type: String, default: null },
     cancelled_reason: { type: String, default: null },
     cancelled_at: { type: Date, default: null },
     returned_at: { type: Date, default: null },

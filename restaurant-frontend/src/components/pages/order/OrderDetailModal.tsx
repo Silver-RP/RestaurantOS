@@ -174,15 +174,17 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                           ? 'Chuyển khoản'
                           : order.payment_method === 'MOMO'
                             ? 'Momo'
-                            : order.payment_method === 'ZALOPAY'
-                              ? 'ZaloPay'
+                            : order.payment_method === 'MOMO_ATM'
+                              ? 'Momo ATM/Thẻ'
                               : order.payment_method}
                   </span>
                 </div>
                 <div className="flex gap-2 items-center">
                   <span className="font-semibold">Trạng thái thanh toán:</span>
                   <span className="text-md">
-                    {order.is_paid ? 'Đã thanh toán' : 'Chưa thanh toán'}
+                    {order.payment_status === 'PAID'
+                      ? 'Đã thanh toán'
+                      : 'Chưa thanh toán'}
                   </span>
                 </div>
                 {order.paid_at && (
@@ -270,7 +272,9 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
           {/* Ghi chú của đơn hàng */}
           {order.note && (
             <section className="mb-6">
-              <h3 className="text-lg font-semibold mb-2 text-white">Ghi chú đơn hàng</h3>
+              <h3 className="text-lg font-semibold mb-2 text-white">
+                Ghi chú đơn hàng
+              </h3>
               <div className="bg-[#14324a] p-4 rounded-lg text-white/90 border border-white/10">
                 {order.note}
               </div>

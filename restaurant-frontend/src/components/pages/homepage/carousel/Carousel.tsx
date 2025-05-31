@@ -2,41 +2,23 @@ import React, { useState, useEffect, useRef } from "react";
 import { MdRestaurant } from "react-icons/md";
 import { BiDrink } from "react-icons/bi";
 import { BsCupHot } from "react-icons/bs";
+import { useGetActiveBanners } from "../../../../hooks/useBanner";
+
+const icons = [
+  <MdRestaurant key="restaurant" />,
+  <BiDrink key="drink" />,
+  <BsCupHot key="coffee" />
+];
 
 const Carousel = () => {
-  const slides = [
-    {
-      id: 1,
-      backgroundImage: "/assets/images/banner/banner1.webp",
-      title: "Sự Tận Tâm",
-      subtitle: "Trong Từng Hương Vị",
-      description:
-        "Sứ mệnh của chúng tôi là mang đến những bữa ăn đánh thức mọi giác quan - khơi nguồn cảm xúc, thử thách vị giác và làm phong phú tâm hồn.",
-      icon: <MdRestaurant />,
-    },
-    {
-      id: 2,
-      backgroundImage: "/assets/images/banner/banner2.webp",
-      title: "Hương Vị Tuyệt Vời",
-      subtitle: "Trong Mỗi Món Ăn",
-      description:
-        "Khám phá sự đa dạng của ẩm thực với các nguyên liệu tươi ngon và cách chế biến độc đáo.",
-      icon: <BiDrink />,
-    },
-    {
-      id: 3,
-      backgroundImage: "/assets/images/banner/banner3.webp",
-      title: "Trải Nghiệm Đẳng Cấp",
-      subtitle: "Trong Không Gian Sang Trọng",
-      description:
-        "Chúng tôi mang đến không gian ấm cúng và trải nghiệm ẩm thực cao cấp.",
-      icon: <BsCupHot />,
-    },
-  ];
-
+  const { activeBanners, loading, error, fetchActiveBanners } = useGetActiveBanners();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const intervalRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    fetchActiveBanners();
+  }, [fetchActiveBanners]);
 
   const startInterval = () => {
     stopInterval();
@@ -53,34 +35,36 @@ const Carousel = () => {
   };
 
   useEffect(() => {
+    if (activeBanners.length > 0) {
     startInterval();
+    }
     return () => stopInterval();
-  }, []);
+  }, [activeBanners]);
 
   const handleNextSlide = () => {
-    if (isAnimating) return;
+    if (isAnimating || activeBanners.length === 0) return;
     stopInterval();
     setIsAnimating(true);
     setTimeout(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
+      setCurrentSlide((prev) => (prev + 1) % activeBanners.length);
       setIsAnimating(false);
       startInterval();
     }, 100);
   };
 
   const handlePrevSlide = () => {
-    if (isAnimating) return;
+    if (isAnimating || activeBanners.length === 0) return;
     stopInterval();
     setIsAnimating(true);
     setTimeout(() => {
-      setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+      setCurrentSlide((prev) => (prev - 1 + activeBanners.length) % activeBanners.length);
       setIsAnimating(false);
       startInterval();
     }, 100);
   };
 
   const handleDotClick = (index: number) => {
-    if (isAnimating || currentSlide === index) return;
+    if (isAnimating || currentSlide === index || activeBanners.length === 0) return;
     stopInterval();
     setIsAnimating(true);
     setTimeout(() => {
@@ -90,11 +74,27 @@ const Carousel = () => {
     }, 100);
   };
 
+  if (loading) {
+    return (
+      <div className="h-[75vh] md:h-screen w-full flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-secondaryColor"></div>
+      </div>
+    );
+  }
+
+  if (error || activeBanners.length === 0) {
+    return (
+      <div className="h-[75vh] md:h-screen w-full flex items-center justify-center">
+        <p className="text-gray-500">Không có banner nào</p>
+      </div>
+    );
+  }
+
   return (
     <div className="relative h-[75vh] md:h-screen w-full overflow-hidden group">
-      {slides.map((slide, index) => (
+      {activeBanners.map((banner, index) => (
         <div
-          key={slide.id}
+          key={banner._id}
           className={`absolute inset-0 transform transition-transform duration-500 ${
             index === currentSlide
               ? "translate-x-0 z-10"
@@ -103,7 +103,7 @@ const Carousel = () => {
               : "-translate-x-full z-0"
           }`}
           style={{
-            backgroundImage: `url(${slide.backgroundImage})`,
+            backgroundImage: `url(${banner.image})`,
             backgroundRepeat: "no-repeat",
             backgroundSize: "cover",
             backgroundPosition: "center",
@@ -116,7 +116,7 @@ const Carousel = () => {
             }`}
           >
             <div className="text-secondaryColor text-2xl sm:text-3xl mb-4 animate-fade-down">
-              {slide.icon}
+              {icons[index % icons.length]}
             </div>
             <h2 className="text-secondaryColor font-extralight font-sans text-xs sm:text-sm md:text-base tracking-wide uppercase mb-2 animate-fade-down">
               Welcome to Beef Beef
@@ -127,10 +127,20 @@ const Carousel = () => {
               <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-secondaryColor rounded-full"></span>
             </div>
             <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl leading-snug font-medium font-restora text-white mb-6 drop-shadow-lg animate-fade-down">
-              {slide.title} <br /> {slide.subtitle}
+              {(() => {
+                const words = banner.title.split(' ');
+                const midPoint = Math.ceil(words.length / 2);
+                const line1 = words.slice(0, midPoint).join(' ');
+                const line2 = words.slice(midPoint).join(' ');
+                return (
+                  <>
+                    {line1} <br /> {line2}
+                  </>
+                );
+              })()}
             </h1>
             <p className="text-xs sm:text-sm md:text-base lg:text-lg text-gray-300 max-w-xs sm:max-w-md md:max-w-lg lg:max-w-2xl mx-auto mb-8 animate-fade-down">
-              {slide.description}
+              {banner.description}
             </p>
             <button className="px-5 py-2 sm:px-8 sm:py-3 md:px-10 md:py-4 bg-transparent border border-secondaryColor text-secondaryColor hover:bg-secondaryColor hover:text-headerBackground transition animate-fade-down">
               KHÁM PHÁ MENU
@@ -153,7 +163,7 @@ const Carousel = () => {
       </button>
 
       <div className="absolute bottom-4 sm:bottom-6 md:bottom-8 z-20 left-1/2 transform -translate-x-1/2 flex space-x-1 sm:space-x-2">
-        {slides.map((_, index) => (
+        {activeBanners.map((_, index) => (
           <button
             key={index}
             onClick={() => handleDotClick(index)}

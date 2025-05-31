@@ -30,6 +30,7 @@ class FoodService {
       images: formattedImages,
       newUntil: foodData.isDishNew ? foodData.newUntil : null,
       discountUntil: foodData.discount_price > 0 ? foodData.discountUntil : null,
+      recommendUntil: foodData.isRecommend ? foodData.recommendUntil : null,
     };
 
     try {
@@ -43,6 +44,7 @@ class FoodService {
 
   async updateFoodWithImages(id: string, foodData: any, files?: Express.Multer.File[]) {
     const category = await this.getCategory(foodData.category);
+    console.log('foodData:', foodData);
     const categorySlug = category.Cate_slug;
 
     const existingImages = this.parseExistingImages(foodData.existingImages);

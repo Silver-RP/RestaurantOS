@@ -9,6 +9,18 @@ class OrderValidator {
   static validatePlaceOrder(req: Request) {
     const { address_id, address, payment_method, delivery_type, items, order_type, delivery_time_type, scheduled_time, note } = req.body;
 
+    if (delivery_type === 'PICKUP' && address_id === '') {
+      req.body.address_id = undefined; 
+    }
+  
+    if (delivery_type === 'DELIVERY') {
+      const hasAddressId = !!address_id && address_id !== '';
+      const hasNewAddress = address && typeof address === 'object';
+    
+      if (!hasAddressId && !hasNewAddress) {
+        return { valid: false, message: 'Either address_id or address is required for DELIVERY orders.' };
+      }
+    }
 
     if (!Array.isArray(items) || items.length === 0) {
       return { valid: false, message: 'Items are required and must be an array.' };
@@ -35,7 +47,7 @@ class OrderValidator {
       }
     }
 
-    if (!['CASH', 'BANKING', 'VNPAY', 'MOMO', 'CREDIT_CARD'].includes(payment_method)) {
+    if (!['CASH', 'BANKING', 'VNPAY', 'MOMO', 'MOMO_ATM', 'CREDIT_CARD'].includes(payment_method)) {
       return { valid: false, message: 'Invalid payment method.' };
     }
 
@@ -108,7 +120,7 @@ class OrderValidator {
         unit_price: unitPrice,
         quantity: cartItem.quantity,
         total_amount: itemTotal,
-        note: cartItem.note || null,
+        note: clientItem.note || null,
       });
 
     }

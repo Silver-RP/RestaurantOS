@@ -7,6 +7,9 @@ import { DeliveryTime } from '@components/pages/checkout/ModalSelectDeliveryTime
 import { useGetCart } from '@hooks/useCart';
 import { useNavigate } from 'react-router-dom';
 import { useUserAddresses } from '@/hooks/useAddress';
+import { toast } from 'react-toastify';
+import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
+
 
 interface Product {
   image: string;
@@ -29,7 +32,13 @@ interface OrderData {
     district: string;
     province: string;
   };
-  payment_method: 'CASH' | 'BANKING' | 'VNPAY' | 'MOMO';
+  payment_method:
+    | 'CASH'
+    | 'BANKING'
+    | 'VNPAY'
+    | 'MOMO'
+    | 'MOMO_ATM'
+    | 'CREDIT_CARD';
   delivery_type: 'DELIVERY' | 'PICKUP';
   items: Array<{
     dish_id: string;
@@ -44,6 +53,8 @@ interface OrderData {
   delivery_time_type: 'ASAP' | 'SCHEDULED';
   scheduled_time?: string;
   note?: string;
+  receiver?: string;
+  receiver_phone?: string;
   shipping_fee: number;
   items_price: number;
   vat_amount: number;
@@ -54,7 +65,10 @@ interface OrderData {
 const CheckoutPage = () => {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState('CASH');
+  const [paymentMethod, setPaymentMethod] = useState<string>('');
+  const [deliveryMethod, setDeliveryMethod] = useState<'delivery' | 'pickup'>(
+    'delivery',
+  );
   const [shippingFee, setShippingFee] = useState<number>(25000);
   const [vouchers, setVouchers] = useState<Voucher[]>([]);
   const [deliveryTime, setDeliveryTime] = useState<DeliveryTime>({
@@ -62,13 +76,11 @@ const CheckoutPage = () => {
   });
   const [products, setProducts] = useState<Product[]>([]);
   const [orderNote, setOrderNote] = useState<string>('');
+  const [receiver, setReceiver] = useState<string>('');
+  const [receiverPhone, setReceiverPhone] = useState<string>('');
   const { data: cart } = useGetCart();
   const navigate = useNavigate();
   const { data: fetchedAddresses = [], refetch } = useUserAddresses();
-
-  const [deliveryMethod, setDeliveryMethod] = useState<'delivery' | 'pickup'>(
-    'delivery',
-  );
 
   useEffect(() => {
     const selectedItemsStr = localStorage.getItem('selectedCartItems');
@@ -76,17 +88,10 @@ const CheckoutPage = () => {
     if (selectedItemsStr) {
       try {
         const selectedItems = JSON.parse(selectedItemsStr);
-        console.log('Selected items from localStorage:', selectedItems);
 
         if (selectedItems && selectedItems.length > 0) {
-          // Log the first item to see its structure
-          console.log('Sample item structure:', selectedItems[0]);
-
           const formattedProducts: Product[] = selectedItems.map(
             (item: any) => {
-              // Log each item's id to ensure it's correct
-              console.log(`Processing item ${item.name} with id: ${item.id}`);
-
               return {
                 image: item.imageUrl,
                 name: item.name,
@@ -115,9 +120,11 @@ const CheckoutPage = () => {
 
   useEffect(() => {
     setAddresses(fetchedAddresses);
-  setSelectedId(
-    fetchedAddresses.find((addr) => addr.is_default)?.id || fetchedAddresses[0]?.id || null,
-  );
+    setSelectedId(
+      fetchedAddresses.find((addr) => addr.is_default)?._id ||
+        fetchedAddresses[0]?._id ||
+        null,
+    );
 
     setVouchers([
       {
@@ -215,6 +222,23 @@ const CheckoutPage = () => {
       return;
     }
 
+    // Verify receiver info when pickup is chosen
+    if (deliveryMethod === 'pickup') {
+      if (!receiver || !receiverPhone) {
+        toast.error('Vui lòng nhập thông tin người nhận');
+        return;
+      }
+      if (!/^(0|\+84)[3|5|7|8|9][0-9]{8}$/.test(receiverPhone)) {
+        toast.error('Số điện thoại không đúng định dạng');
+        return;
+      }
+    }
+
+    if (!paymentMethod) {
+      toast.error('Vui lòng chọn phương thức thanh toán');
+      return;
+    }
+
     const items_price = products.reduce((sum, item) => {
       return sum + item.discountedPrice * item.quantity;
     }, 0);
@@ -249,16 +273,22 @@ const CheckoutPage = () => {
       total_price,
       total_quantity,
     };
+    if (deliveryMethod === 'delivery') {
+      if (selectedAddress) {
+        orderData.address = {
+          full_name: selectedAddress.full_name,
+          phone: selectedAddress.phone,
+          street_address: selectedAddress.street_address || '',
+          ward: selectedAddress.ward || '',
+          district: selectedAddress.district || '',
+          province: selectedAddress.province || '',
+        };
+      }
+    }
 
-    if (selectedAddress) {
-      orderData.address = {
-        full_name: selectedAddress.full_name,
-        phone: selectedAddress.phone,
-        street_address: selectedAddress.street_address || '',
-        ward: selectedAddress.ward || '',
-        district: selectedAddress.district || '',
-        province: selectedAddress.province || '',
-      };
+    if (deliveryMethod === 'pickup') {
+      orderData.receiver = receiver;
+      orderData.receiver_phone = receiverPhone;
     }
 
     if (deliveryTime.type === 'scheduled' && deliveryTime.scheduledTime) {
@@ -271,35 +301,44 @@ const CheckoutPage = () => {
   };
 
   return (
-    <div className="flex py-10 bg-bodyBackground min-h-screen text-white">
-      <div className="w-11/12 md:w-container95 lg:w-container90 xl:w-container85 2xl:w-mainContainer mx-auto space-y-6">
-        <h1 className="text-2xl font-bold">Thanh toán</h1>
+    <>
+      <BreadCrumbComponents />
+      <div className="flex py-10 bg-bodyBackground min-h-screen text-white">
+        <div className="w-11/12 md:w-container95 lg:w-container90 xl:w-container85 2xl:w-mainContainer mx-auto space-y-6">
+          <h1 className="text-2xl font-bold">Thanh toán</h1>
 
-        <ShippingAddressSection
-          addresses={addresses}
-          refetch={refetch}
-          selectedId={selectedId}
-          onSelect={setSelectedId}
-          onAdd={handleAddAddress}
-          onDeliveryTimeChange={handleDeliveryTimeChange}
-          initialDeliveryTime={deliveryTime}
-          deliveryMethod={deliveryMethod}
-          onDeliveryMethodChange={setDeliveryMethod}
-        />
+          <ShippingAddressSection
+            addresses={addresses}
+            refetch={refetch}
+            selectedId={selectedId}
+            onSelect={setSelectedId}
+            onAdd={handleAddAddress}
+            onDeliveryTimeChange={handleDeliveryTimeChange}
+            initialDeliveryTime={deliveryTime}
+            deliveryMethod={deliveryMethod}
+            onDeliveryMethodChange={setDeliveryMethod}
+            receiver={receiver}
+            receiverPhone={receiverPhone}
+            onReceiverChange={(name, phone) => {
+              setReceiver(name);
+              setReceiverPhone(phone);
+            }}
+          />
 
-        <ProductInfoSection
-          products={products}
-          note={orderNote}
-          shippingFee={shippingFee}
-          paymentMethod={paymentMethod}
-          onPaymentMethodChange={setPaymentMethod}
-          vouchers={vouchers}
-          onProceedToPayment={handleProceedToPayment}
-          onNoteChange={handleOrderNoteChange}
-          onProductNoteChange={handleProductNotes}
-        />
+          <ProductInfoSection
+            products={products}
+            note={orderNote}
+            shippingFee={shippingFee}
+            paymentMethod={paymentMethod}
+            onPaymentMethodChange={setPaymentMethod}
+            vouchers={vouchers}
+            onProceedToPayment={handleProceedToPayment}
+            onNoteChange={handleOrderNoteChange}
+            onProductNoteChange={handleProductNotes}
+          />
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

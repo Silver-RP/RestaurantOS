@@ -10,7 +10,8 @@ import {
   FaAngleLeft,
   FaAngleRight,
   FaUser,
-  FaCartPlus
+  FaCartPlus,
+  FaImage
 } from 'react-icons/fa';
 import { GiHotMeal } from 'react-icons/gi';
 import classNames from 'classnames';
@@ -26,10 +27,10 @@ const AdminLayout: React.FC = () => {
       <aside
         className={classNames(
           'bg-admincard flex flex-col justify-between transition-all duration-300 fixed top-0 left-0 z-50 h-full',
-          isSidebarOpen ? 'w-64 px-4' : 'w-16 items-center',
+          isSidebarOpen ? 'w-[200px] px-4' : 'w-16 items-center',
         )}
       >
-        <div className="flex flex-col items-center space-y-8 mt-6 flex-1">
+        <div className="flex max-w-[200px] flex-col items-center space-y-8 mt-6 flex-1">
           <button
             className={classNames(
               'text-adminprimary focus:outline-none transition-all',
@@ -44,7 +45,7 @@ const AdminLayout: React.FC = () => {
             )}
           </button>
 
-          <nav className="flex flex-col gap-6 w-full items-center">
+          <nav className="flex flex-col gap-6 w-full max-w-[200px items-center">
             <NavItem
               href="/admin"
               icon={<FaHome />}
@@ -75,10 +76,17 @@ const AdminLayout: React.FC = () => {
               label="Bài viết"
               expanded={isSidebarOpen}
             />
-              <NavItem
+            <NavItem
               href="/admin/users"
               icon={<FaUser />}
               label="Người dùng"
+              expanded={isSidebarOpen}
+            />
+
+            <NavItem
+              href="/admin/banners"
+              icon={<FaImage />}
+              label="Banner"
               expanded={isSidebarOpen}
             />
             <NavItem
@@ -87,7 +95,7 @@ const AdminLayout: React.FC = () => {
               label="Giới thiệu"
               expanded={isSidebarOpen}
             />
-            
+
             <NavItem
               href="/admin/contact"
               icon={<FaEnvelope />}
@@ -111,15 +119,15 @@ const AdminLayout: React.FC = () => {
       {/* Main Content Area */}
       <div
         className={classNames(
-          'flex-1 flex flex-col transition-all duration-300',
-          isSidebarOpen ? 'ml-64' : 'ml-16',
+          'flex-1 flex flex-col transition-all duration-300 bg-white',
+          isSidebarOpen ? 'ml-[200px]' : 'ml-16',
         )}
       >
         {/* Header */}
         <AdminHeader />
 
         {/* Page content */}
-        <main className="flex-1 p-6 transition-all duration-300">
+        <main className="flex-1 w-full bg-white p-6 transition-all duration-300">
           <div className="w-full h-full overflow-auto">
             <Outlet />
           </div>
