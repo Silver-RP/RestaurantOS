@@ -300,7 +300,7 @@ class AuthController {
       const userId = (req.user as IUser).id as Types.ObjectId;
 
       const result = await AuthService.changePasswordProfile(
-        userId.toString(), 
+        userId.toString(),
         oldPassword,
         newPassword,
       );

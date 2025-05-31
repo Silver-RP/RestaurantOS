@@ -51,15 +51,15 @@ export const peopleSchema = z.coerce
   .min(1, 'Phải có ít nhất 1 người')
   .max(30, 'Không được vượt quá 30 người');
 
-export const reservationSchema = z.object({
-  name: nameSchema,
-  email: emailSchema,
-  phone: phoneSchema,
-  people: peopleSchema,
-  date: dateSchema,
-  time: timeSchema,
-  note: z.string().optional(),
-});
+  export const reservationSchema = z.object({
+    full_name: nameSchema,
+    email: emailSchema,
+    phone: phoneSchema,
+    number_of_people: peopleSchema,
+    date: dateSchema,
+    time: timeSchema,
+    note: z.string().optional(),
+  });
 
 export const CateTypeEnum = z.enum(['dish', 'drink']);
 export const createCategorySchema = z.object({

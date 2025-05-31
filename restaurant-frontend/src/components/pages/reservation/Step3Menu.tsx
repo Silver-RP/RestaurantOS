@@ -7,7 +7,7 @@ import Pagination from '@components/common/Pagination';
 import ButtonComponents from '@components/common/ButtonComponents';
 import ReservationMenuItemCard from '@/components/pages/reservation/ReservationMenuItemCard';
 import FilterSidebar from '@/components/pages/menu/FilterSidebar';
-import { ReservationFormData } from '../../../types/ReservationFormData.type';
+import { ReservationFormData } from '../../../types/reservation.type';
 import ReservationOrderSidebar from '@/components/pages/reservation/ReservationOrderSidebar';
 import AddReservationItemModal from './AddItemModal';
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ReservationFormData } from '@/types/ReservationFormData.type';
+import { ReservationFormData } from '@/types/reservation.type';
 
 interface SidebarProps {
   formData: ReservationFormData;
@@ -12,7 +12,7 @@ const Sidebar: React.FC<SidebarProps> = ({ formData }) => {
         <div className="space-y-4 text-left text-sm pt-2">
           <div className="flex text-left mb-2 gap-0">
             <p className="w-[150px]">Họ và tên:</p>
-            <p>{formData.name}</p>
+            <p>{formData.full_name}</p>
           </div>
           <div className="flex mb-2 gap-0">
             <p className="w-[150px]">Số điện thoại:</p>
@@ -32,7 +32,7 @@ const Sidebar: React.FC<SidebarProps> = ({ formData }) => {
           </div>
           <div className="flex mb-2 gap-0">
             <p className="w-[150px]">Số lượng người:</p>
-            <p>{formData.people}</p>
+            <p>{formData.number_of_people}</p>
           </div>
         </div>
 

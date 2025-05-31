@@ -5,11 +5,11 @@ import ShowcaseSection from '@components/common/ShowcaseSection';
 import Step2Seating from '@components/pages/reservation/Step2Seating';
 import Step3Menu from '@components/pages/reservation/Step3Menu';
 import Step4Review from '@/components/pages/reservation/Step4Review';
-import { ReservationFormData } from '@/types/ReservationFormData.type';
+import { ReservationFormData } from '@/types/reservation.type';
 import ReservationSteps from '@/components/pages/reservation/ReservationSteps';
 import { confirmAlert } from 'react-confirm-alert';
 import ButtonComponents from '@/components/common/ButtonComponents';
-
+import { useNavigate } from 'react-router-dom';
 const steps = [
   { label: 'Thông tin', step: 1 },
   { label: 'Vị trí ngồi', step: 2 },
@@ -18,6 +18,7 @@ const steps = [
 ];
 
 const ReservationPage: React.FC = () => {
+  const navigate = useNavigate();
   const getInitialFormData = (): ReservationFormData => {
     const saved = localStorage.getItem('reservation-data');
     if (saved) {
@@ -26,14 +27,14 @@ const ReservationPage: React.FC = () => {
       if (!expired) return parsed.formData;
     }
     return {
-      name: '',
+      full_name: '',
       phone: '',
       email: '',
       date: '',
       time: '',
-      people: 1,
+      number_of_people: 1,
       note: '',
-      seating: '',
+      table_type: '',
       seatingName: '',
       menu: '',
       selectedItems: [],
@@ -50,7 +51,7 @@ const ReservationPage: React.FC = () => {
       const expired = Date.now() - parsed.timestamp > 60 * 1000;
 
       const hasInfo =
-        parsed.formData?.name ||
+        parsed.formData?.full_name ||
         parsed.formData?.phone ||
         parsed.formData?.email ||
         parsed.formData?.selectedItems?.length > 0;
@@ -72,14 +73,14 @@ const ReservationPage: React.FC = () => {
                   onClick={() => {
                     localStorage.removeItem('reservation-data');
                     setFormData({
-                      name: '',
+                      full_name: '',
                       phone: '',
                       email: '',
                       date: '',
                       time: '',
-                      people: 1,
+                      number_of_people: 1,
                       note: '',
-                      seating: '',
+                      table_type: '',
                       seatingName: '',
                       menu: '',
                       selectedItems: [],
@@ -152,9 +153,28 @@ const ReservationPage: React.FC = () => {
             <Step4Review
               formData={formData}
               setFormData={setFormData}
-              onNext={() => setStep(4)}
+              onNext={() => setStep(5)}
               onBack={() => setStep(3)}
             />
+          )}
+          {step === 5 && (
+            <div className="text-center py-20">
+              <h2 className="text-3xl font-semibold text-green-400 mb-4">
+                🎉 Đặt bàn thành công!
+              </h2>
+              <p className="text-gray-300 text-lg mb-6">
+                Cảm ơn bạn đã đặt bàn. Chúng tôi sẽ liên hệ với bạn để xác nhận
+                lại trong thời gian sớm nhất.
+              </p>
+              <ButtonComponents
+                variant="filled"
+                size="medium"
+                onClick={() => navigate('/')}
+                className="px-6 py-2"
+              >
+                Quay về trang chủ
+              </ButtonComponents>
+            </div>
           )}
         </div>
         <ShowcaseSection />

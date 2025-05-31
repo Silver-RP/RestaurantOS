@@ -24,6 +24,7 @@ import ReservationPage from '../pages/ReservationPage';
 import ConfirmOrder from '../pages/Confirm';
 import PostDetailsPage from '../pages/PostDetailsPage';
 import FavoritePage from '@/pages/FavoritePage';
+import MyReservationsPage from '@/pages/MyReservationsPage';
 
 const PublicRoutes = [
   {
@@ -53,6 +54,7 @@ const PublicRoutes = [
       { path: '*', element: <Navigate to="/" /> },
       { path: '/post-details', element: <PostDetailsPage /> },
       { path: '/confirm', element: <ConfirmOrder /> },
+      { path: '/my-reservation', element: <MyReservationsPage /> },
     ],
   },
 ];

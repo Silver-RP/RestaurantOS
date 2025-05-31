@@ -1,0 +1,118 @@
+import { Reservation } from '../models/ReservationModel';
+import { ReservationDetail } from '../models/ReservationDetailModel';
+import { Types } from 'mongoose';
+
+class ReservationService {
+  async createReservation(data: any, userId: Types.ObjectId) {
+    try {
+      const {
+        full_name,
+        phone,
+        date,
+        time,
+        table_type,
+        number_of_people,
+        note,
+        is_choose_later,
+        selectedItems = [],
+      } = data;
+
+      const newReservation = new Reservation({
+        user_id: userId,
+        full_name,
+        phone,
+        date,
+        time,
+        table_type,
+        number_of_people,
+        note,
+        is_choose_later,
+        status: 'PENDING',
+      });
+
+      const savedReservation = await newReservation.save();
+
+      if (Array.isArray(selectedItems) && selectedItems.length > 0) {
+        const detailDocs = selectedItems.map((item: any) => ({
+          reservation_id: savedReservation._id,
+          dish_id: item.id,
+          dish_name: item.name,
+          category: item.category,
+          unit_price: item.price,
+          quantity: item.quantity,
+          total_amount: item.price * item.quantity,
+          note: item.note || '',
+        }));
+
+        await ReservationDetail.insertMany(detailDocs);
+      }
+
+      return savedReservation;
+    } catch (error) {
+      console.error('❌ Error in createReservation:', error);
+      throw new Error('Không thể tạo đơn đặt bàn');
+    }
+  }
+
+  getMyReservations = async (userId: Types.ObjectId, status?: string[], page = 1, limit = 5) => {
+    const query: any = { user_id: userId };
+
+    if (status && status.length > 0) {
+      query.status = { $in: status };
+    }
+
+    const skip = (page - 1) * limit;
+    console.log('[Service] query:', query);
+    console.log('[Service] skip:', skip, '| limit:', limit);
+    const [reservations, totalItems] = await Promise.all([
+      Reservation.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      Reservation.countDocuments(query),
+    ]);
+
+    return {
+      reservations,
+      totalItems,
+      currentPage: page,
+      totalPages: Math.ceil(totalItems / limit),
+    };
+  };
+
+  async getReservationById(id: string) {
+    const reservation = await Reservation.findById(id).lean();
+    if (!reservation) throw new Error('Không tìm thấy đơn đặt bàn');
+
+    const details = await ReservationDetail.find({ reservation_id: id }).lean();
+    return { ...reservation, details };
+  }
+
+  async getAllReservations() {
+    return await Reservation.find().sort({ createdAt: -1 }).lean();
+  }
+
+  async updateReservationStatus(
+    id: string,
+    status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'DONE',
+  ) {
+    const updated = await Reservation.findByIdAndUpdate(id, { status }, { new: true });
+    if (!updated) throw new Error('Không tìm thấy đơn đặt bàn để cập nhật');
+    return updated;
+  }
+
+  async cancelReservation(id: string) {
+    const updated = await Reservation.findByIdAndUpdate(id, { status: 'CANCELLED' }, { new: true });
+    if (!updated) throw new Error('Không tìm thấy đơn để huỷ');
+    return updated;
+  }
+
+  async restoreReservation(id: string) {
+    const reservation = await Reservation.findById(id);
+    if (!reservation) throw new Error('Không tìm thấy đơn đặt bàn');
+    if (reservation.status !== 'CANCELLED') {
+      throw new Error('Chỉ có thể khôi phục đơn đã huỷ');
+    }
+    reservation.status = 'PENDING';
+    return await reservation.save();
+  }
+}
+
+export default new ReservationService();
