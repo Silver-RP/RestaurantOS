@@ -25,6 +25,7 @@ interface Product {
 
 interface OrderData {
   address?: {
+    id: string;
     full_name: string;
     phone: string;
     street_address: string;
@@ -276,6 +277,7 @@ const CheckoutPage = () => {
     if (deliveryMethod === 'delivery') {
       if (selectedAddress) {
         orderData.address = {
+          id: selectedAddress._id,
           full_name: selectedAddress.full_name,
           phone: selectedAddress.phone,
           street_address: selectedAddress.street_address || '',

@@ -79,12 +79,14 @@ class AuthService {
       email,
       password: hashedPassword,
       roles: [defaultRole._id],
-      isVerified: false,
+      isEmailVerified: false,
       emailVerificationToken: crypto.randomBytes(32).toString('hex'),
       emailVerificationExpires: new Date(Date.now() + 3600000), // 1h
     });
 
     await newUser.save();
+
+    await this.resendVerificationEmail(email);
 
     const populatedUser = await User.findById(newUser._id).populate('roles', 'name');
 
@@ -371,6 +373,17 @@ class AuthService {
     user.otpSentCount += 1;
     user.lastOtpSentAt = now;
     await user.save();
+
+    setTimeout(
+      async () => {
+        const resetUser = await User.findOne({ email });
+        if (resetUser) {
+          resetUser.otpSentCount = 0;
+          await resetUser.save();
+        }
+      },
+      30 * 60 * 1000,
+    );
 
     const transporter = nodemailer.createTransport({
       host: process.env.MAIL_HOST,

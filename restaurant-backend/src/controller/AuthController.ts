@@ -13,7 +13,7 @@ class AuthController {
         password,
       });
       return res.status(201).json({
-        message: 'User created successfully',
+        message: 'User created successfully! Please check your email to verify your account.',
         user,
       });
     } catch (error: any) {
