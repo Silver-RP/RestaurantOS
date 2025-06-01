@@ -30,6 +30,29 @@ export const useSendOtpEmail = () => {
   return { sendOtpEmail, loading, error };
 };
 
+export const useSendOtpVerifyEmail = () => {
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const sendOtpVerifyEmail = async (email: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await authApi.sendOtpVerifyEmail(email);
+      return response;
+    } catch (err: any) {
+      const message =
+        err?.response?.data?.message || 'Đã xảy ra lỗi khi gửi OTP';
+      setError(message);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { sendOtpVerifyEmail, loading, error };
+};
+
 export const useVerifyOtp = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,6 +74,29 @@ export const useVerifyOtp = () => {
   };
 
   return { verifyOtp, loading, error };
+};
+
+export const useVerifyOtpEmail = () => {
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const verifyOtpEmail = async (email: string, otp: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await authApi.verifyOtpEmail(email, otp);
+      return response;
+    } catch (err: any) {
+      const message =
+        err?.response?.data?.message || 'Đã xảy ra lỗi khi xác minh OTP';
+      setError(message);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { verifyOtpEmail, loading, error };
 };
 
 export const useChangePassword = () => {

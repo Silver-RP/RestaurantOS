@@ -9,6 +9,7 @@ import WishList from '../pages/WishList';
 import ResetPassword from '../pages/ResetPassword';
 import ForgotPassword from '../pages/ForgotPassword';
 import EnterOTP from '../pages/EnterOTP';
+import EnterOTPEmail from '../pages/EnterOTPEmail';
 import ProfilePage from '../pages/Profile';
 import AddressPage from '../pages/AddressPage';
 import MenuPage from '../pages/Menu';
@@ -40,6 +41,7 @@ const PublicRoutes = [
       { path: 'reset-password', element: <ResetPassword /> },
       { path: 'forgot-password', element: <ForgotPassword /> },
       { path: 'verify-otp', element: <EnterOTP /> },
+      { path: 'verify-otp-email', element: <EnterOTPEmail /> },
       { path: 'profile', element: <ProfilePage /> },
       { path: 'profile/address', element: <AddressPage /> },
       { path: 'menu', element: <MenuPage /> },
@@ -58,7 +60,6 @@ const PublicRoutes = [
       { path: '/profile/my-reservation', element: <MyReservationsPage /> },
       { path: '/payment-success', element: <PaymentSuccess /> },
       { path: '/payment-failed', element: <PaymentFailed /> },
-
     ],
   },
 ];
