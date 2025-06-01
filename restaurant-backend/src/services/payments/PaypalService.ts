@@ -17,10 +17,14 @@ export async function createPayPalOrder(order: IOrderWithItems, paymentId: strin
     throw new Error('Order items (order_items) are missing or invalid');
   }
 
-  const usdTotal = convertVNDToUSD(order.total_price || 0);
-  const usdItemsPrice = convertVNDToUSD(order.items_price);
+  const usdItemsPrice = order.order_items.reduce((acc, item) => {
+    const unitUSD = convertVNDToUSD(item.unit_price);
+    return acc + unitUSD * item.quantity;
+  }, 0);
+  
   const usdShipping = convertVNDToUSD(order.shipping_fee);
   const usdTax = convertVNDToUSD(order.vat_amount);
+  const usdTotal = usdItemsPrice + usdShipping + usdTax;
 
   const request = new paypal.orders.OrdersCreateRequest();
   request.prefer('return=representation');
@@ -79,6 +83,15 @@ export async function createPayPalOrder(order: IOrderWithItems, paymentId: strin
   });
 
   try {
+    console.log('Calculated item_total:', usdItemsPrice.toFixed(2));
+    console.log('Breakdown:', {
+      items: order.order_items.map((item) => ({
+        name: item.dish_name,
+        price: convertVNDToUSD(item.unit_price).toFixed(2),
+        quantity: item.quantity
+      })),
+    });
+
     const response = await paypalClient.execute(request);
     const approvalUrl = response.result.links?.find((link: { rel: string; }) => link.rel === 'approve')?.href;
     if (!approvalUrl) {
