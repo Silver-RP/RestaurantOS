@@ -5,7 +5,7 @@ import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
 import { AiOutlineCheckCircle } from 'react-icons/ai';
 import { motion } from 'framer-motion';
 import { FiDownload } from 'react-icons/fi';
-
+import React from 'react';
 const PaymentSuccess = () => {
   const navigate = useNavigate();
   const [bankingInfo, setBankingInfo] = useState<null | {

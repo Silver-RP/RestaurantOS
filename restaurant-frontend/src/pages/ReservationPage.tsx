@@ -13,6 +13,8 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { toastService } from '@/utils/toastService';
+import { AiOutlineCheckCircle } from 'react-icons/ai';
+import { motion } from 'framer-motion';
 const steps = [
   { label: 'Thông tin', step: 1 },
   { label: 'Vị trí ngồi', step: 2 },
@@ -168,22 +170,40 @@ const ReservationPage: React.FC = () => {
             />
           )}
           {step === 5 && (
-            <div className="text-center py-20">
-              <h2 className="text-3xl font-semibold text-green-400 mb-4">
-                🎉 Đặt bàn thành công!
-              </h2>
-              <p className="text-gray-300 text-lg mb-6">
-                Cảm ơn bạn đã đặt bàn. Chúng tôi sẽ liên hệ với bạn để xác nhận
-                lại trong thời gian sớm nhất.
-              </p>
-              <ButtonComponents
-                variant="filled"
-                size="medium"
-                onClick={() => navigate('/')}
-                className="px-6 py-2"
+            <div className="text-center py-24 bg-bodyBackground">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 150 }}
+                className="text-green-500 mb-4 flex justify-center"
               >
-                Quay về trang chủ
-              </ButtonComponents>
+                <AiOutlineCheckCircle size={72} />
+              </motion.div>
+
+              <h2 className="text-3xl font-bold text-white mb-3">
+                Đặt bàn thành công!
+              </h2>
+              <p className="text-gray-400 text-base max-w-md mx-auto mb-6">
+                Cảm ơn bạn đã đặt bàn. Chúng tôi sẽ liên hệ để xác nhận lại
+                trong thời gian sớm nhất. Vui lòng kiểm tra email hoặc lịch sử
+                đặt bàn để theo dõi trạng thái.
+              </p>
+
+              <div className="flex flex-wrap justify-center gap-4">
+                <ButtonComponents
+                  onClick={() => navigate('/menu')}
+                  className="bg-secondaryColor hover:bg-secondaryColor/90 text-black font-semibold px-6 py-2"
+                >
+                  Tiếp tục đặt món
+                </ButtonComponents>
+
+                <ButtonComponents
+                  onClick={() => navigate('/profile/my-reservation')}
+                  className="bg-white text-gray-800 border border-gray-300 hover:bg-gray-100 font-semibold px-6 py-2"
+                >
+                  Lịch sử đặt bàn
+                </ButtonComponents>
+              </div>
             </div>
           )}
         </div>
