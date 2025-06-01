@@ -363,10 +363,8 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
               </div>
             </div>
           </section>
-          {order.payment_status === 'UNPAID' ||
-            (order.payment_status === 'FAILED' &&
-              bankingInfo &&
-              showBankingInfo && (
+          {(order.payment_status === 'UNPAID' ||
+              (order.payment_status === 'FAILED' && bankingInfo && showBankingInfo)) && (
                 <div className="bg-bodyBackground flex justify-center px-4 pb-24">
                   <div className="bg-white/10 backdrop-blur-md shadow-xl rounded-2xl p-6 w-full max-w-2xl text-left text-white border border-white/10">
                     <h2 className="text-2xl font-semibold mb-4 text-white">
@@ -433,7 +431,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                     </div>
                   </div>
                 </div>
-              ))}
+              )}
           {/* Địa chỉ giao hàng */}
           <section className="mb-6">
             <h3 className="text-lg font-semibold mb-2 text-white">
