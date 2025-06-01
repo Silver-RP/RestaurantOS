@@ -142,6 +142,7 @@ const OrderConfirmation = () => {
     try {
       // Prepare the order data according to the API requirements
       const apiOrderData: PlaceOrderRequest = {
+        address_id: orderData.address_id,
         payment_method: orderData.payment_method as any,
         delivery_type: orderData.delivery_type,
         order_type: orderData.order_type,

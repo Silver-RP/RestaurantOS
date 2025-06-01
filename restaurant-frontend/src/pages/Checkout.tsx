@@ -24,8 +24,8 @@ interface Product {
 }
 
 interface OrderData {
+  address_id?: string | null;
   address?: {
-    id: string;
     full_name: string;
     phone: string;
     street_address: string;
@@ -154,13 +154,10 @@ const CheckoutPage = () => {
       },
     ]);
   }, [fetchedAddresses]);
-
-  const handleAddAddress = async (newAddr: Omit<Address, 'id'>) => {
+  const handleAddAddress = async (newAddr: Omit<Address, '_id'>) => {
     const newAddress: Address = {
       ...newAddr,
-      id: addresses.length
-        ? Math.max(...addresses.map((addr) => Number(addr.id))) + 1
-        : 1,
+      _id: crypto.randomUUID(), // generate a temporary string ID
     };
 
     setAddresses((prevAddresses) => {
@@ -173,7 +170,7 @@ const CheckoutPage = () => {
       return [...prevAddresses, newAddress];
     });
 
-    setSelectedId(newAddress.id);
+    setSelectedId(newAddress._id);
   };
 
   const handleDeliveryTimeChange = (time: DeliveryTime) => {
@@ -201,8 +198,7 @@ const CheckoutPage = () => {
     };
     setProducts(updatedProducts);
   };
-
-  const selectedAddress = addresses.find((addr) => addr.id === selectedId);
+  const selectedAddress = addresses.find((addr) => addr._id === selectedId || addr.id === selectedId);
 
   useEffect(() => {
     if (deliveryMethod === 'pickup') {
@@ -217,9 +213,8 @@ const CheckoutPage = () => {
   }, [deliveryMethod, deliveryTime.type]);
 
   const handleProceedToPayment = () => {
-    // Verify address is selected when delivery is chosen
     if (!selectedAddress && deliveryMethod === 'delivery') {
-      alert('Vui lòng chọn địa chỉ giao hàng');
+      toast.error('Vui lòng chọn địa chỉ giao hàng');
       return;
     }
 
@@ -251,7 +246,7 @@ const CheckoutPage = () => {
     const total_quantity = products.reduce(
       (sum, item) => sum + item.quantity,
       0,
-    );
+    );   
 
     const orderData: OrderData = {
       payment_method: paymentMethod as 'CASH' | 'BANKING' | 'VNPAY' | 'MOMO',
@@ -273,11 +268,10 @@ const CheckoutPage = () => {
       vat_amount,
       total_price,
       total_quantity,
-    };
-    if (deliveryMethod === 'delivery') {
+    };    if (deliveryMethod === 'delivery') {
       if (selectedAddress) {
+        orderData.address_id = selectedAddress._id || selectedAddress.id,
         orderData.address = {
-          id: selectedAddress._id,
           full_name: selectedAddress.full_name,
           phone: selectedAddress.phone,
           street_address: selectedAddress.street_address || '',
