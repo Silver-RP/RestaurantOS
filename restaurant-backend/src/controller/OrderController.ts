@@ -131,6 +131,7 @@ class OrderController {
       const orderId = new Types.ObjectId(req.params.id);
       const order = await OrderService.getOrderById(orderId);
 
+      // console.log('Retrieved order:', order);
       return res.status(200).json({
         message: 'Order retrieved successfully',
         order,

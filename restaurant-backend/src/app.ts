@@ -120,7 +120,7 @@ app.use('/api/order', AuthMiddleWare.verifyToken, OrderRoutes);
 app.use('/api/cart', AuthMiddleWare.verifyToken, CartRouter);
 app.use('/api/favorite', AuthMiddleWare.verifyToken, FavoriteRoutes);
 app.use('/api/address', AuthMiddleWare.verifyToken, AddressRouter);
-app.use('/api/payment', AuthMiddleWare.verifyToken, PaymentRoutes);
+app.use('/api/payment', PaymentRoutes); 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
   console.log('Mongo URI:', process.env.MONGO_URI);

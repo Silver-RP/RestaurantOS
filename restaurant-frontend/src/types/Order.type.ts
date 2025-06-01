@@ -97,6 +97,7 @@ interface User {
 }
 
 export interface Order {
+  postPayment: any;
   _id: string;
   user_id: User; // Sửa từ string thành User
   address_id: {

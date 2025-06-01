@@ -14,7 +14,6 @@ export async function getOrders(
   params?: OrderQueryParams,
 ): Promise<OrdersResponse> {
   const res = await api.get('/order/user-orders', { params });
-  console.log(res.data);
   return res.data;
 }
 
@@ -22,7 +21,6 @@ export async function getOrderById(
   orderId: string,
 ): Promise<OrderDetailResponse> {
   const res = await api.get(`/order/${orderId}`);
-  console.log(res.data);
   return res.data;
 }
 
@@ -71,5 +69,16 @@ export const updateOrderStatus = async (orderId: string, status: string) => {
 
 export const updatePaymentStatus = async (orderId: string, paidAmount: number ) => {
   const res = await api.put(`/payment/payment-status/${orderId}`, { paidAmount });
+  return res.data;
+}
+
+export const retryPayment = async (orderId: string) => {
+  console.log('Retrying payment for order:', orderId);
+  const res = await api.post(`/payment/retry-payment/${orderId}`);
+  return res.data;
+}
+
+export const changePaymentMethod = async (orderId: string, paymentMethod: string) => {
+  const res = await api.put(`/payment/change-payment/${orderId}`, { paymentMethod });
   return res.data;
 }
