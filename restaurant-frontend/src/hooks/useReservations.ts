@@ -15,7 +15,6 @@ import { RootState } from '@/redux/store';
 
 export const useReservations = () => {
   const currentUser = useSelector((state: RootState) => state.user.user);
-
   const createReservation = async (data: Partial<IReservation>) => {
     if (!currentUser?._id) {
       toastService.warning('Vui lòng đăng nhập để đặt bàn');

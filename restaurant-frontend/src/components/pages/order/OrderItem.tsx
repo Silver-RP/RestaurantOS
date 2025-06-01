@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { Order, OrderItem } from '@/types/Order.type';
 import { deliveryStatusMapping } from './NavigationOrder';
-import OrderDetailModal from './OrderDetailModal';
 import { useCancelOrder, useRequestCancel, useRequestReturn } from '@/hooks/useOrder';
 import { toast } from 'react-toastify';
+import { useDispatch } from 'react-redux';
+import { openOrderModal } from '@/redux/feature/modal/orderDetailModalSlice';
 
 interface ReasonModalProps {
   isOpen: boolean;
@@ -30,7 +31,7 @@ const ReasonModal: React.FC<ReasonModalProps> = ({ isOpen, onClose, onSubmit, ti
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-[120]">
       <div className="bg-bodyBackground rounded-xl shadow-2xl p-6 w-full max-w-md border border-white/10">
         <h2 className="text-xl font-bold mb-4 text-secondaryColor">{title}</h2>
         <form onSubmit={handleSubmit}>
@@ -68,13 +69,14 @@ interface OrderItemProps {
 
 const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
   const [showMore, setShowMore] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isReasonModalOpen, setIsReasonModalOpen] = useState(false);
   const [reasonModalType, setReasonModalType] = useState<'cancel' | 'request-cancel' | 'return'>('cancel');
   
   const cancelOrderMutation = useCancelOrder();
   const requestCancelMutation = useRequestCancel();
   const requestReturnMutation = useRequestReturn();
+
+  const dispatch = useDispatch();
 
   const items = order.order_items || [];
 
@@ -181,7 +183,19 @@ const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
       </div>
 
       {/* Các sản phẩm còn lại */}
-      {showMore && others.length > 0 && (
+      {others.length > 0 && (
+        <div className="flex justify-center mt-4">
+          <button
+            onClick={() => setShowMore(!showMore)}
+            className="flex items-center text-xs text-white/70 hover:underline"
+          >
+            {showMore ? 'Thu gọn' : 'Xem thêm'}{' '}
+            {showMore ? <FaChevronUp className="ml-1" /> : <FaChevronDown className="ml-1" />}
+          </button>
+        </div>
+      )}
+
+      {showMore && (
         <div className="mt-4 space-y-4">
           {others.map((item) => (
             <div key={item._id} className="flex justify-between items-center border-b border-white/10 pb-2 gap-4">
@@ -208,19 +222,6 @@ const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
               </div>
             </div>
           ))}
-        </div>
-      )}
-
-      {/* Toggle nút Xem thêm / Thu gọn */}
-      {others.length > 0 && (
-        <div className="flex justify-center mt-4">
-          <button
-            onClick={() => setShowMore(!showMore)}
-            className="flex items-center text-xs text-white/70 hover:underline"
-          >
-            {showMore ? 'Thu gọn' : 'Xem thêm'}{" "}
-            {showMore ? <FaChevronUp className="ml-1" /> : <FaChevronDown className="ml-1" />}
-          </button>
         </div>
       )}
 
@@ -290,18 +291,11 @@ const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
 
         <button
           className="px-4 py-1.5 text-xs bg-transparent border border-secondaryColor text-white font-normal font-sans hover:bg-secondaryColor hover:text-headerBackground focus:ring-bodyBackground active:bg-secondaryColor/90 active:text-headerBackground"
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => dispatch(openOrderModal(order._id))}
         >
           Xem chi tiết
         </button>
       </div>
-
-      {/* Modal chi tiết đơn hàng */}
-      <OrderDetailModal
-        isOpen={isModalOpen}
-        orderId={order._id}
-        onClose={() => setIsModalOpen(false)}
-      />
 
       {/* Modal nhập lý do */}
       <ReasonModal

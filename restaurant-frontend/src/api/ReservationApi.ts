@@ -23,7 +23,7 @@ export const getReservationByIdApi = async (id: string) => {
 };
 
 export const updateReservationStatusApi = async (id: string, status: string) => {
-  const response = await axiosInstance.patch(`/reservation/${id}`, { status });
+  const response = await axiosInstance.patch(`/reservation/${id}/cancel`, { status });
   return response.data.data;
 };
 
@@ -47,7 +47,5 @@ export const getMyReservationsApi = async (params?: {
   
     const queryString = query.toString() ? `?${query.toString()}` : '';
     const res = await axiosInstance.get(`/reservation/my-reservations${queryString}`);
-    console.log("alo: ", res)
-    console.log(res)
     return res.data;
   };
