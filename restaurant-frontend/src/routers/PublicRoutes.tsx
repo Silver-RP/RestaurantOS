@@ -1,6 +1,6 @@
 import { Navigate } from 'react-router-dom';
 import AppLayout from '../layouts/AppLayout';
-
+import React from 'react';
 import Homepage from '../pages/Homepage';
 import AboutUs from '../pages/AboutUs';
 import Register from '../pages/Register';
@@ -57,7 +57,7 @@ const PublicRoutes = [
       { path: '*', element: <Navigate to="/" /> },
       { path: '/post-details', element: <PostDetailsPage /> },
       { path: '/confirm', element: <ConfirmOrder /> },
-      { path: '/my-reservation', element: <MyReservationsPage /> },
+      { path: '/profile/my-reservation', element: <MyReservationsPage /> },
       { path: '/payment-success', element: <PaymentSuccess /> },
       { path: '/payment-failed', element: <PaymentFailed /> },
     ],

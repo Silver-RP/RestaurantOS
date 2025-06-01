@@ -9,7 +9,10 @@ export const reservationTabs = [
   'Hoàn tất',
 ];
 
-export const reservationStatusMapping: Record<string, ReservationStatus[] | null> = {
+export const reservationStatusMapping: Record<
+  string,
+  ReservationStatus[] | null
+> = {
   'Tất cả': null,
   'Chờ xác nhận': ['PENDING'],
   'Đã xác nhận': ['CONFIRMED'],
@@ -24,15 +27,17 @@ interface Props {
 
 const NavigationReservation: React.FC<Props> = ({ activeTab, onTabChange }) => {
   return (
-    <div className="text-white px-2 md:px-4 py-4">
-      <h1 className="text-xl md:text-2xl font-semibold mb-4">Lịch sử đặt bàn</h1>
+    <div className="text-white px-2 md:px-0 py-4">
+      <h1 className="text-xl md:text-2xl mb-4">Lịch sử đặt bàn</h1>
       <div className="overflow-x-auto">
-        <div className="flex text-xs md:text-sm whitespace-nowrap space-x-4 pb-4 border-b border-white/20">
+        <div className="flex text-xs lg:justify-between md:text-base whitespace-nowrap space-x-4 md:justify-between pb-4 border-b border-white/20">
           {reservationTabs.map((tab) => (
             <button
               key={tab}
               onClick={() => onTabChange(tab)}
-              className={`hover:underline transition ${activeTab === tab ? 'underline text-secondaryColor' : ''}`}
+              className={`hover:underline transition ${
+                activeTab === tab ? 'underline text-secondaryColor' : ''
+              }`}
             >
               {tab}
             </button>

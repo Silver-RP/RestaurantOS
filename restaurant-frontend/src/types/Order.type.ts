@@ -149,6 +149,7 @@ export interface OrdersResponse {
   total: number;
   currentPage: number;
   totalPages: number;
+  filters?: { [key: string]: string };
 }
 
 export interface OrderDetailResponse {

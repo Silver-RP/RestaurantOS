@@ -15,6 +15,8 @@ import SearchModal from "@components/common/SearchModal";
 
 import ToastSwitcher from "@components/common/ToastSwitcher";
 import FullScreenOverlayLoading from "./components/common/FullScreenOverlayLoading";
+import GlobalReservationModal from "./components/common/modals/GlobalReservationModal";
+import GlobalOrderModal from "./components/common/modals/GlobalOrderModal";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +34,8 @@ const App = () => {
           <AppRoutes />
           <QuickViewModal /> 
           <SearchModal/>
+          <GlobalReservationModal />
+          <GlobalOrderModal/>
         </Router>
       </QueryClientProvider>
     </Provider>
