@@ -128,9 +128,9 @@ export const useUpdatePaymentStatus = () => {
   return useMutation<
     ReturnType<typeof updatePaymentStatus>,
     Error,
-    { orderId: string; paidAmount: number }
+    { paymentId: string; paidAmount: number }
   >({
-    mutationFn: ({ orderId, paidAmount }) => updatePaymentStatus(orderId, paidAmount),
+    mutationFn: ({ paymentId, paidAmount }) => updatePaymentStatus(paymentId, paidAmount),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: ['all-orders'] });

@@ -41,7 +41,6 @@ export const vnpayReturn = async (req: Request, res: Response): Promise<any> => 
     }
 };
 
-
 export const momoReturn = async (req: Request, res: Response): Promise<any> => {
     try {
         const { orderId, amount, resultCode } = req.query;
@@ -114,7 +113,6 @@ export const paypalReturn = async (req: Request, res: Response): Promise<any> =>
     }
 };
 
-
 export const updatePaymentStatus = async (req: Request, res: Response): Promise<any> => {
     try {
         const { paymentId } = req.params;
@@ -132,7 +130,6 @@ export const updatePaymentStatus = async (req: Request, res: Response): Promise<
         return res.status(500).send('Internal Server Error');
     }
 };
-
 
 function convertUSDtoVND(usdAmount: number): number {
     const exchangeRate = 26000;

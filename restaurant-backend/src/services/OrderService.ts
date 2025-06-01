@@ -614,6 +614,7 @@ class OrderService {
       let postPayment = null;
       if (payment?.payment_method === 'BANKING' && payment?.bankingInfo) {
         postPayment = {
+          paymentId: payment._id,
           bankingInfo: payment.bankingInfo,
           type: payment.payment_method,
           orderTotal: order.total_price,
