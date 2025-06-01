@@ -393,6 +393,74 @@ class OrderService {
     }
   }
 
+  async changePaymentMethod(orderId: string, paymentMethod: string, userId: string) {
+    if (!orderId || !paymentMethod) {
+      throw new Error('Missing orderId or paymentMethod');
+    }
+  
+    const session = await mongoose.startSession();
+    session.startTransaction();
+  
+    try {
+      const order = await Order.findById(orderId).session(session);
+      if (!order) throw new Error('Order not found');
+  
+      if (order.user_id.toString() !== userId) {
+        throw new Error('Not authorized to change this order');
+      }
+  
+      const invalidStatuses = ['PAID', 'CANCELLED', 'COMPLETED', 'RETURNED'];
+      if (invalidStatuses.includes(order.payment_status) || invalidStatuses.includes(order.status) || order.delivery_status === 'CANCELLED') {
+        throw new Error('Cannot change payment method for paid, cancelled, completed or returned orders');
+      }
+  
+      const validMethods = ['CASH', 'VNPAY', 'MOMO', 'CREDIT_CARD', 'BANKING', 'MOMO_ATM'];
+      if (!validMethods.includes(paymentMethod)) {
+        throw new Error('Invalid payment method');
+      }
+  
+      if (order.payment_method === paymentMethod) {
+        await session.commitTransaction();
+        session.endSession();
+        return order;
+      }
+  
+      const payments = await Payment.find({
+        orderId: orderId,
+        payment_status: { $in: ['UNPAID', 'PENDING', 'FAILED'] }
+      }).session(session);
+  
+      if (payments.length > 0) {
+        for (const payment of payments) {
+          payment.payment_method = paymentMethod as "CASH" | "BANKING" | "VNPAY" | "MOMO" | "MOMO_ATM" | "CREDIT_CARD";
+          await payment.save({ session });
+        }
+      } else {
+        await Payment.create([{
+          orderId: order._id,
+          payment_method: paymentMethod as "CASH" | "BANKING" | "VNPAY" | "MOMO" | "MOMO_ATM" | "CREDIT_CARD",
+          payment_status: 'UNPAID',
+          amount: order.total_price,
+          transaction_code: null,
+          bankingInfo: null,
+        }], { session });
+      }
+  
+      order.payment_method = paymentMethod as "CASH" | "BANKING" | "VNPAY" | "MOMO" | "MOMO_ATM" | "CREDIT_CARD";
+      order.payment_status = 'UNPAID';
+      await order.save({ session });
+  
+      await session.commitTransaction();
+      session.endSession();
+  
+      return order;
+    } catch (error) {
+      await session.abortTransaction();
+      session.endSession();
+      throw error;
+    }
+  }
+  
   async getAllOrders(options: {
     page: number;
     limit: number;
@@ -532,15 +600,34 @@ class OrderService {
   async getOrderById(orderId: mongoose.Types.ObjectId) {
     try {
       const order = await Order.findById(orderId).populate('address_id').lean();
-
+  
       if (!order) {
         throw { statusCode: 404, message: 'Order not found' };
       }
-      const orderItems = await OrderDetail.find({ order_id: orderId }).populate('dish_id').lean();
-
+  
+      const orderItems = await OrderDetail.find({ order_id: orderId })
+        .populate('dish_id')
+        .lean();
+  
+      // ✅ Truy vấn payment liên quan đến đơn hàng
+      const payments = await Payment.find({ orderId }).sort({ createdAt: -1 }).lean();
+      const payment = payments[0]
+      console.log('Payment ID query executed:', payment?._id);
+      console.log('Payment found:', payment);
+  
+      let postPayment = null;
+      if (payment?.payment_method === 'BANKING' && payment?.bankingInfo) {
+        postPayment = {
+          bankingInfo: payment.bankingInfo,
+          type: payment.payment_method,
+          orderTotal: order.total_price,
+        };
+      }
+  
       return {
         ...order,
         order_items: orderItems,
+        postPayment,
       };
     } catch (error: any) {
       throw {
@@ -549,6 +636,7 @@ class OrderService {
       };
     }
   }
+  
 
   async updateOrderStatus(orderId: mongoose.Types.ObjectId, status: string) {
     try {

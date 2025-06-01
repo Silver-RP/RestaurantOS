@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { formatDate } from '@/utils/formatDate';
 import {
   useOrderDetail,
@@ -6,6 +6,8 @@ import {
   useHandleChangePaymentMethod,
 } from '@/hooks/useOrder';
 import { OrderItem } from '@/types/Order.type';
+import PaymentMethodSelector from '../checkout/PaymentMethodSelector';
+import { FiDownload } from 'react-icons/fi';
 
 interface OrderDetailModalProps {
   orderId: string;
@@ -19,36 +21,59 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
   onClose,
 }) => {
   const { data, isLoading, isError, error } = useOrderDetail(orderId);
-  const { mutate: retryPaymentMutate, isPending: retrying } =
-    useHandleRetryPayment();
-  const { mutate: changePaymentMethodMutate, isPending: changingMethod } =
-    useHandleChangePaymentMethod();
+  const { mutate: retryPaymentMutate, isPending: retrying } = useHandleRetryPayment();
+  const { mutate: changePaymentMethodMutate, isSuccess, data: changeMethodResult, isPending: changingMethod } = useHandleChangePaymentMethod();
 
-  const handleRetryPayment = () => {
-    console.log('Retrying payment for order:', orderId);
-    retryPaymentMutate({ orderId });
+  const [showSelector, setShowSelector] = useState(false);
+  const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
+  const [bankingInfo, setBankingInfo] = useState<any | null>(null);
+  const shortOrderId = bankingInfo?.transfer_note
+    ? bankingInfo.transfer_note.slice(-6).toUpperCase()
+    : '';
+  const [showBankingInfo, setShowBankingInfo] = useState(false);
+
+  useEffect(() => {
+    if (data?.order) {
+      setSelectedMethod(data.order.payment_method);
+    }
+  }, [data?.order]);
+
+  const handleRetryPayment = () => { retryPaymentMutate({ orderId })};
+  const handleChangePaymentMethod = () => { setShowSelector(true) };
+
+  const handleConfirmChangePaymentMethod = () => {
+    if (!selectedMethod || selectedMethod === data?.order?.payment_method) return;
+    changePaymentMethodMutate({ orderId, paymentMethod: selectedMethod });
   };
 
-  const handleChangePaymentMethod = () => {
-    if (order?._id) {
-      const newMethod = prompt(
-        'Nhập phương thức thanh toán mới (CASH, CREDIT_CARD, BANK_TRANSFER, MOMO, MOMO_ATM):',
-        order.payment_method,
-      );
-
-      if (newMethod !== null) {
-        changePaymentMethodMutate({
-          orderId: order._id,
-          paymentMethod: newMethod,
-        });
+  useEffect(() => {
+    if (isSuccess && changeMethodResult) {
+      const postPayment = changeMethodResult.postPayment;
+  
+      if (postPayment?.type === 'BANKING' && postPayment?.bankingInfo) {
+        setBankingInfo(postPayment.bankingInfo);
+        console.log('Banking Info:', postPayment.bankingInfo);
+        setShowBankingInfo(true);
+      } else if (postPayment?.redirectUrl) {
+        window.location.href = postPayment.redirectUrl;
+      } else {
+        setShowBankingInfo(false);
+        setBankingInfo(null);
       }
     }
-  };
+  }, [isSuccess, changeMethodResult]);
 
-  const isBusy = isLoading || retrying || changingMethod;
-
-  if (!isOpen) return null;
-  if (isBusy)
+  useEffect(() => {
+    if (data?.order.payment_method === 'BANKING' && data?.order.postPayment?.bankingInfo) {
+      setBankingInfo(data?.order.postPayment.bankingInfo);
+      setShowBankingInfo(true);
+    } else {
+      setShowBankingInfo(false);
+      setBankingInfo(null);
+    }
+  }, [data?.order]);
+  
+  if (isLoading || retrying || changingMethod)
     return (
       <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
         <div className="bg-bodyBackground rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex items-center justify-center p-8 border border-white/10">
@@ -58,6 +83,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
         </div>
       </div>
     );
+
   if (isError || !data?.order)
     return (
       <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
@@ -70,18 +96,23 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
     );
 
   const order = data.order;
+  console.log("order =", order);
   const formatPrice = (price: number) => price.toLocaleString('vi-VN') + ' VND';
   const address =
     typeof order?.address_id === 'object' && order?.address_id !== null
       ? order?.address_id
       : null;
 
+
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
+    <div className={`fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50  ${!isOpen ? 'hidden' : ''}`}>
+     
       <div
         className="bg-bodyBackground rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-0 relative border border-white/10 custom-scroll"
         style={{ scrollbarColor: '#FFDA95 #0a2233', scrollbarWidth: 'thin' }}
       >
+         
         <style>{`
           .custom-scroll::-webkit-scrollbar {
             width: 10px;
@@ -103,6 +134,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
           &times;
         </button>
         <div className="p-8 pb-4">
+
           <div className="text-2xl font-bold mb-6 text-secondaryColor flex items-center gap-2">
             <span>Đơn #{order._id.slice(-6).toUpperCase()}</span>
             <span className="text-sm text-white/60 font-normal">
@@ -204,7 +236,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                         : order.payment_method === 'BANK_TRANSFER'
                           ? 'Chuyển khoản'
                           : order.payment_method === 'MOMO'
-                            ? 'Momo'
+                            ? 'Momo (QR)'
                             : order.payment_method === 'MOMO_ATM'
                               ? 'Momo ATM/Thẻ'
                               : order.payment_method}
@@ -214,12 +246,14 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                   <span className="font-semibold">Trạng thái thanh toán:</span>
                   <span className="text-md">
                     {{
-                        PAID: 'Đã thanh toán',
-                        PENDING: 'Đang chờ thanh toán',
-                        UNPAID: 'Chưa thanh toán',
-                        FAILED: 'Thanh toán thất bại',
-                        REFUNDED : 'Đã hoàn tiền',
-                      }[order.payment_status as keyof typeof order.payment_status] || 'Chưa thanh toán'}
+                      PAID: 'Đã thanh toán',
+                      PENDING: 'Đang chờ thanh toán',
+                      UNPAID: 'Chưa thanh toán',
+                      FAILED: 'Thanh toán thất bại',
+                      REFUNDED: 'Đã hoàn tiền',
+                    }[
+                      order.payment_status as keyof typeof order.payment_status
+                    ] || 'Chưa thanh toán'}
                   </span>
                 </div>
                 {order.paid_at && (
@@ -258,33 +292,133 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                     <span className="text-md">{order.cancelled_reason}</span>
                   </div>
                 )}
-                {order.payment_status !== 'PAID' &&
-                  order.status !== 'CANCELLED' && (
-                    <div className="flex gap-2 pt-2">
-                      {order.payment_method !== 'CASH' && (
+                {order.payment_status !== 'PAID' && order.status !== 'CANCELLED' && (
+                  <div className="pt-2">
+                    {!showSelector ? (
+                      <div className="flex gap-2">
+                        {order.payment_method !== 'CASH' && (
+                          <button
+                            disabled={retrying}
+                            className="px-4 py-1.5 text-xs bg-secondaryColor border border-secondaryColor text-black font-normal font-sans hover:bg-bodyBackground hover:text-white focus:ring-bodyBackground active:bg-bodyBackground/90 active:text-headerBackground disabled:opacity-50"
+                            onClick={handleRetryPayment}
+                          >
+                            {retrying ? 'Đang xử lý...' : 'Thanh toán lại'}
+                          </button>
+                        )}
                         <button
-                          disabled={retrying}
+                          disabled={changingMethod}
                           className="px-4 py-1.5 text-xs bg-secondaryColor border border-secondaryColor text-black font-normal font-sans hover:bg-bodyBackground hover:text-white focus:ring-bodyBackground active:bg-bodyBackground/90 active:text-headerBackground disabled:opacity-50"
-                          onClick={handleRetryPayment}
+                          onClick={handleChangePaymentMethod}
                         >
-                          {retrying ? 'Đang xử lý...' : 'Thanh toán lại'}
+                          {changingMethod ? 'Đang cập nhật...' : 'Thay đổi phương thức'}
                         </button>
-                      )}
-                      <button
-                        disabled={changingMethod}
-                        className="px-4 py-1.5 text-xs bg-secondaryColor border border-secondaryColor text-black font-normal font-sans hover:bg-bodyBackground hover:text-white focus:ring-bodyBackground active:bg-yellow-500/90 active:text-headerBackground disabled:opacity-50"
-                        onClick={handleChangePaymentMethod}
-                      >
-                        {changingMethod
-                          ? 'Đang cập nhật...'
-                          : 'Thay đổi phương thức'}
-                      </button>
-                    </div>
-                  )}
+                      </div>
+                    ) : (
+                      <>
+                        <PaymentMethodSelector
+                          selectedMethod={selectedMethod}
+                          onChange={setSelectedMethod}
+                          size="sm" 
+                        />
+                        <div className="flex gap-2 mt-2">
+                          <button
+                            onClick={handleConfirmChangePaymentMethod}
+                            disabled={
+                              changingMethod ||
+                              !selectedMethod ||
+                              selectedMethod === order.payment_method
+                            }
+                            className="px-4 py-1.5 text-xs bg-secondaryColor border border-secondaryColor text-black font-normal font-sans hover:bg-bodyBackground hover:text-white focus:ring-bodyBackground active:bg-bodyBackground/90 active:text-headerBackground disabled:opacity-50"
+                          >
+                            Xác nhận
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowSelector(false);
+                              setSelectedMethod(order.payment_method);
+                            }}
+                            className="px-4 py-1.5 text-xs bg-bodyBackground border border-secondaryColor text-white font-normal font-sans hover:bg-secondaryColor hover:text-black focus:ring-bodyBackground active:bg-bodyBackground/90 active:text-headerBackground disabled:opacity-50"
+                          >
+                            Hủy
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+
+
+
+
               </div>
             </div>
           </section>
+          {bankingInfo && showBankingInfo && (
+          <div className="bg-bodyBackground flex justify-center px-4 pb-24">
+            <div className="bg-white/10 backdrop-blur-md shadow-xl rounded-2xl p-6 w-full max-w-2xl text-left text-white border border-white/10">
+              <h2 className="text-2xl font-semibold mb-4 text-white">
+                Thông tin chuyển khoản
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                <div className="space-y-2">
+                  <p>
+                    <strong>Ngân hàng:</strong> {bankingInfo.bank_name}
+                  </p>
+                  <p>
+                    <strong>Chủ tài khoản:</strong> {bankingInfo.account_name}
+                  </p>
+                  <p>
+                    <strong>Số tài khoản:</strong> {bankingInfo.account_number}
+                  </p>
+                  <p>
+                    <strong>Số tiền:</strong> 
+                    <span className="ml-1 font-semibold text-green-300">
+                      {order.total_price.toLocaleString('vi-VN', {
+                        style: 'currency',
+                        currency: 'VND',
+                      })}
+                    </span>
+                  </p>
+                  <p>
+                    <strong>Nội dung chuyển khoản:</strong> <br />
+                    <span className="font-semibold text-yellow-300">
+                      ORDER-{shortOrderId}
+                    </span>
+                  </p>
+                  <p>
+                    <strong>Mã đơn hàng:</strong>{' '}
+                    <span className="font-semibold text-green-300">
+                      {shortOrderId}
+                    </span>
+                  </p>
+                  <p className="text-red-400 text-sm font-medium">
+                    ⚠️ Vui lòng nhập chính xác nội dung chuyển khoản{' '}
+                    <strong className="text-yellow-300">
+                      ORDER-{shortOrderId}
+                    </strong>{' '}
+                    để hệ thống xác nhận tự động.
+                  </p>
+                </div>
 
+                <div className="flex flex-col items-center justify-center gap-4">
+                  <img
+                    src={bankingInfo.qr_code}
+                    alt="QR Code"
+                    className="w-52 h-52 object-contain border rounded-xl shadow-lg bg-white"
+                  />
+                  <a
+                    href={bankingInfo.qr_code}
+                    download={`QR_ORDER_${shortOrderId}.png`}
+                    className="flex items-center gap-2 text-sm px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition duration-200"
+                  >
+                    <FiDownload />
+                    Tải mã QR
+                  </a>
+                </div>
+              </div>
+            </div>
+        </div>
+      )}
           {/* Địa chỉ giao hàng */}
           <section className="mb-6">
             <h3 className="text-lg font-semibold mb-2 text-white">

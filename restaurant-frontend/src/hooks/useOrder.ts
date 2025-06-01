@@ -153,7 +153,6 @@ export const useHandleRetryPayment = () => {
     mutationFn: ({ orderId }: { orderId: string; }) =>
       retryPayment(orderId),
     onSuccess: (res) => {
-      console.log('Retry payment response:', res);
       if (res.postPayment?.redirectUrl) {
         window.location.href = res.postPayment.redirectUrl;
         return;
@@ -178,16 +177,24 @@ export const useHandleChangePaymentMethod = () => {
   return useMutation({
     mutationFn: ({ orderId, paymentMethod }: { orderId: string; paymentMethod: string }) =>
       changePaymentMethod(orderId, paymentMethod),
-    onSuccess: () => {
+    onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: ['all-orders'] });
       queryClient.invalidateQueries({ queryKey: ['order'] });
-      toast.success('Cập nhật phương thức thanh toán thành công');
-    },
+      toast.success('Thay đổi phương thức thanh toán thành công');
+      console.log('Change payment method response:', res);
+      console.log('Change Bankingresponse:', res.postPayment?.bankingInfo);
+
+      setTimeout(() => {
+      if (res.postPayment?.redirectUrl) {
+        window.location.href = res.postPayment.redirectUrl;
+        return;
+      }
+    }, 2000)},
     onError: (error: any) => {
       const errorMessage =
         error.response?.data?.message ||
-        'Có lỗi xảy ra khi cập nhật phương thức thanh toán';
+        'Có lỗi xảy ra khi thay đổi phương thức thanh toán';
       toast.error(errorMessage);
     },
   });

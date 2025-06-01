@@ -14,7 +14,6 @@ export async function getOrders(
   params?: OrderQueryParams,
 ): Promise<OrdersResponse> {
   const res = await api.get('/order/user-orders', { params });
-  console.log(res.data);
   return res.data;
 }
 
@@ -22,7 +21,6 @@ export async function getOrderById(
   orderId: string,
 ): Promise<OrderDetailResponse> {
   const res = await api.get(`/order/${orderId}`);
-  console.log(res.data);
   return res.data;
 }
 

@@ -141,7 +141,6 @@ function convertUSDtoVND(usdAmount: number): number {
 
 export const retryPayment = async (req: Request, res: Response): Promise<any> => {
     try {
-        console.log('Retrying payment for order:', req.params);
         const { orderId } = req.params;
 
         if (!orderId) {
@@ -170,20 +169,24 @@ export const retryPayment = async (req: Request, res: Response): Promise<any> =>
 };
 
 export const changePaymentMethod = async (req: Request, res: Response): Promise<any> => {
-    // try {
-    //     const { orderId } = req.params;
-    //     const { paymentMethod } = req.body;
+    try {
+        const { orderId } = req.params;
+        const { paymentMethod } = req.body;
+        const userId = (req.user as IUser).id as Types.ObjectId;
 
-    //     if (!orderId || !paymentMethod) {
-    //         return res.status(400).send('Missing orderId or paymentMethod');
-    //     }
+        if (!orderId || !paymentMethod) {
+            return res.status(400).send('Missing orderId or paymentMethod');
+        }
 
-    //     const updatedOrder = await OrderService.changePaymentMethod(orderId, paymentMethod);
-    //     return res.status(200).json(updatedOrder);
-    // } catch (error) {
-    //     console.error('Change payment method error:', error);
-    //     return res.status(500).send('Internal Server Error');
-    // }
+        const updatedOrder = await OrderService.changePaymentMethod(orderId, paymentMethod, userId.toString());
+        const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
+        const postPayment = await OrderService.handlePostPaymentLogic(updatedOrder, clientIp.toString());
+
+        return res.status(200).json({updatedOrder, postPayment});
+    } catch (error) {
+        console.error('Change payment method error:', error);
+        return res.status(500).send('Internal Server Error');
+    }
 }
 
 
