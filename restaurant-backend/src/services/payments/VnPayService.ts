@@ -8,7 +8,7 @@ const VNP_RETURN_URL = process.env.VNP_RETURN_URL || 'http://localhost:4000/api/
 
 export const createVNPayPaymentUrl = (order: IOrder, clientIp: string, paymentId: string) => {
     return vnpay.buildPaymentUrl({
-        vnp_Amount: (order.total_price || 0) * 100, 
+        vnp_Amount: (order.total_price || 0), 
         vnp_IpAddr: clientIp || '127.0.0.1',
         vnp_TxnRef: paymentId,
         vnp_OrderInfo: `Thanh toán đơn hàng #${order._id.toString()}`,

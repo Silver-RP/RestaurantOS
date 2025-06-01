@@ -21,23 +21,30 @@ const PaymentSuccess = () => {
     ? bankingInfo.transfer_note.slice(-6).toUpperCase()
     : '';
 
-  useEffect(() => {
-    const storedInfo = sessionStorage.getItem('recentBankingInfo');
-    if (storedInfo) {
-      setBankingInfo(JSON.parse(storedInfo));
-    }
-
-    const orderTotal = sessionStorage.getItem('orderTotal');
-    if (orderTotal) {
-      const total = parseFloat(orderTotal);
-      if (isNaN(total)) {
-        console.error('Invalid order total in sessionStorage');
+    useEffect(() => {
+      const query = new URLSearchParams(window.location.search);
+      const paymentMethod = query.get('method'); 
+    
+      if (paymentMethod === 'vnpay' || paymentMethod === 'paypal' || paymentMethod === 'momo') {
+        sessionStorage.removeItem('recentBankingInfo');
       }
-    } else {
-      console.error('Order total not found in sessionStorage');
-    }
-  }, []);
-
+    
+      const storedInfo = sessionStorage.getItem('recentBankingInfo');
+      if (storedInfo) {
+        setBankingInfo(JSON.parse(storedInfo));
+      }
+    
+      const orderTotal = sessionStorage.getItem('orderTotal');
+      if (orderTotal) {
+        const total = parseFloat(orderTotal);
+        if (isNaN(total)) {
+          console.error('Invalid order total in sessionStorage');
+        }
+      } else {
+        console.error('Order total not found in sessionStorage');
+      }
+    }, []);
+    
 
   return (
     <>

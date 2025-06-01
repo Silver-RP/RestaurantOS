@@ -294,7 +294,6 @@ class OrderService {
     await payment.save();
   
     const order = await Order.findById(payment.orderId);
-    console.log('Order found:', order);
     if (!order) throw new Error('Order not found');
   
     order.payment_status = 'FAILED';
@@ -609,11 +608,8 @@ class OrderService {
         .populate('dish_id')
         .lean();
   
-      // ✅ Truy vấn payment liên quan đến đơn hàng
       const payments = await Payment.find({ orderId }).sort({ createdAt: -1 }).lean();
       const payment = payments[0]
-      console.log('Payment ID query executed:', payment?._id);
-      console.log('Payment found:', payment);
   
       let postPayment = null;
       if (payment?.payment_method === 'BANKING' && payment?.bankingInfo) {
@@ -637,7 +633,6 @@ class OrderService {
     }
   }
   
-
   async updateOrderStatus(orderId: mongoose.Types.ObjectId, status: string) {
     try {
       const order = await Order.findById(orderId);
@@ -881,6 +876,7 @@ class OrderService {
       };
     }
   }
+
 }
 
 export default new OrderService();

@@ -30,7 +30,7 @@ export const vnpayReturn = async (req: Request, res: Response): Promise<any> => 
 
         if (vnp_ResponseCode === '00') {
             await OrderService.markPaymentPaid(paymentId, amount, '', null);
-            return res.redirect(`${CLIENT_BASE_URL}/payment-success`);
+            return res.redirect(`${CLIENT_BASE_URL}/payment-success?method=vnpay`);
         } else {
             await OrderService.markPaymentFailed(paymentId, 'VNPay return failed');
             return res.redirect(`${CLIENT_BASE_URL}/payment-failed?orderId=${payment.orderId}`);
@@ -68,7 +68,7 @@ export const momoReturn = async (req: Request, res: Response): Promise<any> => {
 
         await OrderService.markPaymentPaid(paymentId, paidAmount, transactionCode, null);
 
-        return res.redirect(`${CLIENT_BASE_URL}/payment-success`);
+        return res.redirect(`${CLIENT_BASE_URL}/payment-success?method=vnpay`);
     } catch (error) {
         console.error('MoMo return error:', error);
         return res.status(500).send('Internal Server Error');
@@ -103,7 +103,7 @@ export const paypalReturn = async (req: Request, res: Response): Promise<any> =>
 
         if (captureResult.status === 'COMPLETED') {
             await OrderService.markPaymentPaid(payment.id, amountVND, captureResult.id, null);
-            return res.redirect(`${CLIENT_BASE_URL}/payment-success`);
+            return res.redirect(`${CLIENT_BASE_URL}/payment-success?method=vnpay`);
         } else {
             await OrderService.markPaymentFailed(payment.id, `PayPal status: ${captureResult.status}`);
             return res.redirect(`${CLIENT_BASE_URL}/payment-failed?orderId=${payment.orderId}`);

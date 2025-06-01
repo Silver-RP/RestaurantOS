@@ -176,7 +176,7 @@ const OrderConfirmation = () => {
       }
       const response = await placeDirectOrderMutation.mutateAsync(apiOrderData);
 
-      if (response.postPayment?.bankingInfo) {
+      if (response.postPayment?.bankingInfo !== null) {
         sessionStorage.setItem('recentBankingInfo', JSON.stringify(response.postPayment.bankingInfo));
       } else {
         sessionStorage.removeItem('recentBankingInfo');
