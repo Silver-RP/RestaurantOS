@@ -7,7 +7,6 @@ import ReservationCard from '@/components/pages/myreservation/ReservationCard';
 import ReservationDetailModal from '@/components/pages/myreservation/ReservationDetailModal';
 import NavigationReservation, { reservationStatusMapping } from '@/components/pages/myreservation/NavigationReservation';
 import { FaHome, FaUserCircle } from 'react-icons/fa';
-import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
 
 const MyReservationsPage: React.FC = () => {
@@ -24,7 +23,6 @@ const MyReservationsPage: React.FC = () => {
     const statuses = reservationStatusMapping[activeTab];
     const data = await getMyReservations({ status: statuses, page, limit });
     if (data) {
-        console.log('[FE] Nhận lại dữ liệu:', data);
         setReservations(data.reservations || []);
       }
     setLoading(false);
@@ -33,35 +31,11 @@ const MyReservationsPage: React.FC = () => {
   useEffect(() => {
     fetchReservations();
   }, [activeTab, page]);
-
-  const handleCancel = (reservationId: string) => {
-    confirmAlert({
-      overlayClassName: 'custom-overlay',
-      customUI: ({ onClose }) => (
-        <div className="custom-ui bg-headerBackground text-white p-6 rounded shadow-md max-w-md mx-auto text-center">
-          <h2 className="text-xl mb-4 text-red-400 font-semibold">Xác nhận hủy</h2>
-          <p className="mb-6">Bạn có chắc chắn muốn hủy đơn đặt bàn này không?</p>
-          <div className="flex justify-center gap-4">
-            <button
-              className="bg-gray-500 hover:bg-gray-600 px-4 py-2 rounded"
-              onClick={onClose}
-            >
-              Không
-            </button>
-            <button
-              className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded"
-              onClick={async () => {
-                await updateReservationStatus(reservationId, 'CANCELLED');
-                onClose();
-                fetchReservations?.();
-              }}
-            >
-              Có, hủy đơn
-            </button>
-          </div>
-        </div>
-      ),
-    });
+  const handleCancel = async (reservationId: string) => {
+    setLoading(true);
+    await updateReservationStatus(reservationId, 'CANCELLED');
+    await fetchReservations(); // reload lại danh sách sau khi hủy
+    setLoading(false);
   };
 
   return (
