@@ -19,7 +19,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
   if (!isOpen) return null;
   if (isLoading)
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
+      <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-[120]">
         <div className="bg-bodyBackground rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex items-center justify-center p-8 border border-white/10">
           <span className="text-white text-lg">
             Đang tải dữ liệu đơn hàng...

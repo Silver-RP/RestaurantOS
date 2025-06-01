@@ -1,6 +1,7 @@
 import { Reservation } from '../models/ReservationModel';
 import { ReservationDetail } from '../models/ReservationDetailModel';
 import { Types } from 'mongoose';
+import { Dish } from '../models/DishModel';
 
 class ReservationService {
   async createReservation(data: any, userId: Types.ObjectId) {
@@ -82,7 +83,24 @@ class ReservationService {
     if (!reservation) throw new Error('Không tìm thấy đơn đặt bàn');
 
     const details = await ReservationDetail.find({ reservation_id: id }).lean();
-    return { ...reservation, details };
+
+    // Gắn thêm ảnh đại diện cho mỗi món ăn
+    const detailsWithImages = await Promise.all(
+      details.map(async (item) => {
+        let image: string | null = null;
+
+        try {
+          const dish = await Dish.findById(item.dish_id, 'images').lean();
+          image = dish?.images?.[0] || null;
+        } catch {
+          console.warn('Không tìm thấy ảnh cho món:', item.dish_id);
+        }
+
+        return { ...item, image };
+      }),
+    );
+
+    return { ...reservation, details: detailsWithImages };
   }
 
   async getAllReservations() {

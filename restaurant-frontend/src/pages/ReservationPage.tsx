@@ -10,6 +10,9 @@ import ReservationSteps from '@/components/pages/reservation/ReservationSteps';
 import { confirmAlert } from 'react-confirm-alert';
 import ButtonComponents from '@/components/common/ButtonComponents';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/redux/store';
+import { toastService } from '@/utils/toastService';
 const steps = [
   { label: 'Thông tin', step: 1 },
   { label: 'Vị trí ngồi', step: 2 },
@@ -40,6 +43,13 @@ const ReservationPage: React.FC = () => {
       selectedItems: [],
     };
   };
+  const currentUser = useSelector((state: RootState) => state.user.user);
+  useEffect(() => {
+    if (!currentUser?._id) {
+      toastService.warning('Vui lòng đăng nhập để đặt bàn');
+      navigate('/');
+    }
+  }, [currentUser, navigate]);
 
   const [formData, setFormData] =
     useState<ReservationFormData>(getInitialFormData());

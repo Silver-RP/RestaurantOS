@@ -78,7 +78,7 @@ const CartPage = () => {
           <h1 className="text-3xl mb-8 text-center lg:text-left">Giỏ hàng</h1>
 
           {isCartEmpty ? (
-            <div className="text-center py-20 text-white/70">
+           <div className="flex flex-col items-center justify-center text-center text-white/70 min-h-[calc(100vh-656px)]">
               <h2 className="text-xl mb-4">
                 Không có sản phẩm nào trong giỏ hàng
               </h2>

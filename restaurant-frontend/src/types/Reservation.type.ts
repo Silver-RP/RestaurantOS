@@ -24,6 +24,7 @@ export interface IReservationDetail {
   unit_price: number;
   quantity: number;
   total_amount: number;
+  image?: string;
   note?: string;
   createdAt?: string;
   updatedAt?: string;
