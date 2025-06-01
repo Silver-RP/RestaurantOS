@@ -1,6 +1,10 @@
 import React from 'react';
 import { formatDate } from '@/utils/formatDate';
-import { useOrderDetail } from '@/hooks/useOrder';
+import {
+  useOrderDetail,
+  useHandleRetryPayment,
+  useHandleChangePaymentMethod,
+} from '@/hooks/useOrder';
 import { OrderItem } from '@/types/Order.type';
 
 interface OrderDetailModalProps {
@@ -15,9 +19,36 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
   onClose,
 }) => {
   const { data, isLoading, isError, error } = useOrderDetail(orderId);
+  const { mutate: retryPaymentMutate, isPending: retrying } =
+    useHandleRetryPayment();
+  const { mutate: changePaymentMethodMutate, isPending: changingMethod } =
+    useHandleChangePaymentMethod();
+
+  const handleRetryPayment = () => {
+    console.log('Retrying payment for order:', orderId);
+    retryPaymentMutate({ orderId });
+  };
+
+  const handleChangePaymentMethod = () => {
+    if (order?._id) {
+      const newMethod = prompt(
+        'Nhập phương thức thanh toán mới (CASH, CREDIT_CARD, BANK_TRANSFER, MOMO, MOMO_ATM):',
+        order.payment_method,
+      );
+
+      if (newMethod !== null) {
+        changePaymentMethodMutate({
+          orderId: order._id,
+          paymentMethod: newMethod,
+        });
+      }
+    }
+  };
+
+  const isBusy = isLoading || retrying || changingMethod;
 
   if (!isOpen) return null;
-  if (isLoading)
+  if (isBusy)
     return (
       <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
         <div className="bg-bodyBackground rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex items-center justify-center p-8 border border-white/10">
@@ -41,8 +72,8 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
   const order = data.order;
   const formatPrice = (price: number) => price.toLocaleString('vi-VN') + ' VND';
   const address =
-    typeof order.address_id === 'object' && order.address_id !== null
-      ? order.address_id
+    typeof order?.address_id === 'object' && order?.address_id !== null
+      ? order?.address_id
       : null;
 
   return (
@@ -182,9 +213,13 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                 <div className="flex gap-2 items-center">
                   <span className="font-semibold">Trạng thái thanh toán:</span>
                   <span className="text-md">
-                    {order.payment_status === 'PAID'
-                      ? 'Đã thanh toán'
-                      : 'Chưa thanh toán'}
+                    {{
+                        PAID: 'Đã thanh toán',
+                        PENDING: 'Đang chờ thanh toán',
+                        UNPAID: 'Chưa thanh toán',
+                        FAILED: 'Thanh toán thất bại',
+                        REFUNDED : 'Đã hoàn tiền',
+                      }[order.payment_status as keyof typeof order.payment_status] || 'Chưa thanh toán'}
                   </span>
                 </div>
                 {order.paid_at && (
@@ -223,6 +258,29 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                     <span className="text-md">{order.cancelled_reason}</span>
                   </div>
                 )}
+                {order.payment_status !== 'PAID' &&
+                  order.status !== 'CANCELLED' && (
+                    <div className="flex gap-2 pt-2">
+                      {order.payment_method !== 'CASH' && (
+                        <button
+                          disabled={retrying}
+                          className="px-4 py-1.5 text-xs bg-secondaryColor border border-secondaryColor text-black font-normal font-sans hover:bg-bodyBackground hover:text-white focus:ring-bodyBackground active:bg-bodyBackground/90 active:text-headerBackground disabled:opacity-50"
+                          onClick={handleRetryPayment}
+                        >
+                          {retrying ? 'Đang xử lý...' : 'Thanh toán lại'}
+                        </button>
+                      )}
+                      <button
+                        disabled={changingMethod}
+                        className="px-4 py-1.5 text-xs bg-secondaryColor border border-secondaryColor text-black font-normal font-sans hover:bg-bodyBackground hover:text-white focus:ring-bodyBackground active:bg-yellow-500/90 active:text-headerBackground disabled:opacity-50"
+                        onClick={handleChangePaymentMethod}
+                      >
+                        {changingMethod
+                          ? 'Đang cập nhật...'
+                          : 'Thay đổi phương thức'}
+                      </button>
+                    </div>
+                  )}
               </div>
             </div>
           </section>

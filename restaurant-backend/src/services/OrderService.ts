@@ -184,6 +184,17 @@ class OrderService {
     let bankingInfo = null;
   
     const amount = order.total_price || 0;
+
+    const newPayment = await Payment.create({
+      orderId: order._id,
+      payment_method,
+      payment_status: 'UNPAID',
+      amount,
+      transaction_code: null,  
+      bankingInfo: null,
+    });
+
+    const paymentTransactionId = newPayment._id.toString();
   
     if (payment_method === 'BANKING') {
       const bank_name = 'Vietcombank';
@@ -210,35 +221,27 @@ class OrderService {
         qr_code: qr_base64,
         transfer_note,
       };
+      await Payment.findByIdAndUpdate(paymentTransactionId, { bankingInfo });
     }
   
     switch (payment_method) {
       case 'MOMO':
-        redirectUrl = await createMomoPaymentUrl(order, 'wallet');
+        redirectUrl = await createMomoPaymentUrl(order, 'wallet', paymentTransactionId);
         break;
       case 'MOMO_ATM':
-        redirectUrl = await createMomoPaymentUrl(order, 'atm');
+        redirectUrl = await createMomoPaymentUrl(order, 'atm', paymentTransactionId);
         break;
       case 'VNPAY':
-        redirectUrl = createVNPayPaymentUrl(order, clientIp);
+        redirectUrl = createVNPayPaymentUrl(order, clientIp, paymentTransactionId);
         break;
       case 'CREDIT_CARD':
         const orderWithItems = await this.getOrderById(order._id);
-        redirectUrl = await createPayPalOrder(orderWithItems as any);
+        redirectUrl = await createPayPalOrder(orderWithItems as any, paymentTransactionId);
         break;
       default:
         redirectUrl = null;
         break;
     }
-  
-    await Payment.create({
-      orderId: order._id,
-      payment_method,
-      payment_status: 'UNPAID',
-      amount,
-      transaction_code: null,
-      bankingInfo: bankingInfo,
-    });
 
     return {
       type: payment_method,
@@ -248,33 +251,29 @@ class OrderService {
     };
   }
 
-  async markOrderPaid(orderId: string, paidAmount: number, transactionCode: string, userId: string | null) {
-    const order = await Order.findById(orderId);
-    if (!order) throw new Error('Order not found');
-  
-    const payment = await Payment.findOne({
-      orderId: orderId,
-      payment_status: 'UNPAID',
-    });
-  
-    if (!payment) throw new Error('No UNPAID payment found for this order');
+  async markPaymentPaid(paymentId: string, paidAmount: number, transactionCode: string, userId: string | null) {
+    const payment = await Payment.findById(paymentId);
+    if (!payment) throw new Error('Payment not found');
   
     const allowedDifference = 1000;
   
     if (Math.abs((payment.amount || 0) - paidAmount) > allowedDifference) {
       throw new Error('Paid amount does not match expected payment amount');
     }
-
+  
     payment.payment_status = 'PAID';
     payment.payment_date = new Date();
     payment.transaction_code = transactionCode;
     payment.amount = paidAmount;
-
+  
     if (userId) {
       payment.confirmed_by = new mongoose.Types.ObjectId(userId);
     }
-
+  
     await payment.save();
+  
+    const order = await Order.findById(payment.orderId);
+    if (!order) throw new Error('Order not found');
   
     if (order.payment_status !== 'PAID') {
       order.payment_status = 'PAID';
@@ -285,25 +284,25 @@ class OrderService {
     return { order, payment };
   }
 
-  async markOrderFailed(orderId: string, reason?: string) {
-    const order = await Order.findById(orderId);
+  async markPaymentFailed(paymentId: string, reason?: string) {
+    const payment = await Payment.findById(paymentId);
+    if (!payment) throw new Error('Payment not found');
+  
+    payment.payment_status = 'FAILED';
+    payment.payment_date = new Date();
+    payment.failure_reason = reason || 'Unknown failure';
+    await payment.save();
+  
+    const order = await Order.findById(payment.orderId);
+    console.log('Order found:', order);
     if (!order) throw new Error('Order not found');
   
     order.payment_status = 'FAILED';
     await order.save();
   
-    await Payment.updateMany(
-      { order_id: orderId, payment_status: 'UNPAID' },
-      {
-        payment_status: 'FAILED',
-        failure_reason: reason || 'Unknown failure',
-        payment_date: new Date(),
-      }
-    );
-  
     return order;
   }
-
+  
   async placeOrder(input: any) {
     const {
       userId,

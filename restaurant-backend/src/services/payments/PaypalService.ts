@@ -12,7 +12,7 @@ function convertVNDToUSD(vnd: number): number {
   return +(vnd / usdExchangeRate).toFixed(2);
 }
 
-export async function createPayPalOrder(order: IOrderWithItems): Promise<string> {
+export async function createPayPalOrder(order: IOrderWithItems, paymentId: string): Promise<string> {
   if (!order.order_items || !Array.isArray(order.order_items)) {
     throw new Error('Order items (order_items) are missing or invalid');
   }
@@ -27,7 +27,7 @@ export async function createPayPalOrder(order: IOrderWithItems): Promise<string>
   request.requestBody({
     intent: 'CAPTURE',
     purchase_units: [{
-      reference_id: order._id.toString(),
+      reference_id: paymentId,
       amount: {
         currency_code: 'USD',
         value: usdTotal.toFixed(2),

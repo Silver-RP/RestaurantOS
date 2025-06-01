@@ -313,6 +313,7 @@ const OrderTable: React.FC = () => {
           <table className="min-w-[1200px] w-full bg-white text-sm text-gray-700">
             <thead>
               <tr className="bg-gray-100 text-left">
+              <th className="px-4 py-2">No.</th>
                 <th className="px-4 py-2">Mã Đơn Hàng</th>
                 <th className="px-4 py-2">Tên khách hàng</th>
                 <th className="px-4 py-2">SĐT</th>
@@ -363,6 +364,9 @@ const OrderTable: React.FC = () => {
               {(orders?.orders as AllOrder[])?.map(
                 (order: AllOrder, index: number) => (
                   <tr key={order._id} className="border-b hover:bg-gray-50">
+                    <td className="px-4 py-2 text-center">
+                     {index + 1 + (orders.currentPage - 1) }
+                    </td>
                     <td className="px-4 py-2">
                       {order._id.slice(-6).toUpperCase()}
                     </td>

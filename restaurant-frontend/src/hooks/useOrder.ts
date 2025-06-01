@@ -10,7 +10,9 @@ import {
   requestCancel,
   getAllOrders,
   updateOrderStatus,
-  updatePaymentStatus
+  updatePaymentStatus,
+  retryPayment,
+  changePaymentMethod,
 } from '@/api/OrderApi';
 import { checkIsLoggedIn } from './useCart';
 import {
@@ -143,3 +145,50 @@ export const useUpdatePaymentStatus = () => {
     },
   });
 };
+
+export const useHandleRetryPayment = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ orderId }: { orderId: string; }) =>
+      retryPayment(orderId),
+    onSuccess: (res) => {
+      console.log('Retry payment response:', res);
+      if (res.postPayment?.redirectUrl) {
+        window.location.href = res.postPayment.redirectUrl;
+        return;
+      }
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['all-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['order'] });
+      toast.success('Thanh toán thành công');
+    },
+    onError: (error: any) => {
+      const errorMessage =
+        error.response?.data?.message ||
+        'Có lỗi xảy ra khi thanh toán';
+      toast.error(errorMessage);
+    },
+  });
+}
+
+export const useHandleChangePaymentMethod = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ orderId, paymentMethod }: { orderId: string; paymentMethod: string }) =>
+      changePaymentMethod(orderId, paymentMethod),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['all-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['order'] });
+      toast.success('Cập nhật phương thức thanh toán thành công');
+    },
+    onError: (error: any) => {
+      const errorMessage =
+        error.response?.data?.message ||
+        'Có lỗi xảy ra khi cập nhật phương thức thanh toán';
+      toast.error(errorMessage);
+    },
+  });
+}
