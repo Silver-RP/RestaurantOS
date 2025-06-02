@@ -1,18 +1,19 @@
 import mongoose, { Types } from 'mongoose';
 import OrderValidator from '../validators/orderValidator';
-import { Address } from '../models/AddressModel';
+import { Address, IAddress } from '../models/AddressModel';
 import { Order, IOrder } from '../models/OrderModel';
 import { OrderDetail } from '../models/OrderDetailModel';
 import Cart from '../models/CartModel';
 import { Dish } from '../models/DishModel';
 import Payment  from '../models/PaymentModel';
+import UserModel, { IUser } from '../models/UserModel';
 import SearchService from './SearchService';
 import { createVNPayPaymentUrl } from '../services/payments/VnPayService';
 import { createMomoPaymentUrl } from '../services/payments/MomoService';
 import { createPayPalOrder } from '../services/payments/PaypalService';
 
 import axios from 'axios';
-import { IUser } from '../models/UserModel';
+import MailerService from './MailerService';
 
 enum DeliveryStatus {
   ORDER_PLACED = 'ORDER_PLACED',
@@ -877,6 +878,31 @@ class OrderService {
       };
     }
   }
+
+  async sendOrderConfirmationEmail(orderId: Types.ObjectId) {
+    const order = await Order.findById(orderId)
+      .populate('user_id', 'email name')
+      .populate('address_id')
+      .lean();
+  
+    if (!order) throw new Error('Order not found');
+  
+    const items = await OrderDetail.find({ order_id: orderId }).lean();
+  
+    const user = order.user_id as unknown as IUser;
+    const receiver = order.address_id as unknown as IAddress;
+  
+    await MailerService.sendOrderConfirmation({
+      ...(order as any),
+      user,
+      receiverInfo: receiver,
+      items: items as any,
+    });
+    
+  }
+  
+  
+  
 
 }
 

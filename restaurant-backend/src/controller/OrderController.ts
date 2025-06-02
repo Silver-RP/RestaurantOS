@@ -3,6 +3,7 @@ import OrderService from '../services/OrderService';
 import { IUser } from '../models/UserModel';
 import { Types } from 'mongoose';
 import OrderValidate from '../validators/orderValidator';
+import MailerService from '../services/MailerService';
 
 class OrderController {
   async placeOrder(req: Request, res: Response): Promise<any> {
@@ -47,6 +48,8 @@ class OrderController {
         receiver,
         receiver_phone,
       });
+
+      await OrderService.sendOrderConfirmationEmail(order._id);
 
       const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
       const postPayment = await OrderService.handlePostPaymentLogic(order, clientIp.toString());

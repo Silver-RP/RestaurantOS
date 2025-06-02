@@ -63,7 +63,6 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
 
       if (postPayment?.type === 'BANKING' && postPayment?.bankingInfo) {
         setBankingInfo(postPayment.bankingInfo);
-        console.log('Banking Info:', postPayment.bankingInfo);
         setShowBankingInfo(true);
       } else if (postPayment?.redirectUrl) {
         window.location.href = postPayment.redirectUrl;
@@ -110,7 +109,6 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
     );
 
   const order = data.order;
-  console.log('order =', order);
   const formatPrice = (price: number) => price.toLocaleString('vi-VN') + ' VND';
   const address =
     typeof order?.address_id === 'object' && order?.address_id !== null
@@ -363,7 +361,8 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
               </div>
             </div>
           </section>
-          {(order.payment_status === 'UNPAID' ||
+          {order.payment_method === 'BANKING' &&
+            (order.payment_status === 'UNPAID' ||
               (order.payment_status === 'FAILED' && bankingInfo && showBankingInfo)) && (
                 <div className="bg-bodyBackground flex justify-center px-4 pb-24">
                   <div className="bg-white/10 backdrop-blur-md shadow-xl rounded-2xl p-6 w-full max-w-2xl text-left text-white border border-white/10">
@@ -373,15 +372,15 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
                       <div className="space-y-2">
                         <p>
-                          <strong>Ngân hàng:</strong> {bankingInfo.bank_name}
+                          <strong>Ngân hàng:</strong> {bankingInfo?.bank_name}
                         </p>
                         <p>
                           <strong>Chủ tài khoản:</strong>{' '}
-                          {bankingInfo.account_name}
+                          {bankingInfo?.account_name}
                         </p>
                         <p>
                           <strong>Số tài khoản:</strong>{' '}
-                          {bankingInfo.account_number}
+                          {bankingInfo?.account_number}
                         </p>
                         <p>
                           <strong>Số tiền:</strong>
@@ -415,12 +414,12 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
 
                       <div className="flex flex-col items-center justify-center gap-4">
                         <img
-                          src={bankingInfo.qr_code}
+                          src={bankingInfo?.qr_code}
                           alt="QR Code"
                           className="w-52 h-52 object-contain border rounded-xl shadow-lg bg-white"
                         />
                         <a
-                          href={bankingInfo.qr_code}
+                          href={bankingInfo?.qr_code}
                           download={`QR_ORDER_${shortOrderId}.png`}
                           className="flex items-center gap-2 text-sm px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition duration-200"
                         >

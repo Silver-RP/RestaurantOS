@@ -192,7 +192,7 @@ const OrderConfirmation = () => {
       localStorage.removeItem('selectedCartItems');
 
 
-      toast.success("Đặt hàng thành công!");
+      toast.success("Đặt hàng thành công! Vui lòng kiểm tra email để xem chi tiết đơn hàng.");
 
       if (response.postPayment?.redirectUrl) {
         window.location.href = response.postPayment.redirectUrl;

@@ -192,7 +192,7 @@ const ShippingAddressSection = ({
   };
 
   const getFormattedDeliveryTime = () => {
-    if (deliveryTime.type === 'now') return 'Giao hàng ngay khi chuẩn bị xong';
+    if (deliveryTime.type === 'now') return 'Dự kiến giao hàng trong 45-90 phút kể từ khi đơn hàng được xác nhận.';
     if (deliveryTime.type === 'scheduled' && deliveryTime.scheduledTime) {
       return `Giao vào ${deliveryTime.scheduledTime.toLocaleString('vi-VN', {
         weekday: 'long',
@@ -286,6 +286,9 @@ const ShippingAddressSection = ({
                 Thay đổi
               </p>
             </div>
+            <p className="text-xs text-white/50 mt-1">
+              (<span className='text-red-400'>*</span>Thời gian thực tế có thể thay đổi tùy vào lưu lượng đơn hàng và tình trạng bếp.)
+            </p>
           </div>
         </>
       ) : (

@@ -183,7 +183,7 @@ const ModalSelectDeliveryTime = ({
               >
                 <p className="font-semibold text-white">Giao Hàng Ngay</p>
                 <p className="text-sm text-gray-300 mt-2">
-                  Đơn hàng sẽ được giao trong thời gian sớm nhất
+                  Dự kiến giao hàng <br /> trong 45-90 phút kể từ khi đơn hàng được xác nhận.
                 </p>
               </div>
               
