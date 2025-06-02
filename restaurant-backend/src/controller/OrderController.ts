@@ -69,10 +69,10 @@ class OrderController {
 
   async getAllOrders(req: Request, res: Response, next: NextFunction): Promise<any> {
     try {
-      const { page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc', filters } = req.query;
+      const { page = 1, limit = 12, sortBy = 'createdAt', sortOrder = 'desc', filters } = req.query;
       const parsedSortOrder: 1 | -1 = sortOrder === 'asc' ? 1 : -1;
-      const parsedPage = parseInt(page as string, 10);
-      const parsedLimit = parseInt(limit as string, 10);
+      const parsedPage = parseInt(page as string, 12);
+      const parsedLimit = parseInt(limit as string, 12);
       const filtersObject = filters ? (filters as { [key: string]: string }) : {};
 
       const options = {
@@ -155,18 +155,15 @@ class OrderController {
       const validStatuses = [
         'ORDER_PLACED',
         'ORDER_CONFIRMED',
-        'PENDING',
         'PENDING_PICKUP',
         'PICKED_UP',
         'IN_TRANSIT',
         'DELIVERED',
         'DELIVERY_FAILED',
         'RETURN_REQUESTED',
-        'CANCEL_RETURN_REQUESTED',
         'RETURN_APPROVED',
         'RETURN_REJECTED',
         'RETURNED',
-        'CANCEL_REQUESTED',
         'CANCELLED',
       ];
       if (!validStatuses.includes(status)) {

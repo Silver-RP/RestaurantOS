@@ -26,7 +26,7 @@ class SearchService {
     try {
       const {
         page = 1,
-        limit = 10,
+        limit = 12,
         sortBy = 'createdAt',
         sortOrder = -1,
         searchTerm = '',
@@ -101,7 +101,7 @@ class SearchService {
   private async searchWithAggregation<T extends Document>(model: Model<T>, options: SearchOptions) {
     const {
       page = 1,
-      limit = 10,
+      limit = 12,
       sortBy = 'createdAt',
       sortOrder = -1,
       searchTerm = '',
