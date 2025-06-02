@@ -8,7 +8,8 @@ export interface IOrder extends Document {
   address_id: Types.ObjectId | null | undefined;
   payment_method: 'CASH' | 'BANKING' | 'VNPAY' | 'MOMO' | 'MOMO_ATM' | 'CREDIT_CARD';
   delivery_type: 'DELIVERY' | 'PICKUP';
-  delivery_status:
+
+  status:
     | 'ORDER_PLACED'
     | 'ORDER_CONFIRMED'
     | 'PENDING_PICKUP'
@@ -17,20 +18,10 @@ export interface IOrder extends Document {
     | 'DELIVERED'
     | 'DELIVERY_FAILED'
     | 'RETURN_REQUESTED'
-    | 'CANCEL_RETURN_REQUESTED'
     | 'RETURN_APPROVED'
     | 'RETURN_REJECTED'
     | 'RETURNED'
-    | 'CANCEL_REQUESTED'
     | 'CANCELLED';
-  status:
-    | 'PENDING'
-    | 'PREPARING'
-    | 'SHIPPING'
-    | 'COMPLETED'
-    | 'CANCELLED'
-    | 'CANCEL_REQUESTED'
-    | 'RETURNED';
   shipping_fee: number;
   vat_amount: number;
   items_price: number;
@@ -71,39 +62,23 @@ const OrderSchema = new Schema<IOrder>(
       enum: ['DELIVERY', 'PICKUP'],
       required: true,
     },
-    delivery_status: {
+    status: {
       type: String,
       enum: [
         'ORDER_PLACED',
         'ORDER_CONFIRMED',
-        'PENDING',
         'PENDING_PICKUP',
         'PICKED_UP',
         'IN_TRANSIT',
         'DELIVERED',
         'DELIVERY_FAILED',
         'RETURN_REQUESTED',
-        'CANCEL_RETURN_REQUESTED',
         'RETURN_APPROVED',
         'RETURN_REJECTED',
         'RETURNED',
-        'CANCEL_REQUESTED',
         'CANCELLED',
       ],
       default: 'ORDER_PLACED',
-    },
-    status: {
-      type: String,
-      enum: [
-        'PENDING',
-        'PREPARING',
-        'SHIPPING',
-        'COMPLETED',
-        'CANCELLED',
-        'CANCEL_REQUESTED',
-        'RETURNED',
-      ],
-      default: 'PENDING',
     },
     shipping_fee: { type: Number, required: true, default: 0 },
     vat_amount: { type: Number, required: true, default: 0 },
