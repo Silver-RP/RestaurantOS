@@ -69,7 +69,7 @@ const ShippingAddressSection = ({
   // Validation functions
   const validatePhone = (phone: string): boolean => {
     // Vietnamese phone number regex
-    const phoneRegex = /^(0|\+84)[3|5|7|8|9][0-9]{8}$/;
+    const phoneRegex = /^(0|\+84)[2|3|5|7|8|9][0-9]{8}$/;
     return phoneRegex.test(phone.replace(/\s/g, ''));
   };
 
@@ -192,7 +192,7 @@ const ShippingAddressSection = ({
   };
 
   const getFormattedDeliveryTime = () => {
-    if (deliveryTime.type === 'now') return 'Dự kiến giao hàng trong 45-90 phút kể từ khi đơn hàng được xác nhận.';
+    if (deliveryTime.type === 'now') return 'Dự kiến giao hàng trong 45-90 phút tính từ lúc đặt hàng.';
     if (deliveryTime.type === 'scheduled' && deliveryTime.scheduledTime) {
       return `Giao vào ${deliveryTime.scheduledTime.toLocaleString('vi-VN', {
         weekday: 'long',

@@ -265,7 +265,7 @@ export interface AllOrder {
   returned_at: string | null;
   delivered_at: string | null;
   order_type: string;
-  delivery_time_type: string;
+  delivery_time_type: DeliveryTimeType;
   scheduled_time: string | null;
   createdAt: string;
   updatedAt: string;

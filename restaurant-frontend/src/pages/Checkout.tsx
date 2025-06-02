@@ -224,7 +224,7 @@ const CheckoutPage = () => {
         toast.error('Vui lòng nhập thông tin người nhận');
         return;
       }
-      if (!/^(0|\+84)[3|5|7|8|9][0-9]{8}$/.test(receiverPhone)) {
+      if (!/^(0|\+84)[2|3|5|7|8|9][0-9]{8}$/.test(receiverPhone)) {
         toast.error('Số điện thoại không đúng định dạng');
         return;
       }

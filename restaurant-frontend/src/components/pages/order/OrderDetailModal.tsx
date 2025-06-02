@@ -5,7 +5,7 @@ import {
   useHandleRetryPayment,
   useHandleChangePaymentMethod,
 } from '@/hooks/useOrder';
-import { OrderItem } from '@/types/Order.type';
+import { Order, OrderItem } from '@/types/Order.type';
 import PaymentMethodSelector from '../checkout/PaymentMethodSelector';
 import { FiDownload } from 'react-icons/fi';
 
@@ -85,6 +85,61 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
       setBankingInfo(null);
     }
   }, [data?.order]);
+
+  function getFormattedDeliveryTime(order: Order): string {
+    if (order.delivery_time_type === 'ASAP' && !order.scheduled_time) {
+      const created = new Date(order.createdAt ?? Date.now());
+
+      const min = new Date(created.getTime() + 45 * 60000);
+      const max = new Date(created.getTime() + 90 * 60000);
+
+      const roundTime = (date: Date, direction: 'up' | 'down') => {
+        const d = new Date(date);
+        const minutes = d.getMinutes();
+        const roundedMinutes =
+          direction === 'up'
+            ? Math.ceil(minutes / 5) * 5
+            : Math.floor(minutes / 5) * 5;
+        if (roundedMinutes === 60) {
+          d.setHours(d.getHours() + 1);
+          d.setMinutes(0);
+        } else {
+          d.setMinutes(roundedMinutes);
+        }
+        d.setSeconds(0);
+        return d;
+      };
+
+      const minRounded = roundTime(min, 'down');
+      const maxRounded = roundTime(max, 'up');
+
+      const minStr = minRounded.toLocaleTimeString('vi-VN', {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+      const maxStr = maxRounded.toLocaleTimeString('vi-VN', {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+
+      return `Dự kiến khoảng ${minStr} – ${maxStr} (tính từ lúc đặt hàng)`;
+    }
+
+    if (order.delivery_time_type === 'SCHEDULED' && order.scheduled_time) {
+      return `Giao vào ${new Date(order.scheduled_time).toLocaleString(
+        'vi-VN',
+        {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        },
+      )}`;
+    }
+
+    return 'Chưa xác định thời gian giao hàng';
+  }
 
   if (isLoading || retrying || changingMethod)
     return (
@@ -225,11 +280,13 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                       : 'Giao theo lịch'}
                   </span>
                 </div>
-                {order.scheduled_time && (
-                  <div className="flex gap-2 items-center">
-                    <span className="font-semibold">Lịch hẹn:</span>
-                    <span className="text-md">
-                      {formatDate(order.scheduled_time)}
+                {order.delivery_time_type && (
+                  <div className="flex flex-wrap gap-2 items-start">
+                    <span className="font-semibold whitespace-nowrap">
+                      Chi tiết:
+                    </span>
+                    <span className="text-md break-words flex-1 min-w-[200px]">
+                      {getFormattedDeliveryTime(order)}
                     </span>
                   </div>
                 )}
@@ -363,74 +420,76 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
           </section>
           {order.payment_method === 'BANKING' &&
             (order.payment_status === 'UNPAID' ||
-              (order.payment_status === 'FAILED' && bankingInfo && showBankingInfo)) && (
-                <div className="bg-bodyBackground flex justify-center px-4 pb-24">
-                  <div className="bg-white/10 backdrop-blur-md shadow-xl rounded-2xl p-6 w-full max-w-2xl text-left text-white border border-white/10">
-                    <h2 className="text-2xl font-semibold mb-4 text-white">
-                      Thông tin chuyển khoản
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-                      <div className="space-y-2">
-                        <p>
-                          <strong>Ngân hàng:</strong> {bankingInfo?.bank_name}
-                        </p>
-                        <p>
-                          <strong>Chủ tài khoản:</strong>{' '}
-                          {bankingInfo?.account_name}
-                        </p>
-                        <p>
-                          <strong>Số tài khoản:</strong>{' '}
-                          {bankingInfo?.account_number}
-                        </p>
-                        <p>
-                          <strong>Số tiền:</strong>
-                          <span className="ml-1 font-semibold text-green-300">
-                            {order.total_price.toLocaleString('vi-VN', {
-                              style: 'currency',
-                              currency: 'VND',
-                            })}
-                          </span>
-                        </p>
-                        <p>
-                          <strong>Nội dung chuyển khoản:</strong> <br />
-                          <span className="font-semibold text-yellow-300">
-                            ORDER-{shortOrderId}
-                          </span>
-                        </p>
-                        <p>
-                          <strong>Mã đơn hàng:</strong>{' '}
-                          <span className="font-semibold text-green-300">
-                            {shortOrderId}
-                          </span>
-                        </p>
-                        <p className="text-red-400 text-sm font-medium">
-                          ⚠️ Vui lòng nhập chính xác nội dung chuyển khoản{' '}
-                          <strong className="text-yellow-300">
-                            ORDER-{shortOrderId}
-                          </strong>{' '}
-                          để hệ thống xác nhận tự động.
-                        </p>
-                      </div>
+              (order.payment_status === 'FAILED' &&
+                bankingInfo &&
+                showBankingInfo)) && (
+              <div className="bg-bodyBackground flex justify-center px-4 pb-24">
+                <div className="bg-white/10 backdrop-blur-md shadow-xl rounded-2xl p-6 w-full max-w-2xl text-left text-white border border-white/10">
+                  <h2 className="text-2xl font-semibold mb-4 text-white">
+                    Thông tin chuyển khoản
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                    <div className="space-y-2">
+                      <p>
+                        <strong>Ngân hàng:</strong> {bankingInfo?.bank_name}
+                      </p>
+                      <p>
+                        <strong>Chủ tài khoản:</strong>{' '}
+                        {bankingInfo?.account_name}
+                      </p>
+                      <p>
+                        <strong>Số tài khoản:</strong>{' '}
+                        {bankingInfo?.account_number}
+                      </p>
+                      <p>
+                        <strong>Số tiền:</strong>
+                        <span className="ml-1 font-semibold text-green-300">
+                          {order.total_price.toLocaleString('vi-VN', {
+                            style: 'currency',
+                            currency: 'VND',
+                          })}
+                        </span>
+                      </p>
+                      <p>
+                        <strong>Nội dung chuyển khoản:</strong> <br />
+                        <span className="font-semibold text-yellow-300">
+                          ORDER-{shortOrderId}
+                        </span>
+                      </p>
+                      <p>
+                        <strong>Mã đơn hàng:</strong>{' '}
+                        <span className="font-semibold text-green-300">
+                          {shortOrderId}
+                        </span>
+                      </p>
+                      <p className="text-red-400 text-sm font-medium">
+                        ⚠️ Vui lòng nhập chính xác nội dung chuyển khoản{' '}
+                        <strong className="text-yellow-300">
+                          ORDER-{shortOrderId}
+                        </strong>{' '}
+                        để hệ thống xác nhận tự động.
+                      </p>
+                    </div>
 
-                      <div className="flex flex-col items-center justify-center gap-4">
-                        <img
-                          src={bankingInfo?.qr_code}
-                          alt="QR Code"
-                          className="w-52 h-52 object-contain border rounded-xl shadow-lg bg-white"
-                        />
-                        <a
-                          href={bankingInfo?.qr_code}
-                          download={`QR_ORDER_${shortOrderId}.png`}
-                          className="flex items-center gap-2 text-sm px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition duration-200"
-                        >
-                          <FiDownload />
-                          Tải mã QR
-                        </a>
-                      </div>
+                    <div className="flex flex-col items-center justify-center gap-4">
+                      <img
+                        src={bankingInfo?.qr_code}
+                        alt="QR Code"
+                        className="w-52 h-52 object-contain border rounded-xl shadow-lg bg-white"
+                      />
+                      <a
+                        href={bankingInfo?.qr_code}
+                        download={`QR_ORDER_${shortOrderId}.png`}
+                        className="flex items-center gap-2 text-sm px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition duration-200"
+                      >
+                        <FiDownload />
+                        Tải mã QR
+                      </a>
                     </div>
                   </div>
                 </div>
-              )}
+              </div>
+            )}
           {/* Địa chỉ giao hàng */}
           <section className="mb-6">
             <h3 className="text-lg font-semibold mb-2 text-white">
