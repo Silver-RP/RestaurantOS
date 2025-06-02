@@ -5,12 +5,8 @@ import { Order, IOrder } from '../models/OrderModel';
 import { OrderDetail } from '../models/OrderDetailModel';
 import Cart from '../models/CartModel';
 import { Dish } from '../models/DishModel';
-<<<<<<< HEAD
 import Payment  from '../models/PaymentModel';
 import UserModel, { IUser } from '../models/UserModel';
-=======
-import Payment from '../models/PaymentModel';
->>>>>>> b306f025d4b475862ea86d487ce1682f3dcb3456
 import SearchService from './SearchService';
 import { createVNPayPaymentUrl } from '../services/payments/VnPayService';
 import { createMomoPaymentUrl } from '../services/payments/MomoService';
