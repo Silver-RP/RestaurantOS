@@ -12,7 +12,7 @@ const Container: React.FC<ContainerProps> = ({ className, children }) => {
       <section className="bg-bodyBackground w-full text-white">
         <div
           className={clsx(
-            'w-11/12 md:w-container95 lg:w-container95 xl:w-container95 2xl:w-mainContainer mx-auto',
+            'w-11/12 md:w-container95 min-h-[calc(100vh-568px)] lg:w-container95 xl:w-container95 2xl:w-mainContainer mx-auto',
             className,
           )}
         >

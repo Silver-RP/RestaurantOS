@@ -97,6 +97,7 @@ interface User {
 }
 
 export interface Order {
+  postPayment: any;
   _id: string;
   user_id: User; // Sửa từ string thành User
   address_id: {
@@ -148,6 +149,7 @@ export interface OrdersResponse {
   total: number;
   currentPage: number;
   totalPages: number;
+  filters?: { [key: string]: string };
 }
 
 export interface OrderDetailResponse {

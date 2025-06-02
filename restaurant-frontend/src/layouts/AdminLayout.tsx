@@ -76,6 +76,12 @@ const AdminLayout: React.FC = () => {
               expanded={isSidebarOpen}
             />
             <NavItem
+              href="/admin/reservations"
+              icon={<FaCartPlus />}
+              label="Đặt bàn"
+              expanded={isSidebarOpen}
+            />
+            <NavItem
               href="/admin/posts"
               icon={<FaFileAlt />}
               label="Bài viết"

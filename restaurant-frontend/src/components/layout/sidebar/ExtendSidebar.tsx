@@ -19,10 +19,12 @@ import { Link } from 'react-router-dom';
 import ButtonComponents from '../../common/ButtonComponents';
 import NavExtend from './NavExtend';
 import { useDispatch } from 'react-redux';
-import { openSearchModal } from '../../../redux/feature/searchModal/searchModalSlice';
+import { openSearchModal } from '../../../redux/feature/modal/searchModalSlice';
 import Cookies from 'js-cookie';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
+import { useNavigate } from 'react-router-dom';
+import { toastService } from '@/utils/toastService';
 interface SidebarProps {
   isOpen: boolean;
   toggleSidebar: () => void;
@@ -45,6 +47,16 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
 
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  const navigate = useNavigate();
+
+  const handleReservationClick = () => {
+    if (!user) {
+      toastService.warning('Vui lòng đăng nhập để đặt bàn');
+      return;
+    }
+    navigate('/reservation');
+  };
 
   const fontSize = windowHeight <= 600 ? 'text-sm' : 'text-base';
   const iconSize = windowHeight <= 600 ? 'text-xl' : 'text-2xl';
@@ -129,19 +141,16 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
                 aria-label="Search"
               />
             </div>
-            <Link
-              to="/reservation"
-              className="mx-auto w-full"
-              aria-label="Book a Table"
-            >
+            <div className="mx-auto w-full" aria-label="Book a Table">
               <ButtonComponents
                 variant="filled"
                 size="large"
+                onClick={handleReservationClick}
                 className="w-full text-xs sm:text-sm md:text-base uppercase font-normal"
               >
                 Đặt Bàn
               </ButtonComponents>
-            </Link>
+            </div>
           </div>
           <div className="p-6">
             <div className="text-center text-sm text-white">

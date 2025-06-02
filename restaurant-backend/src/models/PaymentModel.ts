@@ -9,6 +9,7 @@ interface IPayment {
   payment_date?: Date;                  
   created_at: Date;
   updated_at: Date;
+  failure_reason?: string; 
   bankingInfo?: {
     bank_name: string;
     account_name: string;
@@ -65,6 +66,10 @@ const PaymentSchema = new Schema<IPayment>(
     confirmed_by: {
       type: Schema.Types.ObjectId,
       ref: 'User', 
+      default: null,
+    },
+    failure_reason: {
+      type: String,
       default: null,
     },
   },

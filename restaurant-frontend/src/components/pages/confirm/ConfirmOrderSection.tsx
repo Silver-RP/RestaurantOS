@@ -142,6 +142,7 @@ const OrderConfirmation = () => {
     try {
       // Prepare the order data according to the API requirements
       const apiOrderData: PlaceOrderRequest = {
+        address_id: orderData.address_id,
         payment_method: orderData.payment_method as any,
         delivery_type: orderData.delivery_type,
         order_type: orderData.order_type,
@@ -176,10 +177,7 @@ const OrderConfirmation = () => {
       }
       const response = await placeDirectOrderMutation.mutateAsync(apiOrderData);
 
-      console.log("Order placed successfully:", response);
-      console.log("Order data:", response.postPayment);
-
-      if (response.postPayment?.bankingInfo) {
+      if (response.postPayment?.bankingInfo !== null) {
         sessionStorage.setItem('recentBankingInfo', JSON.stringify(response.postPayment.bankingInfo));
       } else {
         sessionStorage.removeItem('recentBankingInfo');
@@ -189,10 +187,7 @@ const OrderConfirmation = () => {
         sessionStorage.setItem('orderTotal', JSON.stringify(response.postPayment.orderTotal));
       }
 
-      // Set a flag in session storage to indicate a successful order
       sessionStorage.setItem('recentOrderSuccess', 'true');
-
-      // Clear order data from localStorage after successful order
       localStorage.removeItem('orderConfirmationData');
       localStorage.removeItem('selectedCartItems');
 
@@ -204,7 +199,6 @@ const OrderConfirmation = () => {
         return;
       }
       
-      // Navigate to success page
       navigate('/payment-success');
     } catch (error) {
       console.error("Error placing order:", error);

@@ -184,6 +184,17 @@ class OrderService {
     let bankingInfo = null;
   
     const amount = order.total_price || 0;
+
+    const newPayment = await Payment.create({
+      orderId: order._id,
+      payment_method,
+      payment_status: 'UNPAID',
+      amount,
+      transaction_code: null,  
+      bankingInfo: null,
+    });
+
+    const paymentTransactionId = newPayment._id.toString();
   
     if (payment_method === 'BANKING') {
       const bank_name = 'Vietcombank';
@@ -210,35 +221,27 @@ class OrderService {
         qr_code: qr_base64,
         transfer_note,
       };
+      await Payment.findByIdAndUpdate(paymentTransactionId, { bankingInfo });
     }
   
     switch (payment_method) {
       case 'MOMO':
-        redirectUrl = await createMomoPaymentUrl(order, 'wallet');
+        redirectUrl = await createMomoPaymentUrl(order, 'wallet', paymentTransactionId);
         break;
       case 'MOMO_ATM':
-        redirectUrl = await createMomoPaymentUrl(order, 'atm');
+        redirectUrl = await createMomoPaymentUrl(order, 'atm', paymentTransactionId);
         break;
       case 'VNPAY':
-        redirectUrl = createVNPayPaymentUrl(order, clientIp);
+        redirectUrl = createVNPayPaymentUrl(order, clientIp, paymentTransactionId);
         break;
       case 'CREDIT_CARD':
         const orderWithItems = await this.getOrderById(order._id);
-        redirectUrl = await createPayPalOrder(orderWithItems as any);
+        redirectUrl = await createPayPalOrder(orderWithItems as any, paymentTransactionId);
         break;
       default:
         redirectUrl = null;
         break;
     }
-  
-    await Payment.create({
-      orderId: order._id,
-      payment_method,
-      payment_status: 'UNPAID',
-      amount,
-      transaction_code: null,
-      bankingInfo: bankingInfo,
-    });
 
     return {
       type: payment_method,
@@ -248,33 +251,29 @@ class OrderService {
     };
   }
 
-  async markOrderPaid(orderId: string, paidAmount: number, transactionCode: string, userId: string | null) {
-    const order = await Order.findById(orderId);
-    if (!order) throw new Error('Order not found');
-  
-    const payment = await Payment.findOne({
-      orderId: orderId,
-      payment_status: 'UNPAID',
-    });
-  
-    if (!payment) throw new Error('No UNPAID payment found for this order');
+  async markPaymentPaid(paymentId: string, paidAmount: number, transactionCode: string, userId: string | null) {
+    const payment = await Payment.findById(paymentId);
+    if (!payment) throw new Error('Payment not found');
   
     const allowedDifference = 1000;
   
     if (Math.abs((payment.amount || 0) - paidAmount) > allowedDifference) {
       throw new Error('Paid amount does not match expected payment amount');
     }
-
+  
     payment.payment_status = 'PAID';
     payment.payment_date = new Date();
     payment.transaction_code = transactionCode;
     payment.amount = paidAmount;
-
+  
     if (userId) {
       payment.confirmed_by = new mongoose.Types.ObjectId(userId);
     }
-
+  
     await payment.save();
+  
+    const order = await Order.findById(payment.orderId);
+    if (!order) throw new Error('Order not found');
   
     if (order.payment_status !== 'PAID') {
       order.payment_status = 'PAID';
@@ -285,25 +284,24 @@ class OrderService {
     return { order, payment };
   }
 
-  async markOrderFailed(orderId: string, reason?: string) {
-    const order = await Order.findById(orderId);
+  async markPaymentFailed(paymentId: string, reason?: string) {
+    const payment = await Payment.findById(paymentId);
+    if (!payment) throw new Error('Payment not found');
+  
+    payment.payment_status = 'FAILED';
+    payment.payment_date = new Date();
+    payment.failure_reason = reason || 'Unknown failure';
+    await payment.save();
+  
+    const order = await Order.findById(payment.orderId);
     if (!order) throw new Error('Order not found');
   
     order.payment_status = 'FAILED';
     await order.save();
   
-    await Payment.updateMany(
-      { order_id: orderId, payment_status: 'UNPAID' },
-      {
-        payment_status: 'FAILED',
-        failure_reason: reason || 'Unknown failure',
-        payment_date: new Date(),
-      }
-    );
-  
     return order;
   }
-
+  
   async placeOrder(input: any) {
     const {
       userId,
@@ -394,6 +392,74 @@ class OrderService {
     }
   }
 
+  async changePaymentMethod(orderId: string, paymentMethod: string, userId: string) {
+    if (!orderId || !paymentMethod) {
+      throw new Error('Missing orderId or paymentMethod');
+    }
+  
+    const session = await mongoose.startSession();
+    session.startTransaction();
+  
+    try {
+      const order = await Order.findById(orderId).session(session);
+      if (!order) throw new Error('Order not found');
+  
+      if (order.user_id.toString() !== userId) {
+        throw new Error('Not authorized to change this order');
+      }
+  
+      const invalidStatuses = ['PAID', 'CANCELLED', 'COMPLETED', 'RETURNED'];
+      if (invalidStatuses.includes(order.payment_status) || invalidStatuses.includes(order.status) || order.delivery_status === 'CANCELLED') {
+        throw new Error('Cannot change payment method for paid, cancelled, completed or returned orders');
+      }
+  
+      const validMethods = ['CASH', 'VNPAY', 'MOMO', 'CREDIT_CARD', 'BANKING', 'MOMO_ATM'];
+      if (!validMethods.includes(paymentMethod)) {
+        throw new Error('Invalid payment method');
+      }
+  
+      if (order.payment_method === paymentMethod) {
+        await session.commitTransaction();
+        session.endSession();
+        return order;
+      }
+  
+      const payments = await Payment.find({
+        orderId: orderId,
+        payment_status: { $in: ['UNPAID', 'PENDING', 'FAILED'] }
+      }).session(session);
+  
+      if (payments.length > 0) {
+        for (const payment of payments) {
+          payment.payment_method = paymentMethod as "CASH" | "BANKING" | "VNPAY" | "MOMO" | "MOMO_ATM" | "CREDIT_CARD";
+          await payment.save({ session });
+        }
+      } else {
+        await Payment.create([{
+          orderId: order._id,
+          payment_method: paymentMethod as "CASH" | "BANKING" | "VNPAY" | "MOMO" | "MOMO_ATM" | "CREDIT_CARD",
+          payment_status: 'UNPAID',
+          amount: order.total_price,
+          transaction_code: null,
+          bankingInfo: null,
+        }], { session });
+      }
+  
+      order.payment_method = paymentMethod as "CASH" | "BANKING" | "VNPAY" | "MOMO" | "MOMO_ATM" | "CREDIT_CARD";
+      order.payment_status = 'UNPAID';
+      await order.save({ session });
+  
+      await session.commitTransaction();
+      session.endSession();
+  
+      return order;
+    } catch (error) {
+      await session.abortTransaction();
+      session.endSession();
+      throw error;
+    }
+  }
+  
   async getAllOrders(options: {
     page: number;
     limit: number;
@@ -533,15 +599,32 @@ class OrderService {
   async getOrderById(orderId: mongoose.Types.ObjectId) {
     try {
       const order = await Order.findById(orderId).populate('address_id').lean();
-
+  
       if (!order) {
         throw { statusCode: 404, message: 'Order not found' };
       }
-      const orderItems = await OrderDetail.find({ order_id: orderId }).populate('dish_id').lean();
-
+  
+      const orderItems = await OrderDetail.find({ order_id: orderId })
+        .populate('dish_id')
+        .lean();
+  
+      const payments = await Payment.find({ orderId }).sort({ createdAt: -1 }).lean();
+      const payment = payments[0]
+  
+      let postPayment = null;
+      if (payment?.payment_method === 'BANKING' && payment?.bankingInfo) {
+        postPayment = {
+          paymentId: payment._id,
+          bankingInfo: payment.bankingInfo,
+          type: payment.payment_method,
+          orderTotal: order.total_price,
+        };
+      }
+  
       return {
         ...order,
         order_items: orderItems,
+        postPayment,
       };
     } catch (error: any) {
       throw {
@@ -550,7 +633,7 @@ class OrderService {
       };
     }
   }
-
+  
   async updateOrderStatus(orderId: mongoose.Types.ObjectId, status: string) {
     try {
       const order = await Order.findById(orderId);
@@ -794,6 +877,7 @@ class OrderService {
       };
     }
   }
+
 }
 
 export default new OrderService();

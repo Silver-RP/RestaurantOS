@@ -75,7 +75,7 @@ const MenuPage: React.FC = () => {
           ></div>
         )}
         <div
-          className={`fixed top-0 left-0 w-80 bg-bodyBackground h-full z-50 transform ${
+          className={`fixed top-0 left-0 w-80 bg-bodyBackground h-full z-[120] transform ${
             isFilterOpen ? 'translate-x-0' : '-translate-x-full'
           } transition-transform duration-300 ease-in-out`}
         >

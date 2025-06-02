@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../redux/store';
-import { closeSearchModal, setSearchQuery } from '../../redux/feature/searchModal/searchModalSlice';
+import { closeSearchModal, setSearchQuery } from '../../redux/feature/modal/searchModalSlice';
 import { fetchAllFoods } from '../../api/FoodApi';
 import { FoodDetail } from '../../types/Dish.types';
 import { useNavigate } from 'react-router-dom';
@@ -67,7 +67,7 @@ const SearchModal: React.FC = () => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[120] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="w-full max-w-4xl bg-[#102f43] p-6 rounded-lg shadow-xl relative animate-fadeIn transition-all duration-300 ease-out">
         <button
           onClick={() => dispatch(closeSearchModal())}

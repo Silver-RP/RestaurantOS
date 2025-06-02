@@ -3,9 +3,18 @@ import ButtonComponents from '../components/common/ButtonComponents';
 import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
 import { AiOutlineCloseCircle } from 'react-icons/ai';
 import { motion } from 'framer-motion';
+import { useHandleRetryPayment } from '@/hooks/useOrder';
+
 
 const PaymentFailed = () => {
   const navigate = useNavigate();
+  const { mutate: retryPaymentMutate, isPending: retrying } =  useHandleRetryPayment();
+  const orderId = new URLSearchParams(window.location.search).get('orderId');
+
+  const handleRetryPayment = () => {
+    console.log('Retrying payment for order:', orderId);
+    retryPaymentMutate({ orderId: orderId || '' });
+  };
 
   return (
     <>
@@ -35,7 +44,7 @@ const PaymentFailed = () => {
           </p>
 
           <div className="flex gap-4">
-            <ButtonComponents onClick={() => navigate('/cart')}>
+            <ButtonComponents  onClick={handleRetryPayment}>
               Thanh toán lại
             </ButtonComponents>
             <ButtonComponents

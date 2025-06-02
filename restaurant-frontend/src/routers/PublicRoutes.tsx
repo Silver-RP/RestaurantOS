@@ -1,6 +1,6 @@
 import { Navigate } from 'react-router-dom';
 import AppLayout from '../layouts/AppLayout';
-
+import React from 'react';
 import Homepage from '../pages/Homepage';
 import AboutUs from '../pages/AboutUs';
 import Register from '../pages/Register';
@@ -9,6 +9,7 @@ import WishList from '../pages/WishList';
 import ResetPassword from '../pages/ResetPassword';
 import ForgotPassword from '../pages/ForgotPassword';
 import EnterOTP from '../pages/EnterOTP';
+import EnterOTPEmail from '../pages/EnterOTPEmail';
 import ProfilePage from '../pages/Profile';
 import AddressPage from '../pages/AddressPage';
 import MenuPage from '../pages/Menu';
@@ -23,6 +24,7 @@ import ReservationPage from '../pages/ReservationPage';
 import ConfirmOrder from '../pages/Confirm';
 import PostDetailsPage from '../pages/PostDetailsPage';
 import FavoritePage from '@/pages/FavoritePage';
+import MyReservationsPage from '@/pages/MyReservationsPage';
 import PaymentSuccess from '@/pages/PaymentSuccess';
 import PaymentFailed from '@/pages/PaymentFailed';
 
@@ -39,6 +41,7 @@ const PublicRoutes = [
       { path: 'reset-password', element: <ResetPassword /> },
       { path: 'forgot-password', element: <ForgotPassword /> },
       { path: 'verify-otp', element: <EnterOTP /> },
+      { path: 'verify-otp-email', element: <EnterOTPEmail /> },
       { path: 'profile', element: <ProfilePage /> },
       { path: 'profile/address', element: <AddressPage /> },
       { path: 'menu', element: <MenuPage /> },
@@ -54,9 +57,9 @@ const PublicRoutes = [
       { path: '*', element: <Navigate to="/" /> },
       { path: '/post-details', element: <PostDetailsPage /> },
       { path: '/confirm', element: <ConfirmOrder /> },
+      { path: '/profile/my-reservation', element: <MyReservationsPage /> },
       { path: '/payment-success', element: <PaymentSuccess /> },
       { path: '/payment-failed', element: <PaymentFailed /> },
-
     ],
   },
 ];

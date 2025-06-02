@@ -5,11 +5,11 @@ import { momoConfig } from '../../config/momo';
 
 export const createMomoPaymentUrl = async (
     order: IOrder,
-    method: 'wallet' | 'atm' = 'wallet'
+    method: 'wallet' | 'atm' = 'wallet',
+    transactionId: string,
 ) => {
-    console.log('Creating MoMo payment URL for order:', method);
     const requestId = `${Date.now()}`;
-    const orderId = order._id.toString();
+    const orderId = transactionId;
     const amount = order.total_price;
 
     const requestType = method === 'atm' ? 'payWithATM' : 'captureWallet';
@@ -43,6 +43,8 @@ export const createMomoPaymentUrl = async (
             'Content-Type': 'application/json',
         },
     });
+
+    console.log('Momo payment response:', response.data);
 
     return response.data.payUrl;
 };
