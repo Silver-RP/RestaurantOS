@@ -14,7 +14,8 @@ import OrderDetail from './OrderDetail';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { AllOrder } from '@/types/Order.type';
-
+import { toast } from 'react-toastify';
+import { ToastConfigAdmin } from '@/components/common/ToastConfig';
 
 const OrderTable: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -78,43 +79,73 @@ const OrderTable: React.FC = () => {
     return <FaSort />;
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'PENDING':
+  const getStatusColor = (delivery_status: string) => {
+    switch (delivery_status) {
+      case 'ORDER_PLACED':
         return 'bg-yellow-100 text-yellow-800';
-      case 'PREPARING':
+      case 'ORDER_CONFIRMED':
         return 'bg-blue-100 text-blue-800';
-      case 'SHIPPING':
+      case 'PENDING_PICKUP':
+        return 'bg-orange-100 text-orange-800';
+      case 'PICKED_UP':
         return 'bg-purple-100 text-purple-800';
-      case 'COMPLETED':
+      case 'IN_TRANSIT':
+        return 'bg-indigo-100 text-indigo-800';
+      case 'DELIVERED':
         return 'bg-green-100 text-green-800';
+      case 'DELIVERY_FAILED':
+        return 'bg-red-100 text-red-800';
+      case 'RETURN_REQUESTED':
+        return 'bg-gray-100 text-gray-800';
+      case 'CANCEL_RETURN_REQUESTED':
+        return 'bg-pink-100 text-pink-800';
+      case 'RETURN_APPROVED':
+        return 'bg-teal-100 text-teal-800';
+      case 'RETURN_REJECTED':
+        return 'bg-red-200 text-red-900';
+      case 'RETURNED':
+        return 'bg-gray-200 text-gray-900';
+      case 'CANCEL_REQUESTED':
+        return 'bg-orange-200 text-orange-900';
       case 'CANCELLED':
         return 'bg-red-100 text-red-800';
-      case 'RETURNED':
-        return 'bg-gray-100 text-gray-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'PENDING':
-        return 'Chờ xử lý';
-      case 'PREPARING':
-        return 'Đang chuẩn bị';
-      case 'SHIPPING':
+  const getStatusText = (delivery_status: string) => {
+    switch (delivery_status) {
+      case 'ORDER_PLACED':
+        return 'Đã đặt hàng';
+      case 'ORDER_CONFIRMED':
+        return 'Đã xác nhận';
+      case 'PENDING_PICKUP':
+        return 'Chờ nhận hàng';
+      case 'PICKED_UP':
+        return 'Đã nhận hàng';
+      case 'IN_TRANSIT':
         return 'Đang giao';
-      case 'CANCEL_REQUESTED':
-        return 'Yêu cầu hủy';
-      case 'COMPLETED':
-        return 'Hoàn thành';
-      case 'CANCELLED':
-        return 'Đã hủy';
+      case 'DELIVERED':
+        return 'Đã giao';
+      case 'DELIVERY_FAILED':
+        return 'Giao hàng thất bại';
+      case 'RETURN_REQUESTED':
+        return 'Yêu cầu trả hàng';
+      case 'CANCEL_RETURN_REQUESTED':
+        return 'Hủy yêu cầu trả hàng';
+      case 'RETURN_APPROVED':
+        return 'Xác nhận trả hàng';
+      case 'RETURN_REJECTED':
+        return 'Trả hàng bị từ chối'; 
       case 'RETURNED':
         return 'Đã trả hàng';
+      case 'CANCEL_REQUESTED':
+        return 'Yêu cầu hủy';
+      case 'CANCELLED':
+        return 'Đã hủy';
       default:
-        return status;
+        return delivery_status;
     }
   };
 
@@ -154,22 +185,20 @@ const OrderTable: React.FC = () => {
         return type;
     }
   };
+
   const getCustomerName = (order: AllOrder) => {
-    // Handle both address_id and address cases (for normal get and search)
-    if (order.address_id?.full_name ) {
+    if (order.address_id?.full_name) {
       const name = order.address_id?.full_name;
-      console.log('Customer name:', name);
       return name;
     }
     if (order.receiver) {
       console.log('Receiver:', order.receiver);
       return order.receiver;
     }
-    return "Chưa có tên khách hàng";
+    return 'Chưa có tên khách hàng';
   };
 
   const getCustomerPhone = (order: AllOrder) => {
-    // Handle both address_id and address cases (for normal get and search)
     if (order.address_id?.phone) {
       const phone = order.address_id?.phone;
       console.log('Customer phone:', phone);
@@ -284,7 +313,7 @@ const OrderTable: React.FC = () => {
           <table className="min-w-[1200px] w-full bg-white text-sm text-gray-700">
             <thead>
               <tr className="bg-gray-100 text-left">
-                <th className="px-4 py-2">STT</th>
+                <th className="px-4 py-2">Mã Đơn Hàng</th>
                 <th className="px-4 py-2">Tên khách hàng</th>
                 <th className="px-4 py-2">SĐT</th>
                 <th
@@ -297,10 +326,10 @@ const OrderTable: React.FC = () => {
                 </th>
                 <th
                   className="px-4 py-2 cursor-pointer"
-                  onClick={() => handleSort('status')}
+                  onClick={() => handleSort('delivery_status')}
                 >
                   <span className="flex items-center gap-1">
-                    Trạng thái {renderSortIcon('status')}
+                    Trạng thái {renderSortIcon('delivery_status')}
                   </span>
                 </th>
                 <th
@@ -327,7 +356,6 @@ const OrderTable: React.FC = () => {
                     Loại giao hàng {renderSortIcon('delivery_type')}
                   </span>
                 </th>
-
                 <th className="px-4 py-2">Hành động</th>
               </tr>
             </thead>
@@ -336,10 +364,7 @@ const OrderTable: React.FC = () => {
                 (order: AllOrder, index: number) => (
                   <tr key={order._id} className="border-b hover:bg-gray-50">
                     <td className="px-4 py-2">
-                      {(Number(searchParams.get('page') || 1) - 1) *
-                        Number(searchParams.get('limit') || 10) +
-                        index +
-                        1}
+                      {order._id.slice(-6).toUpperCase()}
                     </td>
                     <td className="px-4 py-2">
                       <div className="font-medium">
@@ -351,10 +376,10 @@ const OrderTable: React.FC = () => {
                     <td className="px-4 py-2">
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(
-                          order.status,
+                          order.delivery_status,
                         )}`}
                       >
-                        {getStatusText(order.status)}
+                        {getStatusText(order.delivery_status)}
                       </span>
                     </td>
                     <td className="px-4 py-2 font-medium">
@@ -380,7 +405,6 @@ const OrderTable: React.FC = () => {
                     <td className="px-4 py-2">
                       {getDeliveryTypeText(order.delivery_type)}
                     </td>
-
                     <td className="px-4 py-2">
                       <button
                         onClick={() => handleViewOrder(order._id)}
@@ -416,8 +440,9 @@ const OrderTable: React.FC = () => {
               return newParams;
             });
           }}
+
         />
-      )}
+          )}
 
       {selectedOrderId && (
         <OrderDetail
@@ -426,6 +451,8 @@ const OrderTable: React.FC = () => {
           onClose={handleCloseOrderDetail}
         />
       )}
+
+      <ToastConfigAdmin />
     </main>
   );
 };

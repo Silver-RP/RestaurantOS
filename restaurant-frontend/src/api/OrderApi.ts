@@ -47,7 +47,6 @@ export async function requestCancel(orderId: string, reason: string) {
 }
 
 export const placeDirectOrder = async (data: PlaceOrderRequest) => {
-  console.log('Placing order with data:', data);
   const res = await api.post('/order/place-order', data);
   return res.data;
 };
@@ -69,3 +68,8 @@ export const updateOrderStatus = async (orderId: string, status: string) => {
   const res = await api.put(`/order/order-status/${orderId}`, { status });
   return res.data;
 };
+
+export const updatePaymentStatus = async (orderId: string, paidAmount: number ) => {
+  const res = await api.put(`/payment/payment-status/${orderId}`, { paidAmount });
+  return res.data;
+}

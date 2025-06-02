@@ -3,7 +3,6 @@ import OrderService from '../services/OrderService';
 import { IUser } from '../models/UserModel';
 import { Types } from 'mongoose';
 import OrderValidate from '../validators/orderValidator';
-import { Order } from '../models/OrderModel';
 
 class OrderController {
   async placeOrder(req: Request, res: Response): Promise<any> {
@@ -28,6 +27,7 @@ class OrderController {
         delivery_time_type,
         scheduled_time,
         note,
+        shipping_fee,
         receiver,
         receiver_phone,
       } = req.body;
@@ -43,6 +43,7 @@ class OrderController {
         delivery_time_type,
         scheduled_time,
         note,
+        shipping_fee,
         receiver,
         receiver_phone,
       });
@@ -110,9 +111,9 @@ class OrderController {
       const cleanDeliveryStatuses = deliveryStatuses?.filter(
         (status): status is string => typeof status === 'string'
       ) ?? null;
-      
+
       const result = await OrderService.getUserOrders(userId, cleanDeliveryStatuses, page, limit);
-      
+
       return res.status(200).json({
         message: 'Orders retrieved successfully',
         ...result,
@@ -149,6 +150,8 @@ class OrderController {
 
       // Validate status
       const validStatuses = [
+        'ORDER_PLACED',
+        'ORDER_CONFIRMED',
         'PENDING',
         'PENDING_PICKUP',
         'PICKED_UP',
@@ -156,6 +159,9 @@ class OrderController {
         'DELIVERED',
         'DELIVERY_FAILED',
         'RETURN_REQUESTED',
+        'CANCEL_RETURN_REQUESTED',
+        'RETURN_APPROVED',
+        'RETURN_REJECTED',
         'RETURNED',
         'CANCEL_REQUESTED',
         'CANCELLED',

@@ -9,6 +9,7 @@ interface BannerFormProps {
   onSubmit: (formData: FormData) => Promise<void>;
   initialData?: IBanner | null;
   loading?: boolean;
+  existingBanners?: IBanner[];
 }
 
 interface FormErrors {
@@ -20,7 +21,7 @@ interface FormErrors {
   image?: string;
 }
 
-const BannerForm: React.FC<BannerFormProps> = ({ onSubmit, initialData, loading = false }) => {
+const BannerForm: React.FC<BannerFormProps> = ({ onSubmit, initialData, loading = false, existingBanners = [] }) => {
   const navigate = useNavigate();
   const [images, setImages] = useState<(File | string)[]>([]);
   const [errors, setErrors] = useState<FormErrors>({});
@@ -32,6 +33,10 @@ const BannerForm: React.FC<BannerFormProps> = ({ onSubmit, initialData, loading 
     start_date: '',
     end_date: ''
   });
+
+  const [showOrderConflictModal, setShowOrderConflictModal] = useState(false);
+  const [orderConflictMessage, setOrderConflictMessage] = useState('');
+  const [isConfirmedSubmit, setIsConfirmedSubmit] = useState(false);
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -83,7 +88,6 @@ const BannerForm: React.FC<BannerFormProps> = ({ onSubmit, initialData, loading 
       ...prev,
       [name]: name === 'order' ? parseInt(value) : value
     }));
-    // Clear error when user starts typing
     if (errors[name as keyof FormErrors]) {
       setErrors(prev => ({ ...prev, [name]: undefined }));
     }
@@ -107,6 +111,18 @@ const BannerForm: React.FC<BannerFormProps> = ({ onSubmit, initialData, loading 
     if (!validateForm()) {
       toast.error('Vui lòng kiểm tra lại thông tin');
       return;
+    }
+
+    if (!isConfirmedSubmit && existingBanners && existingBanners.length > 0) {
+      const conflictingBanner = existingBanners.find(banner => 
+        banner.order === formData.order && (!initialData || banner._id !== initialData._id)
+      );
+
+      if (conflictingBanner) {
+        setOrderConflictMessage(`Thứ tự ${formData.order} đã được sử dụng bởi banner "${conflictingBanner.title}". Bạn có muốn thay đổi thứ tự của banner hiện tại và điều chỉnh các banner khác không?`);
+        setShowOrderConflictModal(true);
+        return;
+      }
     }
 
     try {
@@ -135,18 +151,42 @@ const BannerForm: React.FC<BannerFormProps> = ({ onSubmit, initialData, loading 
         submitData.append('end_date', formData.end_date);
       }
 
+      if (isConfirmedSubmit) {
+         submitData.append('confirm_order_adjustment', 'true');
+      }
+
       await onSubmit(submitData);
-      navigate('/admin/banners');
+      setIsConfirmedSubmit(false);
+      setShowOrderConflictModal(false);
     } catch (error) {
       if (error instanceof AxiosError) {
         console.error('Error submitting form:', error);
         toast.error(error.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại');
+      } else if (error instanceof Error) {
+         toast.error(error.message);
       }
+
+      setIsConfirmedSubmit(false);
     }
   };
 
+  const handleConfirmOrderAdjustment = () => {
+    setIsConfirmedSubmit(true);
+    setShowOrderConflictModal(false);
+
+    const formElement = document.getElementById('banner-form') as HTMLFormElement;
+    if (formElement) {
+       formElement.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+    }
+  };
+
+  const handleCancelOrderAdjustment = () => {
+    setIsConfirmedSubmit(false);
+    setShowOrderConflictModal(false);
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} id="banner-form" className="space-y-6">
       <div>
         <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
           Tiêu đề
@@ -257,7 +297,7 @@ const BannerForm: React.FC<BannerFormProps> = ({ onSubmit, initialData, loading 
         <button 
           type="submit" 
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-          disabled={loading}
+          disabled={loading || isConfirmedSubmit}
         >
           {loading ? 'Đang xử lý...' : (initialData ? 'Cập nhật' : 'Thêm mới')}
         </button>
@@ -265,11 +305,46 @@ const BannerForm: React.FC<BannerFormProps> = ({ onSubmit, initialData, loading 
           type="button" 
           className="border border-gray-300 px-4 py-2 rounded hover:bg-gray-50"
           onClick={() => navigate('/admin/banners')}
-          disabled={loading}
+          disabled={loading || isConfirmedSubmit}
         >
           Hủy
         </button>
       </div>
+
+      {/* Order Conflict Confirmation Modal */}
+      {showOrderConflictModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50">
+          <div className="relative p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3 text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100">
+                <svg className="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <h3 className="text-lg leading-6 font-medium text-gray-900 mt-4">Xung đột thứ tự</h3>
+              <div className="mt-2 px-7 py-3">
+                <p className="text-sm text-gray-500">
+                  {orderConflictMessage}
+                </p>
+              </div>
+              <div className="flex justify-center mt-4 space-x-4">
+                <button
+                  onClick={handleCancelOrderAdjustment}
+                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+                >
+                  Hủy
+                </button>
+                <button
+                  onClick={handleConfirmOrderAdjustment}
+                  className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700"
+                >
+                  Xác nhận thay đổi
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </form>
   );
 };

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useGetBannerById, useUpdateBanner } from '../../../../hooks/useBanner';
+import { useGetBannerById, useUpdateBanner, useGetBanners } from '../../../../hooks/useBanner';
 import { toast } from 'react-toastify';
 import BannerForm from './BannerForm';
 
@@ -9,15 +9,17 @@ const EditBannerPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { selectedBanner, loading: loadingBanner, getBannerById, error: fetchError } = useGetBannerById();
   const { updateBanner, loading: updatingBanner } = useUpdateBanner();
+  const { banners, fetchBanners } = useGetBanners();
 
   useEffect(() => {
     if (id) {
       getBannerById(id);
+      fetchBanners();
     } else {
       toast.error('Không tìm thấy ID banner');
       navigate('/admin/banners');
     }
-  }, [id, getBannerById, navigate]);
+  }, [id, getBannerById, navigate, fetchBanners]);
 
   useEffect(() => {
     if (fetchError) {
@@ -30,11 +32,13 @@ const EditBannerPage: React.FC = () => {
     
     try {
       const response = await updateBanner(id, formData);
-      if (response.success === true) {
+      if (typeof response === 'object' && response !== null && 'conflict' in response && response.conflict === true) {
+        return;
+      }
+
+      if (response) {
         toast.success('Cập nhật banner thành công');
         navigate('/admin/banners');
-      } else {
-         toast.error(response?.message || 'Có lỗi xảy ra khi cập nhật banner');
       }
     } catch (error) {
       console.error('Error updating banner:', error);
@@ -56,6 +60,7 @@ const EditBannerPage: React.FC = () => {
           onSubmit={handleSubmit} 
           initialData={selectedBanner} 
           loading={updatingBanner}
+          existingBanners={banners}
         />
       </div>
     </div>

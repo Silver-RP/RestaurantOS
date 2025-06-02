@@ -15,5 +15,10 @@ export const breadcrumbConfig: Record<string, string> = {
     "/contact": "Liên hệ",
     "/reservation" : "Đặt bàn",
     "/favorites" : "Danh sách yêu thích",
+    "/checkout": "Thanh toán",
+    "/confirm": "Xác nhận đơn hàng",
+    "/payment-success": "Thanh toán thành công",
+    "/payment-failed": "Thanh toán thất bại",
+    
   };
   

@@ -1,14 +1,22 @@
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import OrderValidator from '../validators/orderValidator';
 import { Address } from '../models/AddressModel';
 import { Order, IOrder } from '../models/OrderModel';
 import { OrderDetail } from '../models/OrderDetailModel';
 import Cart from '../models/CartModel';
 import { Dish } from '../models/DishModel';
+import Payment  from '../models/PaymentModel';
 import SearchService from './SearchService';
 import { createVNPayPaymentUrl } from '../services/payments/VnPayService';
+import { createMomoPaymentUrl } from '../services/payments/MomoService';
+import { createPayPalOrder } from '../services/payments/PaypalService';
+
+import axios from 'axios';
+import { IUser } from '../models/UserModel';
 
 enum DeliveryStatus {
+  ORDER_PLACED = 'ORDER_PLACED',
+  ORDER_CONFIRMED = 'ORDER_CONFIRMED',
   PENDING = 'PENDING',
   PENDING_PICKUP = 'PENDING_PICKUP',
   PICKED_UP = 'PICKED_UP',
@@ -16,8 +24,11 @@ enum DeliveryStatus {
   DELIVERED = 'DELIVERED',
   DELIVERY_FAILED = 'DELIVERY_FAILED',
   RETURN_REQUESTED = 'RETURN_REQUESTED',
+  CANCEL_RETURN_REQUESTED = 'CANCEL_RETURN_REQUESTED',
+  RETURN_APPROVED = 'RETURN_APPROVED',
+  RETURN_REJECTED = 'RETURN_REJECTED',
   RETURNED = 'RETURNED',
-  CANCEL_REQUESTED = 'CANCEL_REQUESTED', 
+  CANCEL_REQUESTED = 'CANCEL_REQUESTED',
   CANCELLED = 'CANCELLED',
 }
 
@@ -32,8 +43,52 @@ enum OrderStatus {
   RETURNED = 'RETURNED',
 }
 class OrderService {
-  async handleAddress(userId: string, address_id: string | null, address: any, session: any, delivery_type: string) {
-    // Nếu là pickup, không cần địa chỉ
+  getStripeSession(sessionId: any) {
+    throw new Error('Method not implemented.');
+  }
+
+  private getStatusText(delivery_status: string): string {
+    switch (delivery_status) {
+      case 'ORDER_PLACED':
+        return 'Đã đặt hàng';
+      case 'ORDER_CONFIRMED':
+        return 'Xác nhận đơn hàng';
+      case 'PENDING_PICKUP':
+        return 'Chờ nhận hàng';
+      case 'PICKED_UP':
+        return 'Đã nhận hàng';
+      case 'IN_TRANSIT':
+        return 'Đang giao';
+      case 'DELIVERED':
+        return 'Đã giao';
+      case 'DELIVERY_FAILED':
+        return 'Giao hàng thất bại';
+      case 'RETURN_REQUESTED':
+        return 'Yêu cầu trả hàng';
+      case 'CANCEL_RETURN_REQUESTED':
+        return 'Hủy yêu cầu trả hàng';
+      case 'RETURN_APPROVED':
+        return 'Xác nhận trả hàng';
+      case 'RETURN_REJECTED':
+        return 'Trả hàng bị từ chối';
+      case 'RETURNED':
+        return 'Đã trả hàng';
+      case 'CANCEL_REQUESTED':
+        return 'Yêu cầu hủy đơn hàng';
+      case 'CANCELLED':
+        return 'Đã hủy';
+      default:
+        return delivery_status;
+    }
+  }
+
+  async handleAddress(
+    userId: string,
+    address_id: string | null,
+    address: any,
+    session: any,
+    delivery_type: string,
+  ) {
     if (delivery_type === 'PICKUP') {
       return null;
     }
@@ -59,6 +114,7 @@ class OrderService {
     delivery_time_type: string,
     total_quantity: number,
     note: string,
+    shipping_fee: number,
     receiver: string | null,
     receiver_phone: string | null,
     scheduled_time: Date | null,
@@ -66,7 +122,6 @@ class OrderService {
   ) {
     const items_price = totalAmount;
     const vat_amount = items_price * 0.08;
-    const shipping_fee = 5000;
     const total_price = items_price + vat_amount + shipping_fee;
 
     const newOrder = new Order({
@@ -125,61 +180,126 @@ class OrderService {
 
   async handlePostPaymentLogic(order: IOrder, clientIp: string) {
     const payment_method = order.payment_method;
-    let redirectUrl = null;
+    let redirectUrl: string | null = null;
     let bankingInfo = null;
-
+  
+    const amount = order.total_price || 0;
+  
+    if (payment_method === 'BANKING') {
+      const bank_name = 'Vietcombank';
+      const bank_code = '970436';
+      const account_number = '0123456789';
+      const account_name = 'Công ty TNHH BeefBeef';
+      const transfer_note = `ORDER-${order._id}`;
+  
+      const qrRes = await axios.post('https://api.vietqr.io/v2/generate', {
+        accountNo: account_number,
+        accountName: account_name,
+        acqId: bank_code,
+        amount,
+        addInfo: transfer_note,
+        format: 'base64',
+      });
+  
+      const qr_base64 = qrRes?.data?.data?.qrDataURL;
+  
+      bankingInfo = {
+        bank_name,
+        account_number,
+        account_name,
+        qr_code: qr_base64,
+        transfer_note,
+      };
+    }
+  
     switch (payment_method) {
-      case 'BANKING':
-        bankingInfo = {
-          bank_name: 'Vietcombank',
-          account_number: '0123456789',
-          account_name: 'Công ty ABC',
-          qr_code: 'https://example.com/qr.png',
-          transfer_note: `ORDER-${order._id}`
-        };
+      case 'MOMO':
+        redirectUrl = await createMomoPaymentUrl(order, 'wallet');
         break;
-
-      // case 'MOMO':
-      //   redirectUrl = await momoService.createPaymentUrl(order);
-      //   break;
-
+      case 'MOMO_ATM':
+        redirectUrl = await createMomoPaymentUrl(order, 'atm');
+        break;
       case 'VNPAY':
         redirectUrl = createVNPayPaymentUrl(order, clientIp);
         break;
-
-      // case 'CREDIT_CARD':
-      //   redirectUrl = await creditCardService.createPaymentUrl(order);
-      //   break;
+      case 'CREDIT_CARD':
+        const orderWithItems = await this.getOrderById(order._id);
+        redirectUrl = await createPayPalOrder(orderWithItems as any);
+        break;
+      default:
+        redirectUrl = null;
+        break;
     }
+  
+    await Payment.create({
+      orderId: order._id,
+      payment_method,
+      payment_status: 'UNPAID',
+      amount,
+      transaction_code: null,
+      bankingInfo: bankingInfo,
+    });
 
     return {
       type: payment_method,
       redirectUrl,
-      bankingInfo
+      bankingInfo,
+      orderTotal: order.total_price,
     };
   }
 
-  async markOrderPaid(orderId: string, amount: number) {
-    const order = await Order.findById(orderId);
-    if (!order) throw new Error('Order not found');
-
-    if (order.total_price !== amount) {
-      throw new Error('Paid amount does not match order total');
-    }
-
-    order.payment_status = 'PAID';
-    order.paid_at = new Date();
-    await order.save();
-
-    return order;
-  }
-
-  async markOrderFailed(orderId: string) {
+  async markOrderPaid(orderId: string, paidAmount: number, transactionCode: string, userId: string | null) {
     const order = await Order.findById(orderId);
     if (!order) throw new Error('Order not found');
   
-    order.payment_status = 'FAILED'; 
+    const payment = await Payment.findOne({
+      orderId: orderId,
+      payment_status: 'UNPAID',
+    });
+  
+    if (!payment) throw new Error('No UNPAID payment found for this order');
+  
+    const allowedDifference = 1000;
+  
+    if (Math.abs((payment.amount || 0) - paidAmount) > allowedDifference) {
+      throw new Error('Paid amount does not match expected payment amount');
+    }
+
+    payment.payment_status = 'PAID';
+    payment.payment_date = new Date();
+    payment.transaction_code = transactionCode;
+    payment.amount = paidAmount;
+
+    if (userId) {
+      payment.confirmed_by = new mongoose.Types.ObjectId(userId);
+    }
+
+    await payment.save();
+  
+    if (order.payment_status !== 'PAID') {
+      order.payment_status = 'PAID';
+      order.paid_at = new Date();
+      await order.save();
+    }
+  
+    return { order, payment };
+  }
+
+  async markOrderFailed(orderId: string, reason?: string) {
+    const order = await Order.findById(orderId);
+    if (!order) throw new Error('Order not found');
+  
+    order.payment_status = 'FAILED';
     await order.save();
+  
+    await Payment.updateMany(
+      { order_id: orderId, payment_status: 'UNPAID' },
+      {
+        payment_status: 'FAILED',
+        failure_reason: reason || 'Unknown failure',
+        payment_date: new Date(),
+      }
+    );
   
     return order;
   }
@@ -196,6 +316,7 @@ class OrderService {
       delivery_time_type,
       scheduled_time,
       note,
+      shipping_fee,
       receiver,
       receiver_phone,
     } = input;
@@ -208,7 +329,7 @@ class OrderService {
         address_id,
         address,
         session,
-        delivery_type
+        delivery_type,
       );
 
       const { orderItems, totalAmount } = await OrderValidator.validateCartAndItems(
@@ -221,7 +342,7 @@ class OrderService {
 
       const savedOrder = await this.createOrder(
         userId,
-        finalAddressId || '',
+        finalAddressId,
         payment_method,
         delivery_type,
         totalAmount,
@@ -229,6 +350,7 @@ class OrderService {
         delivery_time_type,
         total_quantity,
         note,
+        shipping_fee,
         receiver,
         receiver_phone,
         scheduled_time,
@@ -288,12 +410,7 @@ class OrderService {
         sortBy,
         sortOrder,
         populate: ['user_id', 'address_id'],
-        searchFields: [
-          'address_id.full_name',
-          'address_id.phone', 
-          'receiver',
-          'receiver_phone',
-        ],
+        searchFields: ['address_id.full_name', 'address_id.phone', 'receiver', 'receiver_phone'],
         searchTerm: filters.keyword || '',
         filters: {
           status: filters.status,
@@ -441,21 +558,70 @@ class OrderService {
         throw { statusCode: 404, message: 'Order not found' };
       }
 
-      order.delivery_status = status as
-        | 'PENDING_PICKUP'
-        | 'PICKED_UP'
-        | 'IN_TRANSIT'
-        | 'DELIVERED'
-        | 'DELIVERY_FAILED'
-        | 'RETURN_REQUESTED'
-        | 'RETURNED'
-        | 'CANCEL_REQUESTED'
-        | 'CANCELLED';
+      // Validate status
+      const validStatuses: string[] = Object.values(DeliveryStatus);
+      if (!validStatuses.includes(status)) {
+        throw { statusCode: 400, message: 'Invalid delivery status' };
+      }
 
-      const mappedStatus = this.mapDeliveryStatusToOrderStatus(
-        order.delivery_status as DeliveryStatus,
-        order.order_type,
-      );      order.status = mappedStatus.toString() as any;
+      // Restrict admin updates to admin-relevant statuses
+      const adminStatuses = [
+        DeliveryStatus.ORDER_CONFIRMED,
+        DeliveryStatus.PENDING_PICKUP,
+        DeliveryStatus.PICKED_UP,
+        DeliveryStatus.IN_TRANSIT,
+        DeliveryStatus.DELIVERED,
+        DeliveryStatus.DELIVERY_FAILED,
+        DeliveryStatus.RETURN_APPROVED,
+        DeliveryStatus.RETURN_REJECTED,
+        DeliveryStatus.RETURNED,
+      ];
+      if (!adminStatuses.includes(status as DeliveryStatus)) {
+        throw { statusCode: 403, message: 'Status not allowed for admin update' };
+      }
+
+      // Define valid status transitions
+      const validTransitions: { [key: string]: string[] } = {
+        [DeliveryStatus.ORDER_PLACED]: [DeliveryStatus.ORDER_CONFIRMED, DeliveryStatus.CANCELLED],
+        [DeliveryStatus.ORDER_CONFIRMED]: [DeliveryStatus.PENDING_PICKUP, DeliveryStatus.CANCELLED],
+        [DeliveryStatus.PENDING_PICKUP]: [
+          DeliveryStatus.PICKED_UP,
+          DeliveryStatus.CANCEL_REQUESTED,
+        ],
+        [DeliveryStatus.PICKED_UP]: [DeliveryStatus.IN_TRANSIT],
+        [DeliveryStatus.IN_TRANSIT]: [DeliveryStatus.DELIVERED, DeliveryStatus.DELIVERY_FAILED],
+        [DeliveryStatus.DELIVERED]: [DeliveryStatus.RETURN_REQUESTED], // DELIVERED can only transition to RETURN_REQUESTED
+        [DeliveryStatus.DELIVERY_FAILED]: [DeliveryStatus.PENDING_PICKUP, DeliveryStatus.CANCELLED], // Allow retry or cancel
+        [DeliveryStatus.RETURN_REQUESTED]: [
+          DeliveryStatus.RETURN_APPROVED,
+          DeliveryStatus.RETURN_REJECTED,
+        ],
+        [DeliveryStatus.RETURN_APPROVED]: [DeliveryStatus.RETURNED],
+        [DeliveryStatus.RETURN_REJECTED]: [], // No further transitions
+        [DeliveryStatus.RETURNED]: [], // No further transitions
+        [DeliveryStatus.CANCEL_REQUESTED]: [DeliveryStatus.CANCELLED],
+        [DeliveryStatus.CANCELLED]: [], // No further transitions
+        [DeliveryStatus.CANCEL_RETURN_REQUESTED]: [DeliveryStatus.CANCELLED],
+      };
+
+      if (
+        validTransitions[order.delivery_status] &&
+        !validTransitions[order.delivery_status].includes(status)
+      ) {
+        throw {
+          statusCode: 400,
+          message: `Không thể chuyển từ trạng thái "${this.getStatusText(
+            order.delivery_status,
+          )}" sang "${this.getStatusText(status)}"`,
+        };
+      }
+
+      order.delivery_status = status as "ORDER_PLACED" | "ORDER_CONFIRMED" | "PENDING_PICKUP" | "PICKED_UP" | "IN_TRANSIT" | "DELIVERED" | "DELIVERY_FAILED" | "RETURN_REQUESTED" | "CANCEL_RETURN_REQUESTED" | "RETURN_APPROVED" | "RETURN_REJECTED" | "RETURNED" | "CANCEL_REQUESTED" | "CANCELLED";
+
+      // Set delivered_at timestamp for DELIVERED status
+      if (status === DeliveryStatus.DELIVERED) {
+        order.delivered_at = new Date();
+      }
 
       await order.save();
 
@@ -583,7 +749,8 @@ class OrderService {
           statusCode: 400,
           message: 'Return request must be made within 30 minutes of delivery',
         };
-      }      order.status = OrderStatus.RETURN_REQUESTED.toString() as any;
+      }
+      order.status = OrderStatus.RETURN_REQUESTED.toString() as any;
       order.delivery_status = DeliveryStatus.RETURN_REQUESTED.toString() as any;
       order.returned_at = new Date();
       order.cancelled_reason = reason;
@@ -609,7 +776,8 @@ class OrderService {
       if (order.status !== 'PREPARING' || order.delivery_status !== 'PENDING_PICKUP') {
         throw {
           statusCode: 400,
-          message: 'Cancel request chỉ được phép khi status = PREPARING và delivery_status = PENDING_PICKUP',
+          message:
+            'Cancel request chỉ được phép khi status = PREPARING và delivery_status = PENDING_PICKUP',
         };
       }
 

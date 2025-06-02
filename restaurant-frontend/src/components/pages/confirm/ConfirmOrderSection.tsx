@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ButtonComponents from '@components/common/ButtonComponents';
-import { FiMenu, FiX, FiHome, FiBook, FiCalendar, FiPhone, FiInfo } from "react-icons/fi";
 import { usePlaceDirectOrder } from "@/hooks/useOrder";
 import { PlaceOrderRequest } from "@/types/Order.type";
 import { toast } from "react-toastify";
@@ -104,7 +103,8 @@ const OrderConfirmation = () => {
       "BANKING": "Chuyển khoản ngân hàng",
       "VNPAY": "Thanh toán qua VNPAY",
       "MOMO": "Thanh toán qua MOMO",
-      "CREDIT_CARD": "Thanh toán bằng thẻ tín dụng"
+      "MOMO_ATM": "Thanh toán thẻ qua MOMO",
+      "CREDIT_CARD": "Thanh toán bằng thẻ tín dụng qua PayPal",
     };
 
     return paymentMethodMap[orderData.payment_method] || orderData.payment_method;
@@ -152,6 +152,7 @@ const OrderConfirmation = () => {
           note: item.note
         })),
         note: orderData.note,
+        shipping_fee: orderData.shipping_fee,
         receiver: orderData.receiver || "",
         receiver_phone: orderData.receiver_phone || "",
       };
@@ -175,6 +176,18 @@ const OrderConfirmation = () => {
       }
       const response = await placeDirectOrderMutation.mutateAsync(apiOrderData);
 
+      console.log("Order placed successfully:", response);
+      console.log("Order data:", response.postPayment);
+
+      if (response.postPayment?.bankingInfo) {
+        sessionStorage.setItem('recentBankingInfo', JSON.stringify(response.postPayment.bankingInfo));
+      } else {
+        sessionStorage.removeItem('recentBankingInfo');
+      }
+
+      if (response.postPayment?.orderTotal) {
+        sessionStorage.setItem('orderTotal', JSON.stringify(response.postPayment.orderTotal));
+      }
 
       // Set a flag in session storage to indicate a successful order
       sessionStorage.setItem('recentOrderSuccess', 'true');
@@ -192,7 +205,7 @@ const OrderConfirmation = () => {
       }
       
       // Navigate to success page
-      navigate('/order-success');
+      navigate('/payment-success');
     } catch (error) {
       console.error("Error placing order:", error);
       toast.error("Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại.");

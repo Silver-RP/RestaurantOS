@@ -146,6 +146,8 @@ export function useFoodLogic({ initialData, categories, onSubmit }: UseFoodFormP
   const [discountUntil, setDiscountUntil] = useState<Date | null>(null);
   const [isDishNew, setIsDishNew] = useState(false);
   const [newUntil, setNewUntil] = useState<Date | null>(null);
+  const [isRecommend, setIsRecommend] = useState(false);
+  const [recommendUntil, setRecommendUntil] = useState<Date | null>(null);
   const [description, setDescription] = useState('');
   const [shortDescription, setShortDescription] = useState('');
   const [ingredients, setIngredients] = useState('');
@@ -174,6 +176,8 @@ export function useFoodLogic({ initialData, categories, onSubmit }: UseFoodFormP
       setDiscountUntil(initialData.discountUntil || null);
       setIsDishNew(initialData.isDishNew || false);
       setNewUntil(initialData.newUntil || null);
+      setIsRecommend(initialData.isRecommend || false);
+      setRecommendUntil(initialData.recommendUntil || null);
       setDescription(initialData.description || '');
       setShortDescription(initialData.shortDescription || '');
       setIngredients(initialData.ingredients || '');
@@ -217,6 +221,8 @@ export function useFoodLogic({ initialData, categories, onSubmit }: UseFoodFormP
     if (!['hidden', 'available', 'soldout'].includes(status)) return toast.error('Trạng thái không hợp lệ');
     if (isDishNew && newUntil && newUntil <= new Date())
       return toast.error('Ngày kết thúc món mới phải lớn hơn hiện tại');
+    if (isRecommend && recommendUntil && recommendUntil <= new Date())
+      return toast.error('Ngày kết thúc món đề xuất phải lớn hơn hiện tại');
     if (discountPrice > 0 && discountUntil && discountUntil <= new Date())
       return toast.error('Ngày kết thúc khuyến mãi phải lớn hơn hiện tại');
     if (images.length === 0) return toast.error('Phải chọn ít nhất 1 ảnh');
@@ -240,6 +246,11 @@ export function useFoodLogic({ initialData, categories, onSubmit }: UseFoodFormP
     if (isDishNew && newUntil) {
       const date = new Date(newUntil); 
       formData.append('newUntil', date.toISOString());
+    }
+    formData.append('isRecommend', String(isRecommend));
+    if (isRecommend && recommendUntil) {
+      const date = new Date(recommendUntil);
+      formData.append('recommendUntil', date.toISOString());
     }
     
     if (discountPrice > 0 && discountUntil) {
@@ -281,7 +292,7 @@ export function useFoodLogic({ initialData, categories, onSubmit }: UseFoodFormP
     // States
     name, setName, slug, setSlug, categoryId, setCategoryId, status, setStatus,
     price, setPrice, discountPrice, setDiscountPrice, discountUntil, setDiscountUntil,
-    isDishNew, setIsDishNew, newUntil, setNewUntil, description, setDescription,
+    isDishNew, setIsDishNew, newUntil, setNewUntil, isRecommend, setIsRecommend, recommendUntil, setRecommendUntil, description, setDescription,
     shortDescription, setShortDescription, ingredients, setIngredients, images,
     handleImageChange, handleRemoveImage, countInStock, setCountInStock,
     origin, setOrigin, alcoholType, setAlcoholType, alcoholContent, setAlcoholContent,

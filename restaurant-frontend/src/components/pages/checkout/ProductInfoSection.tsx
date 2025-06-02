@@ -19,8 +19,8 @@ interface ProductInfoProps {
   products: Product[];
   note?: string;
   shippingFee?: number;
-  paymentMethod: string;
-  onPaymentMethodChange: (method: string) => void;
+  paymentMethod: string | null;
+  onPaymentMethodChange: (method: string | null) => void;
   vouchers?: Voucher[];
   onProceedToPayment?: () => void;
   onNoteChange?: (note: string) => void;
@@ -31,9 +31,9 @@ const ProductInfoSection = ({
   products,
   note,
   shippingFee = 0,
-  paymentMethod,
   onPaymentMethodChange,
   vouchers = [],
+  paymentMethod,
   onProceedToPayment,
   onNoteChange,
   onProductNoteChange,
@@ -192,7 +192,7 @@ const ProductInfoSection = ({
         {/* Phương thức thanh toán */}
         <div className="flex-1">
           <PaymentMethodSelector
-            selectedMethod={paymentMethod}
+            selectedMethod={paymentMethod ?? ''}
             onChange={onPaymentMethodChange}
           />
         </div>
