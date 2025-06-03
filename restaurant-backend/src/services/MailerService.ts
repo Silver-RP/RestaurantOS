@@ -3,6 +3,7 @@ import { IOrder } from '../models/OrderModel';
 import { IUser } from '../models/UserModel';
 import { IAddress } from '../models/AddressModel';
 import { IOrderDetail }  from '../models/OrderDetailModel';
+import { IPayment } from '../models/PaymentModel';
 
 type MailTemplateParams = {
   to: string;
@@ -56,6 +57,30 @@ const MailerService = {
         shippingFee: order.shipping_fee.toLocaleString('vi-VN') + '₫',
         total: (order.total_price ?? (order.items_price + order.vat_amount + order.shipping_fee)).toLocaleString('vi-VN') + '₫',
         orderDetailUrl: `${process.env.CLIENT_BASE_URL || '#'}/profile/orders`,
+      },
+    });
+  },
+
+  async sendOrderPaymentSuccess(params: { payment: IPayment; order: IOrder; userEmail: string; }) {
+    const { payment, order, userEmail } = params;
+  
+    await this.sendTemplateEmail({
+      to: userEmail,
+      subject: `Thanh toán thành công cho đơn hàng #${order._id.toString().slice(-6).toUpperCase()}`,
+      template: 'payment-success',
+      context: {
+        orderId: order._id.toString().slice(-6).toUpperCase(),
+        transactionCode: payment.transaction_code?.toString().toUpperCase(),
+        paymentMethod: this.getPaymentMethodName(payment.payment_method).toString().toUpperCase(),
+        amount: payment.amount.toLocaleString('vi-VN') + '₫',
+        date: new Date(payment.created_at).toLocaleString('vi-VN', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+        invoiceUrl: `${process.env.CLIENT_BASE_URL || '#'}/profile/orders`,
       },
     });
   },
