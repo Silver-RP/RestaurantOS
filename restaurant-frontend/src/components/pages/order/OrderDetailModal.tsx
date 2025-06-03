@@ -213,49 +213,29 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                 <div className="flex gap-2 items-center">
                   <span className="font-semibold">Trạng thái:</span>
                   <span className="px-2 py-0.5 rounded bg-secondaryColor/80 text-headerBackground font-bold text-md">
-                    {order.status === 'SHIPPING'
-                      ? 'Đang giao'
-                      : order.status === 'COMPLETED'
-                        ? 'Hoàn thành'
-                        : order.status === 'CANCELLED'
-                          ? 'Đã hủy'
-                          : order.status === 'RETURNED'
-                            ? 'Đã trả hàng'
-                            : order.status === 'PENDING'
-                              ? 'Chờ xác nhận'
-                              : order.status === 'PREPARING'
-                                ? 'Đang chuẩn bị'
-                                : order.delivery_status === 'CANCEL_REQUESTED'
-                                  ? 'Đã yêu cầu hủy đơn'
-                                  : order.delivery_status === 'RETURN_REQUESTED'
-                                    ? 'Đã yêu cầu hoàn trả'
-                                    : order.status === 'COMPLETED'
-                                      ? 'Đã hoàn thành'
-                                      : order.status}
-                  </span>
-                </div>
-                <div className="flex gap-2 items-center">
-                  <span className="font-semibold">Trạng thái giao hàng:</span>
-                  <span className="text-md">
-                    {order.delivery_status === 'IN_TRANSIT'
-                      ? 'Đang vận chuyển'
-                      : order.delivery_status === 'DELIVERED'
-                        ? 'Đã giao'
-                        : order.delivery_status === 'CANCELLED'
-                          ? 'Đã hủy'
-                          : order.delivery_status === 'RETURNED'
-                            ? 'Đã trả hàng'
-                            : order.delivery_status === 'PENDING_PICKUP'
-                              ? 'Chờ lấy hàng'
-                              : order.delivery_status === 'PENDING'
-                                ? 'Chờ xác nhận'
-                                : order.delivery_status === 'CANCEL_REQUESTED'
-                                  ? 'Đã yêu cầu hủy đơn'
-                                  : order.delivery_status === 'RETURN_REQUESTED'
-                                    ? 'Đã yêu cầu hoàn trả'
-                                    : order.delivery_status === 'DELIVERED'
-                                      ? 'Đã giao'
-                                      : order.delivery_status}
+                    {order.status === 'ORDER_PLACED'
+                      ? 'Chờ xác nhận'
+                      : order.status === 'ORDER_CONFIRMED'
+                        ? 'Đã xác nhận'
+                        : order.status === 'PENDING_PICKUP'
+                          ? 'Đang chuẩn bị'
+                          : order.status === 'PICKED_UP'
+                            ? 'Đã lấy hàng'
+                            : order.status === 'IN_TRANSIT'
+                              ? 'Đang giao hàng'
+                              : order.status === 'DELIVERED'
+                                ? 'Đã giao hàng'
+                                : order.status === 'RETURN_REQUESTED'
+                                  ? 'Đã yêu cầu trả hàng'
+                                  : order.status === 'RETURN_APPROVED'
+                                    ? 'Đã duyệt trả hàng'
+                                    : order.status === 'RETURN_REJECTED'
+                                      ? 'Đã từ chối trả hàng'
+                                      : order.status === 'CANCELLED'
+                                        ? 'Đã hủy'
+                                        : order.status === 'RETURNED'
+                                          ? 'Đã trả hàng'
+                                          : order.status}
                   </span>
                 </div>
                 <div className="flex gap-2 items-center">

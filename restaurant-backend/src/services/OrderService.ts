@@ -542,15 +542,15 @@ class OrderService {
 
   async getUserOrders(
     userId: mongoose.Types.ObjectId,
-    deliveryStatuses: string[] | null,
+    status: string | undefined,
     page: number = 1,
     limit: number = 5,
   ) {
     try {
       const query: any = { user_id: userId };
 
-      if (deliveryStatuses && deliveryStatuses.length > 0) {
-        query.delivery_status = { $in: deliveryStatuses };
+      if (status) {
+        query.status = status;
       }
 
       const totalItems = await Order.countDocuments(query);
@@ -813,8 +813,7 @@ class OrderService {
         };
       }
 
-      order.status = 'CANCELLED';
-      order.status = 'CANCELLED';
+      order.status = 'CANCELLED'; 
       order.cancelled_at = new Date();
       order.cancelled_reason = reason;
 
@@ -843,7 +842,6 @@ class OrderService {
         };
       }
 
-      // Kiểm tra thời gian từ khi giao hàng
       if (!order.delivered_at) {
         throw {
           statusCode: 400,

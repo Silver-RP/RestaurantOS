@@ -104,18 +104,11 @@ class OrderController {
       }
 
       const userId = (req.user as IUser).id as Types.ObjectId;
-      const deliveryStatuses = req.query.delivery_status
-        ? Array.isArray(req.query.delivery_status)
-          ? req.query.delivery_status
-          : [req.query.delivery_status]
-        : null;
+      const status = req.query.status as string | undefined;
       const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
       const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 5;
-      const cleanDeliveryStatuses = deliveryStatuses?.filter(
-        (status): status is string => typeof status === 'string'
-      ) ?? null;
 
-      const result = await OrderService.getUserOrders(userId, cleanDeliveryStatuses, page, limit);
+      const result = await OrderService.getUserOrders(userId, status, page, limit);
 
       return res.status(200).json({
         message: 'Orders retrieved successfully',

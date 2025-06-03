@@ -1,4 +1,3 @@
-
 export type Status =
   | 'ORDER_PLACED'
   | 'ORDER_CONFIRMED'
@@ -138,7 +137,7 @@ export interface Order {
 export interface OrdersResponse {
   message: string;
   orders: Order[];
-  total: number;
+  totalItems: number;
   currentPage: number;
   totalPages: number;
   filters?: { [key: string]: string };
@@ -175,7 +174,7 @@ export interface CancelOrderRequest {
 export interface OrderQueryParams {
   page?: number;
   limit?: number;
-  status?: Status;
+  status?: Status | Status[];
   startDate?: string;
   endDate?: string;
   sortBy?: string;
