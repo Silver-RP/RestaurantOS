@@ -55,7 +55,7 @@ const MailerService = {
         vat: order.vat_amount.toLocaleString('vi-VN') + '₫',
         shippingFee: order.shipping_fee.toLocaleString('vi-VN') + '₫',
         total: (order.total_price ?? (order.items_price + order.vat_amount + order.shipping_fee)).toLocaleString('vi-VN') + '₫',
-        orderDetailUrl: `${process.env.CLIENT_BASE_URL || '#'}/profile/orders/${order._id}`,
+        orderDetailUrl: `${process.env.CLIENT_BASE_URL || '#'}/profile/orders`,
       },
     });
   },

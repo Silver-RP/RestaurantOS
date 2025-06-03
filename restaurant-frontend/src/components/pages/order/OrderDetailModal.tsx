@@ -339,8 +339,15 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                   </div>
                 )}
                 {order.payment_status !== 'PAID' &&
-                  order.status !== 'CANCELLED' && (
+                  ['ORDER_PLACED', 'ORDER_CONFIRMED'].includes(order.status) && (
+                    
                     <div className="pt-2">
+                      {order.payment_method !== 'CASH' && (
+                        <div className="bg-yellow-100 text-yellow-800 text-xs rounded-md px-3 py-2 mb-3 max-w-md text-justify leading-relaxed">
+                          Đơn hàng sẽ tự động <strong>hủy sau 30 phút</strong> nếu không được thanh toán thành công.
+                          Vui lòng hoàn tất thanh toán càng sớm càng tốt để tránh bị hủy.
+                        </div>
+                      )}
                       {!showSelector ? (
                         <div className="flex gap-2">
                           {order.payment_method !== 'CASH' && (

@@ -42,6 +42,10 @@ const PaymentFailed = () => {
           <p className="mb-6 text-gray-400 max-w-md">
             Rất tiếc, quá trình thanh toán không thành công. Vui lòng kiểm tra phương thức thanh toán hoặc thử lại sau.
           </p>
+          <div className="bg-yellow-100 text-yellow-800 text-sm rounded-md px-4 py-3 mb-6 max-w-lg text-justify leading-relaxed">
+            Đơn hàng sẽ tự động <strong>hủy sau 30 phút</strong> nếu không được thanh toán thành công.
+            Vui lòng hoàn tất thanh toán càng sớm càng tốt để tránh bị hủy.
+          </div>
 
           <div className="flex gap-4">
             <ButtonComponents  onClick={handleRetryPayment}>

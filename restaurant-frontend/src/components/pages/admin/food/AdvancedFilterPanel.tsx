@@ -67,7 +67,7 @@ const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
       ratingMax: initialFilters?.ratingMax || '',
       status: initialFilters?.status || '',
     }));
-  }, [initialFilters]); // bắt buộc có để khi searchParams đổi, form reset
+  }, [initialFilters]); 
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
