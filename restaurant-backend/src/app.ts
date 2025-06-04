@@ -53,10 +53,10 @@ app.use(
 const server = http.createServer(app);
 const io = new SocketIOServer(server, {
   cors: {
-    origin: '*', // đổi nếu deploy thật
+    origin: 'http://localhost:5173',
+    credentials: true,
   },
 });
-
 const port = process.env.PORT || 4000;
 
 // Cấu hình Swagger
@@ -123,15 +123,21 @@ app.use(
   AuthMiddleWare.verifyRole(['superadmin', 'manager']),
   StaffRoutes,
 );
-
+app.set('io', io);
+// Khởi động Socket.IO
+initSocket(io);
 app.use('/api/food', FoodRoutes);
 app.use('/api/order', AuthMiddleWare.verifyToken, OrderRoutes);
 app.use('/api/cart', AuthMiddleWare.verifyToken, CartRouter);
 app.use('/api/favorite', AuthMiddleWare.verifyToken, FavoriteRoutes);
 app.use('/api/address', AuthMiddleWare.verifyToken, AddressRouter);
-app.use('/api/payment', PaymentRoutes); 
-app.listen(port, () => {
+app.use('/api/payment', PaymentRoutes);
+app.use('/api/faq', AuthMiddleWare.verifyToken, FaqRoutes);
+app.use('/api/chat', AuthMiddleWare.verifyToken, ChatRoutes);
+server.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
   console.log('Mongo URI:', process.env.MONGO_URI);
   console.log(`Swagger UI available at http://localhost:${port}/api-docs`);
+  console.log(`Server is running on http://localhost:${port}`);
+  console.log('Socket.IO ready at /socket.io/');
 });

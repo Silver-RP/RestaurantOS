@@ -1,7 +1,9 @@
-// ✅ Chatbox.tsx – Thêm hiệu ứng bot gõ và trả lời tự động
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import ChatToggleButton from './ChatToggleButton';
 import ChatWindow from './ChatWindow';
+import { useFaq } from '@/hooks/useFaq';
+import { getAnswerByQuestion } from '@/api/FaqApi';
+import { useChatbox } from '@/hooks/useChatbox';
 
 interface Message {
   sender: 'user' | 'bot';
@@ -9,6 +11,15 @@ interface Message {
 }
 
 const Chatbox: React.FC = () => {
+  const {
+    messages: realMessages,
+    handleSend: sendRealMessage,
+    chatId,
+    typingUserId,
+    loading,
+  } = useChatbox();
+  const { faqs } = useFaq();
+
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [unreadCount, setUnreadCount] = useState(3);
@@ -16,48 +27,54 @@ const Chatbox: React.FC = () => {
   const [showInput, setShowInput] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  const messageEndRef = useRef<HTMLDivElement | null>(null);
+
+  const scrollToBottom = () => {
+    messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const toggleShowInput = () => setShowInput((prev) => !prev);
+
   const toggleChat = () => {
     setIsOpen(!isOpen);
     setShowInput(false);
   };
 
-  const handleFAQClick = (question: string) => {
-    if (question === 'typing-response') {
-      setMessages((prev) => [
-        ...prev,
-        { sender: 'bot', text: 'Đang soạn trả lời...' },
-      ]);
-      setTimeout(() => {
-        setMessages((prev) => [
-          ...prev.slice(0, -1),
-          { sender: 'bot', text: 'Đây là thông tin bạn cần...' },
-        ]);
-      }, 1000);
-      return;
-    }
-
-    // Hiển thị phần nhập tin nhắn nếu chưa bật
+  const handleFAQClick = async (question: string) => {
     if (!showInput) setShowInput(true);
-
-    // Gửi câu hỏi từ FAQ lên UI
-    setMessages((prev) => [
-      ...prev,
-      { sender: 'user', text: question },
-    ]);
-
-    // Bot trả lời sau một chút delay
+    setMessages((prev) => [...prev, { sender: 'user', text: question }]);
+    scrollToBottom();
+    const matched = await getAnswerByQuestion(question);
     setTimeout(() => {
       setMessages((prev) => [
         ...prev,
-        { sender: 'bot', text: 'Đây là thông tin bạn cần...' },
+        {
+          sender: 'bot',
+          text: matched?.answer || 'Xin lỗi, tôi chưa có câu trả lời phù hợp.',
+        },
       ]);
+      scrollToBottom();
     }, 500);
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input.trim()) return;
-    setMessages((prev) => [...prev, { sender: 'user', text: input }]);
-    setInput('');
+
+    if (showInput && chatId) {
+      await sendRealMessage(input);
+      setInput('');
+    } else {
+      setMessages((prev) => [...prev, { sender: 'user', text: input }]);
+      setInput('');
+      const matched = await getAnswerByQuestion(input);
+      setMessages((prev) => [
+        ...prev,
+        {
+          sender: 'bot',
+          text: matched?.answer || 'Xin lỗi, tôi chưa có câu trả lời phù hợp.',
+        },
+      ]);
+    }
   };
 
   useEffect(() => {
@@ -68,14 +85,15 @@ const Chatbox: React.FC = () => {
     <div className="fixed bottom-6 right-6 z-50">
       {isOpen ? (
         <ChatWindow
-          messages={messages}
+          messages={[...messages, ...realMessages]}
           input={input}
           onInputChange={setInput}
           onSend={handleSend}
           onClose={toggleChat}
           showInput={showInput}
-          onShowInput={() => setShowInput(true)}
+          onShowInput={toggleShowInput}
           onFAQClick={handleFAQClick}
+          faqList={faqs.map((f) => f.question)}
         />
       ) : (
         <ChatToggleButton unreadCount={unreadCount} onClick={toggleChat} />

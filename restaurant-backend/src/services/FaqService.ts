@@ -13,6 +13,13 @@ class FaqService {
       }
     }
   }
+  async findByQuestion(question: string) {
+    return await FAQModel.findOne({
+      normalized_question: question.toLowerCase(),
+      is_active: true,
+    });
+  }
+
   async createFaq(data: CreateFaqDto): Promise<IFAQ> {
     const normalizedQuestion = data.question.trim().toLowerCase();
 

@@ -6,16 +6,25 @@ import { createFaqSchema, updateFaqSchema } from '../validators/faqValidator';
 class FaqController {
   async getAllFaqs(req: Request, res: Response): Promise<void> {
     try {
+      const { question } = req.query;
+
+      if (typeof question === 'string' && question.trim()) {
+        const faq = await FaqService.findByQuestion(question.trim());
+        if (!faq) {
+          res.status(404).json({ message: 'Không tìm thấy câu trả lời phù hợp' });
+          return;
+        }
+        res.status(200).json(faq);
+        return;
+      }
       const faqs = await FaqService.getAllFaqs();
       res.status(200).json(faqs);
     } catch (error) {
-      if (error instanceof Error) {
-        res.status(500).json({ message: `Error fetching FAQs: ${error.message}` });
-      } else {
-        res.status(500).json({ message: 'Error fetching FAQs: Unknown error' });
-      }
+      console.error('Lỗi khi xử lý FAQ:', error);
+      res.status(500).json({ message: 'Lỗi server khi lấy FAQ' });
     }
   }
+
   async createFaq(req: Request, res: Response): Promise<void> {
     try {
       const parsed = createFaqSchema.parse(req.body);

@@ -1,14 +1,16 @@
-// ✅ ChatWindow.tsx – Giao diện khung chat UI lớn, tối ưu input + icon + scroll-to-bottom fix
 import React, { useState, useRef, useEffect } from 'react';
 import { FiSend } from 'react-icons/fi';
-import EmojiPicker from 'emoji-picker-react';
+import EmojiPicker, { Theme } from 'emoji-picker-react';
 
-interface Message {
-  sender: 'user' | 'bot';
-  text: string;
-}
+type UnifiedMessage = {
+  sender?: 'user' | 'bot';
+  text?: string;
+  sender_role?: string;
+  content?: string;
+};
+
 interface ChatWindowProps {
-  messages: Message[];
+  messages: UnifiedMessage[];
   input: string;
   onInputChange: (value: string) => void;
   onSend: () => void;
@@ -16,14 +18,8 @@ interface ChatWindowProps {
   showInput: boolean;
   onShowInput: () => void;
   onFAQClick: (question: string) => void;
+  faqList: string[];
 }
-
-const faqList = [
-  'Nhà hàng mở cửa lúc mấy giờ?',
-  'Có món chay không?',
-  'Tôi cần đặt bàn cho 10 người?',
-  'Hình thức thanh toán nào được chấp nhận?',
-];
 
 const ChatWindow: React.FC<ChatWindowProps> = ({
   messages,
@@ -34,6 +30,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   showInput,
   onShowInput,
   onFAQClick,
+  faqList,
 }) => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -41,10 +38,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   const messageEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
-    return () => clearTimeout(timeout);
+    messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   const handleSendClick = () => {
@@ -63,18 +57,32 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
   return (
     <div className="w-[420px] h-[620px] bg-[#0D1B2A] text-white border border-yellow-300 rounded-lg flex flex-col shadow-lg overflow-hidden relative">
-      <div className="bg-[#1B263B] flex items-center justify-between p-4 text-base font-semibold">
-        🐮 Hỗ trợ BeefBeef
-        <button onClick={onClose} className="text-white hover:text-yellow-300 text-xl">
-          ✕
-        </button>
+      {/* Header */}
+      <div className="bg-[#1B263B] flex items-center justify-between px-4 py-3 text-base font-semibold">
+        <span className="text-white">🐮 Hỗ trợ BeefBeef</span>
+        <div className="flex items-center gap-3">
+          {showInput && (
+            <button
+              onClick={onShowInput}
+              title="Quay lại câu hỏi"
+              className="text-yellow-300 text-lg hover:text-white transition"
+            >
+              🔙
+            </button>
+          )}
+          <button
+            onClick={onClose}
+            className="text-white hover:text-yellow-300 text-xl"
+            title="Đóng"
+          >
+            ✕
+          </button>
+        </div>
       </div>
 
       {!showInput ? (
         <div className="p-4 space-y-3 text-sm">
-          <p className="font-semibold text-yellow-300">
-            ❓ Câu hỏi thường gặp:
-          </p>
+          <p className="font-semibold text-yellow-300">❓ Câu hỏi thường gặp:</p>
           {faqList.map((faq, idx) => (
             <button
               key={idx}
@@ -93,37 +101,33 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         </div>
       ) : (
         <>
+          {/* Message display */}
           <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 text-sm scrollbar-thin scrollbar-thumb-yellow-400 scrollbar-track-transparent scrollbar-thumb-rounded-full hover:scrollbar-thumb-yellow-500">
-            {messages.map((msg, idx) => (
-              <div
-                key={idx}
-                className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                {msg.sender === 'bot' && (
-                  <img
-                    src="/bot-avatar.png"
-                    className="w-7 h-7 rounded-full mr-3"
-                  />
-                )}
-                <div
-                  className={`max-w-[75%] px-4 py-3 rounded-lg text-sm ${msg.sender === 'user' ? 'bg-yellow-300 text-black' : 'bg-white text-black'}`}
-                >
-                  <p>{msg.text}</p>
-                  <p className="text-xs text-gray-500 mt-1 text-right">
-                    {new Date().toLocaleTimeString()}
-                  </p>
+            {messages.map((msg, idx) => {
+              const sender = msg.sender || msg.sender_role || 'bot';
+              const text = msg.text || msg.content || '';
+
+              return (
+                <div key={idx} className={`flex ${sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  {sender !== 'user' && (
+                    <img src="/bot-avatar.png" className="w-7 h-7 rounded-full mr-3" />
+                  )}
+                  <div className={`max-w-[75%] px-4 py-3 rounded-lg text-sm ${sender === 'user' ? 'bg-yellow-300 text-black' : 'bg-white text-black'}`}>
+                    <p>{text}</p>
+                    <p className="text-xs text-gray-500 mt-1 text-right">
+                      {new Date().toLocaleTimeString()}
+                    </p>
+                  </div>
+                  {sender === 'user' && (
+                    <img src="/user-avatar.png" className="w-7 h-7 rounded-full ml-3" />
+                  )}
                 </div>
-                {msg.sender === 'user' && (
-                  <img
-                    src="/user-avatar.png"
-                    className="w-7 h-7 rounded-full ml-3"
-                  />
-                )}
-              </div>
-            ))}
+              );
+            })}
             <div ref={messageEndRef} />
           </div>
 
+          {/* Input */}
           <div className="border-t border-yellow-300 p-2 bg-[#0D1B2A] flex items-center gap-2 relative">
             <div className="flex items-center gap-1">
               <button
@@ -173,7 +177,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             {showEmojiPicker && (
               <div className="absolute bottom-14 left-0 z-50">
                 <EmojiPicker
-                  theme="dark"
+                  theme={Theme.DARK}
                   onEmojiClick={(e) => onInputChange(input + e.emoji)}
                 />
               </div>

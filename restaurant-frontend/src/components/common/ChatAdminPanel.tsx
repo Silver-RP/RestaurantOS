@@ -1,7 +1,4 @@
-// ✅ Admin Chat UI – Refined by Senior Frontend (Blue Themed + Enhanced UX)
-// File: components/admin/ChatAdminPanel.tsx
-
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   FiSend,
   FiSearch,
@@ -10,63 +7,22 @@ import {
   FiSmile,
   FiMic,
 } from 'react-icons/fi';
-import { AiOutlineUser } from 'react-icons/ai';
 import { BsChatDots } from 'react-icons/bs';
 import EmojiPicker from 'emoji-picker-react';
 import { ReactMic } from 'react-mic';
-import { FaComments } from 'react-icons/fa';
-
-interface Message {
-  sender: 'user' | 'admin';
-  text: string;
-  timestamp: string;
-}
-
-interface ChatSession {
-  userId: string;
-  userName: string;
-  avatarUrl?: string;
-  messages: Message[];
-  unreadCount?: number;
-}
-
-const dummySessions: ChatSession[] = [
-  {
-    userId: 'u1',
-    userName: 'Nguyễn Thị Mai',
-    messages: [
-      {
-        sender: 'user',
-        text: 'Nhà hàng có món chay không?',
-        timestamp: '10:01',
-      },
-      {
-        sender: 'admin',
-        text: 'Dạ có ạ, bên em có lẩu nấm và rau củ.',
-        timestamp: '10:03',
-      },
-    ],
-    unreadCount: 0,
-  },
-  {
-    userId: 'u2',
-    userName: 'Trần Văn An',
-    messages: [
-      {
-        sender: 'user',
-        text: 'Tôi muốn đặt bàn 8 người lúc 7h tối.',
-        timestamp: '09:50',
-      },
-    ],
-    unreadCount: 1,
-  },
-];
-
+import { useAdminChatbox } from '@/hooks/useAdminChatbox';
 
 const ChatAdminPanel: React.FC = () => {
-  const [sessions, setSessions] = useState<ChatSession[]>(dummySessions);
-  const [filteredSessions, setFilteredSessions] = useState(dummySessions);
-  const [current, setCurrent] = useState<ChatSession | null>(dummySessions[0]);
+  const {
+    sessions,
+    currentChat,
+    messages,
+    selectChat,
+    handleSend,
+    messageEndRef,
+  } = useAdminChatbox();
+ 
+  
   const [input, setInput] = useState('');
   const [search, setSearch] = useState('');
   const [filterUnread, setFilterUnread] = useState<'all' | 'read' | 'unread'>(
@@ -74,21 +30,16 @@ const ChatAdminPanel: React.FC = () => {
   );
   const [showEmoji, setShowEmoji] = useState(false);
   const [recording, setRecording] = useState(false);
-  const chatEndRef = useRef<HTMLDivElement>(null);
-
-  const unreadTotal = sessions.reduce(
-    (sum, s) => sum + (s.unreadCount || 0),
-    0,
-  );
+  const [filteredSessions, setFilteredSessions] = useState(sessions);
 
   useEffect(() => {
-    localStorage.setItem('admin-unread-chat-count', unreadTotal.toString());
-  }, [unreadTotal]);
-
-  useEffect(() => {
-    let filtered = sessions.filter((s) =>
-      s.userName.toLowerCase().includes(search.toLowerCase()),
-    );
+    let filtered = sessions.filter((s) => {
+      const username =
+        typeof s.user_id === 'string'
+          ? s.user_id
+          : s.user_id?.username || '';
+      return username.toLowerCase().includes(search.toLowerCase());
+    });
     if (filterUnread === 'unread') {
       filtered = filtered.filter((s) => (s.unreadCount ?? 0) > 0);
     } else if (filterUnread === 'read') {
@@ -98,44 +49,13 @@ const ChatAdminPanel: React.FC = () => {
   }, [search, filterUnread, sessions]);
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [current, sessions]);
+    messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
-  const handleSend = () => {
-    if (!input.trim() || !current) return;
-    const msg: Message = {
-      sender: 'admin',
-      text: input,
-      timestamp: new Date().toLocaleTimeString().slice(0, 5),
-    };
-    setSessions((prev) =>
-      prev.map((s) =>
-        s.userId === current.userId
-          ? { ...s, messages: [...s.messages, msg], unreadCount: 0 }
-          : s,
-      ),
-    );
+  const onSend = () => {
+    if (!input.trim() || !currentChat) return;
+    handleSend(input);
     setInput('');
-  };
-
-  const handleNewUserMessage = (userId: string, text: string) => {
-    const newMessage: Message = {
-      sender: 'user',
-      text,
-      timestamp: new Date().toLocaleTimeString().slice(0, 5),
-    };
-    setSessions((prev) =>
-      prev.map((s) =>
-        s.userId === userId
-          ? {
-              ...s,
-              messages: [...s.messages, newMessage],
-              unreadCount:
-                s.userId === current?.userId ? 0 : (s.unreadCount || 0) + 1,
-            }
-          : s,
-      ),
-    );
   };
 
   return (
@@ -166,41 +86,35 @@ const ChatAdminPanel: React.FC = () => {
             </div>
           ) : (
             filteredSessions.map((s) => {
-              const lastMsg = s.messages[s.messages.length - 1];
-              const lastDate = lastMsg?.timestamp || '';
+              const lastMsg = s.lastMessage || 'Chưa có tin nhắn';
+              const lastDate = s.lastMessageTime
+                ? new Date(s.lastMessageTime).toLocaleTimeString().slice(0, 5)
+                : '';
+
               return (
                 <div
-                  key={s.userId}
-                  onClick={() => {
-                    setCurrent(s);
-                    setSessions((prev) =>
-                      prev.map((sess) =>
-                        sess.userId === s.userId
-                          ? { ...sess, unreadCount: 0 }
-                          : sess,
-                      ),
-                    );
-                  }}
+                  key={s._id}
+                  onClick={() => selectChat(s.user_id._id)}
                   className={`relative flex gap-3 items-center p-2 rounded-lg cursor-pointer transition-all duration-150 ${
-                    current?.userId === s.userId
+                    currentChat?._id === s._id
                       ? 'bg-blue-200'
                       : 'hover:bg-blue-100'
                   }`}
                 >
                   <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-white text-sm font-semibold">
-                    {s.userName.charAt(0).toUpperCase()}
+                    {s.user_id.username.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-center">
                       <div className="truncate text-sm text-blue-900 font-medium">
-                        {s.userName}
+                        {s.user_id.username}
                       </div>
                       <div className="text-[10px] text-gray-400 ml-2 whitespace-nowrap">
                         {lastDate}
                       </div>
                     </div>
                     <div className="truncate text-xs text-gray-500">
-                      {lastMsg?.text || 'Chưa có tin nhắn'}
+                      {lastMsg}
                     </div>
                   </div>
                   {(s.unreadCount ?? 0) > 0 && (
@@ -218,16 +132,16 @@ const ChatAdminPanel: React.FC = () => {
       <div className="flex-1 flex flex-col bg-white relative">
         <div className="flex items-center justify-between bg-white px-5 py-3 border-b">
           <h4 className="font-semibold text-black">
-            {current
-              ? `Đang trò chuyện với: ${current.userName}`
+            {currentChat
+              ? `Đang trò chuyện với: ${currentChat.user_id.username}`
               : 'Chưa chọn khách hàng'}
           </h4>
         </div>
 
-        {current ? (
+        {currentChat ? (
           <>
             <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3 text-sm">
-              {current.messages.map((m, idx) => (
+              {messages.map((m, idx) => (
                 <div
                   key={idx}
                   className={`max-w-[70%] px-4 py-2 rounded-lg shadow-sm whitespace-pre-line ${
@@ -236,13 +150,13 @@ const ChatAdminPanel: React.FC = () => {
                       : 'mr-auto bg-gray-100 text-gray-900'
                   }`}
                 >
-                  <div>{m.text}</div>
+                  <div>{m.content}</div>
                   <div className="text-xs text-gray-500 text-right mt-1">
-                    {m.timestamp}
+                    {new Date(m.timestamp).toLocaleTimeString().slice(0, 5)}
                   </div>
                 </div>
               ))}
-              <div ref={chatEndRef}></div>
+              <div ref={messageEndRef}></div>
             </div>
 
             {showEmoji && (
@@ -309,7 +223,7 @@ const ChatAdminPanel: React.FC = () => {
                 placeholder="Nhập phản hồi..."
               />
               <button
-                onClick={handleSend}
+                onClick={onSend}
                 className="px-4 py-2 bg-blue-500 hover:bg-blue-600 transition rounded-full text-white"
               >
                 <FiSend />

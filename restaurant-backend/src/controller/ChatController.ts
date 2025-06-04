@@ -51,23 +51,23 @@ const ChatController = {
         res.status(400).json({ message: 'Nội dung không được để trống' });
         return;
       }
-      const roles =
-        req.user && Array.isArray(req.user.roles)
-          ? req.user.roles.map((r: any) =>
-              typeof r === 'string'
-                ? r.toLowerCase()
-                : typeof r === 'object' && r.name
-                  ? String(r.name).toLowerCase()
-                  : 'user',
-            )
-          : [req.user ? String(req.user.roles).toLowerCase() : 'user'];
-
+      const user = req.user as any;
+      let role: 'user' | 'cashier' = 'user';
+      if (Array.isArray(user.roles)) {
+        if (user.roles.some((r: any) => r === 'cashier' || r?.name === 'cashier')) {
+          role = 'cashier';
+        }
+      } else if (typeof user.roles === 'string') {
+        if (user.roles === 'cashier') role = 'cashier';
+      } else if (user.roles?.name === 'cashier') {
+        role = 'cashier';
+      }
       const message: SendMessageDto = {
         chatId,
         senderId: userId,
         content,
         replyTo,
-        role: roles[0],
+        role,
       };
 
       const savedMessage = await ChatService.sendMessage(message);
@@ -228,6 +228,7 @@ const ChatController = {
       }
     }
   },
+
   async typingIndicator(req: Request, res: Response) {
     try {
       const { chatId } = req.params;
