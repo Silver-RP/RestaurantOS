@@ -192,7 +192,7 @@ const ShippingAddressSection = ({
   };
 
   const getFormattedDeliveryTime = () => {
-    if (deliveryTime.type === 'now') return 'Dự kiến giao hàng trong 45-90 phút tính từ lúc đặt hàng.';
+    if (deliveryTime.type === 'now') return 'Dự kiến nhận hàng trong 45-90 phút tính từ lúc đặt hàng.';
     if (deliveryTime.type === 'scheduled' && deliveryTime.scheduledTime) {
       return `Giao vào ${deliveryTime.scheduledTime.toLocaleString('vi-VN', {
         weekday: 'long',
@@ -343,6 +343,27 @@ const ShippingAddressSection = ({
                 }
               </p>
             )}
+
+            {/* Delivery time for pickup orders */}
+            <div className="mt-4 pt-4 border-t border-white/10">
+              <h3 className="font-semibold text-white mb-2">
+                Thời Gian Nhận Hàng
+              </h3>
+              <div className="flex items-center">
+                <p className="text-sm text-white/70">
+                  {getFormattedDeliveryTime()}
+                </p>
+                <p
+                  onClick={() => setIsDeliveryTimeModalOpen(true)}
+                  className="text-blue-500 mx-3 text-sm cursor-pointer"
+                >
+                  Thay đổi
+                </p>
+              </div>
+              <p className="text-xs text-white/50 mt-1">
+                (<span className='text-red-400'>*</span>Thời gian thực tế có thể thay đổi tùy vào lưu lượng đơn hàng và tình trạng bếp.)
+              </p>
+            </div>
           </div>
         </>
       )}

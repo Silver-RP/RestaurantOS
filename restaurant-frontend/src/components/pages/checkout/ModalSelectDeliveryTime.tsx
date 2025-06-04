@@ -163,7 +163,7 @@ const ModalSelectDeliveryTime = ({
           <div className="sticky top-0 bg-bodyBackground px-6 py-4 border-b border-gray-700 z-10">
             <div className="flex justify-between items-center">
               <Dialog.Title className="text-lg font-bold text-white">
-                Chọn Thời Gian Nhận Hàng
+                Chọn Thời Gian Giao Nhận Hàng
               </Dialog.Title>
               <button onClick={onClose} className="text-white">
                 <IoClose className="text-xl" />
@@ -184,7 +184,7 @@ const ModalSelectDeliveryTime = ({
               >
                 <p className="font-semibold text-white">Giao Hàng Ngay</p>
                 <p className="text-sm text-gray-300 mt-2">
-                  Dự kiến giao hàng <br /> trong 45-90 phút tính từ lúc đặt hàng.
+                  Dự kiến nhận hàng <br /> trong 45-90 phút tính từ lúc đặt hàng.
                 </p>
               </div>
               
@@ -196,9 +196,9 @@ const ModalSelectDeliveryTime = ({
                     : "border-gray-300"
                 }`}
               >
-                <p className="font-semibold text-white">Đặt Lịch Giao Hàng</p>
+                <p className="font-semibold text-white">Đặt Lịch Nhận Hàng</p>
                 <p className="text-sm text-gray-300 mt-2">
-                  Chọn ngày và giờ giao hàng cụ thể
+                  Chọn ngày và giờ nhận hàng cụ thể
                 </p>
               </div>
             </div>
