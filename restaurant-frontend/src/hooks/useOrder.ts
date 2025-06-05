@@ -96,7 +96,7 @@ export const useRequestReturn = () => {
     },
     onError: (error: AxiosError<{ message: string }>) => {
       if (error.response?.data?.message === 'Return request must be made within 30 minutes of delivery') {
-        toast.error('Yêu cầu trả hàng phải được thực hiện trong vòng 30 phút sau khi giao hàng');
+        toast.error('Đã quá thời gian yêu cầu trả hàng (30 phút sau khi giao hàng)');
       } else {
         toast.error('Có lỗi xảy ra khi gửi yêu cầu trả hàng');
       }

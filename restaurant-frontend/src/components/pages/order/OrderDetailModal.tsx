@@ -8,6 +8,7 @@ import {
 import { Order, OrderItem } from '@/types/Order.type';
 import PaymentMethodSelector from '../checkout/PaymentMethodSelector';
 import { FiDownload } from 'react-icons/fi';
+import { DialogTitle, Dialog } from '@mui/material';
 
 interface OrderDetailModalProps {
   orderId: string;
@@ -175,7 +176,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
       className={`fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50  ${!isOpen ? 'hidden' : ''}`}
     >
       <div
-        className="bg-bodyBackground rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-0 relative border border-white/10 custom-scroll"
+        className="bg-bodyBackground rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-0 border border-white/10 custom-scroll"
         style={{ scrollbarColor: '#FFDA95 #0a2233', scrollbarWidth: 'thin' }}
       >
         <style>{`
@@ -193,12 +194,12 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
         `}</style>
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-white hover:text-secondaryColor font-bold text-2xl z-10"
+          className="sticky top-2 left-[96.5%] text-white hover:text-secondaryColor font-bold text-2xl z-10"
           aria-label="Đóng"
         >
           &times;
         </button>
-        <div className="p-8 pb-4">
+        <div className="pl-8 pr-8 pb-8">
           <div className="text-2xl font-bold mb-6 text-secondaryColor flex items-center gap-2">
             <span>Đơn #{order._id.slice(-6).toUpperCase()}</span>
             <span className="text-sm text-white/60 font-normal">

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  Dialog,
+  c,
   DialogTitle,
   DialogContent,
   DialogActions,
@@ -43,9 +43,9 @@ const DELIVERY_STATUS_LABELS: { [key: string]: string } = {
   'DELIVERED': 'Giao hàng thành công',
   'DELIVERY_FAILED': 'Giao hàng thất bại',
   'RETURN_REQUESTED': 'Yêu cầu trả hàng',
-  'RETURN_APPROVED': 'Đã xác nhận trả hàng',
-  'RETURN_REJECTED': 'Trả hàng bị từ chối',
-  'RETURNED': 'Đã trả hàng',
+  'RETURN_APPROVED': 'Xác nhận trả hàng',
+  'RETURN_REJECTED': 'Từ chối trả hàng',
+  'RETURNED': 'Trả hàng thành công',
   'CANCELLED': 'Đã hủy',
 };
 
@@ -56,9 +56,9 @@ const PICKUP_STATUS_LABELS: { [key: string]: string } = {
   'DELIVERED': 'Người nhận đã lấy hàng',
   'DELIVERY_FAILED': 'Người nhận không lấy hàng',
   'RETURN_REQUESTED': 'Yêu cầu trả hàng',
-  'RETURN_APPROVED': 'Đã xác nhận trả hàng',
-  'RETURN_REJECTED': 'Trả hàng bị từ chối',
-  'RETURNED': 'Đã trả hàng',
+  'RETURN_APPROVED': 'Xác nhận trả hàng',
+  'RETURN_REJECTED': 'Từ chối trả hàng',
+  'RETURNED': 'Trả hàng thành công',
   'CANCELLED': 'Đã hủy',
 };
 
@@ -148,8 +148,10 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
           <span
             className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}
           >
-            {getStatusText(order.status, order.delivery_type as 'DELIVERY' | 'PICKUP')}
-            
+            {getStatusText(
+              order.status,
+              order.delivery_type as 'DELIVERY' | 'PICKUP',
+            )}
           </span>
         </div>
         <div className="text-sm font-normal">{formatDate(order.createdAt)}</div>
@@ -307,6 +309,37 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
                       )}
                   </div>
                 )}
+              {order.delivery_type === 'PICKUP' && order.delivery_time_type && (
+                <div className="mt-2">
+                  {/* <p className="text-gray-600">Thời gian nhận hàng</p> */}
+
+                  {order.delivery_time_type === 'SCHEDULED' &&
+                    order.scheduled_time && (
+                      <p className="text-sm text-blue-600">
+                        Thời gian nhận: {formatDate(order.scheduled_time)}
+                      </p>
+                    )}
+                </div>
+              )}
+
+              {(order.status === 'RETURNED' ||
+                order.status === 'RETURN_APPROVED' ||
+                order.status === 'RETURN_REJECTED') && (
+                <div className="mt-2">
+                  <p className="text-gray-600">Lí do trả hàng:</p>
+                  <p className="text-base font-medium text-red-600">
+                    {order.cancelled_reason || 'Không có lí do'}
+                  </p>
+                </div>
+              )}
+              {(order.status === 'CANCELLED' ) && (
+                <div className="mt-2">
+                  <p className="text-gray-600">Lí do hủy đơn:</p>
+                  <p className="text-base font-medium text-red-600">
+                    {order.cancelled_reason || 'Không có lí do'}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -336,10 +369,9 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
                 {STATUS_TRANSITIONS[order.status]?.length ? (
                   STATUS_TRANSITIONS[order.status].map((statusValue: any) => (
                     <MenuItem key={statusValue} value={statusValue}>
-                      {order.delivery_type === 'DELIVERY' 
+                      {order.delivery_type === 'DELIVERY'
                         ? DELIVERY_STATUS_LABELS[statusValue]
-                        : PICKUP_STATUS_LABELS[statusValue]
-                      }
+                        : PICKUP_STATUS_LABELS[statusValue]}
                     </MenuItem>
                   ))
                 ) : (
