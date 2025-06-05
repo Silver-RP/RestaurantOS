@@ -10,4 +10,3 @@ export const momoConfig = {
   // ipnUrl: "https://callback.url/notify",
   endpoint: 'https://test-payment.momo.vn/v2/gateway/api/create',
 };
-

@@ -78,7 +78,7 @@ export const useReservations = () => {
   ) => {
     try {
       const res = await updateReservationStatusApi(id, status);
-      toastService.success('Cập nhật trạng thái thành công');
+      toastService.success('Huỷ đơn hàng thành công!');
       return res;
     } catch {
       toastService.error('Cập nhật trạng thái thất bại');
