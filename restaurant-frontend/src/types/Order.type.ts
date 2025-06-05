@@ -246,7 +246,7 @@ export interface AllOrder {
   } | null; // Cho phép null
   cashier_order_id: string | null;
   payment_method: string;
-  delivery_type: string ;
+  delivery_type: string;
   delivery_status: string;
   status: string;
   shipping_fee: number;
