@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { Order, OrderItem, Status } from '@/types/Order.type';
 import { statusMapping } from './NavigationOrder';
@@ -90,6 +91,15 @@ const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
 
   const { mutate: cancelOrder } = useCancelOrder();
   const { mutate: requestReturn } = useRequestReturn();
+
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const orderId = searchParams.get('orderId');
+    if (orderId) {
+      dispatch(openOrderModal(orderId));
+    }
+  }, [searchParams]);
 
   const items = order.order_items || [];
 
