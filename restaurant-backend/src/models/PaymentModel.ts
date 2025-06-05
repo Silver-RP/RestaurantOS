@@ -1,6 +1,6 @@
 import { Schema, model, Types } from 'mongoose';
 
-interface IPayment {
+export interface IPayment extends Document {
   orderId: Types.ObjectId;               
   payment_method: 'CASH' | 'BANKING' | 'VNPAY' | 'MOMO' | 'MOMO_ATM' | 'CREDIT_CARD';
   payment_status: 'UNPAID' | 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED';

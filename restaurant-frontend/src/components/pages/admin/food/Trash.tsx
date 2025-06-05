@@ -1,12 +1,11 @@
 import { useFoodsTrashLogic } from '../../../../hooks/useFoodsAdminLogic';
-import React, { useEffect } from 'react';
+import React from 'react';
 import AdminPagination from '../AdminPagination';
 import { FaSort, FaArrowUp, FaArrowDown, FaSearch } from 'react-icons/fa';
 import { FaUndoAlt } from 'react-icons/fa';
 import { FaTrashAlt } from 'react-icons/fa';
 import { BiUndo } from 'react-icons/bi';
 import ConfirmModal from '@/components/common/ConfirmModal';
-import { useFoodLogic } from '@/hooks/useFoodsAdminLogic';
 
 
 const TrashTable: React.FC = () => {

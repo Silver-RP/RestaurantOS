@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Dialog } from "@headlessui/react";
 import { IoClose } from "react-icons/io5";
 import { IoIosArrowDown } from "react-icons/io";
+import  ButtonComponent  from "@/components/common/ButtonComponents";
 
 // Delivery option types
 export interface DeliveryTime {
@@ -162,7 +163,7 @@ const ModalSelectDeliveryTime = ({
           <div className="sticky top-0 bg-bodyBackground px-6 py-4 border-b border-gray-700 z-10">
             <div className="flex justify-between items-center">
               <Dialog.Title className="text-lg font-bold text-white">
-                Chọn Thời Gian Nhận Hàng
+                Chọn Thời Gian Giao Nhận Hàng
               </Dialog.Title>
               <button onClick={onClose} className="text-white">
                 <IoClose className="text-xl" />
@@ -183,7 +184,7 @@ const ModalSelectDeliveryTime = ({
               >
                 <p className="font-semibold text-white">Giao Hàng Ngay</p>
                 <p className="text-sm text-gray-300 mt-2">
-                  Đơn hàng sẽ được giao trong thời gian sớm nhất
+                  Dự kiến nhận hàng <br /> trong 45-90 phút tính từ lúc đặt hàng.
                 </p>
               </div>
               
@@ -195,9 +196,9 @@ const ModalSelectDeliveryTime = ({
                     : "border-gray-300"
                 }`}
               >
-                <p className="font-semibold text-white">Đặt Lịch Giao Hàng</p>
+                <p className="font-semibold text-white">Đặt Lịch Nhận Hàng</p>
                 <p className="text-sm text-gray-300 mt-2">
-                  Chọn ngày và giờ giao hàng cụ thể
+                  Chọn ngày và giờ nhận hàng cụ thể
                 </p>
               </div>
             </div>
@@ -243,8 +244,8 @@ const ModalSelectDeliveryTime = ({
           </div>
 
           {/* Confirmation button */}
-          <div className="sticky bottom-0 bg-bodyBackground px-6 py-4 border-t border-gray-700">
-            <button
+          <div className="sticky bottom-0  flex  justify-center  bg-bodyBackground px-6 py-4 border-t border-gray-700">
+            {/* <button
               onClick={handleSubmit}
               disabled={selectedType === "scheduled" && (!selectedDate || !selectedTime || availableTimes.length === 0)}
               className={`w-full py-3 rounded-lg font-medium ${
@@ -254,7 +255,13 @@ const ModalSelectDeliveryTime = ({
               }`}
             >
               Xác Nhận
-            </button>
+            </button> */}
+            <ButtonComponent
+              className="w-1/2 mt-4"
+              onClick={handleSubmit}
+            >
+              Xác Nhận
+            </ButtonComponent>
           </div>
         </Dialog.Panel>
       </div>

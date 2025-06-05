@@ -17,6 +17,23 @@ class BannerService {
   // Hàm kiểm tra và cập nhật trạng thái banner dựa trên end_date
   private async checkAndUpdateBannerStatus(): Promise<void> {
     const now = new Date();
+    
+    // Cập nhật banner thành active nếu đến ngày bắt đầu
+    await Banner.updateMany(
+      {
+        status: 'inactive',
+        start_date: { $lte: now },
+        $or: [
+          { end_date: { $exists: false } },
+          { end_date: { $gt: now } }
+        ]
+      },
+      {
+        $set: { status: 'active' },
+      },
+    );
+
+    // Cập nhật banner thành inactive nếu đến ngày kết thúc
     await Banner.updateMany(
       {
         status: 'active',
@@ -147,14 +164,28 @@ class BannerService {
         title: req.body.title,
         description: req.body.description || '',
         order,
-        status: req.body.status || 'active',
+        status: req.body.status || oldBanner.status,
       };
 
-      // Xử lý start_date
-      if (req.body.start_date === 'null') {
-        updateData.$unset = { start_date: 1 };
-      } else if (req.body.start_date) {
-        updateData.start_date = new Date(req.body.start_date);
+      // Xử lý start_date và status
+      if (req.body.status === 'inactive' && oldBanner.status === 'active') {
+        // Nếu chuyển từ active sang inactive, xóa start_date
+        if (updateData.$unset) {
+          updateData.$unset.start_date = 1;
+        } else {
+          updateData.$unset = { start_date: 1 };
+        }
+      } else {
+        // Xử lý start_date bình thường nếu không phải chuyển từ active sang inactive
+        if (req.body.start_date === 'null') {
+          if (updateData.$unset) {
+            updateData.$unset.start_date = 1;
+          } else {
+            updateData.$unset = { start_date: 1 };
+          }
+        } else if (req.body.start_date) {
+          updateData.start_date = new Date(req.body.start_date);
+        }
       }
 
       // Xử lý end_date và status
@@ -179,7 +210,6 @@ class BannerService {
       }
 
       if (req.file) {
-        // Xóa ảnh cũ từ Cloudinary nếu tồn tại
         if (oldBanner.image) {
           const publicId = UploadImageService.extractPublicIdFromUrl(oldBanner.image);
           if (publicId) {
@@ -187,7 +217,6 @@ class BannerService {
           }
         }
 
-        // Tải lên ảnh mới
         const { url } = await UploadImageService.UploadImage(req.file, 'banners');
         updateData.image = url;
       }

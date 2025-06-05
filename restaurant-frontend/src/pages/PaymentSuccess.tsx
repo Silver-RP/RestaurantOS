@@ -68,10 +68,10 @@ const PaymentSuccess = () => {
         <h1 className="text-3xl font-bold mb-2 text-white">
           Thanh toán thành công!
         </h1>
-        <p className="mb-6 text-gray-400 max-w-md">
-          Cảm ơn bạn đã đặt hàng. Đơn hàng đang được xử lý. Vui lòng kiểm tra
-          email hoặc trang lịch sử đơn hàng để theo dõi trạng thái.
-        </p>
+        <p className="mb-6 text-gray-400 max-w-lg leading-relaxed">
+  Cảm ơn bạn đã đặt hàng. Đơn hàng đang được xử lý. Vui lòng kiểm tra
+  email hoặc trang lịch sử đơn hàng để theo dõi chi tiết đơn hàng.
+</p>
 
         <div className="flex flex-wrap gap-4 justify-center">
           <ButtonComponents onClick={() => navigate('/menu')}>

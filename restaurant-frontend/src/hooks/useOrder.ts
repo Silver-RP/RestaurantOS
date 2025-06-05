@@ -21,6 +21,7 @@ import {
   CreateOrderRequest,
   PlaceOrderRequest,
   OrdersResponse,
+  OrderDetailResponse,
 } from '../types/Order.type';
 import { toast } from 'react-toastify';
 
@@ -51,7 +52,11 @@ export const useCancelOrder = () => {
       cancelOrder(orderId, reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
+      toast.success('Đơn hàng đã được hủy thành công');
     },
+    onError: (error: AxiosError<{ message: string }>) => {
+      toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi hủy đơn hàng');
+    }
   });
 };
 
@@ -87,18 +92,15 @@ export const useRequestReturn = () => {
       requestReturn(orderId, reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
+      toast.success('Yêu cầu trả hàng đã được gửi thành công');
     },
-  });
-};
-
-export const useRequestCancel = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ orderId, reason }: { orderId: string; reason: string }) =>
-      requestCancel(orderId, reason),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
-    },
+    onError: (error: AxiosError<{ message: string }>) => {
+      if (error.response?.data?.message === 'Return request must be made within 30 minutes of delivery') {
+        toast.error('Yêu cầu trả hàng phải được thực hiện trong vòng 30 phút sau khi giao hàng');
+      } else {
+        toast.error('Có lỗi xảy ra khi gửi yêu cầu trả hàng');
+      }
+    }
   });
 };
 
@@ -128,9 +130,9 @@ export const useUpdatePaymentStatus = () => {
   return useMutation<
     ReturnType<typeof updatePaymentStatus>,
     Error,
-    { orderId: string; paidAmount: number }
+    { paymentId: string; paidAmount: number }
   >({
-    mutationFn: ({ orderId, paidAmount }) => updatePaymentStatus(orderId, paidAmount),
+    mutationFn: ({ paymentId, paidAmount }) => updatePaymentStatus(paymentId, paidAmount),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: ['all-orders'] });

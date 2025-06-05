@@ -19,7 +19,7 @@ const PaymentInfo: React.FC<PaymentInfoProps> = ({
     setLoading(true);
     setError(null);
     try {
-      const data: { order: Order } = await updatePaymentStatus({ orderId: order._id, paidAmount: order.total_price }) as unknown as { order: Order };
+      const data: { order: Order } = await updatePaymentStatus({ paymentId: order.postPayment.paymentId, paidAmount: order.total_price }) as unknown as { order: Order };
       onPaymentConfirmed(data.order);
     } catch (err: any) {
       setError(err.message || 'Có lỗi xảy ra');
@@ -28,7 +28,6 @@ const PaymentInfo: React.FC<PaymentInfoProps> = ({
       setLoading(false);
     }
   }
-  
 
   return (
     <div>
