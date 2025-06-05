@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { Order, OrderItem, Status } from '@/types/Order.type';
-import { statusMapping } from './NavigationOrder';
 import { useCancelOrder, useRequestReturn } from '@/hooks/useOrder';
 import { toast } from 'react-toastify';
 import { useDispatch } from 'react-redux';
@@ -136,17 +135,22 @@ const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
   const orderCode = (order._id?.slice(-6) || '000000').toUpperCase();  
 
   const getStatusTabName = (status: string | null | undefined): string => {
-    for (const [tabName, config] of Object.entries(statusMapping)) {
-      const statusConfig = config.status;
-      if (statusConfig === null) continue;
+    const statusMap: Record<string, string> = {
+      'ORDER_PLACED': 'Chờ xác nhận',
+      'ORDER_CONFIRMED': 'Đã xác nhận',
+      'PENDING_PICKUP': 'Chờ lấy hàng',
+      'PICKED_UP': 'Đã lấy hàng',
+      'IN_TRANSIT': 'Đang giao hàng',
+      'DELIVERED': 'Đã giao hàng',
+      'CANCELLED': 'Đã hủy',
+      'RETURN_REQUESTED': 'Yêu cầu hoàn trả',
+      'RETURN_APPROVED': 'Đã duyệt hoàn trả',
+      'RETURN_REJECTED': 'Từ chối hoàn trả',
+      'RETURNED': 'Đã hoàn trả',
+      'DELIVERY_FAILED': 'Giao hàng thất bại'
+    };
 
-      if (Array.isArray(statusConfig)) {
-        if (status && statusConfig.includes(status)) return tabName;
-      } else {
-        if (status === statusConfig) return tabName;
-      }
-    }
-    return 'Tất cả đơn hàng';
+    return status ? statusMap[status] || 'Không xác định' : 'Không xác định';
   };
 
   const statusText = getStatusTabName(order.status);
