@@ -18,4 +18,7 @@ const dishIngredientSchema = new mongoose.Schema({
   unit: { type: String, required: true },
 });
 
+dishIngredientSchema.index({ dishId: 1, ingredientId: 1 }, { unique: true });
+
 const DishIngredient = mongoose.model('DishIngredient', dishIngredientSchema);
+export default DishIngredient;

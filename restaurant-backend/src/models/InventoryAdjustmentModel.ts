@@ -10,29 +10,22 @@ export interface IInventoryAdjustment extends Document {
     user_id: mongoose.Types.ObjectId;
 }
 
-const inventoryAdjustmentSchema = new mongoose.Schema(
-    {
-        adjustment_date: { type: Date, required: true },
-        estimated_quantity: { type: Number, required: true },
-        actual_quantity: { type: Number, required: true },
-        difference: { type: Number, required: true },
+const inventoryAdjustmentSchema = new mongoose.Schema({
+    adjustment_date: { type: Date, required: true },
+    estimated_quantity: { type: Number, required: true },
+    actual_quantity: { type: Number, required: true },
+    difference: { type: Number, required: true },
+    reason: { type: String, required: true },
+    daily_inventory_id: { type: mongoose.Schema.Types.ObjectId, ref: 'DailyInventory', required: true },
+    user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+}, { timestamps: true });
 
-        reason: { type: String },
+inventoryAdjustmentSchema.index({ daily_inventory_id: 1, adjustment_date: 1 }, { unique: true });
 
-        daily_inventory_id: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'DailyInventory',
-            required: true,
-        },
-
-        user_id: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User',
-            required: true,
-        },
-    },
-    { timestamps: true },
-);
+inventoryAdjustmentSchema.pre('save', function (next) {
+    this.difference = this.actual_quantity - this.estimated_quantity;
+    next();
+});
 
 
 const InventoryAdjustment = mongoose.model<IInventoryAdjustment>('InventoryAdjustment', inventoryAdjustmentSchema);
@@ -58,7 +51,7 @@ Reason
 Created_at
 Updated_at
 User_id
-DailyIngredient_id
+DailyInventory_id
 Ingredient_id 
 
 

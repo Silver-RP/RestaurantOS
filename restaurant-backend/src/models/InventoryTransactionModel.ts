@@ -10,39 +10,21 @@ export interface IInventoryTransaction extends Document {
     adjustment_id?: mongoose.Types.ObjectId;
 }
 
-
-const inventoryTransactionSchema = new mongoose.Schema(
-    {
-        transaction_type: {
-            type: String,
-            enum: ['import', 'export', 'adjustment'],
-            required: true,
-        },
-
-        quantity: { type: Number, required: true },
-        transaction_date: { type: Date, required: true },
-        notes: { type: String },
-
-        ingredient_id: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Ingredient',
-            required: true,
-        },
-
-        user_id: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User',
-            required: true,
-        },
-
-        adjustment_id: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'InventoryAdjustment',
-            default: null,
-        },
+const inventoryTransactionSchema = new mongoose.Schema({
+    transaction_type: {
+      type: String,
+      enum: ['import', 'export', 'adjustment'],
+      required: true,
     },
-    { timestamps: true },
-);
+    quantity: { type: Number, required: true, min: 1 },
+    transaction_date: { type: Date, required: true },
+    notes: { type: String },
+    ingredient_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Ingredient', required: true },
+    user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    adjustment_id: { type: mongoose.Schema.Types.ObjectId, ref: 'InventoryAdjustment', default: null },
+  }, { timestamps: true });
+  
+inventoryTransactionSchema.index({ ingredient_id: 1, transaction_date: 1 });
 
 export const InventoryTransaction = mongoose.model<IInventoryTransaction>(
     'InventoryTransaction',
