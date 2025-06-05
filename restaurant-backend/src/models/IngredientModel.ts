@@ -12,4 +12,6 @@ const ingredientSchema = new mongoose.Schema({
   price_per_unit: { type: Number, required: true },
 });
 
+ingredientSchema.index({ name: 1 }, { unique: true });
+
 const Ingredient = mongoose.model('Ingredient', ingredientSchema);
