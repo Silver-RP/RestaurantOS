@@ -21,7 +21,10 @@ const ChatAdminPanel: React.FC = () => {
     handleSend,
     messageEndRef,
   } = useAdminChatbox();
- 
+  console.log('ChatAdminPanel sessions:', sessions);
+  console.log('ChatAdminPanel currentChat:', currentChat);
+  console.log('ChatAdminPanel messages:', messages);
+  
   
   const [input, setInput] = useState('');
   const [search, setSearch] = useState('');

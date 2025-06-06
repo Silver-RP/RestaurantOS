@@ -1,5 +1,6 @@
 import express from 'express';
 import swaggerUi from 'swagger-ui-express';
+import { engine } from 'express-handlebars';
 import { generateSwaggerSpec, getSwaggerRoutes } from './utils/swaggerOptions';
 import AuthRoutes from './routes/AuthRoutes';
 import UserRoutes from './routes/UserRoutes';
@@ -29,6 +30,8 @@ import cors from 'cors';
 import http from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import { initSocket } from './socket/socket';
+import path from 'path';
+
 const app = express();
 // Import file authSwagger để đăng ký metadata
 import './swaggers/AuthSwagger';
@@ -49,6 +52,9 @@ app.use(
     credentials: true,
   }),
 );
+app.engine('.hbs', engine({ extname: '.hbs', defaultLayout: false }));
+app.set('view engine', '.hbs');
+app.set('views', path.join(__dirname, 'views'));
 
 const server = http.createServer(app);
 const io = new SocketIOServer(server, {
@@ -86,10 +92,8 @@ const swaggerDefinition = {
 
 const allRoutes = getSwaggerRoutes();
 
-// Tạo Swagger specification
 const swaggerSpec = generateSwaggerSpec(allRoutes, swaggerDefinition);
 
-// Thiết lập Swagger UI
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use(passport.initialize());
@@ -101,7 +105,6 @@ app.get('/', (req, res) => {
   res.send('API is running...');
 });
 
-// Định nghĩa routes
 app.use('/api/auth', AuthRoutes);
 app.use('/api/user', UserRoutes);
 app.use('/api/profile', AuthMiddleWare.verifyToken, ProfileRoutes);

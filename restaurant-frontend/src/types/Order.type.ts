@@ -1,25 +1,16 @@
-
-export type DeliveryStatus =
-  | 'PENDING'
+export type Status =
+  | 'ORDER_PLACED'
+  | 'ORDER_CONFIRMED'
   | 'PENDING_PICKUP'
   | 'PICKED_UP'
   | 'IN_TRANSIT'
   | 'DELIVERED'
-  | 'FAILED'
-  | 'CANCELLED'
   | 'DELIVERY_FAILED'
   | 'RETURN_REQUESTED'
-  | 'RETURNED';
-
-export type OrderStatus =
-  | 'PENDING'
-  | 'CONFIRMED'
-  | 'PREPARING'
-  | 'READY'
-  | 'COMPLETED'
-  | 'CANCELLED'
+  | 'RETURN_APPROVED'
+  | 'RETURN_REJECTED'
   | 'RETURNED'
-  | 'SHIPPING';
+  | 'CANCELLED';
 
 export type PaymentMethod =
   | 'CASH'
@@ -146,7 +137,7 @@ export interface Order {
 export interface OrdersResponse {
   message: string;
   orders: Order[];
-  total: number;
+  totalItems: number;
   currentPage: number;
   totalPages: number;
   filters?: { [key: string]: string };
@@ -183,8 +174,7 @@ export interface CancelOrderRequest {
 export interface OrderQueryParams {
   page?: number;
   limit?: number;
-  status?: OrderStatus;
-  delivery_status?: DeliveryStatus | DeliveryStatus[];
+  status?: Status | Status[];
   startDate?: string;
   endDate?: string;
   sortBy?: string;
@@ -239,7 +229,7 @@ export interface AllOrder {
     status: string;
   };
   address_id: {
-    _id: string;
+    id: string;
     user_id: string;
     full_name: string;
     phone: string;
@@ -249,13 +239,14 @@ export interface AllOrder {
     street_address: string;
     address_type: string;
     is_default: boolean;
+    lat: number;
+    lon: number;
     createdAt: string;
     updatedAt: string;
-    id: string;
   } | null; // Cho phép null
   cashier_order_id: string | null;
   payment_method: string;
-  delivery_type: string;
+  delivery_type: string ;
   delivery_status: string;
   status: string;
   shipping_fee: number;
@@ -263,7 +254,6 @@ export interface AllOrder {
   items_price: number;
   total_price: number;
   total_quantity: number;
-  is_paid: boolean;
   paid_at: string | null;
   payment_status?: string; // Thêm trường payment_status (tùy chọn)
   note: string | null;
@@ -274,7 +264,7 @@ export interface AllOrder {
   returned_at: string | null;
   delivered_at: string | null;
   order_type: string;
-  delivery_time_type: string;
+  delivery_time_type: DeliveryTimeType;
   scheduled_time: string | null;
   createdAt: string;
   updatedAt: string;

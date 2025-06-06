@@ -1,11 +1,26 @@
 import React, { useState } from 'react';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
-import { Order, OrderItem } from '@/types/Order.type';
-import { deliveryStatusMapping } from './NavigationOrder';
-import { useCancelOrder, useRequestCancel, useRequestReturn } from '@/hooks/useOrder';
+import { Order, OrderItem, Status } from '@/types/Order.type';
+import { statusMapping } from './NavigationOrder';
+import { useCancelOrder, useRequestReturn } from '@/hooks/useOrder';
 import { toast } from 'react-toastify';
 import { useDispatch } from 'react-redux';
 import { openOrderModal } from '@/redux/feature/modal/orderDetailModalSlice';
+
+const statusColorMap: Record<Status, string> = {
+  ORDER_PLACED: 'text-yellow-400 bg-yellow-400/10',
+  ORDER_CONFIRMED: 'text-blue-400 bg-blue-400/10',
+  PENDING_PICKUP: 'text-blue-400 bg-blue-400/10',
+  PICKED_UP: 'text-purple-400 bg-purple-400/10',
+  IN_TRANSIT: 'text-purple-400 bg-purple-400/10',
+  DELIVERED: 'text-green-400 bg-green-400/10',
+  CANCELLED: 'text-red-400 bg-red-400/10',
+  RETURN_REQUESTED: 'text-orange-400 bg-orange-400/10',
+  RETURN_APPROVED: 'text-orange-400 bg-orange-400/10',
+  RETURN_REJECTED: 'text-red-400 bg-red-400/10',
+  RETURNED: 'text-gray-400 bg-gray-400/10',
+  DELIVERY_FAILED: 'text-red-400 bg-red-400/10'
+};
 
 interface ReasonModalProps {
   isOpen: boolean;
@@ -69,45 +84,37 @@ interface OrderItemProps {
 
 const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
   const [showMore, setShowMore] = useState(false);
-  const [isReasonModalOpen, setIsReasonModalOpen] = useState(false);
-  const [reasonModalType, setReasonModalType] = useState<'cancel' | 'request-cancel' | 'return'>('cancel');
-  
-  const cancelOrderMutation = useCancelOrder();
-  const requestCancelMutation = useRequestCancel();
-  const requestReturnMutation = useRequestReturn();
-
+  const [showReasonModal, setShowReasonModal] = useState(false);
+  const [modalType, setModalType] = useState<'cancel' | 'return'>('cancel');
   const dispatch = useDispatch();
+
+  const { mutate: cancelOrder } = useCancelOrder();
+  const { mutate: requestReturn } = useRequestReturn();
 
   const items = order.order_items || [];
 
+  const handleCancel = (reason: string) => {
+    cancelOrder({ orderId: order._id, reason });
+    setShowReasonModal(false);
+  };
+
+  const handleRequestReturn = (reason: string) => {
+    requestReturn({ orderId: order._id, reason });
+    setShowReasonModal(false);
+  };
+
+  const openReasonModal = (type: 'cancel' | 'return') => {
+    setModalType(type);
+    setShowReasonModal(true);
+  };
+
   const handleReasonSubmit = (reason: string) => {
-    switch (reasonModalType) {
+    switch (modalType) {
       case 'cancel':
-        cancelOrderMutation.mutate(
-          { orderId: order._id, reason },
-          {
-            onSuccess: () => toast.success('Đã hủy đơn hàng thành công'),
-            onError: (error: Error) => toast.error(error.message || 'Có lỗi xảy ra khi hủy đơn hàng'),
-          }
-        );
-        break;
-      case 'request-cancel':
-        requestCancelMutation.mutate(
-          { orderId: order._id, reason },
-          {
-            onSuccess: () => toast.success('Đã gửi yêu cầu hủy đơn thành công'),
-            onError: (error: Error) => toast.error(error.message || 'Có lỗi xảy ra khi yêu cầu hủy đơn'),
-          }
-        );
+        handleCancel(reason);
         break;
       case 'return':
-        requestReturnMutation.mutate(
-          { orderId: order._id, reason },
-          {
-            onSuccess: () => toast.success('Đã gửi yêu cầu hoàn trả thành công'),
-            onError: (error: Error) => toast.error(error.message || 'Có lỗi xảy ra khi yêu cầu hoàn trả'),
-          }
-        );
+        handleRequestReturn(reason);
         break;
     }
   };
@@ -119,8 +126,8 @@ const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
   const orderCode = (order._id?.slice(-6) || '000000').toUpperCase();  
 
   const getStatusTabName = (status: string | null | undefined): string => {
-    for (const [tabName, config] of Object.entries(deliveryStatusMapping)) {
-      const statusConfig = config.delivery_status;
+    for (const [tabName, config] of Object.entries(statusMapping)) {
+      const statusConfig = config.status;
       if (statusConfig === null) continue;
 
       if (Array.isArray(statusConfig)) {
@@ -132,7 +139,7 @@ const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
     return 'Tất cả đơn hàng';
   };
 
-  const statusText = getStatusTabName(order.delivery_status);
+  const statusText = getStatusTabName(order.status);
 
   const normalizeItem = (item: OrderItem) => ({
     _id: item._id,
@@ -154,7 +161,9 @@ const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
       {/* Mã đơn + Trạng thái */}
       <div className="flex justify-between md:text-sm mb-2">
         <span className="text-white/80 text-lg">Mã đơn: <span className="font-medium">{orderCode}</span></span>
-        <span className="text-secondaryColor font-semibold">{statusText}</span>
+        <span className={`font-semibold px-3 py-1 rounded-full text-sm ${statusColorMap[order.status as Status]}`}>
+          {statusText}
+        </span>
       </div>
 
       {/* Sản phẩm đầu tiên */}
@@ -235,58 +244,28 @@ const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
 
       {/* Các nút hành động */}
       <div className="mt-3 flex justify-end flex-wrap gap-2">
-        {order.status === 'PENDING' && order.delivery_status === 'PENDING' && (
+        {order.status === 'ORDER_PLACED' && (
           <button
             className="px-4 py-1.5 text-xs bg-transparent border border-secondaryColor text-white font-normal font-sans hover:bg-secondaryColor hover:text-headerBackground focus:ring-bodyBackground active:bg-secondaryColor/90 active:text-headerBackground"
-            onClick={() => {
-              setReasonModalType('cancel');
-              setIsReasonModalOpen(true);
-            }}
+            onClick={() => openReasonModal('cancel')}
           >
             Hủy đơn hàng
           </button>
         )}
 
-        {order.status === 'PREPARING' && order.delivery_status === 'PENDING_PICKUP' && (
+        {order.status === 'DELIVERED' && (
           <button
             className="px-4 py-1.5 text-xs bg-transparent border border-secondaryColor text-white font-normal font-sans hover:bg-secondaryColor hover:text-headerBackground focus:ring-bodyBackground active:bg-secondaryColor/90 active:text-headerBackground"
-            onClick={() => {
-              setReasonModalType('request-cancel');
-              setIsReasonModalOpen(true);
-            }}
-          >
-            Yêu cầu hủy đơn
-          </button>
-        )}
-
-        {order.status === 'CANCEL_REQUESTED' && order.delivery_status === 'CANCEL_REQUESTED' && (
-          <button
-            className="px-4 py-1.5 text-xs bg-transparent border border-secondaryColor text-white font-normal font-sans"
-            disabled
-          >
-            Đã yêu cầu hủy đơn
-          </button>
-        )}
-
-        {order.status === 'COMPLETED' && order.delivery_status === 'DELIVERED' && (
-          <button
-            className="px-4 py-1.5 text-xs bg-transparent border border-secondaryColor text-white font-normal font-sans hover:bg-secondaryColor hover:text-headerBackground focus:ring-bodyBackground active:bg-secondaryColor/90 active:text-headerBackground"
-            onClick={() => {
-              setReasonModalType('return');
-              setIsReasonModalOpen(true);
-            }}
+            onClick={() => openReasonModal('return')}
           >
             Yêu cầu hoàn trả
           </button>
         )}
 
-        {order.status === 'RETURN_REQUESTED' && order.delivery_status === 'RETURN_REQUESTED' && (
-          <button
-            className="px-4 py-1.5 text-xs bg-transparent border border-secondaryColor text-white font-normal font-sans"
-            disabled
-          >
-            Đã yêu cầu hoàn trả
-          </button>
+        {order.status === 'RETURN_REQUESTED' && (
+          <span className="px-4 py-1.5 text-xs bg-transparent border border-secondaryColor text-secondaryColor font-normal font-sans">
+            ĐÃ YÊU CẦU HOÀN TRẢ
+          </span>
         )}
 
         <button
@@ -299,14 +278,12 @@ const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
 
       {/* Modal nhập lý do */}
       <ReasonModal
-        isOpen={isReasonModalOpen}
-        onClose={() => setIsReasonModalOpen(false)}
+        isOpen={showReasonModal}
+        onClose={() => setShowReasonModal(false)}
         onSubmit={handleReasonSubmit}
         title={
-          reasonModalType === 'cancel'
+          modalType === 'cancel'
             ? 'Lý do hủy đơn hàng'
-            : reasonModalType === 'request-cancel'
-            ? 'Lý do yêu cầu hủy đơn'
             : 'Lý do yêu cầu hoàn trả'
         }
       />

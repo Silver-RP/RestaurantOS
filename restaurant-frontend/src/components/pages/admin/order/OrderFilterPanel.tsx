@@ -144,13 +144,16 @@ const OrderFilterPanel: React.FC<OrderFilterPanelProps> = ({
             value={filters.status}
             onChange={handleChange}
             aria-label="Trạng thái đơn hàng"
-          >
-            <option value="">Tất cả</option>
-            <option value="PENDING">Chờ xử lý</option>
-            <option value="PREPARING">Đang chuẩn bị</option>
-            <option value="SHIPPING">Đang giao</option>
-            <option value="COMPLETED">Hoàn thành</option>
+          >            <option value="">Tất cả</option>
+            <option value="ORDER_PLACED">Đơn hàng mới</option>
+            <option value="ORDER_CONFIRMED">Đã xác nhận đơn hàng</option>
+            <option value="PENDING_PICKUP">Chờ nhận hàng/Chuẩn bị đơn hàng</option>
+            <option value="IN_TRANSIT">Đang giao/Đã chuẩn bị xong</option>
+            <option value="DELIVERED">Giao thành công/Đã lấy hàng</option>
+            <option value="DELIVERY_FAILED">Giao hàng thất bại</option>
             <option value="CANCELLED">Đã hủy</option>
+            <option value="RETURN_REQUESTED">Yêu cầu trả hàng</option>
+            <option value="RETURN_APPROVED">Đã xác nhận trả hàng</option>
             <option value="RETURNED">Đã trả hàng</option>
           </select>
         </div>

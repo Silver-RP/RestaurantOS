@@ -3,6 +3,7 @@ import OrderService from '../services/OrderService';
 import { IUser } from '../models/UserModel';
 import { Types } from 'mongoose';
 import OrderValidate from '../validators/orderValidator';
+import MailerService from '../services/MailerService';
 
 class OrderController {
   async placeOrder(req: Request, res: Response): Promise<any> {
@@ -48,6 +49,8 @@ class OrderController {
         receiver_phone,
       });
 
+      await OrderService.sendOrderConfirmationEmail(order._id);
+
       const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
       const postPayment = await OrderService.handlePostPaymentLogic(order, clientIp.toString());
 
@@ -66,10 +69,10 @@ class OrderController {
 
   async getAllOrders(req: Request, res: Response, next: NextFunction): Promise<any> {
     try {
-      const { page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc', filters } = req.query;
+      const { page = 1, limit = 12, sortBy = 'createdAt', sortOrder = 'desc', filters } = req.query;
       const parsedSortOrder: 1 | -1 = sortOrder === 'asc' ? 1 : -1;
-      const parsedPage = parseInt(page as string, 10);
-      const parsedLimit = parseInt(limit as string, 10);
+      const parsedPage = parseInt(page as string, 12);
+      const parsedLimit = parseInt(limit as string, 12);
       const filtersObject = filters ? (filters as { [key: string]: string }) : {};
 
       const options = {
@@ -101,18 +104,11 @@ class OrderController {
       }
 
       const userId = (req.user as IUser).id as Types.ObjectId;
-      const deliveryStatuses = req.query.delivery_status
-        ? Array.isArray(req.query.delivery_status)
-          ? req.query.delivery_status
-          : [req.query.delivery_status]
-        : null;
+      const status = req.query.status as string | undefined;
       const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
       const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 5;
-      const cleanDeliveryStatuses = deliveryStatuses?.filter(
-        (status): status is string => typeof status === 'string'
-      ) ?? null;
 
-      const result = await OrderService.getUserOrders(userId, cleanDeliveryStatuses, page, limit);
+      const result = await OrderService.getUserOrders(userId, status, page, limit);
 
       return res.status(200).json({
         message: 'Orders retrieved successfully',
@@ -152,18 +148,15 @@ class OrderController {
       const validStatuses = [
         'ORDER_PLACED',
         'ORDER_CONFIRMED',
-        'PENDING',
         'PENDING_PICKUP',
         'PICKED_UP',
         'IN_TRANSIT',
         'DELIVERED',
         'DELIVERY_FAILED',
         'RETURN_REQUESTED',
-        'CANCEL_RETURN_REQUESTED',
         'RETURN_APPROVED',
         'RETURN_REJECTED',
         'RETURNED',
-        'CANCEL_REQUESTED',
         'CANCELLED',
       ];
       if (!validStatuses.includes(status)) {

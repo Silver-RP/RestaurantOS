@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect } from 'react';
-import NavigationOrder, {
-  deliveryStatusMapping,
-} from '../components/pages/order/NavigationOrder';
+import NavigationOrder, { statusMapping } from '../components/pages/order/NavigationOrder';
 import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
 import {
   FaChevronLeft,
@@ -13,28 +11,25 @@ import {
 import { useOrders } from '@/hooks/useOrder';
 import { toast } from 'react-toastify';
 import OrderItemComponent from '../components/pages/order/OrderItem';
-import { DeliveryStatus } from '@/types/Order.type';
+import { Status } from '@/types/Order.type';
 
 const OrderPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('Tất cả đơn hàng');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(5);
 
-  const delivery_status_raw = deliveryStatusMapping[activeTab]?.delivery_status;
-
-  const delivery_status = delivery_status_raw as
-    | DeliveryStatus
-    | DeliveryStatus[]
-    | undefined;
+  const statuses = statusMapping[activeTab]?.status;
 
   const { data, isLoading, isError } = useOrders({
     filters: {},
-    delivery_status,
+    status: statuses as Status[] | undefined,
     page,
     limit,
   });
 
   const orders = data?.orders || [];
+  const totalItems = data?.totalItems ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalItems / limit));
 
   useEffect(() => {
     if (isError) toast.error('Lỗi khi tải danh sách đơn hàng');
@@ -44,8 +39,11 @@ const OrderPage: React.FC = () => {
     setPage(1);
   }, [activeTab]);
 
-  const totalItems = data?.total ?? 0;
-  const totalPages = Math.max(1, Math.ceil(totalItems / limit));
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setPage(newPage);
+    }
+  };
 
   return (
     <>
@@ -75,16 +73,20 @@ const OrderPage: React.FC = () => {
             <div className="flex items-center justify-between gap-4 py-6 w-full">
               <div className="flex items-center gap-2 text-base">
                 <span>Hiển thị</span>
-                <span className="font-bold">5 / {totalItems}</span>
+                <span className="font-bold">
+                  {orders.length} / {totalItems}
+                </span>
                 <span>đơn hàng</span>
               </div>
 
               <div className="flex items-center gap-3">
-                {page > 1 && (
-                  <button onClick={() => setPage(page - 1)}>
-                    <FaChevronLeft className="text-xl" />
-                  </button>
-                )}
+                <button 
+                  onClick={() => handlePageChange(page - 1)}
+                  disabled={page === 1}
+                  className={page === 1 ? 'opacity-50 cursor-not-allowed' : ''}
+                >
+                  <FaChevronLeft className="text-xl" />
+                </button>
 
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map(
                   (p) => (
@@ -95,18 +97,20 @@ const OrderPage: React.FC = () => {
                           ? 'border border-secondaryColor text-secondaryColor font-bold'
                           : 'text-white hover:text-secondaryColor'
                       }`}
-                      onClick={() => setPage(p)}
+                      onClick={() => handlePageChange(p)}
                     >
                       {p}
                     </button>
                   ),
                 )}
 
-                {page < totalPages && (
-                  <button onClick={() => setPage(page + 1)}>
-                    <FaChevronRight className="text-xl" />
-                  </button>
-                )}
+                <button 
+                  onClick={() => handlePageChange(page + 1)}
+                  disabled={page === totalPages}
+                  className={page === totalPages ? 'opacity-50 cursor-not-allowed' : ''}
+                >
+                  <FaChevronRight className="text-xl" />
+                </button>
               </div>
 
               <div className="text-base text-white/90">
