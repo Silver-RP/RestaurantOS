@@ -523,7 +523,7 @@ class OrderService {
     filters: any;
   }) {
     try {
-      const { page, limit, sortBy, sortOrder, filters } = options;
+    const { page, limit, sortBy, sortOrder, filters } = options;
 
       const searchOptions = {
         page,
@@ -555,7 +555,7 @@ class OrderService {
 
       const result = await SearchService.search(Order, searchOptions);
 
-      return {
+    return {
         orders: result.items,
         total: result.total,
         currentPage: result.currentPage,
@@ -759,7 +759,7 @@ class OrderService {
         | 'RETURN_APPROVED'
         | 'RETURN_REJECTED'
         | 'RETURNED'
-        | 'CANCELLED';      
+        | 'CANCELLED';
       if (status === Status.DELIVERED) {
         if (order.payment_status !== 'PAID') {
           throw {
