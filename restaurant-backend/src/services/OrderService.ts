@@ -597,7 +597,7 @@ class OrderService {
       })
         .populate({
           path: 'dish_id',
-          select: 'name images categories',
+          select: 'name images categories slug',
           populate: {
             path: 'categories',
             model: 'categories',
@@ -627,6 +627,7 @@ class OrderService {
             dish_id: dish?._id,
             dish_name: dish?.name,
             dish_images: dish?.images || [],
+            dish_slug: dish?.slug || '',
             categories: categoryNames,
           };
         });

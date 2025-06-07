@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { Order, OrderItem, Status } from '@/types/Order.type';
 import { useCancelOrder, useRequestReturn } from '@/hooks/useOrder';
@@ -87,6 +87,7 @@ const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
   const [showReasonModal, setShowReasonModal] = useState(false);
   const [modalType, setModalType] = useState<'cancel' | 'return'>('cancel');
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const { mutate: cancelOrder } = useCancelOrder();
   const { mutate: requestReturn } = useRequestReturn();
@@ -128,6 +129,10 @@ const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
     }
   };
 
+  const handleNavigateToDetail = (slug: string) => {
+    navigate(`/foods/${slug}`);
+  };
+
   if (!items.length) {
     return <div className="text-white">Không có sản phẩm trong đơn hàng này.</div>;
   }
@@ -163,8 +168,10 @@ const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
     quantity: item.quantity,
     price: item.unit_price,
     total: item.total_amount,
+    slug: item.dish_slug || '',
   });
 
+  console.log("items", items);
   const normalized = items.map(normalizeItem);
   const [firstItem, ...others] = normalized;
 
@@ -186,14 +193,20 @@ const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
           <img 
             src={firstItem.image} 
             alt={firstItem.name} 
-            className="w-20 h-20 object-cover rounded-md"
+            className="w-20 h-20 object-cover rounded-md cursor-pointer"
+            onClick={() => handleNavigateToDetail(firstItem.slug)}
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               target.src = '/placeholder-image.jpg';
             }}
           />
           <div className="ml-4 min-w-0">
-            <h2 className="font-bold text-sm md:text-lg line-clamp-2">{firstItem.name}</h2>
+            <h2 
+              className="font-bold text-sm md:text-lg line-clamp-2 cursor-pointer hover:text-secondaryColor"
+              onClick={() => handleNavigateToDetail(firstItem.slug)}
+            >
+              {firstItem.name}
+            </h2>
             <p className="text-xs mt-1">Phân loại: {firstItem.category}</p>
             <p className="text-xs mt-1">x{firstItem.quantity}</p>
           </div>
@@ -226,14 +239,20 @@ const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
                 <img 
                   src={item.image} 
                   alt={item.name} 
-                  className="w-16 h-16 object-cover rounded-md"
+                  className="w-16 h-16 object-cover rounded-md cursor-pointer"
+                  onClick={() => handleNavigateToDetail(item.slug)}
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.src = '/placeholder-image.jpg';
                   }}
                 />
                 <div className="ml-3 min-w-0">
-                  <h3 className="font-semibold text-xs line-clamp-2">{item.name}</h3>
+                  <h3 
+                    className="font-semibold text-xs line-clamp-2 cursor-pointer hover:text-secondaryColor"
+                    onClick={() => handleNavigateToDetail(item.slug)}
+                  >
+                    {item.name}
+                  </h3>
                   <p className="text-[10px] mt-1">Phân loại: {item.category}</p>
                   <p className="text-[10px] mt-1">x{item.quantity}</p>
                 </div>
