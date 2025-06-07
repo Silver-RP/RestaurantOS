@@ -12,7 +12,6 @@ const upload = multer({
 
 const router = Router();
 
-// API upload ảnh lên Cloudinary
 router.post('/createfood', upload.array('images', 5), FoodController.createFood);
 router.get('/getallfood', FoodController.getAllFood);
 router.get('/getfoodbyid/:id', FoodController.getFoodById);
