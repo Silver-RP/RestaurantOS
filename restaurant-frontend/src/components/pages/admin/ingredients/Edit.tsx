@@ -1,35 +1,48 @@
-import { useFoodDetail } from '@hooks/useFoods';
 import { useNavigate, useParams } from 'react-router-dom';
 import IngredientForm from './IngredientForm';
-import { useCategories } from '@hooks/useCategories';
-import { useCRUDFoods } from '@/hooks/useCRUDFoods';
+import { useCRUDIngredients } from '@/hooks/useCRUDIngredients';
 
-const EditFoodPage = () => {
+const EditIngredientPage = () => {
   const { slug } = useParams();
-  const { food, loading, error } = useFoodDetail(slug || '');
-  const { categories } = useCategories();
-  const { updateFood } = useCRUDFoods();
   const navigate = useNavigate();
-  const foodId = food?._id;
 
-  if (loading) return <p>Đang tải dữ liệu món ăn...</p>;
-  if (error || !food)
-    return <p className="text-red-500">Không tìm thấy món ăn.</p>;
-    
+  const {
+    ingredient,
+    loading,
+    error,
+    updateIngredient,
+  } = useCRUDIngredients(slug);
+
+  if (loading) return <p>Đang tải dữ liệu nguyên liệu...</p>;
+  if (error || !ingredient) {
+    return <p className="text-red-500">Không tìm thấy nguyên liệu.</p>;
+  }
+
   const initialData = {
-    ...food,
-    existingImages: JSON.stringify(food.images),
-    imagesPreview: food.images,
+    name: ingredient.name,
+    slug: ingredient.slug,
+    unit: ingredient.unit || 'kg',
+    price_per_unit: ingredient.price_per_unit,
+    _id: ingredient._id,
+    createdAt: ingredient.createdAt,
+    updatedAt: ingredient.updatedAt,
+    isDeleted: ingredient.isDeleted,
+    deletedAt: ingredient.deletedAt || null,
   };
 
-  const handleSubmit = (formData: FormData) => {
-    updateFood(formData, foodId || '');
+  const handleSubmit = (data: {
+    name: string;
+    slug: string;
+    unit: string;
+    price_per_unit: number;
+  }) => {
+    updateIngredient(data, ingredient._id);
   };
 
   return (
     <div className="relative">
       <button
-        onClick={() => navigate('/admin/foods')}
+        onClick={() => navigate('/admin/ingredients')}
         type="button"
         className="relative mb-4 text-admintext text-sm hover:after:w-full after:transition-all after:duration-300 after:content-[''] after:absolute after:left-0 after:bottom-0 after:h-[1px] after:w-0 after:bg-admintext"
       >
@@ -38,12 +51,10 @@ const EditFoodPage = () => {
 
       <IngredientForm
         initialData={initialData}
-        submitLabel="Lưu chỉnh sửa"
-        categories={categories?.data || []}
         onSubmit={handleSubmit}
       />
     </div>
   );
 };
 
-export default EditFoodPage;
+export default EditIngredientPage;

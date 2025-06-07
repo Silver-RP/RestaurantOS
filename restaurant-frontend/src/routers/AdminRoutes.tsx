@@ -8,6 +8,8 @@ import AdminLayout from "../layouts/AdminLayout";
 import { AdminSidebarProvider } from "../contexts/AdminSidebarContext";
 import IngredientsList from "../components/pages/admin/ingredients/Index";
 import CreateIngredient from "../components/pages/admin/ingredients/Create";
+import EditIngredient from "../components/pages/admin/ingredients/Edit";
+import TrashIngredient from "../components/pages/admin/ingredients/Trash";
 
 import FoodCreatePage from "../components/pages/admin/food/Create";
 import FoodEditPage from "../components/pages/admin/food/Edit";
@@ -54,8 +56,8 @@ const adminRoutes = [
       { path: "banners/edit/:id", element: <EditBannerPage /> },
       { path: "ingredients", element: <IngredientsList /> },
       { path: "ingredients/create", element: <CreateIngredient /> },
-      { path: "ingredients/edit/:id", element: <CreateIngredient /> },
-      { path: "ingredients/trash", element: <CreateIngredient /> },
+      { path: "ingredients/edit/:slug", element: <EditIngredient /> },
+      { path: "ingredients/trash", element: <TrashIngredient /> },
       
 
 

@@ -2,6 +2,9 @@ import { z } from 'zod';
 
 export const ingredientSchema = z.object({
   name: z.string().min(1).max(100),
+  slug: z.string().min(1).max(100).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/i, {
+    message: 'Slug must be alphanumeric and can contain hyphens',
+  }),
   unit: z.enum([
     'kg', 'gram', 'mg',
     'litre', 'ml',

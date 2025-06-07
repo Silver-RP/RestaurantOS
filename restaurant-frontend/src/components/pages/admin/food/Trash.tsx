@@ -232,7 +232,7 @@ const TrashTable: React.FC = () => {
                 newParams.set('page', String(page));
                 setSearchParams(newParams);
               }}
-              limit={Number(searchParams.get('limit') || 10)}
+              limit={Number(searchParams.get('limit') || 12)}
               onLimitChange={(newLimit) => {
                 setSearchParams((prev) => {
                   const newParams = new URLSearchParams(prev);

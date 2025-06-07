@@ -38,6 +38,16 @@ price_per_unit: number;
   }
 };
 
+export const getIngredientBySlugApi = async (slug: string): Promise<IngredientResponse> => {
+  try {
+    const res = await api.get(`/ingredients/get-ingredients/${slug}`);
+    return res.data.data;
+  } catch (error) {
+    console.error('Error fetching ingredient by slug:', error);
+    throw error;
+  }
+}
+
 export const updateIngredientApi = async (data: {
   name: string;
   slug: string;
@@ -63,7 +73,7 @@ export const softDeleteIngredientApi = async (ingredientId: string): Promise<voi
   }
 };
 
-export const getTrashIngredients = async (
+export const getIngredientTrashedApi = async (
   params: IngredientFilterParams,
 ): Promise<IngredientResponse> => {
   const queryString = new URLSearchParams();

@@ -80,6 +80,7 @@ class IngredientService {
         try {
             const allowedFields = {
                 name: ingredientData.name,
+                slug: ingredientData.slug, 
                 unit: ingredientData.unit,
                 price_per_unit: ingredientData.price_per_unit
             };
@@ -89,6 +90,21 @@ class IngredientService {
         } catch (error) {
             console.error("Error creating ingredient:", error);
             throw new Error("Failed to create ingredient");
+        }
+    }
+
+    async getIngredientBySlug(slug: string): Promise<IIngredient | null> {
+        try {
+            const ingredient = await Ingredient.findOne({ slug});
+            console.log("Ingredient found:", slug);
+            console.log(ingredient);
+            if (!ingredient) {
+                throw new Error("Ingredient not found");
+            }
+            return ingredient;
+        } catch (error) {
+            console.error("Error fetching ingredient by slug:", error);
+            throw new Error("Failed to fetch ingredient by slug");
         }
     }
 
@@ -102,6 +118,7 @@ class IngredientService {
         try {
             const allowedFields = {
                 name: ingredientData.name,
+                slug: ingredientData.slug,
                 unit: ingredientData.unit,
                 price_per_unit: ingredientData.price_per_unit
             };
@@ -138,6 +155,51 @@ class IngredientService {
         } catch (error) {
             console.error("Error fetching trashed ingredients:", error);
             throw new Error("Failed to fetch trashed ingredients");
+        }
+    }
+
+    async getAllTrashIngredients(params: {
+        page?: number;
+        limit?: number;
+        search?: string;
+        sort?: string;
+    }): Promise<PaginateResult<IIngredient>> {
+        try {
+            const {
+                page = 1,
+                limit = 12,
+                search = '',
+                sort = '',
+            } = params;
+
+            const query: any = {};
+            if (search) {
+                query.name = { $regex: search, $options: 'i' };
+            }
+
+            query.isDeleted = true;
+
+            const sortMapping: Record<string, Record<string, 1 | -1>> = {
+                nameAZ: { name: 1 },
+                nameZA: { name: -1 },
+                unitAZ: { unit: 1 },
+                unitZA: { unit: -1 },
+                priceLow: { price_per_unit: 1 },
+                priceHigh: { price_per_unit: -1 },
+            };
+
+            const sortOption = sortMapping[sort] || { createdAt: -1 };
+
+            const result = await Ingredient.paginate(query, {
+                page,
+                limit,
+                sort: sortOption,
+            });
+
+            return result;
+        } catch (error) {
+            console.error('Error fetching ingredients with filters:', error);
+            throw new Error('Failed to fetch ingredients');
         }
     }
 

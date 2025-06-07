@@ -1,21 +1,52 @@
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { showOverlayLoading, hideOverlayLoading } from '@/redux/feature/loadingUI/uiSlice';
 import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
-import { 
-    createIngredientApi, 
-    updateIngredientApi, 
-    softDeleteIngredientApi, 
-    restoreIngredientAPI, 
-    permanentlyDeleteIngredientAPI 
+import {
+    createIngredientApi,
+    getIngredientBySlugApi,
+    updateIngredientApi,
+    softDeleteIngredientApi,
+    getIngredientTrashedApi,
+    restoreIngredientAPI,
+    permanentlyDeleteIngredientAPI
 } from '@/api/IngredientsApi';
+import { IngredientFilterParams } from '@/types/Ingredient';
 
 
-export const useCRUDIngredients = () => {
+export const useCRUDIngredients = (slug?: string) => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
-    const createIngredient = async (data:{
+    const [ingredient, setIngredient] = useState<any | null>(null);
+    const [loading, setLoading] = useState<boolean>(!!slug);
+    const [error, setError] = useState<boolean>(false);
+
+    useEffect(() => {
+        if (!slug) return;
+
+        const fetchIngredient = async () => {
+            dispatch(showOverlayLoading('Đang tải nguyên liệu...'));
+            try {
+                const response = await getIngredientBySlugApi(slug);
+                if (!response) {
+                    throw new Error('Không tìm thấy nguyên liệu');
+                }
+                setIngredient(response);
+            } catch (err) {
+                setError(true);
+                console.error('Lỗi khi tải nguyên liệu:', err);
+            } finally {
+                dispatch(hideOverlayLoading());
+                setLoading(false);
+            }
+        };
+
+        fetchIngredient();
+    }, [slug]);
+
+    const createIngredient = async (data: {
         name: string;
         slug: string;
         unit: string;
@@ -34,7 +65,24 @@ export const useCRUDIngredients = () => {
         }
     };
 
-    const updateIngredient = async (data:{
+    const getIngredientBySlug = async (slug: string) => {
+        dispatch(showOverlayLoading("Đang tải nguyên liệu..."));
+        try {
+            const response = await getIngredientBySlugApi(slug);
+            if (!response.docs || response.docs.length === 0) {
+                throw new Error('Không tìm thấy nguyên liệu');
+            }
+            const data = response.docs[0];
+            return data;
+        } catch (error) {
+            console.error('Lỗi khi tải nguyên liệu:', error);
+            throw error;
+        } finally {
+            dispatch(hideOverlayLoading());
+        }
+    }
+
+    const updateIngredient = async (data: {
         name: string;
         slug: string;
         unit: string;
@@ -67,6 +115,20 @@ export const useCRUDIngredients = () => {
         }
     }
 
+    const getIngredientTrashed = async (params: IngredientFilterParams = {}) => {
+        dispatch(showOverlayLoading("Đang tải nguyên liệu đã xóa..."));
+        try {
+            const response = await getIngredientTrashedApi(params);
+           console.log('getIngredientTrashed response: ', response);
+            return response;
+        } catch (error) {
+            console.error("Lỗi khi tải nguyên liệu đã xóa:", error);
+            throw error;
+        } finally {
+            dispatch(hideOverlayLoading());
+        }
+    };
+
     const restoreIngredient = async (foodId: string) => {
         dispatch(showOverlayLoading("Đang khôi phục nguyên liệu..."));
         try {
@@ -90,13 +152,13 @@ export const useCRUDIngredients = () => {
             setTimeout(() => { navigate(0); }, 1500);
         } catch (error: any) {
             let errorMessage = 'Không thể xoá';
-          
+
             if (error.response && error.response.data?.message) {
-              errorMessage = error.response.data.message;
+                errorMessage = error.response.data.message;
             } else if (error.message) {
-              errorMessage = error.message;
+                errorMessage = error.message;
             }
-          
+
             toast.error(errorMessage);
             console.error('Lỗi khi xóa vĩnh viễn nguyên liệu:', error);
         } finally {
@@ -105,7 +167,16 @@ export const useCRUDIngredients = () => {
     }
 
     return {
-        createIngredient, updateIngredient, confirmDeleteIngredient, restoreIngredient, permanentDeleteIngredient
+        ingredient,
+        loading,
+        error,
+        createIngredient,
+        getIngredientBySlug,
+        updateIngredient,
+        confirmDeleteIngredient,
+        getIngredientTrashed,
+        restoreIngredient,
+        permanentDeleteIngredient
     };
 }
 

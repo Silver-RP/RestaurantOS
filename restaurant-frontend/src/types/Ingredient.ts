@@ -1,9 +1,8 @@
 export type Ingredient = {
-    price_per_unit: number;
     _id: string;
     name: string;
     slug: string;
-    price: number;
+    price_per_unit: number;
     unit: string;
     isDeleted: boolean;
     deletedAt?: Date | null;   

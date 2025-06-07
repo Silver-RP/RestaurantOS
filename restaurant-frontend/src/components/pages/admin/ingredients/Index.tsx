@@ -78,7 +78,7 @@ const MenuTable: React.FC = () => {
             + Thêm nguyên liệu
           </button>
           <button
-            onClick={() => navigate('/admin/ingredients/deleted')}
+            onClick={() => navigate('/admin/ingredients/trash')}
             className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
           >
             <FiTrash2 />
@@ -170,7 +170,7 @@ const MenuTable: React.FC = () => {
                   <td className="px-4 py-2 space-x-2">
                     <button
                       className="relative group text-blue-500 hover:underline"
-                      onClick={() => navigate(`/admin/foods/edit/${item._id}`)}
+                      onClick={() => navigate(`/admin/ingredients/edit/${item.slug}`)}
                     >
                       <FaEdit size={18} />
                       <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 normal-case">

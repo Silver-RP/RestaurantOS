@@ -71,7 +71,7 @@ const IngredientForm: React.FC<IngredientFormProps> = ({
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6">
           <div>
             <label className="block mb-1 text-sm font-medium text-admintext">
               Tên nguyên liệu
@@ -151,7 +151,7 @@ const IngredientForm: React.FC<IngredientFormProps> = ({
             type="submit"
             className="px-4 py-2 bg-adminprimary text-white rounded hover:bg-blue-700"
           >
-            {initialData ? 'Cập nhật món' : 'Lưu nguyên liệu'}
+            {initialData ? 'Cập nhật' : 'Lưu nguyên liệu'}
           </button>
         </div>
       </form>

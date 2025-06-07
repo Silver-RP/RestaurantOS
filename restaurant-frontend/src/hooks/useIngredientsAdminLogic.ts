@@ -1,17 +1,15 @@
-import { useFoodsTrash } from './useFoods';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import slugify from 'slugify';
-import { Category } from 'types/Category.type';
 import { Ingredient } from 'types/Ingredient';
 import { toast } from 'react-toastify';
-import { useCRUDFoods } from './useCRUDFoods';
+import { useCRUDIngredients } from './useCRUDIngredients';
 
 import { fetchAllIngredients } from '../api/IngredientsApi';
 import { IngredientResponse, IngredientFilterParams } from '../types/Ingredient';
 import { useSearchParams } from 'react-router-dom';
 
-type SortField = 'name' | 'unit' | 'price' | null;
+type SortField = 'name' | 'unit' | 'price' | 'deletedAt' | null;
 type SortDirection = 'asc' | 'desc';
 
 export function useIngredientsAdminLogic() {
@@ -23,7 +21,6 @@ export function useIngredientsAdminLogic() {
     const navigate = useNavigate();
 
     const ingredientList = ingredients?.docs || [];
-    console.log('ingredientList', ingredientList);
 
     const sortMapping: Record<string, { asc: string; desc: string }> = {
         name: { asc: 'nameAZ', desc: 'nameZA' },
@@ -114,7 +111,7 @@ export function useIngredientsAdminLogic() {
     };
 }
 
-// Logic để lấy nguyên liệu
+// Ingredients admin page logic
 export const useIngredientsAdmin = () => {
     const [ingredients, setIngredients] = useState<IngredientResponse | null>(null);
     const [loading, setLoading] = useState(true);
@@ -197,7 +194,7 @@ export function useIngredientLogic({ initialData, onSubmit }: UseIngredientFormP
     const [isDeleted, setIsDeleted] = useState(false);
     const [deletedAt, setDeletedAt] = useState<Date | null>(null);
 
-    const { confirmDeleteDish } = useCRUDFoods();
+    const { confirmDeleteIngredient } = useCRUDIngredients();
     const [showConfirm, setShowConfirm] = useState(false);
     const navigate = useNavigate();
 
@@ -216,42 +213,41 @@ export function useIngredientLogic({ initialData, onSubmit }: UseIngredientFormP
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-      
+
         const trimmedName = name.trim();
         const trimmedSlug = slug.trim();
         const trimmedUnit = unit.trim();
-      
+
         if (trimmedName.length < 3) return toast.error('Tên nguyên liệu phải có ít nhất 3 ký tự');
         if (trimmedName.length > 100) return toast.error('Tên nguyên liệu không được quá 100 ký tự');
-      
+
         if (!trimmedSlug) return toast.error('Slug không được để trống');
         if (trimmedSlug.length < 3) return toast.error('Slug phải có ít nhất 3 ký tự');
         if (trimmedSlug.length > 100) return toast.error('Slug không được quá 100 ký tự');
         if (/\s/.test(trimmedSlug)) return toast.error('Slug không được chứa khoảng trắng');
         if (!/^[a-z0-9-]+$/.test(trimmedSlug)) {
-          return toast.error('Slug chỉ được chứa chữ cái thường, số và dấu gạch ngang');
+            return toast.error('Slug chỉ được chứa chữ cái thường, số và dấu gạch ngang');
         }
-      
+
         if (!trimmedUnit) return toast.error('Đơn vị không được để trống');
         if (trimmedUnit.length > 50) return toast.error('Đơn vị không được quá 50 ký tự');
-      
+
         if (pricePerUnit <= 0) return toast.error('Giá trên đơn vị phải lớn hơn 0');
-      
+
         if (isDeleted && !deletedAt) return toast.error('Vui lòng chọn ngày xóa món ăn');
         if (isDeleted && deletedAt && deletedAt > new Date()) {
-          return toast.error('Ngày xóa phải là ngày trong quá khứ');
+            return toast.error('Ngày xóa phải là ngày trong quá khứ');
         }
-      
+
         const data = {
-          name: trimmedName,
-          slug: trimmedSlug,
-          unit: trimmedUnit,
-          price_per_unit: pricePerUnit,
+            name: trimmedName,
+            slug: trimmedSlug,
+            unit: trimmedUnit,
+            price_per_unit: pricePerUnit,
         };
-      
+
         onSubmit(data);
-      };
-      
+    };
 
     const handleDeleteClick = () => {
         setShowConfirm(true);
@@ -263,14 +259,12 @@ export function useIngredientLogic({ initialData, onSubmit }: UseIngredientFormP
             toast.error("Không tìm thấy ID món ăn");
             return;
         }
-        await confirmDeleteDish(initialData._id);
+        await confirmDeleteIngredient(initialData._id);
         setShowConfirm(false);
-        navigate('/admin/foods');
+        navigate('/admin/ingredients');
     };
 
-
     return {
-        // States
         name, setName, slug, setSlug,
         unit, setUnit, pricePerUnit, setPricePerUnit,
         isDeleted, setIsDeleted, deletedAt, setDeletedAt,
@@ -280,27 +274,58 @@ export function useIngredientLogic({ initialData, onSubmit }: UseIngredientFormP
     };
 }
 
-// Foods trash page logic
-export function useFoodsTrashLogic() {
-    const { foods, loading, error, searchParams, setSearchParams } = useFoodsTrash();
-    const [sortField, setSortField] = useState<SortField>(null);
-    const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+// Ingredients trash page logic
+export function useIngredientsTrashLogic() {
+    const [ingredients, setIngredients] = useState<IngredientResponse | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    const [sortField, setSortField] = useState<'name' | 'unit' | 'price' | 'deletedAt' | null>(null);
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
     const [search, setSearch] = useState('');
     const [foodIdToRestore, setFoodIdToRestore] = useState<string | null>(null);
     const [foodIdToDelete, setFoodIdToDelete] = useState<string | null>(null);
     const [showConfirm, setShowConfirm] = useState(false);
-    const { restoreFood, permanentDeleteFood } = useCRUDFoods();
+
+    const {
+        restoreIngredient,
+        permanentDeleteIngredient,
+        getIngredientTrashed,
+    } = useCRUDIngredients();
 
     const navigate = useNavigate();
 
-    const foodList = foods?.docs || [];
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const params: IngredientFilterParams = {
+                    sort: searchParams.get('sort') || '',
+                    page: Number(searchParams.get('page')) || 1,
+                };
+
+                const data=  await getIngredientTrashed(params);
+                setIngredients(data); 
+            } catch (err) {
+                setError("Không thể tải nguyên liệu đã xóa");
+            } finally {
+                setLoading(false);
+            }
+        };
+    
+        fetchData();
+      }, [searchParams]);
+      
+
+      const ingredientList = ingredients?.docs ?? [];
 
     const sortMapping: Record<string, { asc: string; desc: string }> = {
         name: { asc: 'nameAZ', desc: 'nameZA' },
+        unit: { asc: 'unitAZ', desc: 'unitZA' },
         price: { asc: 'priceLow', desc: 'priceHigh' },
-        category: { asc: 'categoryAZ', desc: 'categoryZA' },
         deletedAt: { asc: 'deletedAtOld', desc: 'deletedAtNew' },
-        status: { asc: 'statusAZ', desc: 'statusZA' },
     };
 
     const handleSort = (field: string) => {
@@ -374,7 +399,7 @@ export function useFoodsTrashLogic() {
         if (!foodId) return;
 
         try {
-            await restoreFood(foodId);
+            await restoreIngredient(foodId);
             setShowConfirm(false);
         } catch (error) {
         }
@@ -389,14 +414,14 @@ export function useFoodsTrashLogic() {
         if (!foodId) return;
 
         try {
-            await permanentDeleteFood(foodId);
+            await permanentDeleteIngredient(foodId);
             setShowConfirm(false);
         } catch (error) {
         }
     }
 
     return {
-        foods,
+        ingredients,
         loading,
         error,
         searchParams,
@@ -406,7 +431,7 @@ export function useFoodsTrashLogic() {
         search,
         setSearch,
         navigate,
-        foodList,
+        ingredientList,
         handleSort,
         handleEnter,
         handleClick,
@@ -423,4 +448,3 @@ export function useFoodsTrashLogic() {
         handleConfirmPermanentDelete,
     };
 }
-
