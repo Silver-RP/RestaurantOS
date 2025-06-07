@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from 'react';
 import { formatDate } from '@/utils/formatDate';
+import { useNavigate } from 'react-router-dom';
 import {
   useOrderDetail,
   useHandleRetryPayment,
@@ -9,7 +10,6 @@ import {
 import { Order, OrderItem } from '@/types/Order.type';
 import PaymentMethodSelector from '../checkout/PaymentMethodSelector';
 import { FiDownload } from 'react-icons/fi';
-import { DialogTitle, Dialog } from '@mui/material';
 
 interface OrderDetailModalProps {
   orderId: string;
@@ -31,6 +31,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
     data: changeMethodResult,
     isPending: changingMethod,
   } = useHandleChangePaymentMethod();
+  const navigate = useNavigate();
 
   const [showSelector, setShowSelector] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
@@ -142,6 +143,11 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
 
     return 'Chưa xác định thời gian giao hàng';
   }
+
+  const handleNavigateToDetail = (slug: string) => {
+    onClose();
+    navigate(`/foods/${slug}`);
+  };
 
   if (isLoading || retrying || changingMethod)
     return (
@@ -545,11 +551,10 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                   >
                     <div className="flex-shrink-0 flex justify-center items-center">
                       <img
-                        src={
-                          item.dish_id?.images?.[0] || '/placeholder-image.jpg'
-                        }
+                        src={item.dish_id?.images?.[0] || '/placeholder-image.jpg'}
                         alt={item.dish_name}
-                        className="w-24 h-24 md:w-28 md:h-28 object-cover rounded-lg border-2 border-secondaryColor bg-white/10"
+                        className="w-24 h-24 md:w-28 md:h-28 object-cover rounded-lg border-2 border-secondaryColor bg-white/10 cursor-pointer hover:opacity-90 transition-opacity"
+                        onClick={() => handleNavigateToDetail(item.dish_id?.slug || '')}
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.src = '/placeholder-image.jpg';
@@ -558,7 +563,10 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                     </div>
                     <div className="flex-grow flex flex-col justify-between">
                       <div>
-                        <p className="font-bold text-lg text-secondaryColor mb-1 ">
+                        <p 
+                          className="font-bold text-lg text-secondaryColor mb-1 cursor-pointer hover:text-secondaryColor/80 transition-colors"
+                          onClick={() => handleNavigateToDetail(item.dish_id?.slug || '')}
+                        >
                           {item.dish_name}
                         </p>
                         {item.dish_id?.shortDescription && (
