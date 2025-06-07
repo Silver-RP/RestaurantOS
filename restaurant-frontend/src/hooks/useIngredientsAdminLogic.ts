@@ -284,8 +284,8 @@ export function useIngredientsTrashLogic() {
     const [sortField, setSortField] = useState<'name' | 'unit' | 'price' | 'deletedAt' | null>(null);
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
     const [search, setSearch] = useState('');
-    const [foodIdToRestore, setFoodIdToRestore] = useState<string | null>(null);
-    const [foodIdToDelete, setFoodIdToDelete] = useState<string | null>(null);
+    const [ingredientIdToRestore, setIngredientIdToRestore] = useState<string | null>(null);
+    const [ingredientIdToDelete, setIngredientIdToDelete] = useState<string | null>(null);
     const [showConfirm, setShowConfirm] = useState(false);
 
     const {
@@ -304,22 +304,23 @@ export function useIngredientsTrashLogic() {
                 const params: IngredientFilterParams = {
                     sort: searchParams.get('sort') || '',
                     page: Number(searchParams.get('page')) || 1,
+                    limit: Number(searchParams.get('limit')) || 12,
+                    search: searchParams.get('keyword') || '',
                 };
 
-                const data=  await getIngredientTrashed(params);
-                setIngredients(data); 
+                const data = await getIngredientTrashed(params);
+                setIngredients(data);
             } catch (err) {
                 setError("Không thể tải nguyên liệu đã xóa");
             } finally {
                 setLoading(false);
             }
         };
-    
-        fetchData();
-      }, [searchParams]);
-      
 
-      const ingredientList = ingredients?.docs ?? [];
+        fetchData();
+    }, [searchParams]);
+
+    const ingredientList = ingredients?.docs ?? [];
 
     const sortMapping: Record<string, { asc: string; desc: string }> = {
         name: { asc: 'nameAZ', desc: 'nameZA' },
@@ -390,31 +391,31 @@ export function useIngredientsTrashLogic() {
         return null;
     };
 
-    const handleRestoreClick = (foodId: string) => {
+    const handleRestoreClick = (ingredientId: string) => {
         setShowConfirm(true);
-        setFoodIdToRestore(foodId);
+        setIngredientIdToRestore(ingredientId);
     }
 
-    const handleConfirmRestore = async (foodId: string) => {
-        if (!foodId) return;
+    const handleConfirmRestore = async (ingredientId: string) => {
+        if (!ingredientId) return;
 
         try {
-            await restoreIngredient(foodId);
+            await restoreIngredient(ingredientId);
             setShowConfirm(false);
         } catch (error) {
         }
     }
 
-    const handlePermanentDeleteClick = (foodId: string) => {
+    const handlePermanentDeleteClick = (ingredientId: string) => {
         setShowConfirm(true);
-        setFoodIdToDelete(foodId);
+        setIngredientIdToDelete(ingredientId);
     }
 
-    const handleConfirmPermanentDelete = async (foodId: string) => {
-        if (!foodId) return;
+    const handleConfirmPermanentDelete = async (ingredientId: string) => {
+        if (!ingredientId) return;
 
         try {
-            await permanentDeleteIngredient(foodId);
+            await permanentDeleteIngredient(ingredientId);
             setShowConfirm(false);
         } catch (error) {
         }
@@ -438,10 +439,10 @@ export function useIngredientsTrashLogic() {
         getSortIcon,
         showConfirm,
         setShowConfirm,
-        foodIdToRestore,
-        setFoodIdToRestore,
-        foodIdToDelete,
-        setFoodIdToDelete,
+        ingredientIdToRestore,
+        setIngredientIdToRestore,
+        ingredientIdToDelete,
+        setIngredientIdToDelete,
         handleRestoreClick,
         handleConfirmRestore,
         handlePermanentDeleteClick,

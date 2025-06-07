@@ -92,6 +92,7 @@ class IngredientController {
                 search: req.query.search?.toString() || '',
                 sort: req.query.sort?.toString() || 'createdAt',
             };
+
             const ingredients = await IngredientService.getAllTrashIngredients(params);
             res.status(200).json({
                 success: true,
@@ -105,7 +106,7 @@ class IngredientController {
 
     async restoreIngredient(req: Request, res: Response) : Promise<any>{
         try {
-            const ingredientId = req.params.ingredientId;
+            const ingredientId = req.params.id;
             const ingredient = await IngredientService.restoreIngredient(ingredientId);
             if (!ingredient) {
                 return res.status(404).json({ message: 'Ingredient not found' });
@@ -123,7 +124,7 @@ class IngredientController {
 
     async permanentlyDeleteIngredient(req: Request, res: Response) : Promise<any>{
         try {
-            const ingredientId = req.params.ingredientId;
+            const ingredientId = req.params.id;
             await IngredientService.permanentlyDeleteIngredient(ingredientId);
             res.status(204).send(); 
         } catch (error: any) {

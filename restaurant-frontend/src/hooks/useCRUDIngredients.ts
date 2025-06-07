@@ -87,10 +87,10 @@ export const useCRUDIngredients = (slug?: string) => {
         slug: string;
         unit: string;
         price_per_unit: number;
-    }, foodId: string) => {
+    }, ingredientId: string) => {
         dispatch(showOverlayLoading("Đang cập nhật nguyên liệu..."));
         try {
-            await updateIngredientApi(data, foodId);
+            await updateIngredientApi(data, ingredientId);
             toast.success('Cập nhật nguyên liệu thành công');
             navigate('/admin/ingredients');
         } catch (error) {
@@ -101,10 +101,10 @@ export const useCRUDIngredients = (slug?: string) => {
         }
     }
 
-    const confirmDeleteIngredient = async (foodId: string) => {
+    const confirmDeleteIngredient = async (ingredientId: string) => {
         dispatch(showOverlayLoading("Đang xóa nguyên liệu..."));
         try {
-            await softDeleteIngredientApi(foodId);
+            await softDeleteIngredientApi(ingredientId);
             toast.success('Xóa nguyên liệu thành công');
             navigate('/admin/ingredients');
         } catch (error) {
@@ -119,7 +119,6 @@ export const useCRUDIngredients = (slug?: string) => {
         dispatch(showOverlayLoading("Đang tải nguyên liệu đã xóa..."));
         try {
             const response = await getIngredientTrashedApi(params);
-           console.log('getIngredientTrashed response: ', response);
             return response;
         } catch (error) {
             console.error("Lỗi khi tải nguyên liệu đã xóa:", error);
@@ -129,11 +128,10 @@ export const useCRUDIngredients = (slug?: string) => {
         }
     };
 
-    const restoreIngredient = async (foodId: string) => {
+    const restoreIngredient = async (ingredientId: string) => {
         dispatch(showOverlayLoading("Đang khôi phục nguyên liệu..."));
         try {
-            console.log('RestoreFood foodId react: ', foodId);
-            await restoreIngredientAPI(foodId);
+            await restoreIngredientAPI(ingredientId);
             toast.success('Khôi phục nguyên liệu thành công');
             setTimeout(() => { navigate(0); }, 1500);
         } catch (error) {
@@ -144,10 +142,10 @@ export const useCRUDIngredients = (slug?: string) => {
         }
     }
 
-    const permanentDeleteIngredient = async (foodId: string) => {
+    const permanentDeleteIngredient = async (ingredientId: string) => {
         dispatch(showOverlayLoading("Đang xóa vĩnh viễn nguyên liệu..."));
         try {
-            await permanentlyDeleteIngredientAPI(foodId);
+            await permanentlyDeleteIngredientAPI(ingredientId);
             toast.success('Xóa vĩnh viễn nguyên liệu thành công');
             setTimeout(() => { navigate(0); }, 1500);
         } catch (error: any) {

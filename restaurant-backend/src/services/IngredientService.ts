@@ -1,3 +1,5 @@
+import { error } from "console";
+import { Dish } from "../models/DishModel";
 import Ingredient, { IIngredient } from "../models/IngredientModel";
 import { ingredientSchema } from '../validators/ingredientValidator';
 import { IngredientInput } from '../validators/ingredientValidator';
@@ -148,27 +150,18 @@ class IngredientService {
         }
     }
 
-    async getTrashIngredients(): Promise<IIngredient[]> {
-        try {
-            const ingredients = await Ingredient.find({ isDeleted: true });
-            return ingredients;
-        } catch (error) {
-            console.error("Error fetching trashed ingredients:", error);
-            throw new Error("Failed to fetch trashed ingredients");
-        }
-    }
-
     async getAllTrashIngredients(params: {
         page?: number;
         limit?: number;
         search?: string;
         sort?: string;
     }): Promise<PaginateResult<IIngredient>> {
+
         try {
             const {
                 page = 1,
                 limit = 12,
-                search = '',
+                search =  '',
                 sort = '',
             } = params;
 
@@ -220,16 +213,37 @@ class IngredientService {
 
     async permanentlyDeleteIngredient(id: string): Promise<IIngredient | null> {
         try {
-            const ingredient = await Ingredient.findByIdAndDelete(id);
+            const ingredient = await Ingredient.findById(id);
             if (!ingredient) {
                 throw new Error("Ingredient not found");
             }
-            return ingredient;
+    
+            const usedInFood = await Dish.exists({ "ingredients.ingredient": id });
+            if (usedInFood) {
+                throw new Error("Không thể xoá: Nguyên liệu đang được sử dụng trong món ăn.");
+            }
+    
+            // Kiểm tra báo cáo (tuỳ mô hình bạn)
+            // const usedInReports = await Report.exists({ "ingredients.ingredient": id });
+            // if (usedInReports) {
+            //     throw new Error("Không thể xoá: Nguyên liệu có trong báo cáo thống kê.");
+            // }
+    
+            // Kiểm tra tồn tại trong quản lý kho
+            // const usedInInventory = await Inventory.exists({ ingredient: id });
+            // if (usedInInventory) {
+            //     throw new Error("Không thể xoá: Nguyên liệu tồn tại trong quản lý kho.");
+            // }
+    
+            // Nếu không bị ràng buộc, cho phép xoá
+            const deleted = await Ingredient.findByIdAndDelete(id);
+            return deleted;
         } catch (error) {
             console.error("Error permanently deleting ingredient:", error);
-            throw new Error("Failed to permanently delete ingredient");
+            throw new Error((error as Error).message || "Failed to permanently delete ingredient");
         }
     }
+    
 
 
 }

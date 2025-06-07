@@ -245,6 +245,10 @@ const TrashTable: React.FC = () => {
           )}
         </div>
       )}
+
+      {foodList.length === 0 && !loading && (
+        <p className="text-center text-gray-500">Không có món nào bị xoá trong thùng rác.</p>
+      )}
     </div>
   );
 };

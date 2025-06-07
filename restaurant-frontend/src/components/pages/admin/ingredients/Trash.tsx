@@ -31,8 +31,8 @@ const TrashIngredientTable: React.FC = () => {
     getSortIcon,
     showConfirm,
     setShowConfirm,
-    foodIdToRestore,
-    foodIdToDelete,
+    ingredientIdToRestore,
+    ingredientIdToDelete,
     handleRestoreClick,
     handleConfirmRestore,
     handlePermanentDeleteClick,
@@ -45,8 +45,6 @@ const TrashIngredientTable: React.FC = () => {
     if (iconType === 'desc') return <FaArrowDown />;
     return <FaSort />;
   };
-
-  console.log(' fetching ingredients:', ingredients);
 
   return (
     <div>
@@ -82,7 +80,7 @@ const TrashIngredientTable: React.FC = () => {
           </button>
         </div>
       </div>
-     
+
       <div className="text-sm text-gray-700">
         Hiển thị <strong>{ingredientList.length}</strong> trên tổng{' '}
         <strong>{ingredients?.totalDocs || 0}</strong> món
@@ -150,53 +148,54 @@ const TrashIngredientTable: React.FC = () => {
                   <td className="px-4 py-2">
                     {item.price_per_unit.toLocaleString()}
                   </td>
-                    <td className="px-4 py-2">
-                        {new Date(item.deletedAt || '').toLocaleDateString('vi-VN', {
+                  <td className="px-4 py-2">
+                    {new Date(item.deletedAt || '').toLocaleDateString(
+                      'vi-VN',
+                      {
                         year: 'numeric',
                         month: '2-digit',
                         day: '2-digit',
-                        })}
-                    </td>
-                    <td className="px-4 py-2 space-x-2">
+                      },
+                    )}
+                  </td>
+                  <td className="px-4 py-2 space-x-2">
                     <button
                       className="relative group text-green-600 hover:underline mr-2"
-                      onClick={() => handleRestoreClick(item._id)} 
+                      onClick={() => handleRestoreClick(item._id)}
                     >
                       <FaUndoAlt size={18} />
                       <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 normal-case">
                         Khôi phục
                       </span>
                     </button>
-                    {showConfirm && foodIdToRestore === item._id && (
-                        <ConfirmModal
-                          title="Xác nhận khôi phục"
-                          description={`Bạn có chắc chắn muốn khôi phục "${item?.name || 'món ăn'}"?`}
-                          onConfirm={() => handleConfirmRestore(item._id)}
-                          onCancel={() => {
-                            setShowConfirm(false); 
-                          }}
-                        />
-                      )}
+                    {showConfirm && ingredientIdToRestore === item._id && (
+                      <ConfirmModal
+                        title="Xác nhận khôi phục"
+                        description={`Bạn có chắc chắn muốn khôi phục "${item?.name || 'món ăn'}"?`}
+                        onConfirm={() => handleConfirmRestore(item._id)}
+                        onCancel={() => {
+                          setShowConfirm(false);
+                        }}
+                      />
+                    )}
 
                     <button
                       className="relative group text-red-600 hover:underline"
-                      onClick={() => handlePermanentDeleteClick(item._id)} 
+                      onClick={() => handlePermanentDeleteClick(item._id)}
                     >
                       <FaTrashAlt size={18} />
                       <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 normal-case">
                         Xoá vĩnh viễn
                       </span>
                     </button>
-                    {showConfirm && foodIdToDelete === item._id && (
-                        <ConfirmModal
-                          title="Xác nhận xoá vĩnh viễn"
-                          description={`Bạn có chắc chắn muốn xoá vĩnh viễn "${item?.name || 'món ăn'}"?`}
-                          onConfirm={() =>
-                            handleConfirmPermanentDelete(item._id)
-                          }
-                          onCancel={() => setShowConfirm(false)}
-                        />
-                      )}
+                    {showConfirm && ingredientIdToDelete === item._id && (
+                      <ConfirmModal
+                        title="Xác nhận xoá vĩnh viễn"
+                        description={`Bạn có chắc chắn muốn xoá vĩnh viễn "${item?.name || 'món ăn'}"?`}
+                        onConfirm={() => handleConfirmPermanentDelete(item._id)}
+                        onCancel={() => setShowConfirm(false)}
+                      />
+                    )}
                   </td>
                 </tr>
               ))}
@@ -223,6 +222,12 @@ const TrashIngredientTable: React.FC = () => {
             />
           )}
         </div>
+      )}
+
+      {ingredientList.length === 0 && !loading && (
+        <p className="text-gray-500 mt-4">
+          Không có nguyên liệu nào bị xoá trong thùng rác.
+        </p>
       )}
     </div>
   );
