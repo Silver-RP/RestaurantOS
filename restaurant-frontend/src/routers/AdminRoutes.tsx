@@ -6,6 +6,8 @@ import FoodList from "../components/pages/admin/food/index";
 import DashboardPage from "@components/pages/admin/Dashborad";
 import AdminLayout from "../layouts/AdminLayout";
 import { AdminSidebarProvider } from "../contexts/AdminSidebarContext";
+import IngredientsList from "../components/pages/admin/ingredients/Index";
+import CreateIngredient from "../components/pages/admin/ingredients/Create";
 
 import FoodCreatePage from "../components/pages/admin/food/Create";
 import FoodEditPage from "../components/pages/admin/food/Edit";
@@ -50,6 +52,13 @@ const adminRoutes = [
       { path: "banners", element: <BannerPage /> },
       { path: "banners/create", element: <CreateBannerPage /> },
       { path: "banners/edit/:id", element: <EditBannerPage /> },
+      { path: "ingredients", element: <IngredientsList /> },
+      { path: "ingredients/create", element: <CreateIngredient /> },
+      { path: "ingredients/edit/:id", element: <CreateIngredient /> },
+      { path: "ingredients/trash", element: <CreateIngredient /> },
+      
+
+
       { path: "*", element: <Navigate to="/admin" /> },
     ],
   },

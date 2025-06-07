@@ -4,6 +4,7 @@ import mongoosePaginate from 'mongoose-paginate-v2';
 export interface IIngredient extends Document {
   name: string;
   unit: string;
+  slug?: string;
   price_per_unit: number;
   isDeleted: boolean;
   deletedAt: Date | null;
@@ -12,6 +13,7 @@ export interface IIngredient extends Document {
 const ingredientSchema = new mongoose.Schema({
   name: { type: String, required: true, unique: true },
   unit: { type: String, required: true },
+  slug: { type: String, unique: true, sparse: true },
   price_per_unit: { type: Number, required: true, min: 0 },
   isDeleted: { type: Boolean, default: false },
   deletedAt: { type: Date, default: null },

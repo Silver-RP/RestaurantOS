@@ -1,6 +1,6 @@
 import Ingredient, { IIngredient } from "../models/IngredientModel";
-import { ingredientSchema } from '../validators/ingredient';
-import { IngredientInput } from '../validators/ingredient';
+import { ingredientSchema } from '../validators/ingredientValidator';
+import { IngredientInput } from '../validators/ingredientValidator';
 import { PaginateResult } from 'mongoose';
 
 class IngredientService {
@@ -12,54 +12,62 @@ class IngredientService {
         page?: number;
         limit?: number;
         search?: string;
-        sortField?: string;
-        sortOrder?: 'asc' | 'desc';
+        sort?: string;
         isDeleted?: boolean;
     }): Promise<PaginateResult<IIngredient>> {
         try {
             const {
                 page = 1,
-                limit = 10,
+                limit = 12,
                 search = '',
-                sortField = 'name',
-                sortOrder = 'asc',
+                sort = '',
                 isDeleted = false,
+                unit,
+                minPrice,
+                maxPrice,
             } = params;
 
             const query: any = { isDeleted };
+
             if (search) {
                 query.name = { $regex: search, $options: 'i' };
             }
 
-            const sort: any = {};
-            sort[sortField] = sortOrder === 'asc' ? 1 : -1;
+            if (unit) {
+                query.unit = unit;
+            }
 
-            if (params.unit) {
-                query.unit = params.unit; 
-              }
-              
-              if (params.minPrice !== undefined || params.maxPrice !== undefined) {
+            if (minPrice !== undefined || maxPrice !== undefined) {
                 query.price_per_unit = {};
-                if (params.minPrice !== undefined) {
-                  query.price_per_unit.$gte = params.minPrice;
+                if (minPrice !== undefined) {
+                    query.price_per_unit.$gte = minPrice;
                 }
-                if (params.maxPrice !== undefined) {
-                  query.price_per_unit.$lte = params.maxPrice;
+                if (maxPrice !== undefined) {
+                    query.price_per_unit.$lte = maxPrice;
                 }
-              }
-              
+            }
 
-            const options = {
-                page,
-                limit,
-                sort,
+            const sortMapping: Record<string, Record<string, 1 | -1>> = {
+                nameAZ: { name: 1 },
+                nameZA: { name: -1 },
+                unitAZ: { unit: 1 },
+                unitZA: { unit: -1 },
+                priceLow: { price_per_unit: 1 },
+                priceHigh: { price_per_unit: -1 },
             };
 
-            const result = await Ingredient.paginate(query, options);
+            const sortOption = sortMapping[sort] || { createdAt: -1 };
+
+            const result = await Ingredient.paginate(query, {
+                page,
+                limit,
+                sort: sortOption,
+            });
+
             return result;
         } catch (error) {
-            console.error("Error fetching ingredients with filters:", error);
-            throw new Error("Failed to fetch ingredients");
+            console.error('Error fetching ingredients with filters:', error);
+            throw new Error('Failed to fetch ingredients');
         }
     }
 
