@@ -1,16 +1,21 @@
-import { useFoodsTrashLogic } from '../../../../hooks/useFoodsAdminLogic';
+import { useIngredientsTrashLogic } from '../../../../hooks/useIngredientsAdminLogic';
 import React from 'react';
+import { ingredientUnits } from './ingredientUnits';
 import AdminPagination from '../AdminPagination';
-import { FaSort, FaArrowUp, FaArrowDown, FaSearch } from 'react-icons/fa';
-import { FaUndoAlt } from 'react-icons/fa';
-import { FaTrashAlt } from 'react-icons/fa';
+import {
+  FaSort,
+  FaArrowUp,
+  FaArrowDown,
+  FaSearch,
+  FaTrashAlt,
+  FaUndoAlt,
+} from 'react-icons/fa';
 import { BiUndo } from 'react-icons/bi';
 import ConfirmModal from '@/components/common/ConfirmModal';
 
-
-const TrashTable: React.FC = () => {
+const TrashIngredientTable: React.FC = () => {
   const {
-    foods,
+    ingredients,
     loading,
     error,
     searchParams,
@@ -19,21 +24,21 @@ const TrashTable: React.FC = () => {
     search,
     setSearch,
     navigate,
-    foodList,
+    ingredientList,
     handleSort,
     handleEnter,
     handleClick,
     getSortIcon,
-    foodIdToRestore,
-    foodIdToDelete,
     showConfirm,
     setShowConfirm,
+    ingredientIdToRestore,
+    ingredientIdToDelete,
     handleRestoreClick,
     handleConfirmRestore,
     handlePermanentDeleteClick,
     handleConfirmPermanentDelete,
-  } = useFoodsTrashLogic();
-  
+  } = useIngredientsTrashLogic();
+
   const renderSortIcon = (field: typeof sortField) => {
     const iconType = getSortIcon(field);
     if (iconType === 'asc') return <FaArrowUp />;
@@ -64,9 +69,10 @@ const TrashTable: React.FC = () => {
             </button>
           </div>
         </div>
+
         <div className="flex gap-4 items-center">
           <button
-            onClick={() => navigate('/admin/foods')}
+            onClick={() => navigate('/admin/ingredients')}
             className="flex px-4 py-2 gap-2 border bg-gray-100 border-gray-300 text-gray-700 rounded hover:bg-gray-200"
           >
             <BiUndo size={18} />
@@ -74,9 +80,10 @@ const TrashTable: React.FC = () => {
           </button>
         </div>
       </div>
+
       <div className="text-sm text-gray-700">
-        Hiển thị <strong>{foodList.length}</strong> trên tổng{' '}
-        <strong>{foods?.totalDocs || 0}</strong> món
+        Hiển thị <strong>{ingredientList.length}</strong> trên tổng{' '}
+        <strong>{ingredients?.totalDocs || 0}</strong> món
       </div>
 
       {loading ? (
@@ -89,14 +96,21 @@ const TrashTable: React.FC = () => {
             <thead>
               <tr className="bg-gray-100 text-left">
                 <th className="px-4 py-2">No.</th>
-                <th className="px-4 py-2">Hình</th>
-
                 <th
                   className="px-4 py-2 cursor-pointer whitespace-nowrap"
                   onClick={() => handleSort('name')}
                 >
                   <span className="flex items-center gap-1">
-                    Tên món {renderSortIcon('name')}
+                    Tên nguyên liệu {renderSortIcon('name')}
+                  </span>
+                </th>
+
+                <th
+                  className="px-4 py-2 cursor-pointer whitespace-nowrap"
+                  onClick={() => handleSort('unit')}
+                >
+                  <span className="flex items-center gap-1">
+                    Đơn vị {renderSortIcon('unit')}
                   </span>
                 </th>
 
@@ -105,16 +119,7 @@ const TrashTable: React.FC = () => {
                   onClick={() => handleSort('price')}
                 >
                   <span className="flex items-center gap-1">
-                    Giá (đ) {renderSortIcon('price')}
-                  </span>
-                </th>
-
-                <th
-                  className="px-4 py-2 cursor-pointer whitespace-nowrap"
-                  onClick={() => handleSort('category')}
-                >
-                  <span className="flex items-center gap-1">
-                    Danh mục {renderSortIcon('category')}
+                    Giá trên đơn vị (đ) {renderSortIcon('price')}
                   </span>
                 </th>
 
@@ -127,106 +132,79 @@ const TrashTable: React.FC = () => {
                   </span>
                 </th>
 
-                <th
-                  className="px-4 py-2 cursor-pointer whitespace-nowrap"
-                  onClick={() => handleSort('status')}
-                >
-                  <span className="flex items-center gap-1">
-                    Trạng thái {renderSortIcon('status')}
-                  </span>
-                </th>
-
                 <th className="px-4 py-2 ">Hành động</th>
               </tr>
             </thead>
             <tbody>
-              {foodList.map((item, index) => (
+              {ingredientList.map((item, index) => (
                 <tr key={index} className="border-b hover:bg-gray-50">
                   <td className="px-4 py-2">{index + 1}</td>
-                  <td className="px-4 py-2">
-                    <img
-                      src={item.images[0]}
-                      alt={item.name}
-                      className="w-12 h-12 object-cover rounded"
-                    />
-                  </td>
                   <td className="px-4 py-2 font-medium">{item.name}</td>
-                  <td className="px-4 py-2">{item.price.toLocaleString()}</td>
                   <td className="px-4 py-2">
-                    {item.categories?.[0]?.Cate_name ?? '—'}
-                  </td>
-                  <td>
-                    {item.deletedAt
-                      ? new Date(item.deletedAt).toLocaleDateString()
-                      : '—'}
+                    {ingredientUnits.find((cat) => cat.value === item.unit)
+                      ?.label || item.unit}
                   </td>
 
                   <td className="px-4 py-2">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                        item.status === 'available'
-                          ? 'bg-green-100 text-green-800'
-                          : item.status === 'soldout'
-                            ? 'bg-red-100 text-red-800'
-                            : 'bg-gray-100 text-gray-800'
-                      }`}
-                    >
-                      {item.status === 'available'
-                        ? 'còn hàng'
-                        : item.status === 'soldout'
-                          ? 'hết hàng'
-                          : 'đã ẩn'}
-                    </span>
+                    {item.price_per_unit.toLocaleString()}
+                  </td>
+                  <td className="px-4 py-2">
+                    {new Date(item.deletedAt || '').toLocaleDateString(
+                      'vi-VN',
+                      {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                      },
+                    )}
                   </td>
                   <td className="px-4 py-2 space-x-2">
                     <button
                       className="relative group text-green-600 hover:underline mr-2"
-                      onClick={() => handleRestoreClick(item._id)} 
+                      onClick={() => handleRestoreClick(item._id)}
                     >
                       <FaUndoAlt size={18} />
                       <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 normal-case">
                         Khôi phục
                       </span>
                     </button>
-                    {showConfirm && foodIdToRestore === item._id && (
-                        <ConfirmModal
-                          title="Xác nhận khôi phục"
-                          description={`Bạn có chắc chắn muốn khôi phục "${item?.name || 'món ăn'}"?`}
-                          onConfirm={() => handleConfirmRestore(item._id)}
-                          onCancel={() => {
-                            setShowConfirm(false); 
-                          }}
-                        />
-                      )}
+                    {showConfirm && ingredientIdToRestore === item._id && (
+                      <ConfirmModal
+                        title="Xác nhận khôi phục"
+                        description={`Bạn có chắc chắn muốn khôi phục "${item?.name || 'món ăn'}"?`}
+                        onConfirm={() => handleConfirmRestore(item._id)}
+                        onCancel={() => {
+                          setShowConfirm(false);
+                        }}
+                      />
+                    )}
 
                     <button
                       className="relative group text-red-600 hover:underline"
-                      onClick={() => handlePermanentDeleteClick(item._id)} 
+                      onClick={() => handlePermanentDeleteClick(item._id)}
                     >
                       <FaTrashAlt size={18} />
                       <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 normal-case">
                         Xoá vĩnh viễn
                       </span>
                     </button>
-                    {showConfirm && foodIdToDelete === item._id && (
-                        <ConfirmModal
-                          title="Xác nhận xoá vĩnh viễn"
-                          description={`Bạn có chắc chắn muốn xoá vĩnh viễn "${item?.name || 'món ăn'}"?`}
-                          onConfirm={() =>
-                            handleConfirmPermanentDelete(item._id)
-                          }
-                          onCancel={() => setShowConfirm(false)}
-                        />
-                      )}
+                    {showConfirm && ingredientIdToDelete === item._id && (
+                      <ConfirmModal
+                        title="Xác nhận xoá vĩnh viễn"
+                        description={`Bạn có chắc chắn muốn xoá vĩnh viễn "${item?.name || 'món ăn'}"?`}
+                        onConfirm={() => handleConfirmPermanentDelete(item._id)}
+                        onCancel={() => setShowConfirm(false)}
+                      />
+                    )}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-          {foods && (
+          {ingredients && (
             <AdminPagination
-              currentPage={foods.page}
-              totalPages={foods.totalPages}
+              currentPage={ingredients.page}
+              totalPages={ingredients.totalPages}
               onPageChange={(page) => {
                 const newParams = new URLSearchParams(searchParams.toString());
                 newParams.set('page', String(page));
@@ -246,11 +224,13 @@ const TrashTable: React.FC = () => {
         </div>
       )}
 
-      {foodList.length === 0 && !loading && (
-        <p className="text-center text-gray-500">Không có món nào bị xoá trong thùng rác.</p>
+      {ingredientList.length === 0 && !loading && (
+        <p className="text-gray-500 mt-4">
+          Không có nguyên liệu nào bị xoá trong thùng rác.
+        </p>
       )}
     </div>
   );
 };
 
-export default TrashTable;
+export default TrashIngredientTable;

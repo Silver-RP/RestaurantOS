@@ -523,7 +523,7 @@ class OrderService {
     filters: any;
   }) {
     try {
-      const { page, limit, sortBy, sortOrder, filters } = options;
+    const { page, limit, sortBy, sortOrder, filters } = options;
 
       const searchOptions = {
         page,
@@ -555,7 +555,7 @@ class OrderService {
 
       const result = await SearchService.search(Order, searchOptions);
 
-      return {
+    return {
         orders: result.items,
         total: result.total,
         currentPage: result.currentPage,
@@ -597,7 +597,7 @@ class OrderService {
       })
         .populate({
           path: 'dish_id',
-          select: 'name images categories',
+          select: 'name images categories slug',
           populate: {
             path: 'categories',
             model: 'categories',
@@ -627,6 +627,7 @@ class OrderService {
             dish_id: dish?._id,
             dish_name: dish?.name,
             dish_images: dish?.images || [],
+            dish_slug: dish?.slug || '',
             categories: categoryNames,
           };
         });
@@ -759,7 +760,7 @@ class OrderService {
         | 'RETURN_APPROVED'
         | 'RETURN_REJECTED'
         | 'RETURNED'
-        | 'CANCELLED';      
+        | 'CANCELLED';
       if (status === Status.DELIVERED) {
         if (order.payment_status !== 'PAID') {
           throw {

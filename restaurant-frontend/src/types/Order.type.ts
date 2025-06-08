@@ -64,6 +64,7 @@ export interface OrderItem {
   unit_price: number;
   quantity: number;
   total_amount: number;
+  dish_slug: string;
   note?: string | null;
   createdAt: string;
   updatedAt: string;
