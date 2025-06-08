@@ -72,7 +72,6 @@ export const fetchFoodByFavorite = async (
         params: { type },
       },
     );
-    console.log(res.data.data)
     return res.data.data;
   } catch (error) {
     console.error('Error fetching food by favorite:', error);
