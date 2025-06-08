@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 import {
-  c,
   DialogTitle,
   DialogContent,
   DialogActions,
@@ -9,6 +9,7 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Dialog,
 } from '@mui/material';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
@@ -16,8 +17,10 @@ import { useOrderDetail, useUpdateOrderStatus } from '@/hooks/useOrder';
 import { toast } from 'react-toastify';
 import PaymentInfo from './PaymentInfo';
 import { Order } from '@/types/Order.type';
-import { getStatusText, getStatusColor } from '@/components/pages/admin/order/OrderCommon';
-
+import {
+  getStatusText,
+  getStatusColor,
+} from '@/components/pages/admin/order/OrderCommon';
 
 const STATUS_TRANSITIONS: { [key: string]: string[] } = {
   ORDER_PLACED: ['ORDER_CONFIRMED'],
@@ -34,32 +37,31 @@ const STATUS_TRANSITIONS: { [key: string]: string[] } = {
   CANCELLED: [],
 };
 
-
 const DELIVERY_STATUS_LABELS: { [key: string]: string } = {
-  'ORDER_CONFIRMED': 'Xác nhận đơn hàng',
-  'PENDING_PICKUP': 'Chờ nhận hàng',
-  'PICKED_UP': 'Đã nhận hàng',
-  'IN_TRANSIT': 'Đang giao',
-  'DELIVERED': 'Giao hàng thành công',
-  'DELIVERY_FAILED': 'Giao hàng thất bại',
-  'RETURN_REQUESTED': 'Yêu cầu trả hàng',
-  'RETURN_APPROVED': 'Xác nhận trả hàng',
-  'RETURN_REJECTED': 'Từ chối trả hàng',
-  'RETURNED': 'Trả hàng thành công',
-  'CANCELLED': 'Đã hủy',
+  ORDER_CONFIRMED: 'Xác nhận đơn hàng',
+  PENDING_PICKUP: 'Chờ nhận hàng',
+  PICKED_UP: 'Đã nhận hàng',
+  IN_TRANSIT: 'Đang giao',
+  DELIVERED: 'Giao hàng thành công',
+  DELIVERY_FAILED: 'Giao hàng thất bại',
+  RETURN_REQUESTED: 'Yêu cầu trả hàng',
+  RETURN_APPROVED: 'Xác nhận trả hàng',
+  RETURN_REJECTED: 'Từ chối trả hàng',
+  RETURNED: 'Trả hàng thành công',
+  CANCELLED: 'Đã hủy',
 };
 
 const PICKUP_STATUS_LABELS: { [key: string]: string } = {
-  'ORDER_CONFIRMED': 'Xác nhận đơn hàng',
-  'PENDING_PICKUP': 'Chuẩn bị đơn hàng',
-  'IN_TRANSIT': 'Đã chuẩn bị xong đơn hàng',
-  'DELIVERED': 'Người nhận đã lấy hàng',
-  'DELIVERY_FAILED': 'Người nhận không lấy hàng',
-  'RETURN_REQUESTED': 'Yêu cầu trả hàng',
-  'RETURN_APPROVED': 'Xác nhận trả hàng',
-  'RETURN_REJECTED': 'Từ chối trả hàng',
-  'RETURNED': 'Trả hàng thành công',
-  'CANCELLED': 'Đã hủy',
+  ORDER_CONFIRMED: 'Xác nhận đơn hàng',
+  PENDING_PICKUP: 'Chuẩn bị đơn hàng',
+  IN_TRANSIT: 'Đã chuẩn bị xong đơn hàng',
+  DELIVERED: 'Người nhận đã lấy hàng',
+  DELIVERY_FAILED: 'Người nhận không lấy hàng',
+  RETURN_REQUESTED: 'Yêu cầu trả hàng',
+  RETURN_APPROVED: 'Xác nhận trả hàng',
+  RETURN_REJECTED: 'Từ chối trả hàng',
+  RETURNED: 'Trả hàng thành công',
+  CANCELLED: 'Đã hủy',
 };
 
 interface OrderDetailProps {
@@ -76,7 +78,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
   const { data: orderDetail, isLoading } = useOrderDetail(orderId);
   const updateStatusMutation = useUpdateOrderStatus();
   const [newStatus, setNewStatus] = useState('');
-  const [orderPayment, setOrderPayment] = useState<Order | null>(null);
+  const [, setOrderPayment] = useState<Order | null>(null);
 
   function handlePaymentConfirmed(updatedOrder: Order) {
     setOrderPayment(updatedOrder);
@@ -87,7 +89,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
       return format(new Date(dateString), 'HH:mm - dd/MM/yyyy', {
         locale: vi,
       });
-    } catch (error) {
+    } catch {
       return 'N/A';
     }
   };
@@ -95,8 +97,6 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
   const formatPrice = (price: number) => {
     return price.toLocaleString('vi-VN') + '₫';
   };
-
-
 
   const handleUpdateStatus = async () => {
     if (!newStatus) {
@@ -114,7 +114,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
           },
         },
       );
-    } catch (error) {
+    } catch {
       // Error toast is handled in useUpdateOrderStatus
     }
   };
@@ -332,7 +332,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
                   </p>
                 </div>
               )}
-              {(order.status === 'CANCELLED' ) && (
+              {order.status === 'CANCELLED' && (
                 <div className="mt-2">
                   <p className="text-gray-600">Lí do hủy đơn:</p>
                   <p className="text-base font-medium text-red-600">
