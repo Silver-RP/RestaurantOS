@@ -7,6 +7,7 @@ import { buildQuery } from '../utils/queryBuilder';
 import { getSortQuery } from '../utils/sorting';
 import UploadService from './UploadImageService';
 import { OrderDetail } from '../models/OrderDetailModel';
+import DishIngredient from '../models/DishIngredientModel';
 
 class FoodService {
   async createFoodWithImages(foodData: any, files: Express.Multer.File[]) {
@@ -478,6 +479,59 @@ class FoodService {
     } catch (error: any) {
       console.error('Lỗi xoá món ăn vĩnh viễn:', error);
       throw new Error(error.message || 'Lỗi khi xoá món ăn vĩnh viễn');
+    }
+  }
+
+  async getDishIngredients(dishId: string) {
+    try {
+      const ingredients = await DishIngredient.find({ dish: dishId })
+        .populate('ingredient') 
+        .lean();
+      return ingredients;
+    } catch (error) {
+      console.error('Error getting dish ingredients:', error);
+      throw new Error('Error getting dish ingredients');
+    }
+  }
+  
+  async addDishIngredient(dishId: string, ingredientId: string, quantity: number, unit: string) {
+    try {
+      const newItem = await DishIngredient.create({
+        dish: new mongoose.Types.ObjectId(dishId),
+        ingredient: new mongoose.Types.ObjectId(ingredientId),
+        quantity,
+        unit,
+      });
+      return newItem;
+    } catch (error) {
+      console.error('Error adding dish ingredient:', error);
+      throw new Error('Error adding dish ingredient');
+    }
+  }
+  
+  async updateDishIngredient(dishId: string, id: string, quantity: number, unit: string) {
+    try {
+      const updated = await DishIngredient.findOneAndUpdate(
+        { _id: id, dish: dishId },
+        { quantity, unit },
+        { new: true }
+      ).populate('ingredient');
+      if (!updated) throw new Error('DishIngredient not found');
+      return updated;
+    } catch (error) {
+      console.error('Error updating dish ingredient:', error);
+      throw new Error('Error updating dish ingredient');
+    }
+  }
+  
+  async deleteDishIngredient(dishId: string, id: string) {
+    try {
+      const deleted = await DishIngredient.findOneAndDelete({ _id: id, dish: dishId });
+      if (!deleted) throw new Error('DishIngredient not found');
+      return deleted;
+    } catch (error) {
+      console.error('Error deleting dish ingredient:', error);
+      throw new Error('Error deleting dish ingredient');
     }
   }
 

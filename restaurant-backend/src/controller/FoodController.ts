@@ -381,6 +381,70 @@ class FoodController {
     }
   }
 
+  async getDishIngredients (req: Request, res: Response): Promise<any> {
+    try {
+      const dishId = req.params.dishId;
+      if (!mongoose.Types.ObjectId.isValid(dishId)) {
+        return res.status(400).json({ message: 'Invalid dish ID' });
+      }
+      const ingredients = await FoodService.getDishIngredients(dishId);
+      return res.status(200).json({ data: ingredients });
+    } catch (error) {
+      console.error('Error getting dish ingredients:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
+  async addDishIngredient(req: Request, res: Response): Promise<any> {
+    try {
+      const dishId = req.params.dishId;
+      if (!mongoose.Types.ObjectId.isValid(dishId)) {
+        return res.status(400).json({ message: 'Invalid dish ID' });
+      }
+      const { ingredientId, quantity, unit } = req.body;
+      if (!ingredientId || !quantity || !unit) {
+        return res.status(400).json({ message: 'Missing required fields' });
+      }
+      const newIngredient = await FoodService.addDishIngredient(dishId, ingredientId, quantity, unit);
+      return res.status(201).json({ data: newIngredient });
+    } catch (error) {
+      console.error('Error adding dish ingredient:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
+  async updateDishIngredient (req: Request, res: Response): Promise<any> {
+    try {
+      const { dishId, id } = req.params;
+      if (!mongoose.Types.ObjectId.isValid(dishId) || !mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ message: 'Invalid dish or ingredient ID' });
+      }
+      const { quantity, unit } = req.body;
+      if (quantity === undefined || unit === undefined) {
+        return res.status(400).json({ message: 'Missing required fields' });
+      }
+      const updatedIngredient = await FoodService.updateDishIngredient(dishId, id, quantity, unit);
+      return res.status(200).json({ data: updatedIngredient });
+    } catch (error) {
+      console.error('Error updating dish ingredient:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
+  async deleteDishIngredient(req: Request, res: Response): Promise<any> {
+    try {
+      const { dishId, id } = req.params;
+      if (!mongoose.Types.ObjectId.isValid(dishId) || !mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ message: 'Invalid dish or ingredient ID' });
+      }
+      const deletedIngredient = await FoodService.deleteDishIngredient(dishId, id);
+      return res.status(200).json({ data: deletedIngredient });
+    } catch (error) {
+      console.error('Error deleting dish ingredient:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
   
 }
 export default new FoodController();
