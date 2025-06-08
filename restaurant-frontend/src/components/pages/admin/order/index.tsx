@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
@@ -14,9 +15,11 @@ import OrderDetail from './OrderDetail';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { AllOrder } from '@/types/Order.type';
-import { toast } from 'react-toastify';
 import { ToastConfigAdmin } from '@/components/common/ToastConfig';
-import { getStatusText, getStatusColor } from '@/components/pages/admin/order/OrderCommon';
+import {
+  getStatusText,
+  getStatusColor,
+} from '@/components/pages/admin/order/OrderCommon';
 
 const OrderTable: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -33,7 +36,9 @@ const OrderTable: React.FC = () => {
     limit: Number(searchParams.get('limit')) || 10,
     sortBy: searchParams.get('sortBy') || 'createdAt',
     sortOrder: (searchParams.get('sortOrder') as 'asc' | 'desc') || 'desc',
-    filters: Object.fromEntries(searchParams.entries()),
+    filters: Object.fromEntries(
+      searchParams as any as Iterable<[string, string]>,
+    ),
   });
 
   const handleEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -80,7 +85,6 @@ const OrderTable: React.FC = () => {
     return <FaSort />;
   };
 
-
   const getPaymentMethodText = (method: string) => {
     switch (method) {
       case 'CASH':
@@ -107,16 +111,16 @@ const OrderTable: React.FC = () => {
     }
   };
 
-  const getOrderTypeText = (type: string) => {
-    switch (type) {
-      case 'ONLINE':
-        return 'Online';
-      case 'OFFLINE':
-        return 'Tại cửa hàng';
-      default:
-        return type;
-    }
-  };
+  // const getOrderTypeText = (type: string) => {
+  //   switch (type) {
+  //     case 'ONLINE':
+  //       return 'Online';
+  //     case 'OFFLINE':
+  //       return 'Tại cửa hàng';
+  //     default:
+  //       return type;
+  //   }
+  // };
 
   const getCustomerName = (order: AllOrder) => {
     if (order.address_id?.full_name) {
@@ -148,7 +152,7 @@ const OrderTable: React.FC = () => {
       return format(new Date(dateString), 'HH:mm - dd/MM/yyyy', {
         locale: vi,
       });
-    } catch (error) {
+    } catch {
       return 'N/A';
     }
   };
@@ -197,7 +201,9 @@ const OrderTable: React.FC = () => {
       {showFilterPanel && (
         <OrderFilterPanel
           key={searchParams.toString()}
-          initialFilters={Object.fromEntries(searchParams.entries())}
+          initialFilters={Object.fromEntries(
+            searchParams as any as Iterable<[string, string]>,
+          )}
           searchParams={searchParams}
           setSearchParams={setSearchParams}
           onApply={(filters) => {
@@ -218,7 +224,7 @@ const OrderTable: React.FC = () => {
 
       <div className="text-sm text-gray-700 mb-4">
         Hiển thị <strong>{orders?.orders?.length || 0}</strong> trên tổng{' '}
-        <strong>{orders?.total || 0}</strong> đơn hàng
+        <strong>{orders?.orders?.length || 0}</strong>
       </div>
 
       {isLoading ? (
@@ -245,7 +251,7 @@ const OrderTable: React.FC = () => {
           <table className="min-w-[1200px] w-full bg-white text-sm text-gray-700">
             <thead>
               <tr className="bg-gray-100 text-left">
-              <th className="px-4 py-2">No.</th>
+                <th className="px-4 py-2">No.</th>
                 {/* <th className="px-4 py-2">Mã Đơn Hàng</th> */}
                 <th className="px-4 py-2">Tên khách hàng</th>
                 <th className="px-4 py-2">SĐT</th>
@@ -297,7 +303,7 @@ const OrderTable: React.FC = () => {
                 (order: AllOrder, index: number) => (
                   <tr key={order._id} className="border-b hover:bg-gray-50">
                     <td className="px-4 py-2 text-center">
-                     {index + 1 + (orders.currentPage - 1) }
+                      {index + 1 + (orders.currentPage - 1)}
                     </td>
                     {/* <td className="px-4 py-2">
                       {order._id.slice(-6).toUpperCase()}
@@ -315,7 +321,10 @@ const OrderTable: React.FC = () => {
                           order.status,
                         )}`}
                       >
-                        {getStatusText(order.status, order.delivery_type as 'DELIVERY' | 'PICKUP')}
+                        {getStatusText(
+                          order.status,
+                          order.delivery_type as 'DELIVERY' | 'PICKUP',
+                        )}
                       </span>
                     </td>
                     <td className="px-4 py-2 font-medium">
@@ -376,9 +385,8 @@ const OrderTable: React.FC = () => {
               return newParams;
             });
           }}
-
         />
-          )}
+      )}
 
       {selectedOrderId && (
         <OrderDetail

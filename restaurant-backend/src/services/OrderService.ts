@@ -5,8 +5,7 @@ import { Order, IOrder } from '../models/OrderModel';
 import { OrderDetail } from '../models/OrderDetailModel';
 import Cart from '../models/CartModel';
 import { Dish } from '../models/DishModel';
-import Payment  from '../models/PaymentModel';
-import UserModel, { IUser } from '../models/UserModel';
+import Payment from '../models/PaymentModel';
 import SearchService from './SearchService';
 import { createVNPayPaymentUrl } from '../services/payments/VnPayService';
 import { createMomoPaymentUrl } from '../services/payments/MomoService';
@@ -173,10 +172,14 @@ class OrderService {
     );
   }
 
-  private generateTransactionCode( paymentMethod: string, paymentId: string | number, date: Date = new Date()): string {
+  private generateTransactionCode(
+    paymentMethod: string,
+    paymentId: string | number,
+    date: Date = new Date(),
+  ): string {
     const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '');
     const shortId = paymentId.toString().slice(-6);
-  
+
     const prefixMap: Record<string, string> = {
       banking: 'BANKING',
       momo: 'MOMO',
@@ -185,9 +188,9 @@ class OrderService {
       credit_card: 'PAYPAL',
       cash: 'CASH',
     };
-  
+
     const prefix = prefixMap[paymentMethod.toLowerCase()] || 'PAY';
-  
+
     return `${prefix}-${dateStr}-${shortId}`;
   }
 
@@ -209,11 +212,10 @@ class OrderService {
 
     const paymentTransactionId = newPayment._id.toString();
     const transactionCode = this.generateTransactionCode(payment_method, paymentTransactionId);
-  
+
     await Payment.findByIdAndUpdate(paymentTransactionId, {
       transaction_code: transactionCode,
     });
-  
 
     if (payment_method === 'BANKING') {
       const bank_name = 'Vietcombank';
@@ -523,7 +525,7 @@ class OrderService {
     filters: any;
   }) {
     try {
-    const { page, limit, sortBy, sortOrder, filters } = options;
+      const { page, limit, sortBy, sortOrder, filters } = options;
 
       const searchOptions = {
         page,
@@ -555,7 +557,7 @@ class OrderService {
 
       const result = await SearchService.search(Order, searchOptions);
 
-    return {
+      return {
         orders: result.items,
         total: result.total,
         currentPage: result.currentPage,
@@ -673,7 +675,7 @@ class OrderService {
           type: payment.payment_method,
           orderTotal: order.total_price,
         };
-      }else{
+      } else {
         postPayment = {
           paymentId: payment?._id,
           type: payment?.payment_method,
@@ -734,7 +736,7 @@ class OrderService {
         [Status.DELIVERY_FAILED]: [Status.PENDING_PICKUP, Status.CANCELLED],
         [Status.RETURN_REQUESTED]: [Status.RETURN_APPROVED, Status.RETURN_REJECTED],
         [Status.RETURN_APPROVED]: [Status.RETURNED],
-        [Status.RETURN_REJECTED]: [], 
+        [Status.RETURN_REJECTED]: [],
         [Status.RETURNED]: [],
         [Status.CANCELLED]: [],
       };
@@ -765,7 +767,8 @@ class OrderService {
         if (order.payment_status !== 'PAID') {
           throw {
             statusCode: 400,
-            message: 'Không thể chuyển sang trạng thái " ĐÃ GIAO HÀNG " khi đơn hàng chưa thanh toán',
+            message:
+              'Không thể chuyển sang trạng thái " ĐÃ GIAO HÀNG " khi đơn hàng chưa thanh toán',
           };
         }
         order.delivered_at = new Date();
@@ -847,7 +850,7 @@ class OrderService {
         };
       }
 
-      order.status = 'CANCELLED'; 
+      order.status = 'CANCELLED';
       order.cancelled_at = new Date();
       order.cancelled_reason = reason;
 
@@ -942,43 +945,39 @@ class OrderService {
       .populate('user_id', 'email name')
       .populate('address_id')
       .lean();
-  
+
     if (!order) throw new Error('Order not found');
-  
+
     const items = await OrderDetail.find({ order_id: orderId }).lean();
-  
+
     const user = order.user_id as unknown as IUser;
     const receiver = order.address_id as unknown as IAddress;
-  
+
     await MailerService.sendOrderConfirmation({
       ...(order as any),
       user,
       receiverInfo: receiver,
       items: items as any,
     });
-    
   }
 
   async sendOrderPaymentSuccessEmail(paymentId: Types.ObjectId) {
     const payment = await Payment.findById(paymentId).populate('orderId').lean();
     if (!payment) throw new Error('Payment not found');
     if (!payment.orderId) throw new Error('Order not found in payment');
-  
+
     const order = await Order.findById(payment.orderId).lean();
     if (!order || !order.user_id) throw new Error('Order or user not found');
 
     const user = await User.findById(order.user_id).lean();
     if (!user || !user.email) throw new Error('User or email not found');
-  
+
     await MailerService.sendOrderPaymentSuccess({
       payment,
       order,
       userEmail: user.email,
     });
   }
-  
-  
-  
 }
 
 export default new OrderService();
