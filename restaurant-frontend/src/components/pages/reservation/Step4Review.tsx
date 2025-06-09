@@ -10,12 +10,17 @@ interface Step4ReviewProps {
   onBack: () => void;
   onNext: () => void;
 }
-const Step4Review: React.FC<Step4ReviewProps> = ({ formData, onNext, onBack }) => {
+const Step4Review: React.FC<Step4ReviewProps> = ({
+  formData,
+  onNext,
+  onBack,
+}) => {
   const { createReservation } = useReservations();
   const handleConfirmReservation = async () => {
     try {
       const reservationPayload = {
         full_name: formData.full_name,
+        email: formData.email,
         phone: formData.phone,
         date: formData.date,
         time: formData.time,
@@ -32,7 +37,7 @@ const Step4Review: React.FC<Step4ReviewProps> = ({ formData, onNext, onBack }) =
           note: item.note,
         })),
       };
-  
+
       await createReservation(reservationPayload);
       localStorage.removeItem('reservation-data');
       onNext();
