@@ -31,12 +31,13 @@ const FoodIngredientsModal: React.FC<FoodIngredientsModalProps> = ({
     dishData,
     handleDeleteNewIngredient,
     showInputRows,
+    handleSave,
     setShowInputRows,
     hasIngredients,
     newIngredients,
     ingredientOptions,
     handleNewIngredientChange,
-  } = useDishIngredient(dishId);
+  } = useDishIngredient(dishId, onClose);
 
   if (isLoading) {
     return (
@@ -52,17 +53,19 @@ const FoodIngredientsModal: React.FC<FoodIngredientsModalProps> = ({
   }
 
   const renderIngredientRows = (ingredients: any[]) => {
+    if (!Array.isArray(ingredients)) return null;
+
     return ingredients.map((item, index) => (
-      <tr key={item._id} className="border-b">
+      <tr key={item._id || item.ingredientId} className="border-b">
         <td className="py-2">
           <p className="font-medium">{index + 1}</p>
         </td>
-        <td className="text-center">{item.ingredientName}</td>
+        <td className="text-left pl-24">{item.ingredientName}</td>
         <td className="text-center">{item.quantity}</td>
         <td className="text-center">{item.unit}</td>
         <td className="text-center">
           <button
-            className=" gap-2 px-2 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600"
+            className="gap-2 px-2 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600"
             onClick={() => handleDelete(item._id)}
           >
             Xoá
@@ -105,11 +108,29 @@ const FoodIngredientsModal: React.FC<FoodIngredientsModalProps> = ({
               />
             )}
             isOptionEqualToValue={(option, value) => option._id === value._id}
-            renderOption={(props, option) => (
-              <li {...props} key={option._id}>
-                {option.name}
-              </li>
-            )}
+            renderOption={(props, option) => {
+              const isUsed =
+                dataDishIngredients.some(
+                  (item: { ingredientId: string }) =>
+                    item.ingredientId === option._id,
+                ) ||
+                newIngredients.some(
+                  (item, i) => item.ingredientId === option._id && i !== index,
+                );
+
+              return (
+                <li
+                  {...props}
+                  key={option._id}
+                  style={{
+                    opacity: isUsed ? 0.4 : 1,
+                    pointerEvents: isUsed ? 'none' : 'auto',
+                  }}
+                >
+                  {option.name} {isUsed && '(Đã thêm)'}
+                </li>
+              );
+            }}
           />
         </td>
 
@@ -179,42 +200,48 @@ const FoodIngredientsModal: React.FC<FoodIngredientsModalProps> = ({
       <DialogContent>
         <div className="py-4 space-y-6">
           {/* Thông tin món ăn */}
-          <div>
-            <h3 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+            <h3 className="text-2xl font-semibold text-gray-800 mb-6 border-b pb-3 border-gray-200">
               Thông tin món ăn
             </h3>
-            <div className="grid grid-cols-2 gap-4">
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Tên món ăn + ảnh */}
               <div>
-                <p className="text-gray-600">Tên món ăn</p>
-                <p className="font-medium">{dishData.name}</p>
-                <p className="text-gray-600">Ảnh</p>
-                <div className="flex items-center">
+                <p className="text-sm text-gray-500 mb-1">Tên món ăn</p>
+                <p className="text-lg font-semibold text-gray-900 mb-4">
+                  {dishData.name}
+                </p>
+
+                <p className="text-sm text-gray-500 mb-1">Ảnh minh hoạ</p>
+                <div className="flex items-center justify-start">
                   {dishData.image ? (
                     <img
                       src={dishData.image}
                       alt={dishData.name}
-                      className="w-36 h-36 object-cover rounded"
+                      className="w-40 h-40 object-cover rounded-lg border border-gray-200 hover:scale-105 transition-transform"
                     />
                   ) : (
-                    <span className="text-gray-500">Chưa có ảnh</span>
+                    <span className="text-gray-500 italic">Chưa có ảnh</span>
                   )}
                 </div>
               </div>
+
+              {/* Mô tả nguyên liệu */}
               <div>
-                <p className="text-gray-600">Mô tả nguyên liệu</p>
+                <p className="text-sm text-gray-500 mb-1">Mô tả nguyên liệu</p>
                 {dishData.ingredients ? (
-                  <ul className="list-disc list-inside font-medium">
+                  <ul className="list-disc list-inside text-base text-gray-800 font-medium space-y-1">
                     {dishData.ingredients
-                      ?.split(',')
-                      .map(
-                        (
-                          ingredient: string,
-                          index: React.Key | null | undefined,
-                        ) => <li key={index}>{ingredient.trim()}</li>,
-                      )}
+                      .split(',')
+                      .map((ingredient: string, index: React.Key | null | undefined) => (
+                        <li key={index}>{ingredient.trim()}</li>
+                      ))}
                   </ul>
                 ) : (
-                  <p className="font-medium">Chưa có mô tả nguyên liệu</p>
+                  <p className="text-gray-600 italic">
+                    Chưa có mô tả nguyên liệu
+                  </p>
                 )}
               </div>
             </div>
@@ -226,17 +253,18 @@ const FoodIngredientsModal: React.FC<FoodIngredientsModalProps> = ({
               Danh sách nguyên liệu
             </h3>
 
-            {dataDishIngredients.length === 0 && (
-              <p className="text-gray-500 italic mb-5">
-                Món ăn chưa có nguyên liệu.
-              </p>
-            )}
+            {Array.isArray(dataDishIngredients) &&
+              dataDishIngredients.length === 0 && (
+                <p className="text-gray-500 italic mb-5">
+                  Món ăn chưa có nguyên liệu.
+                </p>
+              )}
 
             <table className="w-full">
               <thead>
                 <tr className="border-b">
                   <th className="text-left pb-2">No.</th>
-                  <th className="text-center pb-2">Tên nguyên liệu</th>
+                  <th className="text-left pb-2 pl-24">Tên nguyên liệu</th>
                   <th className="text-center pb-2">Số lượng</th>
                   <th className="text-center pb-2">Đơn vị</th>
                   <th className="text-center pb-2">Hành động</th>
@@ -289,7 +317,7 @@ const FoodIngredientsModal: React.FC<FoodIngredientsModalProps> = ({
                 Huỷ
               </button>
               <button
-                type="submit"
+                onClick={handleSave}
                 className="px-4 py-2 bg-adminprimary text-white rounded hover:bg-blue-700"
               >
                 {hasIngredients ? 'Lưu cập nhật' : 'Thêm nguyên liệu'}

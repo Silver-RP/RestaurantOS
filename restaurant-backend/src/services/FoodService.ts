@@ -502,7 +502,8 @@ class FoodService {
         ingredientName: (item.ingredientId as any).name,
         quantity: item.quantity,
         unit: item.unit,
-      }));
+      }))
+      .sort((a, b) => a.ingredientName.localeCompare(b.ingredientName));
   
       return {
         dish: {
@@ -520,21 +521,40 @@ class FoodService {
     }
   }
   
-  async addDishIngredient(dishId: string, ingredientId: string, quantity: number, unit: string) {
+  async addManyDishIngredients(
+    dishId: string,
+    ingredients: { ingredientId: string; quantity: number; unit: string }[]
+  ) {
     try {
-      const exists = await DishIngredient.findOne({ dish: new mongoose.Types.ObjectId(dishId), ingredient: ingredientId });
-      if (exists) throw new Error('Ingredient already added to dish');
-
-      const newItem = await DishIngredient.create({
-        dish: new mongoose.Types.ObjectId(dishId),
-        ingredient: new mongoose.Types.ObjectId(ingredientId),
-        quantity,
-        unit,
-      });
-      return newItem;
+      const addedIngredients = [];
+  
+      for (const ing of ingredients) {
+        const { ingredientId, quantity, unit } = ing;
+  
+        const exists = await DishIngredient.findOne({
+          dish: new mongoose.Types.ObjectId(dishId),
+          ingredient: new mongoose.Types.ObjectId(ingredientId),
+        });
+  
+        if (exists) {
+          console.log(`Ingredient ${ingredientId} already exists for dish ${dishId}`);
+          continue; // Bỏ qua nếu đã tồn tại
+        }
+  
+        const newItem = await DishIngredient.create({
+          dishId: new mongoose.Types.ObjectId(dishId),
+          ingredientId: new mongoose.Types.ObjectId(ingredientId),
+          quantity,
+          unit,
+        });
+  
+        addedIngredients.push(newItem);
+      }
+  
+      return addedIngredients;
     } catch (error) {
-      console.error('Error adding dish ingredient:', error);
-      throw new Error('Error adding dish ingredient');
+      console.error('Error adding dish ingredients:', error);
+      throw new Error('Error adding dish ingredients');
     }
   }
   

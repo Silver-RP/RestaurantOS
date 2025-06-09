@@ -104,7 +104,6 @@ export const useCRUDFoods = () => {
         dispatch(showOverlayLoading("Đang thêm nguyên liệu..."));
         try {
             const response = await addDishIngredientApi(ingredientData, dishId);
-            toast.success('Thêm nguyên liệu thành công');
             return response;
         } catch (error) {
             toast.error('Lỗi khi thêm nguyên liệu món ăn');

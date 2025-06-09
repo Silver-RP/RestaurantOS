@@ -403,17 +403,28 @@ class FoodController {
   async addDishIngredient(req: Request, res: Response): Promise<any> {
     try {
       const dishId = req.params.dishId;
+
       if (!mongoose.Types.ObjectId.isValid(dishId)) {
         return res.status(400).json({ message: 'Invalid dish ID' });
       }
-      const { ingredientId, quantity, unit } = req.body;
-      if (!ingredientId || !quantity || !unit) {
-        return res.status(400).json({ message: 'Missing required fields' });
+  
+      const ingredients = req.body;
+      if (!Array.isArray(ingredients)) {
+        return res.status(400).json({ message: 'Body must be an array of ingredients.' });
       }
-      const newIngredient = await FoodService.addDishIngredient(dishId, ingredientId, quantity, unit);
-      return res.status(201).json({ data: newIngredient });
+  
+      for (const ing of ingredients) {
+        const { ingredientId, quantity, unit } = ing;
+        if (!ingredientId || quantity == null || !unit) {
+          return res.status(400).json({ message: 'Missing fields in one or more ingredients.' });
+        }
+      }
+  
+      const addedIngredients = await FoodService.addManyDishIngredients(dishId, ingredients);
+  
+      return res.status(201).json({ data: addedIngredients });
     } catch (error) {
-      console.error('Error adding dish ingredient:', error);
+      console.error('Error adding dish ingredients:', error);
       return res.status(500).json({ message: 'Internal server error' });
     }
   }

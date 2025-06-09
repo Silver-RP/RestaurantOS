@@ -457,7 +457,7 @@ export function useFoodsTrashLogic() {
   };
 }
 
-export function useDishIngredient(dishId: string) {
+export function useDishIngredient(dishId: string, onClose: () => void) {
   const [dataDishIngredients, setDataDishIngredients] = useState<any>(null);
   const [dishData, setDishData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -468,30 +468,32 @@ export function useDishIngredient(dishId: string) {
   const [newIngredients, setNewIngredients] = useState<IngredientField[]>([]);
   const { getDishIngredients, addDishIngredient, updateDishIngredient, deleteDishIngredient } = useCRUDFoods();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        const data = await getDishIngredients(dishId);
-        const ingredientList = await fetchAllIngredients({ limit: 1000 });
-        setIngredientOptions(ingredientList.docs);
+  const fetchData = async (dishId: string) => {
+    try {
+      setIsLoading(true);
+      const data = await getDishIngredients(dishId);
+      const ingredientList = await fetchAllIngredients({ limit: 1000, sort: 'nameAZ' });
+      setIngredientOptions(ingredientList.docs);
 
-        if (!data?.dish) {
-          throw new Error('Dish not found');
-        }
-
-        setDishData(data.dish);
-        setDataDishIngredients(data.ingredients || []);
-      } catch (err) {
-        setError('Lỗi khi tải nguyên liệu món ăn');
-        console.error('Lỗi khi tải nguyên liệu món ăn:', err);
-      } finally {
-        setIsLoading(false);
+      if (!data?.dish) {
+        throw new Error('Dish not found');
       }
-    };
 
-    fetchData();
+      setDishData(data.dish);
+      setDataDishIngredients(data.ingredients || []);
+
+    } catch (err) {
+      setError('Lỗi khi tải nguyên liệu món ăn');
+      console.error('Lỗi khi tải nguyên liệu món ăn:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData(dishId);
   }, [dishId]);
+
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -523,6 +525,36 @@ export function useDishIngredient(dishId: string) {
     setNewIngredients(updated);
   };
 
+  const handleSave = async () => {
+    for (const item of newIngredients) {
+      if (!item.ingredientId || !item.quantity || !item.unit) {
+       toast.error('Vui lòng điền đầy đủ thông tin nguyên liệu!');
+        return;
+      }
+    }
+  
+    const payload = newIngredients.map((item) => ({
+      ingredientId: item.ingredientId,
+      quantity: Number(item.quantity),
+      unit: item.unit,
+    }));
+  
+    try {
+      const updatedData = await addDishIngredient(payload, dishId);
+      await fetchData(dishId);
+      
+      setDataDishIngredients(updatedData);
+      setNewIngredients([]); 
+      setShowInputRows(false); 
+      toast.success('Thêm nguyên liệu thành công');
+      onClose(); 
+
+    } catch (err) {
+      setError('Lỗi khi thêm nguyên liệu món ăn');
+      console.error('Lỗi khi thêm nguyên liệu món ăn:', err);
+    } 
+  };
+  
   const handleUpdateIngredient = async (ingredientId: string, ingredientData: any) => {
     try {
       setIsLoading(true);
@@ -552,7 +584,7 @@ export function useDishIngredient(dishId: string) {
   const hasIngredients = dataDishIngredients && dataDishIngredients.length > 0;
 
   return { dataDishIngredients, isLoading, error, 
-    handleDelete, handleUpdateIngredient, formatDate, dishData, currentTime, showInputRows, ingredientOptions,
+    handleDelete, handleUpdateIngredient, formatDate, dishData, currentTime, showInputRows, ingredientOptions, handleSave,
     setShowInputRows, handleDeleteNewIngredient, setNewIngredients, hasIngredients, newIngredients, handleNewIngredientChange
   };
 }
