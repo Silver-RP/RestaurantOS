@@ -2,8 +2,7 @@ import { Reservation } from '../models/ReservationModel';
 import { ReservationDetail } from '../models/ReservationDetailModel';
 import { Types } from 'mongoose';
 import { Dish } from '../models/DishModel';
-import MailerService from '../services/MailerService';
-import { IReservation } from '../types/reservation.types';
+import transporter from '../config/mailer';
 
 class ReservationService {
   async createReservation(data: any, userId: Types.ObjectId) {
@@ -34,7 +33,7 @@ class ReservationService {
         status: 'PENDING',
       });
 
-      const savedReservation: IReservation = await newReservation.save();
+      const savedReservation = await newReservation.save();
 
       if (Array.isArray(selectedItems) && selectedItems.length > 0) {
         const detailDocs = selectedItems.map((item: any) => ({
@@ -52,24 +51,14 @@ class ReservationService {
       }
 
       if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        try {
-          await MailerService.sendReservationConfirmation(email, {
-            reservationId: savedReservation.id,
-            status: savedReservation.status,
-            name: full_name,
-            phone: phone,
-            date: date,
-            time: time,
-            tableType: table_type,
-            numberOfPeople: number_of_people,
-            isChooseLater: is_choose_later,
-            note: note,
-          });
-        } catch (emailError: any) {
-          console.error('❌ Lỗi gửi email xác nhận:', emailError);
-        }
-      } else {
-        console.warn('⚠️ Không gửi email xác nhận vì email không hợp lệ hoặc không được cung cấp');
+        await this.sendReservationConfirmationEmail(email, full_name, {
+          date,
+          time,
+          tableType: table_type,
+          people: number_of_people,
+          note,
+          reservationId: savedReservation._id.toString(),
+        });
       }
 
       return savedReservation;
@@ -121,6 +110,46 @@ class ReservationService {
 
     return { ...reservation, details: detailsWithImages };
   }
+
+  sendReservationConfirmationEmail = async (
+    toEmail: string,
+    fullName: string,
+    reservationInfo: {
+      date: string;
+      time: string;
+      tableType: string;
+      people: number;
+      note?: string;
+      reservationId: string;
+    },
+  ) => {
+    try {
+      const htmlContent = `
+        <h2>Xin chào ${fullName},</h2>
+        <p>Đơn đặt bàn của bạn đã được ghi nhận với thông tin sau:</p>
+        <ul>
+          <li><strong>Ngày:</strong> ${reservationInfo.date}</li>
+          <li><strong>Giờ:</strong> ${reservationInfo.time}</li>
+          <li><strong>Loại bàn:</strong> ${reservationInfo.tableType}</li>
+          <li><strong>Số người:</strong> ${reservationInfo.people}</li>
+          <li><strong>Ghi chú:</strong> ${reservationInfo.note || 'Không có'}</li>
+          <li><strong>Mã đơn:</strong> ${reservationInfo.reservationId}</li>
+        </ul>
+        <p>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!</p>
+      `;
+
+      await transporter.sendMail({
+        from: `"BeefBeef Restaurant" <${process.env.MAIL_USERNAME}>`,
+        to: toEmail,
+        subject: 'Xác nhận đơn đặt bàn',
+        html: htmlContent,
+      });
+
+      console.log('📧 Email xác nhận đã gửi đến:', toEmail);
+    } catch (err: any) {
+      console.error('❌ Gửi email thất bại:', err);
+    }
+  };
 
   async getAllReservations() {
     return await Reservation.find().sort({ createdAt: -1 }).lean();

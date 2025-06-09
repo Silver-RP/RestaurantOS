@@ -14,11 +14,6 @@ type MailTemplateParams = {
 
 const MailerService = {
   async sendTemplateEmail({ to, subject, template, context }: MailTemplateParams) {
-    console.log('📩 Sending email with data:');
-    console.log('To:', to);
-    console.log('Subject:', subject);
-    console.log('Template:', template);
-    console.log('Context:', JSON.stringify(context, null, 2));
     await transporter.sendMail({
       from: `"BeefBeef Restaurant" <${process.env.MAIL_USERNAME}>`,
       to,
@@ -90,42 +85,6 @@ const MailerService = {
           minute: '2-digit',
         }),
         invoiceUrl: `${process.env.CLIENT_BASE_URL || '#'}/profile/orders?orderId=${order._id}`,
-      },
-    });
-  },
-
-  async sendReservationConfirmation(
-    toEmail: string,
-    reservationInfo: {
-      reservationId: string;
-      status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'DONE';
-      name: string;
-      phone: string;
-      date: string;
-      time: string;
-      tableType: string;
-      numberOfPeople: number;
-      isChooseLater: boolean;
-      note?: string;
-    },
-  ) {
-    await this.sendTemplateEmail({
-      to: toEmail,
-      subject: `Xác nhận đặt bàn #${reservationInfo.reservationId.slice(-6).toUpperCase()}`,
-      template: 'reservation-confirmation',
-      context: {
-        reservationId: reservationInfo.reservationId.slice(-6).toUpperCase(),
-        status: reservationInfo.status.toLowerCase(),
-        name: reservationInfo.name,
-        phone: reservationInfo.phone,
-        date: reservationInfo.date,
-        time: reservationInfo.time,
-        tableType: reservationInfo.tableType,
-        numberOfPeople: reservationInfo.numberOfPeople,
-        isChooseLater: reservationInfo.isChooseLater ? 'Có' : 'Không',
-        note: reservationInfo.note || 'Không có',
-        restaurantAddress: '161 đường Quốc Hương, Thảo Điền, Quận 2, TP. Hồ Chí Minh',
-        reservationDetailUrl: `${process.env.CLIENT_BASE_URL || '#'}/profile/reservations?reservationId=${reservationInfo.reservationId}`,
       },
     });
   },
@@ -208,31 +167,6 @@ const MailerService = {
     }
 
     return 'Chưa xác định thời gian giao hàng';
-  },
-
-  async sendOrderCancellation({
-    order,
-    userEmail,
-    reason,
-  }: {
-    order: IOrder;
-    userEmail: string;
-    reason: string;
-  }) {
-    try {
-      await this.sendTemplateEmail({
-        to: userEmail,
-        subject: `Đơn hàng #${order._id.toString().slice(-6).toUpperCase()} đã bị hủy`,
-        template: 'order-cancellation-email',
-        context: {
-          orderId: order._id.toString().slice(-6).toUpperCase(),
-          reason,
-        },
-      });
-    } catch (error: any) {
-      console.error(`Lỗi khi gửi email thông báo hủy đơn hàng: ${error.message}`);
-      throw error;
-    }
   },
 };
 

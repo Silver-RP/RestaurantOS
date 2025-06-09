@@ -1,7 +1,7 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 import nodemailer from 'nodemailer';
-import hbs from 'nodemailer-express-handlebars';
-// const hbs = await import('nodemailer-express-handlebars');
 import path from 'path';
+import hbs from 'nodemailer-express-handlebars';
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',

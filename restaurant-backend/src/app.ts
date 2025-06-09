@@ -22,7 +22,6 @@ import FavoriteRoutes from './routes/FavoriteRoutes';
 import AddressRouter from './routes/AddressRoutes';
 import PaymentRoutes from './routes/PaymentRoutes';
 import ingredientsRouter from './routes/IngredientsRouter';
-import CronJobService from './services/CronJobService';
 
 import dotenv from 'dotenv';
 import connectDB from './config/db';
@@ -30,7 +29,6 @@ import cookieParser from 'cookie-parser';
 import passport from 'passport';
 import cors from 'cors';
 import path from 'path';
-import { initializeHandlebars } from './config/mailer';
 
 const app = express();
 
@@ -45,7 +43,6 @@ import './swaggers/CategorySwagger';
 
 dotenv.config();
 connectDB();
-initializeHandlebars();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
@@ -84,8 +81,6 @@ const swaggerDefinition = {
     },
   },
 };
-
-CronJobService.start();
 
 const allRoutes = getSwaggerRoutes();
 
