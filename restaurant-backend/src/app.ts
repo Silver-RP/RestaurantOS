@@ -22,6 +22,7 @@ import FavoriteRoutes from './routes/FavoriteRoutes';
 import AddressRouter from './routes/AddressRoutes';
 import PaymentRoutes from './routes/PaymentRoutes';
 import ingredientsRouter from './routes/IngredientsRouter';
+import CronJobService from './services/CronJobService';
 
 import dotenv from 'dotenv';
 import connectDB from './config/db';
@@ -83,6 +84,8 @@ const swaggerDefinition = {
     },
   },
 };
+
+CronJobService.start();
 
 const allRoutes = getSwaggerRoutes();
 

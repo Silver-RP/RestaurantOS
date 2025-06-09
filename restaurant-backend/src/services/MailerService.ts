@@ -209,6 +209,31 @@ const MailerService = {
 
     return 'Chưa xác định thời gian giao hàng';
   },
+
+  async sendOrderCancellation({
+    order,
+    userEmail,
+    reason,
+  }: {
+    order: IOrder;
+    userEmail: string;
+    reason: string;
+  }) {
+    try {
+      await this.sendTemplateEmail({
+        to: userEmail,
+        subject: `Đơn hàng #${order._id.toString().slice(-6).toUpperCase()} đã bị hủy`,
+        template: 'order-cancellation-email',
+        context: {
+          orderId: order._id.toString().slice(-6).toUpperCase(),
+          reason,
+        },
+      });
+    } catch (error: any) {
+      console.error(`Lỗi khi gửi email thông báo hủy đơn hàng: ${error.message}`);
+      throw error;
+    }
+  },
 };
 
 export default MailerService;

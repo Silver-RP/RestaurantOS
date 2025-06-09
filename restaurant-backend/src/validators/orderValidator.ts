@@ -3,29 +3,40 @@ import { Dish } from '../models/DishModel';
 import Cart from '../models/CartModel';
 import { Request } from 'express';
 
-
 class OrderValidator {
-
   static validatePlaceOrder(req: Request) {
-    const { address_id, address, payment_method, delivery_type, items, order_type, delivery_time_type, scheduled_time, note } = req.body;
+    const {
+      address_id,
+      address,
+      payment_method,
+      delivery_type,
+      items,
+      order_type,
+      delivery_time_type,
+      scheduled_time,
+      note,
+    } = req.body;
 
     if (delivery_type === 'PICKUP' && address_id === '') {
-      req.body.address_id = undefined; 
+      req.body.address_id = undefined;
     }
-  
+
     if (delivery_type === 'DELIVERY') {
       const hasAddressId = !!address_id && address_id !== '';
       const hasNewAddress = address && typeof address === 'object';
-    
+
       if (!hasAddressId && !hasNewAddress) {
-        return { valid: false, message: 'Either address_id or address is required for DELIVERY orders.' };
+        return {
+          valid: false,
+          message: 'Either address_id or address is required for DELIVERY orders.',
+        };
       }
     }
 
     if (!Array.isArray(items) || items.length === 0) {
       return { valid: false, message: 'Items are required and must be an array.' };
     }
-    
+
     for (let item of items) {
       if (!item.dish_id || !item.quantity) {
         return { valid: false, message: 'Each item must have a dish_id and quantity.' };
@@ -39,9 +50,12 @@ class OrderValidator {
     if (scheduled_time) {
       const scheduledDate = new Date(scheduled_time);
       if (isNaN(scheduledDate.getTime())) {
-        return { valid: false, message: 'Invalid scheduled time format. Use ISO format (e.g. 2023-09-25T15:30:00Z).' };
+        return {
+          valid: false,
+          message: 'Invalid scheduled time format. Use ISO format (e.g. 2023-09-25T15:30:00Z).',
+        };
       }
-      
+
       if (scheduledDate < new Date()) {
         return { valid: false, message: 'Scheduled time cannot be in the past.' };
       }
@@ -73,63 +87,41 @@ class OrderValidator {
     }
     return address;
   }
-
   static async validateCartAndItems(userId: string, clientItems: any[], session: any) {
-    const cart = await Cart.findOne({ userId })
-      .populate('items.dishId')
-      .session(session);
-
-    if (!cart || cart.items.length === 0) {
-      throw { statusCode: 400, message: 'Cart is empty' };
-    }
-
     let totalAmount = 0;
     const orderItems = [];
 
     for (const clientItem of clientItems) {
-      const cartItem = cart.items.find(i => i.dishId._id.toString() === clientItem.dish_id);
+      const dish = await Dish.findById(clientItem.dish_id).session(session);
 
-      if (!cartItem) {
-        throw new Error(`Dish ${clientItem.dish_id} not found in cart`);
-      }
-
-      if (clientItem.quantity !== cartItem.quantity) {
-        throw new Error(`Mismatch quantity for ${clientItem.dishId}. Expected ${cartItem.quantity}, got ${clientItem.quantity}`);
-      }
-
-      const dish = await Dish.findById(cartItem.dishId._id);
       if (!dish) {
-        throw new Error(`Dish not found: ${cartItem.dishId._id}`);
+        throw new Error(`Dish not found: ${clientItem.dish_id}`);
       }
 
-      if(dish.status !== 'available') {
+      if (dish.status !== 'available') {
         throw new Error(`Dish "${dish.name}" is not available`);
       }
 
-      if (cartItem.quantity > dish.countInStock) {
+      if (clientItem.quantity > dish.countInStock) {
         throw new Error(`Only ${dish.countInStock} portions left for "${dish.name}"`);
       }
 
       const unitPrice = dish.discount_price ?? dish.price;
-      const itemTotal = unitPrice * cartItem.quantity;
+      const itemTotal = unitPrice * clientItem.quantity;
       totalAmount += itemTotal;
 
       orderItems.push({
         dish_id: dish._id,
         dish_name: dish.name,
         unit_price: unitPrice,
-        quantity: cartItem.quantity,
+        quantity: clientItem.quantity,
         total_amount: itemTotal,
         note: clientItem.note || null,
       });
-
     }
-
 
     return { orderItems, totalAmount };
   }
-
-
 }
 
 export default OrderValidator;
