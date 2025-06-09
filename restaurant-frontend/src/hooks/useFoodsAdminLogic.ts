@@ -25,11 +25,13 @@ type SortField =
   | null;
 
 type SortDirection = 'asc' | 'desc';
+type IngredientStatus = 'original' | 'edited' | 'deleted' ;
 type IngredientField = {
   ingredientId?: string;
   name: string;
   quantity: string;
   unit: string;
+  _status?: IngredientStatus;
 };
 
 // Foods index page logic
@@ -458,7 +460,7 @@ export function useFoodsTrashLogic() {
 }
 
 export function useDishIngredient(dishId: string, onClose: () => void) {
-  const [dataDishIngredients, setDataDishIngredients] = useState<any>(null);
+  const [dataDishIngredients, setDataDishIngredients] = useState<any[]>([]);
   const [dishData, setDishData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -492,25 +494,10 @@ export function useDishIngredient(dishId: string, onClose: () => void) {
 
   useEffect(() => {
     fetchData(dishId);
+    console.log('Fetching ingredients for dishId:', dishId);
   }, [dishId]);
 
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000); 
-
-    return () => clearInterval(timer); 
-  }, []);
-
-  const formatDate = (date: string | Date) => {
-    try {
-      return format(new Date(date), 'HH:mm:ss - dd/MM/yyyy', { locale: vi });
-    } catch {
-      return 'N/A';
-    }
-  };
-
+ 
   const handleDeleteNewIngredient = (index: number) => {
     const updated = [...newIngredients];
     updated.splice(index, 1);
@@ -519,9 +506,21 @@ export function useDishIngredient(dishId: string, onClose: () => void) {
     if (updated.length === 0) setShowInputRows(false); // ẩn lại nếu không còn dòng
   };
 
-  const handleNewIngredientChange = (index: number, field: keyof IngredientField, value: string) => {
+  const handleNewIngredientChange = (
+    index: number,
+    field: keyof IngredientField,
+    value: string
+  ) => {
     const updated = [...newIngredients];
-    updated[index][field] = value;
+  
+    if (field === '_status') {
+      if (['original', 'edited', 'deleted'].includes(value)) {
+        updated[index]._status = value as IngredientStatus;
+      }
+    } else {
+      updated[index][field] = value;
+    }
+  
     setNewIngredients(updated);
   };
 
@@ -532,6 +531,10 @@ export function useDishIngredient(dishId: string, onClose: () => void) {
         return;
       }
     }
+
+    const toCreate = dataDishIngredients.filter((i: { _status: string; }) => i._status === 'new');
+    const toUpdate = dataDishIngredients.filter((i: { _status: string; }) => i._status === 'edited');
+    const toDelete = dataDishIngredients.filter((i: { _status: string; }) => i._status === 'deleted');
   
     const payload = newIngredients.map((item) => ({
       ingredientId: item.ingredientId,
@@ -539,7 +542,10 @@ export function useDishIngredient(dishId: string, onClose: () => void) {
       unit: item.unit,
     }));
   
+    const { edited, deleted, created } = getBatchChanges();
+
     try {
+      
       const updatedData = await addDishIngredient(payload, dishId);
       await fetchData(dishId);
       
@@ -554,38 +560,78 @@ export function useDishIngredient(dishId: string, onClose: () => void) {
       console.error('Lỗi khi thêm nguyên liệu món ăn:', err);
     } 
   };
-  
-  const handleUpdateIngredient = async (ingredientId: string, ingredientData: any) => {
-    try {
-      setIsLoading(true);
-      const updatedData = await updateDishIngredient(ingredientId, ingredientData, dishId); 
-      setDataDishIngredients(updatedData);
-    } catch (err) {
-      setError('Lỗi khi cập nhật nguyên liệu món ăn');
-      console.error('Lỗi khi cập nhật nguyên liệu món ăn:', err);
-    } finally {
-      setIsLoading(false);
-    }
+
+  const handleStartEdit = (id: string) => {
+    console.log('Start editing ingredient with id:', id);
+    setDataDishIngredients((prev: any[]) =>
+      prev.map((item: { _id: string; }) =>
+        item._id === id
+          ? { ...item, _status: 'edited' as IngredientStatus }
+          : item,
+      ),
+    );
   };
 
-  const handleDelete = async (ingredientId: string) => {
-    try {
-      setIsLoading(true);
-      const updatedData = await deleteDishIngredient(ingredientId, dishId); 
-      setDataDishIngredients(updatedData);
-    } catch (err) {
-      setError('Lỗi khi xóa nguyên liệu món ăn');
-      console.error('Lỗi khi xóa nguyên liệu món ăn:', err);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleUpdateIngredient = (
+    id: string,
+    field: keyof IngredientField,
+    value: string,
+  ) => {
+    setDataDishIngredients((prev: any[]) =>
+      prev.map((item) =>
+        item._id === id
+          ? { ...item, [field]: value, _status: 'edited' as IngredientStatus }
+          : item,
+      ),
+    );
   };
+
+  const handleCancelEdit = (id: string) => {
+    setDataDishIngredients((prev: any[]) =>
+      prev.map((item) => {
+        if (item._id === id && item._original) {
+          return { ...item._original, _status: 'original' as IngredientStatus };
+        }
+        return item;
+      }),
+    );
+  };
+  
+  const handleSoftDelete = (id: string) => {
+    setDataDishIngredients((prev: any[]) =>
+      prev.map((item) =>
+        item._id === id
+          ? { ...item, _status: 'deleted' as IngredientStatus }
+          : item,
+      ),
+    );
+  };
+  
+  const handleUndoDelete = (id: string) => {
+    setDataDishIngredients((prev: any[]) =>
+      prev.map((item) =>
+        item._id === id
+          ? { ...item, _status: 'original' as IngredientStatus }
+          : item,
+      ),
+    );
+  };
+  
+  const getBatchChanges = () => {
+    const edited = dataDishIngredients.filter((item: { _status: string; }) => item._status === 'edited');
+    const deleted = dataDishIngredients.filter((item: { _status: string; }) => item._status === 'deleted');
+    const created = newIngredients;
+  
+    return { edited, deleted, created };
+  };
+  
 
   const hasIngredients = dataDishIngredients && dataDishIngredients.length > 0;
 
   return { dataDishIngredients, isLoading, error, 
-    handleDelete, handleUpdateIngredient, formatDate, dishData, currentTime, showInputRows, ingredientOptions, handleSave,
-    setShowInputRows, handleDeleteNewIngredient, setNewIngredients, hasIngredients, newIngredients, handleNewIngredientChange
+    handleUpdateIngredient, dishData, currentTime, showInputRows, ingredientOptions, handleSave,
+    setShowInputRows, handleDeleteNewIngredient, setNewIngredients, hasIngredients, newIngredients, handleNewIngredientChange,
+    handleSoftDelete, handleUndoDelete, handleStartEdit, handleCancelEdit,
   };
 }
 

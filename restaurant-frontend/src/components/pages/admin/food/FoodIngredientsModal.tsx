@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import { DialogTitle, DialogContent, Dialog } from '@mui/material';
 import { useDishIngredient } from '@/hooks/useFoodsAdminLogic';
 import { ingredientUnits } from '../ingredients/ingredientUnits';
@@ -9,6 +9,8 @@ import {
   MenuItem,
   IconButton,
 } from '@mui/material';
+import clsx from 'clsx';
+import TimeDisplay from '@/components/common/TimeDisplay';
 
 interface FoodIngredientsModalProps {
   dishId: string;
@@ -24,10 +26,7 @@ const FoodIngredientsModal: React.FC<FoodIngredientsModalProps> = ({
   const {
     dataDishIngredients,
     isLoading,
-    currentTime,
-    handleDelete,
     setNewIngredients,
-    formatDate,
     dishData,
     handleDeleteNewIngredient,
     showInputRows,
@@ -37,6 +36,11 @@ const FoodIngredientsModal: React.FC<FoodIngredientsModalProps> = ({
     newIngredients,
     ingredientOptions,
     handleNewIngredientChange,
+    handleUpdateIngredient,
+    handleSoftDelete,
+    handleUndoDelete,
+    handleStartEdit,
+    handleCancelEdit,
   } = useDishIngredient(dishId, onClose);
 
   if (isLoading) {
@@ -52,27 +56,195 @@ const FoodIngredientsModal: React.FC<FoodIngredientsModalProps> = ({
     );
   }
 
-  const renderIngredientRows = (ingredients: any[]) => {
-    if (!Array.isArray(ingredients)) return null;
+  if (!dataDishIngredients) return null; 
+  console.log('dFoodIngredientsModal: 1');
 
-    return ingredients.map((item, index) => (
-      <tr key={item._id || item.ingredientId} className="border-b">
-        <td className="py-2">
-          <p className="font-medium">{index + 1}</p>
-        </td>
-        <td className="text-left pl-24">{item.ingredientName}</td>
-        <td className="text-center">{item.quantity}</td>
-        <td className="text-center">{item.unit}</td>
-        <td className="text-center">
-          <button
-            className="gap-2 px-2 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600"
-            onClick={() => handleDelete(item._id)}
-          >
-            Xoá
-          </button>
-        </td>
-      </tr>
-    ));
+  const renderIngredientRows = () => {
+    return dataDishIngredients.map((item: any, index: number) => {
+      const isDeleted = item._status === 'deleted';
+      const isEdited = item._status === 'edited';
+
+    // console.log('item: ', item);
+    // console.log('isDeleted: ', isDeleted);
+    // console.log('isEdited: ', isEdited);
+    // console.log('item id: ', item.ingredientId);
+
+    // console.log('item status: ', item._status);
+
+
+      return (
+        <tr
+          key={item.ingredientId}
+          className={clsx(
+            'border-b',
+            isDeleted && 'opacity-40 pointer-events-none',
+          )}
+        >
+          {/* STT */}
+          <td className="py-2 text-center">
+            <span className="font-medium">{index + 1}</span>
+          </td>
+
+          {/* Tên nguyên liệu */}
+          <td className=" text-left pl-24">
+            {isEdited ? (
+              <Autocomplete
+                size="small"
+                options={ingredientOptions}
+                getOptionLabel={(option) => option.name}
+                value={
+                  ingredientOptions.find(
+                    (opt) => opt._id === item.ingredientId,
+                  ) || null
+                }
+                onChange={(event, newValue) => {
+                  handleUpdateIngredient(
+                    item.ingredientId,
+                    'ingredientId',
+                    newValue?._id || '',
+                  );
+                  handleUpdateIngredient(
+                    item.ingredientId,
+                    'name',
+                    newValue?.name || '',
+                  );
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    placeholder="Chọn nguyên liệu"
+                    fullWidth
+                  />
+                )}
+                isOptionEqualToValue={(option, value) =>
+                  option._id === value._id
+                }
+                renderOption={(props, option) => {
+                    const isSelectedInOtherRow = dataDishIngredients.some(
+                        (x) => x.ingredientId === option._id && x.ingredientId !== item.ingredientId
+                      );
+                
+                    const isCurrentlySelected = item.ingredientId === option._id;
+                
+                    const isDisabled = isSelectedInOtherRow || isCurrentlySelected;
+                
+                    const label = `${option.name} ${
+                        isSelectedInOtherRow
+                            ? '(Đã thêm)'
+                            : isCurrentlySelected
+                            ? '(Đang chọn)'
+                            : ''
+                    }`;
+                  
+                    return (
+                      <li
+                        {...props}
+                        key={option._id}
+                        style={{
+                          opacity: isDisabled ? 0.4 : 1,
+                          pointerEvents: isDisabled ? 'none' : 'auto',
+                        }}
+                      >
+                        {label}
+                      </li>
+                    );
+                  }}
+                  
+                  
+              />
+            ) : (
+              <span className="font-semibold text-gray-800">
+                {item.ingredientName}
+              </span>
+            )}
+          </td>
+
+          {/* Số lượng */}
+          <td className="text-center min-w-[100px]">
+            {isEdited ? (
+              <TextField
+                size="small"
+                type="number"
+                value={item.quantity}
+                inputProps={{ min: 0, style: { textAlign: 'right' } }}
+                onChange={(e) =>
+                  handleUpdateIngredient(item.ingredientId, 'quantity', e.target.value)
+                }
+                onKeyDown={(e) => {
+                  if (['-', '+', 'e'].includes(e.key)) e.preventDefault();
+                }}
+              />
+            ) : (
+              <span>{String(item.quantity)}</span>
+            )}
+          </td>
+
+          {/* Đơn vị */}
+          <td className="text-center min-w-[120px]">
+            {isEdited ? (
+              <Select
+                size="small"
+                value={item.unit}
+                onChange={(e) =>
+                  handleUpdateIngredient(item.ingredientId, 'unit', e.target.value)
+                }
+                displayEmpty
+                fullWidth
+              >
+                <MenuItem disabled value="">
+                  -- Chọn đơn vị --
+                </MenuItem>
+                {ingredientUnits.map(({ value, label }) => (
+                  <MenuItem key={value} value={value}>
+                    {label}
+                  </MenuItem>
+                ))}
+              </Select>
+            ) : (
+              <span>
+                 {ingredientUnits.map(({ value, label }) => (
+                    value === item.unit ? label : null
+                    )) || item.unit}
+                </span>
+            )}
+          </td>
+
+          {/* Hành động */}
+          <td className="text-center">
+            {isDeleted ? (
+              <button
+                className="px-2 py-1 text-sm text-blue-600 hover:underline"
+                onClick={() => handleUndoDelete(item.ingredientId)}
+              >
+                Hoàn tác
+              </button>
+            ) : isEdited ? (
+              <button
+                className="px-2 py-1 text-sm text-gray-600 hover:underline"
+                onClick={() => handleCancelEdit(item.ingredientId)}
+              >
+                Huỷ chỉnh sửa
+              </button>
+            ) : (
+              <div className="flex justify-center gap-2">
+                <button
+                  className="px-2 py-1 bg-yellow-500 text-white text-sm rounded hover:bg-yellow-600"
+                  onClick={() => handleStartEdit(item.ingredientId)}
+                >
+                  Sửa
+                </button>
+                <button
+                  className="px-2 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600"
+                  onClick={() => handleSoftDelete(item.ingredientId)}
+                >
+                  Xoá
+                </button>
+              </div>
+            )}
+          </td>
+        </tr>
+      );
+    });
   };
 
   const renderNewIngredientRows = () => {
@@ -195,7 +367,7 @@ const FoodIngredientsModal: React.FC<FoodIngredientsModalProps> = ({
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle className="bg-gray-50 flex justify-between items-center">
         <span className="text-xl font-bold">Nguyên liệu của món ăn</span>
-        <div className="text-sm font-normal">{formatDate(currentTime)}</div>
+        <TimeDisplay />
       </DialogTitle>
       <DialogContent>
         <div className="py-4 space-y-6">
@@ -234,9 +406,14 @@ const FoodIngredientsModal: React.FC<FoodIngredientsModalProps> = ({
                   <ul className="list-disc list-inside text-base text-gray-800 font-medium space-y-1">
                     {dishData.ingredients
                       .split(',')
-                      .map((ingredient: string, index: React.Key | null | undefined) => (
-                        <li key={index}>{ingredient.trim()}</li>
-                      ))}
+                      .map(
+                        (
+                          ingredient: string,
+                          index: React.Key | null | undefined,
+                        ) => (
+                          <li key={index}>{ingredient.trim()}</li>
+                        ),
+                      )}
                   </ul>
                 ) : (
                   <p className="text-gray-600 italic">
@@ -261,17 +438,17 @@ const FoodIngredientsModal: React.FC<FoodIngredientsModalProps> = ({
               )}
 
             <table className="w-full">
-              <thead>
+              <thead className='bg-gray-100 text-gray-700 align-center'>
                 <tr className="border-b">
-                  <th className="text-left pb-2">No.</th>
-                  <th className="text-left pb-2 pl-24">Tên nguyên liệu</th>
-                  <th className="text-center pb-2">Số lượng</th>
-                  <th className="text-center pb-2">Đơn vị</th>
-                  <th className="text-center pb-2">Hành động</th>
+                  <th className="align-middle text-left py-1">No.</th>
+                  <th className="align-middle text-left py-1 pl-24">Tên nguyên liệu</th>
+                  <th className="align-middle text-center py-1">Số lượng</th>
+                  <th className="align-middle text-center py-1">Đơn vị</th>
+                  <th className="align-middle text-center py-1">Hành động</th>
                 </tr>
               </thead>
               <tbody>
-                {renderIngredientRows(dataDishIngredients)}
+                {renderIngredientRows()}
                 {renderNewIngredientRows()}
                 {!showInputRows && (
                   <tr>
