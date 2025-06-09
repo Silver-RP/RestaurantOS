@@ -6,6 +6,7 @@ import {
   getUserChatSession,
   getMessages,
   sendMessage,
+  assignCashierSession,
 } from '@/api/ChatboxApi';
 import { ChatMessage, ChatSessionResponse } from '@/types/Chatbox.type';
 
@@ -42,6 +43,12 @@ export const useAdminChatbox = () => {
 
   const selectChat = async (userId: string) => {
     const session = await getUserChatSession(userId);
+    
+  // 👇 Gán cashier nếu chưa có
+  if (!session.cashier_user_id) {
+    await assignCashierSession(session._id);
+    console.log('[✅ GÁN CASHIER] Đã gán bạn vào xử lý phiên chat');
+  }
     setCurrentChat(session);
     const msgs = await getMessages(session._id);
     setMessages(msgs);
@@ -65,5 +72,6 @@ export const useAdminChatbox = () => {
     selectChat,
     handleSend,
     messageEndRef,
+    assignCashierSession
   };
 };

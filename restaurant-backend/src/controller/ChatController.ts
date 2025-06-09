@@ -116,8 +116,13 @@ const ChatController = {
 
       res.status(200).json({ message: 'Đã đánh dấu là đã đọc' });
     } catch (error) {
-      console.error('markMessageAsRead error:', error.message, error.stack);
-      res.status(500).json({ message: 'Lỗi server khi đánh dấu đã đọc', error: error.message });
+      if (error instanceof Error) {
+        console.error('markMessageAsRead error:', error.message, error.stack);
+        res.status(500).json({ message: 'Lỗi server khi đánh dấu đã đọc', error: error.message });
+      } else {
+        console.error('markMessageAsRead error:', error);
+        res.status(500).json({ message: 'Lỗi server khi đánh dấu đã đọc', error: String(error) });
+      }
     }
   },
 

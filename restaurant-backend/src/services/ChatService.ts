@@ -2,6 +2,10 @@ import ChatMessageModel from '../models/ChatMessageModel';
 import mongoose from 'mongoose';
 import { ChatSession, SendMessageDto, ChatMessage } from '../types/chatbox.types';
 import ChatBoxModel from '../models/ChatBoxModel';
+import UserModel from '../models/UserModel';
+import { logger } from '../utils/logger';
+import { sendPushNotification } from '../utils/fcmUtils'; // đường dẫn tuỳ bạn
+import FCMTokenModel from '../models/FCMTokenModel';
 
 class ChatService {
   async getOrCreateChat(userId: string): Promise<ChatSession> {
@@ -56,58 +60,9 @@ class ChatService {
         : null,
     })) as ChatMessage[];
   }
-
-  async sendMessage(data: SendMessageDto): Promise<ChatMessage> {
-    const chat = await ChatBoxModel.findById(data.chatId);
-    if (!chat) throw new Error('CHAT_NOT_FOUND');
-
-    if (data.role === 'user' && !chat.cashier_user_id) {
-      const { getBotReply } = await import('../utils/openaiBot');
-      const botReply = await getBotReply(data.content);
-      console.log('[🤖 BOT REPLY]:', botReply);
-      const botMessage = await ChatMessageModel.create({
-        chat_id: chat._id,
-        sender_id: new mongoose.Types.ObjectId(process.env.BOT_ID || '000000000000000000000001'),
-        receiver_id: new mongoose.Types.ObjectId(data.senderId),
-        sender_role: 'bot',
-        content: botReply,
-        is_bot_reply: true,
-        message_type: 'text',
-        sent_at: new Date(),
-      });
-
-      if (globalThis.io) {
-        globalThis.io.to(data.chatId).emit('message', {
-          ...botMessage.toObject(),
-          _id: (botMessage._id as mongoose.Types.ObjectId).toString(),
-        });
-      }
-    }
-
-    const receiverId = data.role === 'cashier' ? chat.user_id : chat.cashier_user_id;
-
-    const senderRole =
-      typeof data.role === 'string' ? data.role : Array.isArray(data.role) ? data.role[0] : 'user';
-
-    const message = await ChatMessageModel.create({
-      chat_id: new mongoose.Types.ObjectId(data.chatId),
-      sender_id: new mongoose.Types.ObjectId(data.senderId),
-      receiver_id: new mongoose.Types.ObjectId(receiverId),
-      sender_role: senderRole,
-      content: data.content,
-      is_bot_reply: data.is_bot_reply || false,
-      message_type: data.message_type || 'text',
-      sent_at: new Date(),
-      read_at: null,
-      reply_to: data.replyTo ? new mongoose.Types.ObjectId(data.replyTo) : null,
-    });
-
-    console.log('[🟢 DEBUG] Message sent:', data);
-
-    return {
-      ...message.toObject(),
-      _id: (message._id as mongoose.Types.ObjectId).toString(),
-    } as ChatMessage;
+  async getAvailableCashier(): Promise<string | null> {
+    const cashier = await UserModel.findOne({ roles: 'cashier' });
+    return cashier?._id?.toString() || null;
   }
 
   async listChatsOfCashierAdvanced({
@@ -286,6 +241,78 @@ class ChatService {
     message.edited_at = new Date();
 
     await message.save();
+  }
+
+  async sendMessage(data: SendMessageDto): Promise<ChatMessage> {
+    const chat = await ChatBoxModel.findById(data.chatId);
+    if (!chat) throw new Error('CHAT_NOT_FOUND');
+
+    const senderRole =
+      typeof data.role === 'string' ? data.role : Array.isArray(data.role) ? data.role[0] : 'user';
+
+    const receiverId = senderRole === 'cashier' ? chat.user_id : chat.cashier_user_id;
+
+    const userMessage = await ChatMessageModel.create({
+      chat_id: new mongoose.Types.ObjectId(data.chatId),
+      sender_id: new mongoose.Types.ObjectId(data.senderId),
+      receiver_id: new mongoose.Types.ObjectId(receiverId),
+      sender_role: senderRole,
+      content: data.content,
+      is_bot_reply: false,
+      message_type: 'text',
+      sent_at: new Date(),
+      read_at: null,
+      reply_to: data.replyTo ? new mongoose.Types.ObjectId(data.replyTo) : null,
+    });
+
+    // Gửi qua socket realtime
+    globalThis.io?.to(data.chatId).emit('message', {
+      ...userMessage.toObject(),
+      _id: (userMessage._id as mongoose.Types.ObjectId | string).toString(),
+    });
+
+    // 👉 Gửi Push Notification FCM
+    if (receiverId) {
+      try {
+        const fcmTokens = await FCMTokenModel.find({ userId: receiverId }).lean();
+        const tokens = fcmTokens.map((t) => t.token);
+        if (tokens.length > 0) {
+          await sendPushNotification(tokens, 'Tin nhắn mới', data.content, {
+            chatId: data.chatId,
+            senderId: data.senderId,
+          });
+        }
+      } catch (err) {
+        logger.error?.('FCM Notification Error', err);
+      }
+    }
+
+    // 👉 Nếu là user & chưa có cashier thì tự động trả lời bằng bot
+    if (senderRole === 'user' && !chat.cashier_user_id) {
+      const { getBotReply } = await import('../utils/openaiBot');
+      const botReply = await getBotReply(data.content);
+
+      const botMessage = await ChatMessageModel.create({
+        chat_id: chat._id,
+        sender_id: new mongoose.Types.ObjectId(process.env.BOT_ID || '000000000000000000000001'),
+        receiver_id: new mongoose.Types.ObjectId(data.senderId),
+        sender_role: 'bot',
+        content: botReply,
+        is_bot_reply: true,
+        message_type: 'text',
+        sent_at: new Date(),
+      });
+
+      globalThis.io?.to(data.chatId).emit('message', {
+        ...botMessage.toObject(),
+        _id: (botMessage._id as mongoose.Types.ObjectId | string).toString(),
+      });
+    }
+
+    return {
+      ...userMessage.toObject(),
+      _id: (userMessage._id as mongoose.Types.ObjectId | string).toString(),
+    } as ChatMessage;
   }
 }
 

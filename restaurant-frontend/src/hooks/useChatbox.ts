@@ -13,9 +13,9 @@ export const useChatbox = () => {
   const [loading, setLoading] = useState(true);
   const [typingUserId, setTypingUserId] = useState<string | null>(null);
 
+  const isSending = useRef(false);
   const hasMore = useRef(true);
   const loadingMore = useRef(false);
-  // Load phiên chat và tin nhắn lần đầu
 
   useEffect(() => {
     const init = async () => {
@@ -35,13 +35,16 @@ export const useChatbox = () => {
         setLoading(false);
       }
     };
-
     init();
   }, []);
 
   useEffect(() => {
     socket.on('message', (msg: ChatMessage) => {
-      setMessages((prev) => [...prev, msg]);
+      setMessages((prev) => {
+        const alreadyExists = prev.some((m) => m._id === msg._id);
+        if (alreadyExists) return prev;
+        return [...prev, msg];
+      });
     });
 
     socket.on('typing', ({ userId, typing }) => {
@@ -53,10 +56,18 @@ export const useChatbox = () => {
       socket.off('typing');
     };
   }, []);
+
   const handleSend = async (content: string, replyTo?: string) => {
-    if (!chatId || !content.trim()) return;
-    const msg = await sendMessage({ chatId, content, replyTo });
-    console.log('Sent message', msg);
+    if (!chatId || !content.trim() || isSending.current) return;
+
+    isSending.current = true;
+    try {
+      await sendMessage({ chatId, content, replyTo });
+    } catch (error) {
+      console.error('Send message failed:', error);
+    } finally {
+      isSending.current = false;
+    }
   };
 
   const loadMoreMessages = async () => {
@@ -74,6 +85,7 @@ export const useChatbox = () => {
 
     loadingMore.current = false;
   };
+
   return {
     chatId,
     messages,

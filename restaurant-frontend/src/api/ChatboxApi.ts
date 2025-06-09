@@ -35,3 +35,8 @@ export const getAllUserChats = async (): Promise<ChatSessionResponse[]> => {
   
   return data.chats;
 };
+
+// Gán cashier vào xử lý phiên chat
+export const assignCashierSession = async (chatId: string): Promise<void> => {
+  await axiosInstance.post(`/chat/${chatId}/assign`);
+};

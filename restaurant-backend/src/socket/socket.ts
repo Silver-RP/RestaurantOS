@@ -54,8 +54,6 @@ export const initSocket = (io: Server) => {
           replyTo,
         });
 
-        io.to(chatId).emit('message', message);
-        console.log(`📤 Message sent in chat ${chatId}:`, message);
 
         const receiverId = message.receiver_id.toString();
         const unreadCount = await ChatService.getUnreadMessageCount(

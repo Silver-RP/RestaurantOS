@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import ChatToggleButton from './ChatToggleButton';
 import ChatWindow from './ChatWindow';
 import { useFaq } from '@/hooks/useFaq';
@@ -18,8 +18,8 @@ const Chatbox: React.FC = () => {
     typingUserId,
     loading,
   } = useChatbox();
-  const { faqs } = useFaq();
 
+  const { faqs } = useFaq();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [unreadCount, setUnreadCount] = useState(3);
@@ -27,14 +27,9 @@ const Chatbox: React.FC = () => {
   const [showInput, setShowInput] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  const messageEndRef = useRef<HTMLDivElement | null>(null);
-
-  const scrollToBottom = () => {
-    messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  const isSending = useRef(false);
 
   const toggleShowInput = () => setShowInput((prev) => !prev);
-
   const toggleChat = () => {
     setIsOpen(!isOpen);
     setShowInput(false);
@@ -42,38 +37,41 @@ const Chatbox: React.FC = () => {
 
   const handleFAQClick = async (question: string) => {
     if (!showInput) setShowInput(true);
-    setMessages((prev) => [...prev, { sender: 'user', text: question }]);
-    scrollToBottom();
+
     const matched = await getAnswerByQuestion(question);
-    setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          sender: 'bot',
-          text: matched?.answer || 'Xin lỗi, tôi chưa có câu trả lời phù hợp.',
-        },
-      ]);
-      scrollToBottom();
-    }, 500);
+    setMessages((prev) => [
+      ...prev,
+      { sender: 'user', text: question },
+      {
+        sender: 'bot',
+        text: matched?.answer || 'Xin lỗi, tôi chưa có câu trả lời phù hợp.',
+      },
+    ]);
   };
 
   const handleSend = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() || isSending.current) return;
 
-    if (showInput && chatId) {
-      await sendRealMessage(input);
-      setInput('');
-    } else {
-      setMessages((prev) => [...prev, { sender: 'user', text: input }]);
-      setInput('');
-      const matched = await getAnswerByQuestion(input);
-      setMessages((prev) => [
-        ...prev,
-        {
-          sender: 'bot',
-          text: matched?.answer || 'Xin lỗi, tôi chưa có câu trả lời phù hợp.',
-        },
-      ]);
+    const messageToSend = input;
+    setInput('');
+    isSending.current = true;
+
+    try {
+      if (showInput && chatId) {
+        await sendRealMessage(messageToSend); // real-time (có socket)
+      } else {
+        const matched = await getAnswerByQuestion(messageToSend);
+        setMessages((prev) => [
+          ...prev,
+          { sender: 'user', text: messageToSend },
+          {
+            sender: 'bot',
+            text: matched?.answer || 'Xin lỗi, tôi chưa có câu trả lời phù hợp.',
+          },
+        ]);
+      }
+    } finally {
+      isSending.current = false;
     }
   };
 
@@ -85,7 +83,7 @@ const Chatbox: React.FC = () => {
     <div className="fixed bottom-6 right-6 z-50">
       {isOpen ? (
         <ChatWindow
-          messages={[...messages, ...realMessages]}
+          messages={showInput ? realMessages : messages}
           input={input}
           onInputChange={setInput}
           onSend={handleSend}
