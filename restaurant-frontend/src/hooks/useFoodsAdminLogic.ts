@@ -6,6 +6,10 @@ import { Category } from 'types/Category.type';
 import { FoodDetail } from 'types/Dish.types';
 import { toast } from 'react-toastify';
 import { useCRUDFoods } from './useCRUDFoods';
+import { format } from 'date-fns';
+import { vi } from 'date-fns/locale';
+import { fetchAllIngredients } from '../api/IngredientsApi';
+import { Ingredient } from '@/types/Ingredient';
 
 type SortField =
   | 'name'
@@ -21,6 +25,12 @@ type SortField =
   | null;
 
 type SortDirection = 'asc' | 'desc';
+type IngredientField = {
+  ingredientId?: string;
+  name: string;
+  quantity: string;
+  unit: string;
+};
 
 // Foods index page logic
 export function useFoodsAdminLogic() {
@@ -446,4 +456,105 @@ export function useFoodsTrashLogic() {
     handleConfirmPermanentDelete,
   };
 }
+
+export function useDishIngredient(dishId: string) {
+  const [dataDishIngredients, setDataDishIngredients] = useState<any>(null);
+  const [dishData, setDishData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [showInputRows, setShowInputRows] = useState(false);
+  const [ingredientOptions, setIngredientOptions] = useState<Ingredient[]>([]);
+  const [newIngredients, setNewIngredients] = useState<IngredientField[]>([]);
+  const { getDishIngredients, addDishIngredient, updateDishIngredient, deleteDishIngredient } = useCRUDFoods();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        const data = await getDishIngredients(dishId);
+        const ingredientList = await fetchAllIngredients({ limit: 1000 });
+        setIngredientOptions(ingredientList.docs);
+
+        if (!data?.dish) {
+          throw new Error('Dish not found');
+        }
+
+        setDishData(data.dish);
+        setDataDishIngredients(data.ingredients || []);
+      } catch (err) {
+        setError('Lỗi khi tải nguyên liệu món ăn');
+        console.error('Lỗi khi tải nguyên liệu món ăn:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [dishId]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000); 
+
+    return () => clearInterval(timer); 
+  }, []);
+
+  const formatDate = (date: string | Date) => {
+    try {
+      return format(new Date(date), 'HH:mm:ss - dd/MM/yyyy', { locale: vi });
+    } catch {
+      return 'N/A';
+    }
+  };
+
+  const handleDeleteNewIngredient = (index: number) => {
+    const updated = [...newIngredients];
+    updated.splice(index, 1);
+    setNewIngredients(updated);
+  
+    if (updated.length === 0) setShowInputRows(false); // ẩn lại nếu không còn dòng
+  };
+
+  const handleNewIngredientChange = (index: number, field: keyof IngredientField, value: string) => {
+    const updated = [...newIngredients];
+    updated[index][field] = value;
+    setNewIngredients(updated);
+  };
+
+  const handleUpdateIngredient = async (ingredientId: string, ingredientData: any) => {
+    try {
+      setIsLoading(true);
+      const updatedData = await updateDishIngredient(ingredientId, ingredientData, dishId); 
+      setDataDishIngredients(updatedData);
+    } catch (err) {
+      setError('Lỗi khi cập nhật nguyên liệu món ăn');
+      console.error('Lỗi khi cập nhật nguyên liệu món ăn:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async (ingredientId: string) => {
+    try {
+      setIsLoading(true);
+      const updatedData = await deleteDishIngredient(ingredientId, dishId); 
+      setDataDishIngredients(updatedData);
+    } catch (err) {
+      setError('Lỗi khi xóa nguyên liệu món ăn');
+      console.error('Lỗi khi xóa nguyên liệu món ăn:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const hasIngredients = dataDishIngredients && dataDishIngredients.length > 0;
+
+  return { dataDishIngredients, isLoading, error, 
+    handleDelete, handleUpdateIngredient, formatDate, dishData, currentTime, showInputRows, ingredientOptions,
+    setShowInputRows, handleDeleteNewIngredient, setNewIngredients, hasIngredients, newIngredients, handleNewIngredientChange
+  };
+}
+
 

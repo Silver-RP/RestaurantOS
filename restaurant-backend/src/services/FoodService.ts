@@ -484,10 +484,36 @@ class FoodService {
 
   async getDishIngredients(dishId: string) {
     try {
-      const ingredients = await DishIngredient.find({ dish: dishId })
-        .populate('ingredient') 
+      const dishInfo = await Dish.findById(dishId).select('name images ingredients').lean();
+  
+      if (!dishInfo) {
+        return { message: 'Dish not found' };
+      }
+  
+      const ingredientsRaw = await DishIngredient.find({ dishId: new mongoose.Types.ObjectId(dishId) })
+        .populate({
+          path: 'ingredientId',
+          select: 'name'
+        })
         .lean();
-      return ingredients;
+  
+      const ingredients = ingredientsRaw.map(item => ({
+        ingredientId: item.ingredientId._id,
+        ingredientName: (item.ingredientId as any).name,
+        quantity: item.quantity,
+        unit: item.unit,
+      }));
+  
+      return {
+        dish: {
+          id: dishInfo._id,
+          name: dishInfo.name,
+          image: dishInfo.images?.[0] || null,
+          ingredients: dishInfo.ingredients || '',
+        },
+        ingredients: ingredients || [],
+      };
+  
     } catch (error) {
       console.error('Error getting dish ingredients:', error);
       throw new Error('Error getting dish ingredients');
@@ -496,6 +522,9 @@ class FoodService {
   
   async addDishIngredient(dishId: string, ingredientId: string, quantity: number, unit: string) {
     try {
+      const exists = await DishIngredient.findOne({ dish: new mongoose.Types.ObjectId(dishId), ingredient: ingredientId });
+      if (exists) throw new Error('Ingredient already added to dish');
+
       const newItem = await DishIngredient.create({
         dish: new mongoose.Types.ObjectId(dishId),
         ingredient: new mongoose.Types.ObjectId(ingredientId),
@@ -512,10 +541,10 @@ class FoodService {
   async updateDishIngredient(dishId: string, id: string, quantity: number, unit: string) {
     try {
       const updated = await DishIngredient.findOneAndUpdate(
-        { _id: id, dish: dishId },
+        { _id: id, dish: new mongoose.Types.ObjectId(dishId) },
         { quantity, unit },
         { new: true }
-      ).populate('ingredient');
+      ).populate('ingredientId');
       if (!updated) throw new Error('DishIngredient not found');
       return updated;
     } catch (error) {
@@ -526,7 +555,7 @@ class FoodService {
   
   async deleteDishIngredient(dishId: string, id: string) {
     try {
-      const deleted = await DishIngredient.findOneAndDelete({ _id: id, dish: dishId });
+      const deleted = await DishIngredient.findOneAndDelete({ _id: id, dish: new mongoose.Types.ObjectId(dishId) });
       if (!deleted) throw new Error('DishIngredient not found');
       return deleted;
     } catch (error) {

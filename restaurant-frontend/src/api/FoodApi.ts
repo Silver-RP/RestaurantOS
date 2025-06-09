@@ -180,3 +180,43 @@ export const permanentlyDeleteFoodAPI = async (foodId: string): Promise<void> =>
     throw error;
   }
 }
+
+export const fetchDishIngredientsApi = async (dishId: string): Promise<any> => {
+  try {
+    const res = await api.get(`/food/${dishId}/ingredients`);
+    return res.data.data;
+  } catch (error) {
+    console.error('Error fetching dish ingredients:', error);
+    throw error;
+  }
+};
+
+export const addDishIngredientApi = async (ingredientData: any, dishId: string): Promise<any> => {
+  try {
+    const res = await api.post(`/food/${dishId}/ingredients`, ingredientData);
+    return res.data;
+  } catch (error) {
+    console.error('Error adding dish ingredient:', error);
+    throw error;
+  }
+}
+
+export const updateDishIngredientApi = async (ingredientId: string, ingredientData: any, dishId: string): Promise<any> => {
+  try {
+    const res = await api.put(`/food/${dishId}/ingredients/${ingredientId}`, ingredientData);
+    return res.data;
+  } catch (error) {
+    console.error('Error updating dish ingredient:', error);
+    throw error;
+  }
+}
+
+export const deleteDishIngredientApi = async (ingredientId: string, dishId: string): Promise<any> => {
+  try {
+    const res = await api.delete(`/food/${dishId}/ingredients/${ingredientId}`);
+    return res.data;
+  } catch (error) {
+    console.error('Error deleting dish ingredient:', error);
+    throw error;
+  }
+}

@@ -388,7 +388,12 @@ class FoodController {
         return res.status(400).json({ message: 'Invalid dish ID' });
       }
       const ingredients = await FoodService.getDishIngredients(dishId);
-      return res.status(200).json({ data: ingredients });
+      
+      return res.status(200).json({
+        success: true,
+        message: 'Ingredient restored successfully',
+        data: ingredients,
+    });
     } catch (error) {
       console.error('Error getting dish ingredients:', error);
       return res.status(500).json({ message: 'Internal server error' });
