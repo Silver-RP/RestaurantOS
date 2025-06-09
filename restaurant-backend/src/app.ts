@@ -30,6 +30,7 @@ import cookieParser from 'cookie-parser';
 import passport from 'passport';
 import cors from 'cors';
 import path from 'path';
+import { initializeHandlebars } from './config/mailer';
 
 const app = express();
 
@@ -44,6 +45,7 @@ import './swaggers/CategorySwagger';
 
 dotenv.config();
 connectDB();
+initializeHandlebars();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(

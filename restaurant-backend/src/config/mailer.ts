@@ -17,7 +17,7 @@ transporter.use(
     viewEngine: {
       extname: '.hbs',
       partialsDir: path.resolve(__dirname, '../views'),
-      defaultLayout: false,
+      defaultLayout: '', 
     },
     viewPath: path.resolve(__dirname, '../views'),
     extName: '.hbs',

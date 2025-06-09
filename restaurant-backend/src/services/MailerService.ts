@@ -14,6 +14,11 @@ type MailTemplateParams = {
 
 const MailerService = {
   async sendTemplateEmail({ to, subject, template, context }: MailTemplateParams) {
+    console.log('📩 Sending email with data:');
+    console.log('To:', to);
+    console.log('Subject:', subject);
+    console.log('Template:', template);
+    console.log('Context:', JSON.stringify(context, null, 2));
     await transporter.sendMail({
       from: `"BeefBeef Restaurant" <${process.env.MAIL_USERNAME}>`,
       to,
@@ -31,7 +36,7 @@ const MailerService = {
     const name = isPickup ? order.receiver : order.receiverInfo?.full_name || '';
     const phone = isPickup ? order.receiver_phone : order.receiverInfo?.phone || '';
     const address = isPickup
-      ? `Nhận tại nhà hàng<br><span style="font-weight: 600;">Nhà Hàng BeefBeef</span><br>161 đường Quốc Hương, Thảo Điền, Quận 2,<br>TP. Hồ Chí Minh`
+      ? 'Nhận tại nhà hàng<br><span style="font-weight: 600;">Nhà Hàng BeefBeef</span><br>161 đường Quốc Hương, Thảo Điền, Quận 2,<br>TP. Hồ Chí Minh'
       : `${order.receiverInfo?.street_address}, ${order.receiverInfo?.ward}, ${order.receiverInfo?.district}, ${order.receiverInfo?.province}`;
 
     await this.sendTemplateEmail({
@@ -85,6 +90,42 @@ const MailerService = {
           minute: '2-digit',
         }),
         invoiceUrl: `${process.env.CLIENT_BASE_URL || '#'}/profile/orders?orderId=${order._id}`,
+      },
+    });
+  },
+
+  async sendReservationConfirmation(
+    toEmail: string,
+    reservationInfo: {
+      reservationId: string;
+      status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'DONE';
+      name: string;
+      phone: string;
+      date: string;
+      time: string;
+      tableType: string;
+      numberOfPeople: number;
+      isChooseLater: boolean;
+      note?: string;
+    },
+  ) {
+    await this.sendTemplateEmail({
+      to: toEmail,
+      subject: `Xác nhận đặt bàn #${reservationInfo.reservationId.slice(-6).toUpperCase()}`,
+      template: 'reservation-confirmation',
+      context: {
+        reservationId: reservationInfo.reservationId.slice(-6).toUpperCase(),
+        status: reservationInfo.status.toLowerCase(),
+        name: reservationInfo.name,
+        phone: reservationInfo.phone,
+        date: reservationInfo.date,
+        time: reservationInfo.time,
+        tableType: reservationInfo.tableType,
+        numberOfPeople: reservationInfo.numberOfPeople,
+        isChooseLater: reservationInfo.isChooseLater ? 'Có' : 'Không',
+        note: reservationInfo.note || 'Không có',
+        restaurantAddress: '161 đường Quốc Hương, Thảo Điền, Quận 2, TP. Hồ Chí Minh',
+        reservationDetailUrl: `${process.env.CLIENT_BASE_URL || '#'}/profile/reservations?reservationId=${reservationInfo.reservationId}`,
       },
     });
   },

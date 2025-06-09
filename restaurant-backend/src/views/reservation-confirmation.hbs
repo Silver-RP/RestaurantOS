@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Xác nhận đặt bàn</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      text-align: center;
+      padding: 20px 0;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .logo {
+      max-width: 150px;
+      margin-bottom: 10px;
+    }
+    .title {
+      color: #2c3e50;
+      margin: 0;
+      font-size: 24px;
+    }
+    .content {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .section {
+      margin-bottom: 20px;
+    }
+    .section-title {
+      color: #2c3e50;
+      font-size: 18px;
+      margin-bottom: 10px;
+      padding-bottom: 5px;
+      border-bottom: 2px solid #eee;
+    }
+    .info-row {
+      display: flex;
+      margin-bottom: 10px;
+    }
+    .info-label {
+      width: 150px;
+      color: #666;
+    }
+    .info-value {
+      flex: 1;
+      font-weight: 500;
+    }
+    .status {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-weight: 500;
+      margin-top: 5px;
+    }
+    .status-pending {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+    .status-confirmed {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .status-cancelled {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    .status-done {
+      background-color: #e2e3e5;
+      color: #383d41;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+      color: #666;
+      font-size: 14px;
+    }
+    .button {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #2c3e50;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 4px;
+      margin-top: 10px;
+    }
+    .address {
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #f8f9fa;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <img src="https://beefbeef.com/logo.png" alt="BeefBeef Logo" class="logo">
+      <h1 class="title">Xác nhận đặt bàn</h1>
+    </div>
+
+    <div class="content">
+      <div class="section">
+        <h2 class="section-title">Thông tin đặt bàn</h2>
+        <div class="info-row">
+          <div class="info-label">Mã đặt bàn:</div>
+          <div class="info-value">#{{reservationId}}</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Trạng thái:</div>
+          <div class="info-value">
+            <span class="status status-{{status}}">{{status}}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2 class="section-title">Thông tin khách hàng</h2>
+        <div class="info-row">
+          <div class="info-label">Họ và tên:</div>
+          <div class="info-value">{{name}}</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Số điện thoại:</div>
+          <div class="info-value">{{phone}}</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2 class="section-title">Chi tiết đặt bàn</h2>
+        <div class="info-row">
+          <div class="info-label">Ngày đặt:</div>
+          <div class="info-value">{{date}}</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Giờ đặt:</div>
+          <div class="info-value">{{time}}</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Loại bàn:</div>
+          <div class="info-value">{{tableType}}</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Số người:</div>
+          <div class="info-value">{{numberOfPeople}} người</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Chọn món sau:</div>
+          <div class="info-value">{{isChooseLater}}</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Ghi chú:</div>
+          <div class="info-value">{{note}}</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2 class="section-title">Địa chỉ nhà hàng</h2>
+        <div class="address">
+          {{restaurantAddress}}
+        </div>
+      </div>
+
+      <div class="section">
+        <a href="{{reservationDetailUrl}}" class="button">Xem chi tiết đặt bàn</a>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>© 2024 BeefBeef Restaurant. All rights reserved.</p>
+      <p>Email này được gửi tự động, vui lòng không trả lời.</p>
+    </div>
+  </div>
+</body>
+</html>
