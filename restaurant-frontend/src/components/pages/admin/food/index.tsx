@@ -41,14 +41,14 @@ const MenuTable: React.FC = () => {
   };
 
   const [selectedDishId, setSelectedDishId] = React.useState<string | null>(null);
+
   const handleCloseFoodIngredientsModal = () => {
     setSelectedDishId(null);
   };
+  
   const handleViewDishIngredient = (dishId: string) => {
     if (selectedDishId !== dishId) {
       setSelectedDishId(dishId);
-      console.log('Selected dish ID - selectedDishId:', selectedDishId);
-      console.log('Dish ID:', dishId);
     }
   };
 

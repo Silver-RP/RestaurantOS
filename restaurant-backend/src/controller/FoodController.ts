@@ -429,37 +429,50 @@ class FoodController {
     }
   }
 
-  async updateDishIngredient (req: Request, res: Response): Promise<any> {
+  async updateDishIngredient(req: Request, res: Response): Promise<any> {
     try {
-      const { dishId, id } = req.params;
-      if (!mongoose.Types.ObjectId.isValid(dishId) || !mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(400).json({ message: 'Invalid dish or ingredient ID' });
+      const dishId = req.params.dishId;
+      const updates = req.body;
+
+      if (!mongoose.Types.ObjectId.isValid(dishId)) {
+        return res.status(400).json({ message: 'Invalid dish ID' });
       }
-      const { quantity, unit } = req.body;
-      if (quantity === undefined || unit === undefined) {
-        return res.status(400).json({ message: 'Missing required fields' });
+  
+      if (!Array.isArray(updates)) {
+        return res.status(400).json({ message: 'Body must be an array of updates.' });
       }
-      const updatedIngredient = await FoodService.updateDishIngredient(dishId, id, quantity, unit);
-      return res.status(200).json({ data: updatedIngredient });
+  
+      const results = await FoodService.updateManyDishIngredients(dishId, updates);
+  
+      return res.status(200).json({ data: results });
     } catch (error) {
-      console.error('Error updating dish ingredient:', error);
+      console.error('Error updating dish ingredients:', error);
       return res.status(500).json({ message: 'Internal server error' });
     }
   }
 
   async deleteDishIngredient(req: Request, res: Response): Promise<any> {
     try {
-      const { dishId, id } = req.params;
-      if (!mongoose.Types.ObjectId.isValid(dishId) || !mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(400).json({ message: 'Invalid dish or ingredient ID' });
+      const dishId = req.params.dishId;
+      const { ids } = req.body;
+
+      if (!mongoose.Types.ObjectId.isValid(dishId)) {
+        return res.status(400).json({ message: 'Invalid dish ID' });
       }
-      const deletedIngredient = await FoodService.deleteDishIngredient(dishId, id);
-      return res.status(200).json({ data: deletedIngredient });
+  
+      if (!Array.isArray(ids)) {
+        return res.status(400).json({ message: 'ids must be an array.' });
+      }
+  
+      const deleted = await FoodService.deleteManyDishIngredients( ids, dishId);
+  
+      return res.status(200).json({ data: deleted });
     } catch (error) {
-      console.error('Error deleting dish ingredient:', error);
+      console.error('Error deleting dish ingredients:', error);
       return res.status(500).json({ message: 'Internal server error' });
     }
   }
+  
 
   
 }

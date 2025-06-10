@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
-console.log('➡️ [MailerConfig] mailer.ts is being loaded.');
 import nodemailer from 'nodemailer';
 import path from 'path';
-import hbs from 'nodemailer-express-handlebars';
+// import hbs from 'nodemailer-express-handlebars';
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -12,13 +11,9 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Initialize handlebars with dynamic import
 const initializeHandlebars = async () => {
   try {
-    console.log('⚙️ [MailerConfig] Attempting to initialize Handlebars...');
-    console.log('⚙️ [MailerConfig] About to import nodemailer-express-handlebars...');
     const hbs = (await import('nodemailer-express-handlebars')).default;
-    console.log('✅ [MailerConfig] nodemailer-express-handlebars imported successfully.');
     transporter.use(
       'compile',
       hbs({
@@ -31,11 +26,7 @@ const initializeHandlebars = async () => {
         extName: '.hbs',
       }),
     );
-    console.log(
-      '✅ [MailerConfig] Handlebars initialized successfully and applied to transporter.',
-    );
 
-    // Verify transporter configuration
     transporter.verify(function (error) {
       if (error) {
         console.error('❌ [MailerConfig] Mailer verification error:', error);
@@ -51,41 +42,9 @@ const initializeHandlebars = async () => {
   }
 };
 
-// Call the initialization
 initializeHandlebars().catch((err) =>
   console.error('Unhandled error during initializeHandlebars call:', err),
 );
 
 export default transporter;
 
-
-
-// import nodemailer from 'nodemailer';
-// import path from 'path';
-
-// export const createTransporter = async () => {
-//   const { default: hbs } = await import('nodemailer-express-handlebars');
-
-//   const transporter = nodemailer.createTransport({
-//     service: 'gmail',
-//     auth: {
-//       user: process.env.MAIL_USERNAME,
-//       pass: process.env.MAIL_PASSWORD,
-//     },
-//   });
-
-//   transporter.use(
-//     'compile',
-//     hbs({
-//       viewEngine: {
-//         extname: '.hbs',
-//         partialsDir: path.resolve(__dirname, '../views'),
-//         defaultLayout: false,
-//       },
-//       viewPath: path.resolve(__dirname, '../views'),
-//       extName: '.hbs',
-//     }),
-//   );
-
-//   return transporter;
-// };

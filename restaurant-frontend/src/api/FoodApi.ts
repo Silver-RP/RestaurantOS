@@ -201,9 +201,9 @@ export const addDishIngredientApi = async (ingredientData: any, dishId: string):
   }
 }
 
-export const updateDishIngredientApi = async (ingredientId: string, ingredientData: any, dishId: string): Promise<any> => {
+export const updateDishIngredientApi = async (dishIngredientData: any, dishId: string): Promise<any> => {
   try {
-    const res = await api.put(`/food/${dishId}/ingredients/${ingredientId}`, ingredientData);
+    const res = await api.put(`/food/${dishId}/ingredients`, dishIngredientData);
     return res.data;
   } catch (error) {
     console.error('Error updating dish ingredient:', error);
@@ -211,9 +211,11 @@ export const updateDishIngredientApi = async (ingredientId: string, ingredientDa
   }
 }
 
-export const deleteDishIngredientApi = async (ingredientId: string, dishId: string): Promise<any> => {
+export const deleteDishIngredientApi = async (_ids: string[], dishId: string): Promise<any> => {
   try {
-    const res = await api.delete(`/food/${dishId}/ingredients/${ingredientId}`);
+    const res = await api.delete(`/food/${dishId}/ingredients`, {
+      data: { ids: _ids },
+      });
     return res.data;
   } catch (error) {
     console.error('Error deleting dish ingredient:', error);

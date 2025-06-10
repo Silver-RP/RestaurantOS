@@ -113,10 +113,10 @@ export const useCRUDFoods = () => {
         }
     }
 
-    const updateDishIngredient = async (ingredientId: string, ingredientData: any, dishId: string) => {
+    const updateDishIngredient = async ( dishIngredientData: any, dishId: string) => {
         dispatch(showOverlayLoading("Đang cập nhật nguyên liệu..."));
         try {
-            const response = await updateDishIngredientApi(ingredientId, ingredientData, dishId);
+            const response = await updateDishIngredientApi(dishIngredientData, dishId);
             toast.success('Cập nhật nguyên liệu thành công');
             return response;
         } catch (error) {
@@ -127,10 +127,10 @@ export const useCRUDFoods = () => {
         }
     }
 
-    const deleteDishIngredient = async (ingredientId: string, dishId: string) => {
+    const deleteDishIngredient = async ( _ids: string[], dishId: string) => {
         dispatch(showOverlayLoading("Đang xóa nguyên liệu..."));
         try {
-            const response = await deleteDishIngredientApi(ingredientId, dishId);
+            const response = await deleteDishIngredientApi( _ids, dishId );
             toast.success('Xóa nguyên liệu thành công');
             return response;
         } catch (error) {

@@ -65,19 +65,20 @@ const FoodIngredientsModal: React.FC<FoodIngredientsModalProps> = ({
 
       return (
         <tr
-          key={item.ingredientId}
-          className={clsx(
-            'border-b',
-            isDeleted && 'opacity-40 ',
-          )}
+            key={item._id}
+            className={clsx(
+                'border-b',
+                isDeleted && 'opacity-40 ',
+                isEdited && 'bg-yellow-50', 
+            )}
         >
           {/* STT */}
-          <td className="py-2 text-center pointer-events-none">
+          <td className="py-2 text-center ">
             <span className="font-medium">{index + 1}</span>
           </td>
 
           {/* Tên nguyên liệu */}
-          <td className=" text-left pl-24 pointer-events-none">
+          <td className=" text-left pl-24 ">
             {isEdited ? (
               <Autocomplete
                 size="small"
@@ -90,12 +91,12 @@ const FoodIngredientsModal: React.FC<FoodIngredientsModalProps> = ({
                 }
                 onChange={(event, newValue) => {
                   handleUpdateIngredient(
-                    item.ingredientId,
+                    item._id,
                     'ingredientId',
                     newValue?._id || '',
                   );
                   handleUpdateIngredient(
-                    item.ingredientId,
+                    item._id,
                     'name',
                     newValue?.name || '',
                   );
@@ -151,15 +152,15 @@ const FoodIngredientsModal: React.FC<FoodIngredientsModalProps> = ({
           </td>
 
           {/* Số lượng */}
-          <td className="text-center min-w-[100px] pointer-events-none">
+          <td className="text-center min-w-[100px] ">
             {isEdited ? (
               <TextField
                 size="small"
                 type="number"
-                value={item.quantity}
-                inputProps={{ min: 0, style: { textAlign: 'right' } }}
+                value={item.quantity || ''}
+                inputProps={{ min: 0, style: { textAlign: 'center' } }}
                 onChange={(e) =>
-                  handleUpdateIngredient(item.ingredientId, 'quantity', e.target.value)
+                  handleUpdateIngredient(item._id, 'quantity', e.target.value)
                 }
                 onKeyDown={(e) => {
                   if (['-', '+', 'e'].includes(e.key)) e.preventDefault();
@@ -171,13 +172,13 @@ const FoodIngredientsModal: React.FC<FoodIngredientsModalProps> = ({
           </td>
 
           {/* Đơn vị */}
-          <td className="text-center min-w-[120px] pointer-events-none">
+          <td className="text-center min-w-[120px]">
             {isEdited ? (
               <Select
                 size="small"
                 value={item.unit}
                 onChange={(e) =>
-                  handleUpdateIngredient(item.ingredientId, 'unit', e.target.value)
+                  handleUpdateIngredient(item._id, 'unit', e.target.value)
                 }
                 displayEmpty
                 fullWidth
@@ -205,28 +206,28 @@ const FoodIngredientsModal: React.FC<FoodIngredientsModalProps> = ({
             {isDeleted ? (
               <button
                 className="px-2 py-1 text-sm text-blue-600 hover:underline"
-                onClick={() => handleUndoDelete(item.ingredientId)}
+                onClick={() => handleUndoDelete(item._id)}
               >
                 Hoàn tác
               </button>
             ) : isEdited ? (
               <button
                 className="px-2 py-1 text-sm text-gray-600 hover:underline"
-                onClick={() => handleCancelEdit(item.ingredientId)}
+                onClick={() => handleCancelEdit(item._id)}
               >
-                Huỷ chỉnh sửa
+                Huỷ
               </button>
             ) : (
               <div className="flex justify-center gap-2">
                 <button
                   className="px-2 py-1 bg-yellow-500 text-white text-sm rounded hover:bg-yellow-600"
-                  onClick={() => handleStartEdit(item.ingredientId)}
+                  onClick={() => handleStartEdit(item._id)}
                 >
                   Sửa
                 </button>
                 <button
                   className="px-2 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600"
-                  onClick={() => handleSoftDelete(item.ingredientId)}
+                  onClick={() => handleSoftDelete(item._id)}
                 >
                   Xoá
                 </button>

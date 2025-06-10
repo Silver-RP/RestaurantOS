@@ -6,8 +6,6 @@ import { Category } from 'types/Category.type';
 import { FoodDetail } from 'types/Dish.types';
 import { toast } from 'react-toastify';
 import { useCRUDFoods } from './useCRUDFoods';
-import { format } from 'date-fns';
-import { vi } from 'date-fns/locale';
 import { fetchAllIngredients } from '../api/IngredientsApi';
 import { Ingredient } from '@/types/Ingredient';
 
@@ -27,6 +25,7 @@ type SortField =
 type SortDirection = 'asc' | 'desc';
 type IngredientStatus = 'original' | 'edited' | 'deleted' ;
 type IngredientField = {
+  _id?: string;
   ingredientId?: string;
   name: string;
   quantity: string;
@@ -464,7 +463,6 @@ export function useDishIngredient(dishId: string, onClose: () => void) {
   const [dishData, setDishData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentTime, setCurrentTime] = useState(new Date());
   const [showInputRows, setShowInputRows] = useState(false);
   const [ingredientOptions, setIngredientOptions] = useState<Ingredient[]>([]);
   const [newIngredients, setNewIngredients] = useState<IngredientField[]>([]);
@@ -526,44 +524,62 @@ export function useDishIngredient(dishId: string, onClose: () => void) {
   const handleSave = async () => {
     for (const item of newIngredients) {
       if (!item.ingredientId || !item.quantity || !item.unit) {
-       toast.error('Vui lòng điền đầy đủ thông tin nguyên liệu!');
+        toast.error('Vui lòng điền đầy đủ thông tin nguyên liệu!');
         return;
       }
     }
 
-    const toCreate = dataDishIngredients.filter((i: { _status: string; }) => i._status === 'new');
     const toUpdate = dataDishIngredients.filter((i: { _status: string; }) => i._status === 'edited');
     const toDelete = dataDishIngredients.filter((i: { _status: string; }) => i._status === 'deleted');
-  
-    const payload = newIngredients.map((item) => ({
-      ingredientId: item.ingredientId,
-      quantity: Number(item.quantity),
-      unit: item.unit,
-    }));
-  
-    const { edited, deleted, created } = getBatchChanges();
 
+    if (newIngredients.length === 0 && toUpdate.length === 0 && toDelete.length === 0) {
+      toast.info('Không có thay đổi nào để lưu');
+      return;
+    }
+    
     try {
-      
-      const updatedData = await addDishIngredient(payload, dishId);
-      await fetchData(dishId);
-      
-      setDataDishIngredients(updatedData);
-      setNewIngredients([]); 
-      setShowInputRows(false); 
-      toast.success('Thêm nguyên liệu thành công');
-      onClose(); 
-
+      if (newIngredients.length > 0) {
+        const payload = newIngredients.map((item) => ({
+          _id: item._id,
+          ingredientId: item.ingredientId,
+          quantity: Number(item.quantity),
+          unit: item.unit,
+        }));
+        await addDishIngredient(payload, dishId);
+      }
+    
+      if (toUpdate.length > 0) {
+        const payload = toUpdate.map((item) => ({
+          _id: item._id,
+          ingredientId: item.ingredientId,
+          quantity: Number(item.quantity),
+          unit: item.unit,
+        }));
+        await updateDishIngredient(payload, dishId);
+      }
+    
+      if (toDelete.length > 0) {
+        const ids = toDelete.map((item) => item._id); 
+        await deleteDishIngredient(ids, dishId);
+      }
+    
+      await fetchData(dishId); 
+    
+      setDataDishIngredients([]); 
+      setNewIngredients([]);
+      setShowInputRows(false);
+      toast.success('Cập nhật nguyên liệu thành công');
+      onClose();
     } catch (err) {
-      setError('Lỗi khi thêm nguyên liệu món ăn');
-      console.error('Lỗi khi thêm nguyên liệu món ăn:', err);
-    } 
+      setError('Lỗi khi cập nhật nguyên liệu món ăn');
+      console.error('Lỗi khi lưu nguyên liệu món ăn:', err);
+    }
   };
 
   const handleStartEdit = (id: string) => {
     setDataDishIngredients((prev: any[]) =>
       prev.map((item) => {
-        if (item.ingredientId !== id) return item;
+        if (item._id !== id) return item;
   
         const { _status, _original, ...cleanItem } = item; 
   
@@ -593,7 +609,7 @@ export function useDishIngredient(dishId: string, onClose: () => void) {
   const handleCancelEdit = (id: string) => {
     setDataDishIngredients((prev: any[]) =>
       prev.map((item) => {
-        if (item.ingredientId === id && item._original) {
+        if (item._id === id && item._original) {
           const { _original } = item;
           return {
             ..._original,
@@ -608,7 +624,7 @@ export function useDishIngredient(dishId: string, onClose: () => void) {
   const handleSoftDelete = (id: string) => {
     setDataDishIngredients((prev: any[]) =>
       prev.map((item) => {
-        if (item.ingredientId !== id) return item;
+        if (item._id !== id) return item;
   
         const { _status, _original, ...cleanItem } = item;
   
@@ -621,11 +637,10 @@ export function useDishIngredient(dishId: string, onClose: () => void) {
     );
   };
   
-  
   const handleUndoDelete = (id: string) => {
     setDataDishIngredients((prev: any[]) =>
       prev.map((item) => {
-        if (item.ingredientId !== id) return item;
+        if (item._id !== id) return item;
   
         if (item._original) {
           return {
@@ -642,22 +657,15 @@ export function useDishIngredient(dishId: string, onClose: () => void) {
     );
   };
   
-  
-  const getBatchChanges = () => {
-    const edited = dataDishIngredients.filter((item: { _status: string; }) => item._status === 'edited');
-    const deleted = dataDishIngredients.filter((item: { _status: string; }) => item._status === 'deleted');
-    const created = newIngredients;
-  
-    return { edited, deleted, created };
-  };
-  
-
   const hasIngredients = dataDishIngredients && dataDishIngredients.length > 0;
 
   return { dataDishIngredients, isLoading, error, 
-    handleUpdateIngredient, dishData, currentTime, showInputRows, ingredientOptions, handleSave,
-    setShowInputRows, handleDeleteNewIngredient, setNewIngredients, hasIngredients, newIngredients, handleNewIngredientChange,
-    handleSoftDelete, handleUndoDelete, handleStartEdit, handleCancelEdit,
+    handleUpdateIngredient, dishData,
+    showInputRows, ingredientOptions, handleSave,
+    setShowInputRows, handleDeleteNewIngredient, 
+    setNewIngredients, hasIngredients, newIngredients, 
+    handleNewIngredientChange, handleSoftDelete, 
+    handleUndoDelete, handleStartEdit, handleCancelEdit,
   };
 }
 
