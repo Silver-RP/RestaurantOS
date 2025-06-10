@@ -1,22 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import Section from './Section';
 import ButtonComponents from '../../common/ButtonComponents';
 import { useReservations } from '@/hooks/useReservations';
 import { ReservationFormData } from '@/types/reservation.type';
+import { toast } from 'react-toastify';
+
 interface Step4ReviewProps {
   formData: ReservationFormData;
   setFormData: React.Dispatch<React.SetStateAction<ReservationFormData>>;
   onBack: () => void;
   onNext: () => void;
 }
+
 const Step4Review: React.FC<Step4ReviewProps> = ({
   formData,
   onNext,
   onBack,
 }) => {
   const { createReservation } = useReservations();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleConfirmReservation = async () => {
+    setIsSubmitting(true);
     try {
       const reservationPayload = {
         full_name: formData.full_name,
@@ -43,8 +49,12 @@ const Step4Review: React.FC<Step4ReviewProps> = ({
       onNext();
     } catch (error) {
       console.error('❌ Đặt bàn thất bại:', error);
+      toast.error('Có lỗi xảy ra khi đặt bàn. Vui lòng thử lại.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
   return (
     <div className="bg-bodyBackground text-white py-4 px-4 flex items-center justify-center">
       <div className="max-w-7xl mx-auto w-full">
@@ -78,9 +88,10 @@ const Step4Review: React.FC<Step4ReviewProps> = ({
             variant="filled"
             size="medium"
             onClick={handleConfirmReservation}
+            disabled={isSubmitting}
             className="px-8 py-3 text-sm sm:text-base shadow-lg bg-secondaryColor hover:opacity-90"
           >
-            Xác nhận đặt bàn
+            {isSubmitting ? 'Đang xử lý...' : 'Xác nhận đặt bàn'}
           </ButtonComponents>
         </div>
       </div>

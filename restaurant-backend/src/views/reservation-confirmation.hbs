@@ -1,203 +1,105 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Xác nhận đặt bàn</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      line-height: 1.6;
-      color: #333;
-      margin: 0;
-      padding: 0;
-    }
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    .header {
-      text-align: center;
-      padding: 20px 0;
-      background-color: #f8f9fa;
-      border-radius: 8px;
-      margin-bottom: 20px;
-    }
-    .logo {
-      max-width: 150px;
-      margin-bottom: 10px;
-    }
-    .title {
-      color: #2c3e50;
-      margin: 0;
-      font-size: 24px;
-    }
-    .content {
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    .section {
-      margin-bottom: 20px;
-    }
-    .section-title {
-      color: #2c3e50;
-      font-size: 18px;
-      margin-bottom: 10px;
-      padding-bottom: 5px;
-      border-bottom: 2px solid #eee;
-    }
-    .info-row {
-      display: flex;
-      margin-bottom: 10px;
-    }
-    .info-label {
-      width: 150px;
-      color: #666;
-    }
-    .info-value {
-      flex: 1;
-      font-weight: 500;
-    }
-    .footer {
-      text-align: center;
-      margin-top: 20px;
-      padding-top: 20px;
-      border-top: 1px solid #eee;
-      color: #666;
-      font-size: 14px;
-    }
-    .button {
-      display: inline-block;
-      padding: 10px 20px;
-      background-color: #2c3e50;
-      color: #fff;
-      text-decoration: none;
-      border-radius: 4px;
-      margin-top: 10px;
-    }
-    .address {
-      margin-top: 10px;
-      padding: 10px;
-      background-color: #f8f9fa;
-      border-radius: 4px;
-    }
-    .items-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-    .items-table th,
-    .items-table td {
-      padding: 8px;
-      text-align: left;
-      border-bottom: 1px solid #eee;
-    }
-    .items-table th {
-      background-color: #f8f9fa;
-      font-weight: 500;
-    }
-  </style>
 </head>
-<body>
-  <div class="container">
-    <div class="header">
-      <img src="https://beefbeef.com/logo.png" alt="BeefBeef Logo" class="logo">
-      <h1 class="title">Xác nhận đặt bàn</h1>
+
+<body style="background-color: #012B40; color: white; font-family: sans-serif; margin: 0; padding: 0;">
+  <div style="max-width: 600px; margin: 20px auto;">
+
+    <div style="display: flex; justify-content: space-between; align-items: center; background-color: #021D2A; padding: 24px; padding-bottom: 0px; border-top-left-radius: 16px; border-top-right-radius: 16px;">
+      <table style="width: 100%;">
+        <tr>
+          <td style="text-align: left;">
+            <img src="https://res.cloudinary.com/dw8c7oz6q/image/upload/v1748798728/logo_tmawjo.png" alt="Logo"
+              style="height: 80px;" />
+          </td>
+          <td style="text-align: right; font-size: 14px; color: #D1D5DB;">
+            BeefBeef Restaurant
+          </td>
+        </tr>
+      </table>
     </div>
 
-    <div class="content">
-      <div class="section">
-        <h2 class="section-title">Thông tin đặt bàn</h2>
-        <div class="info-row">
-          <div class="info-label">Mã đặt bàn:</div>
-          <div class="info-value">#{{_id}}</div>
+    <div style="background-color: white; color: black; border-bottom-left-radius: 16px; border-bottom-right-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+
+      <div style="background-color: #021D2A; color: white; padding: 24px;">
+        <h1 style="font-size: 20px; font-weight: 600; margin: 0 0 8px;">Cảm ơn bạn đã đặt bàn tại BeefBeef Restaurant!</h1>
+        <p style="font-size: 14px; margin: 0 0 16px;">Yêu cầu của bạn đang được xử lý. Bạn sẽ nhận được email cập nhật khi đơn hàng được giao.</p>
+        <p style="font-size: 14px; margin: 0 0 8px;">Mã đặt bàn: <strong>#{{orderId}}</strong></p>
+      </div>
+
+      <div style="padding: 24px;">
+        <div style="margin-bottom: 24px;">
+          <h2 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">Thông tin khách hàng</h2>
+          <span><strong>Họ và tên:</strong> {{name}}</span> <br>
+          <span><strong>Số điện thoại:</strong> {{phone}}</span> <br>
+          <span><strong>Email:</strong> {{email}}</span> <br>
+        </div>
+
+        <div style="margin-bottom: 24px;">
+          <h2 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">Chi tiết đặt bàn</h2>
+          <span><strong>Ngày đặt:</strong> {{date}}</span> <br>
+          <span><strong>Giờ đặt:</strong> {{time}}</span> <br>
+          <span><strong>Loại bàn:</strong> {{seatingType}}</span> <br>
+          <span><strong>Số bàn:</strong> {{tableCount}} bàn</span> <br>
+          <span><strong>Ghi chú:</strong> {{note}}</span>
+        </div>
+
+        {{#if items}}
+        <div style="margin-bottom: 24px;">
+          <h2 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">Danh sách món ăn</h2>
+          <table style="width: 100%; font-size: 14px; border-collapse: collapse; border-top: 1px solid #E5E7EB; border-bottom: 1px solid #E5E7EB;">
+            <thead>
+              <tr style="text-align: left;">
+                <th style="padding: 8px 0;">Tên món</th>
+                <th style="padding: 8px 0; text-align: center;">Số lượng</th>
+                <th style="padding: 8px 0; text-align: right;">Giá</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{#each items}}
+              <tr style="border-top: 1px solid #F3F4F6;">
+                <td style="padding: 6px 0;">{{name}}</td>
+                <td style="padding: 6px 0; text-align: center;">{{quantity}}</td>
+                <td style="padding: 6px 0; text-align: right;">{{price}}</td>
+              </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        </div>
+        {{/if}}
+
+        <div style="margin-bottom: 24px;">
+          <h2 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">Địa chỉ nhà hàng</h2>
+          <div style="background-color: #F3F4F6; padding: 12px; border-radius: 8px;">
+            Nhà Hàng BeefBeef<br>
+            161 đường Quốc Hương, Thảo Điền, Quận 2,<br>
+            TP. Hồ Chí Minh
+          </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 24px; padding-top: 24px;">
+          <a href="{{reservationDetailUrl}}"
+            style="display: inline-block; background-color: #FFDEA0; color: #021D2A; font-weight: 600; padding: 8px 16px; border-radius: 8px; text-decoration: none;">Xem
+            chi tiết đặt bàn</a>
         </div>
       </div>
 
-      <div class="section">
-        <h2 class="section-title">Thông tin khách hàng</h2>
-        <div class="info-row">
-          <div class="info-label">Họ và tên:</div>
-          <div class="info-value">{{name}}</div>
-        </div>
-        <div class="info-row">
-          <div class="info-label">Số điện thoại:</div>
-          <div class="info-value">{{phone}}</div>
-        </div>
-        <div class="info-row">
-          <div class="info-label">Email:</div>
-          <div class="info-value">{{email}}</div>
-        </div>
-      </div>
-
-      <div class="section">
-        <h2 class="section-title">Chi tiết đặt bàn</h2>
-        <div class="info-row">
-          <div class="info-label">Ngày đặt:</div>
-          <div class="info-value">{{date}}</div>
-        </div>
-        <div class="info-row">
-          <div class="info-label">Giờ đặt:</div>
-          <div class="info-value">{{time}}</div>
-        </div>
-        <div class="info-row">
-          <div class="info-label">Loại bàn:</div>
-          <div class="info-value">{{seatingType}}</div>
-        </div>
-        <div class="info-row">
-          <div class="info-label">Số bàn:</div>
-          <div class="info-value">{{tableCount}} bàn</div>
-        </div>
-        <div class="info-row">
-          <div class="info-label">Ghi chú:</div>
-          <div class="info-value">{{note}}</div>
-        </div>
-      </div>
-
-      {{#if items}}
-      <div class="section">
-        <h2 class="section-title">Danh sách món ăn</h2>
-        <table class="items-table">
-          <thead>
-            <tr>
-              <th>Tên món</th>
-              <th>Số lượng</th>
-              <th>Giá</th>
-            </tr>
-          </thead>
-          <tbody>
-            {{#each items}}
-            <tr>
-              <td>{{name}}</td>
-              <td>{{quantity}}</td>
-              <td>{{price}}</td>
-            </tr>
-            {{/each}}
-          </tbody>
-        </table>
-      </div>
-      {{/if}}
-
-      <div class="section">
-        <h2 class="section-title">Địa chỉ nhà hàng</h2>
-        <div class="address">
-          Nhà Hàng BeefBeef<br>
-          161 đường Quốc Hương, Thảo Điền, Quận 2,<br>
-          TP. Hồ Chí Minh
-        </div>
-      </div>
-
-      <div class="section">
-        <a href="{{reservationDetailUrl}}" class="button">Xem chi tiết đặt bàn</a>
+      <div style="background-color: #F3F4F6; font-size: 14px; color: #4B5563; text-align: center; padding: 16px;">
+        Nếu bạn có câu hỏi, vui lòng liên hệ chúng tôi qua hotline hoặc email.<br />
+        BeefBeef, 161 Quốc Hương, Thảo Điền, Quận 2 | 055123456 | beefbeef@gmail.com
       </div>
     </div>
 
-    <div class="footer">
-      <p>© 2024 BeefBeef Restaurant. All rights reserved.</p>
-      <p>Email này được gửi tự động, vui lòng không trả lời.</p>
+    <div style="text-align: center; font-size: 14px; color: #9CA3AF; padding: 24px;">
+      <p style="margin: 0;">&copy; 2024 BeefBeef. All rights reserved.</p>
+      <p style="margin-top: 8px;">
+        <a href="#" style="color: #D1D5DB; text-decoration: none;">Chính sách bảo mật</a> ·
+        <a href="#" style="color: #D1D5DB; text-decoration: none;">Liên hệ</a>
+      </p>
     </div>
   </div>
 </body>
