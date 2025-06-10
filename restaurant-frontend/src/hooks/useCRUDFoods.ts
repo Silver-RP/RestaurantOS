@@ -1,4 +1,6 @@
-import { createFoodApi, updateFoodApi, softDeleteFood, restoreFoodAPI, permanentlyDeleteFoodAPI } from '@/api/FoodApi';
+import { createFoodApi, updateFoodApi, softDeleteFood, restoreFoodAPI, permanentlyDeleteFoodAPI,
+    fetchDishIngredientsApi, addDishIngredientApi, updateDishIngredientApi, deleteDishIngredientApi
+} from '@/api/FoodApi';
 import { useNavigate } from 'react-router-dom';
 import { showOverlayLoading, hideOverlayLoading } from '@/redux/feature/loadingUI/uiSlice';
 import { useDispatch } from 'react-redux';
@@ -88,8 +90,60 @@ export const useCRUDFoods = () => {
         }
     }
 
+    const getDishIngredients = async (dishId: string) => {
+        try {
+            const response = await fetchDishIngredientsApi(dishId);
+            return response;
+        } catch (error) {
+            toast.error('Lỗi khi tải nguyên liệu món ăn');
+            console.error('Lỗi khi tải nguyên liệu món ăn:', error);
+        } 
+    }
+
+    const addDishIngredient = async (ingredientData: any, dishId: string) => {
+        dispatch(showOverlayLoading("Đang thêm nguyên liệu..."));
+        try {
+            const response = await addDishIngredientApi(ingredientData, dishId);
+            return response;
+        } catch (error) {
+            toast.error('Lỗi khi thêm nguyên liệu món ăn');
+            console.error('Lỗi khi thêm nguyên liệu món ăn:', error);
+        } finally {
+            dispatch(hideOverlayLoading());
+        }
+    }
+
+    const updateDishIngredient = async ( dishIngredientData: any, dishId: string) => {
+        dispatch(showOverlayLoading("Đang cập nhật nguyên liệu..."));
+        try {
+            const response = await updateDishIngredientApi(dishIngredientData, dishId);
+            toast.success('Cập nhật nguyên liệu thành công');
+            return response;
+        } catch (error) {
+            toast.error('Lỗi khi cập nhật nguyên liệu món ăn');
+            console.error('Lỗi khi cập nhật nguyên liệu món ăn:', error);
+        } finally {
+            dispatch(hideOverlayLoading());
+        }
+    }
+
+    const deleteDishIngredient = async ( _ids: string[], dishId: string) => {
+        dispatch(showOverlayLoading("Đang xóa nguyên liệu..."));
+        try {
+            const response = await deleteDishIngredientApi( _ids, dishId );
+            toast.success('Xóa nguyên liệu thành công');
+            return response;
+        } catch (error) {
+            toast.error('Lỗi khi xóa nguyên liệu món ăn');
+            console.error('Lỗi khi xóa nguyên liệu món ăn:', error);
+        } finally {
+            dispatch(hideOverlayLoading());
+        }
+    }
+
     return {
-        createFood, updateFood, confirmDeleteDish, restoreFood, permanentDeleteFood
+        createFood, updateFood, confirmDeleteDish, restoreFood, permanentDeleteFood,
+        getDishIngredients, addDishIngredient, updateDishIngredient, deleteDishIngredient
     };
 }
 

@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction, Slice } from '@reduxjs/toolkit';
 import { AuthState, User } from './authTypes';
 import { RegisterUser, LoginUser, LogoutUser, LoginWithGoogle } from './authActions';
 import Cookies from 'js-cookie';
@@ -13,7 +13,7 @@ const initialState: AuthState = {
   token: null,
 };
 
-const authSlice = createSlice({
+const authSlice: Slice<AuthState> = createSlice({
   name: 'auth',
   initialState,
   reducers: {
