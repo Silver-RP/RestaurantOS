@@ -14,13 +14,25 @@ type MailTemplateParams = {
 
 const MailerService = {
   async sendTemplateEmail({ to, subject, template, context }: MailTemplateParams) {
-    await transporter.sendMail({
-      from: `"BeefBeef Restaurant" <${process.env.MAIL_USERNAME}>`,
-      to,
-      subject,
-      template,
-      context,
-    } as any);
+    console.log('📧 [MailerService] Starting to send template email');
+    console.log('📝 [MailerService] Template name:', template);
+    console.log('🔍 [MailerService] Template context:', JSON.stringify(context, null, 2));
+    console.log('📨 [MailerService] Email to:', to);
+    console.log('📌 [MailerService] Email subject:', subject);
+
+    try {
+      await transporter.sendMail({
+        from: `"BeefBeef Restaurant" <${process.env.MAIL_USERNAME}>`,
+        to,
+        subject,
+        template,
+        context,
+      } as any);
+      console.log('✅ [MailerService] Email sent successfully');
+    } catch (error) {
+      console.error('❌ [MailerService] Error sending email:', error);
+      throw error;
+    }
   },
 
   async sendOrderConfirmation(
@@ -86,6 +98,80 @@ const MailerService = {
         }),
         invoiceUrl: `${process.env.CLIENT_BASE_URL || '#'}/profile/orders?orderId=${order._id}`,
       },
+    });
+  },
+
+  async sendReservationConfirmation(reservation: {
+    _id: string;
+    user: IUser;
+    full_name: string;
+    phone: string;
+    email: string;
+    time: string;
+    date: string;
+    seating_type: string;
+    table_count: number;
+    note?: string;
+    items?: {
+      name: string;
+      quantity: number;
+      price: number;
+    }[];
+  }) {
+    console.log('📋 [MailerService] Preparing reservation confirmation email');
+    const {
+      _id,
+      user,
+      full_name,
+      phone,
+      email,
+      time,
+      date,
+      seating_type,
+      table_count,
+      note,
+      items,
+    } = reservation;
+
+    console.log('⏰ [MailerService] Original time value:', time);
+    console.log('📅 [MailerService] Original date value:', date);
+
+    const orderIdShort = _id.toString().slice(-6).toUpperCase();
+    console.log('🆔 [MailerService] Reservation ID:', orderIdShort);
+
+    const emailContext = {
+      name: full_name,
+      phone,
+      email,
+      time: time, // Giữ nguyên giá trị time gốc
+      date: new Date(date).toLocaleDateString('vi-VN', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'numeric',
+        year: 'numeric',
+      }),
+      seatingType: seating_type,
+      tableCount: table_count,
+      note: note || 'Không có ghi chú',
+      items:
+        items?.map((item) => ({
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price.toLocaleString('vi-VN') + '₫',
+        })) || [],
+      reservationDetailUrl: `${process.env.CLIENT_BASE_URL || '#'}/profile/reservations?reservationId=${_id}`,
+    };
+
+    console.log(
+      '📨 [MailerService] Prepared email context:',
+      JSON.stringify(emailContext, null, 2),
+    );
+
+    await this.sendTemplateEmail({
+      to: user.email,
+      subject: `Xác nhận đặt bàn #${orderIdShort}`,
+      template: 'reservation-confirmation',
+      context: emailContext,
     });
   },
 

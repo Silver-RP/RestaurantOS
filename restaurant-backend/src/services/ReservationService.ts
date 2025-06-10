@@ -2,7 +2,7 @@ import { Reservation } from '../models/ReservationModel';
 import { ReservationDetail } from '../models/ReservationDetailModel';
 import { Types } from 'mongoose';
 import { Dish } from '../models/DishModel';
-import transporter from '../config/mailer';
+import MailerService from './MailerService';
 
 class ReservationService {
   async createReservation(data: any, userId: Types.ObjectId) {
@@ -51,16 +51,40 @@ class ReservationService {
       }
 
       if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        await this.sendReservationConfirmationEmail(email, full_name, {
-          date,
-          time,
-          tableType: table_type,
-          people: number_of_people,
-          note,
-          reservationId: savedReservation._id.toString(),
-        });
-      }
+        console.log('📧 Starting email sending process for reservation:', savedReservation._id);
 
+        const reservationItems = await ReservationDetail.find({
+          reservation_id: savedReservation._id,
+        }).lean();
+        console.log('📦 Found reservation items:', reservationItems);
+
+        const emailData = {
+          _id: savedReservation._id.toString(),
+          user: { email } as IUser,
+          full_name,
+          phone,
+          email,
+          time,
+          date,
+          seating_type: table_type,
+          table_count: 1,
+          note,
+          items: reservationItems.map((item) => ({
+            name: item.dish_name,
+            quantity: item.quantity,
+            price: item.unit_price,
+          })),
+        };
+        console.log('📨 Email data prepared:', emailData);
+
+        try {
+          await MailerService.sendReservationConfirmation(emailData);
+          console.log('✅ Email sent successfully');
+        } catch (emailError) {
+          console.error('❌ Error sending email:', emailError);
+          // Don't throw error here to not block reservation creation
+        }
+      }
       return savedReservation;
     } catch (error: any) {
       console.error('❌ Error in createReservation:', error);
@@ -110,46 +134,6 @@ class ReservationService {
 
     return { ...reservation, details: detailsWithImages };
   }
-
-  sendReservationConfirmationEmail = async (
-    toEmail: string,
-    fullName: string,
-    reservationInfo: {
-      date: string;
-      time: string;
-      tableType: string;
-      people: number;
-      note?: string;
-      reservationId: string;
-    },
-  ) => {
-    try {
-      const htmlContent = `
-        <h2>Xin chào ${fullName},</h2>
-        <p>Đơn đặt bàn của bạn đã được ghi nhận với thông tin sau:</p>
-        <ul>
-          <li><strong>Ngày:</strong> ${reservationInfo.date}</li>
-          <li><strong>Giờ:</strong> ${reservationInfo.time}</li>
-          <li><strong>Loại bàn:</strong> ${reservationInfo.tableType}</li>
-          <li><strong>Số người:</strong> ${reservationInfo.people}</li>
-          <li><strong>Ghi chú:</strong> ${reservationInfo.note || 'Không có'}</li>
-          <li><strong>Mã đơn:</strong> ${reservationInfo.reservationId}</li>
-        </ul>
-        <p>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!</p>
-      `;
-
-      await transporter.sendMail({
-        from: `"BeefBeef Restaurant" <${process.env.MAIL_USERNAME}>`,
-        to: toEmail,
-        subject: 'Xác nhận đơn đặt bàn',
-        html: htmlContent,
-      });
-
-      console.log('📧 Email xác nhận đã gửi đến:', toEmail);
-    } catch (err: any) {
-      console.error('❌ Gửi email thất bại:', err);
-    }
-  };
 
   async getAllReservations() {
     return await Reservation.find().sort({ createdAt: -1 }).lean();
