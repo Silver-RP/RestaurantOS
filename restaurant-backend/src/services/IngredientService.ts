@@ -1,4 +1,3 @@
-import { error } from "console";
 import { Dish } from "../models/DishModel";
 import Ingredient, { IIngredient } from "../models/IngredientModel";
 import { ingredientSchema } from '../validators/ingredientValidator';

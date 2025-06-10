@@ -32,5 +32,5 @@ export interface IInventoryDaily extends Document {
     next();
   });
   
-  export const DailyInventory = mongoose.model<IInventoryDaily>('DailyInventory', inventoryDailySchema);
+  export const InventoryDaily = mongoose.model<IInventoryDaily>('InventoryDaily', inventoryDailySchema);
   
