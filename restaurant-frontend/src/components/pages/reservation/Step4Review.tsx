@@ -20,8 +20,8 @@ const Step4Review: React.FC<Step4ReviewProps> = ({
     try {
       const reservationPayload = {
         full_name: formData.full_name,
-        email: formData.email,
         phone: formData.phone,
+        email: formData.email,
         date: formData.date,
         time: formData.time,
         table_type: formData.table_type,

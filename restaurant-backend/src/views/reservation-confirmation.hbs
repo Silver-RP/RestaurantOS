@@ -61,29 +61,6 @@
       flex: 1;
       font-weight: 500;
     }
-    .status {
-      display: inline-block;
-      padding: 5px 10px;
-      border-radius: 4px;
-      font-weight: 500;
-      margin-top: 5px;
-    }
-    .status-pending {
-      background-color: #fff3cd;
-      color: #856404;
-    }
-    .status-confirmed {
-      background-color: #d4edda;
-      color: #155724;
-    }
-    .status-cancelled {
-      background-color: #f8d7da;
-      color: #721c24;
-    }
-    .status-done {
-      background-color: #e2e3e5;
-      color: #383d41;
-    }
     .footer {
       text-align: center;
       margin-top: 20px;
@@ -107,6 +84,21 @@
       background-color: #f8f9fa;
       border-radius: 4px;
     }
+    .items-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    .items-table th,
+    .items-table td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+    .items-table th {
+      background-color: #f8f9fa;
+      font-weight: 500;
+    }
   </style>
 </head>
 <body>
@@ -121,13 +113,7 @@
         <h2 class="section-title">Thông tin đặt bàn</h2>
         <div class="info-row">
           <div class="info-label">Mã đặt bàn:</div>
-          <div class="info-value">#{{reservationId}}</div>
-        </div>
-        <div class="info-row">
-          <div class="info-label">Trạng thái:</div>
-          <div class="info-value">
-            <span class="status status-{{status}}">{{status}}</span>
-          </div>
+          <div class="info-value">#{{_id}}</div>
         </div>
       </div>
 
@@ -140,6 +126,10 @@
         <div class="info-row">
           <div class="info-label">Số điện thoại:</div>
           <div class="info-value">{{phone}}</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Email:</div>
+          <div class="info-value">{{email}}</div>
         </div>
       </div>
 
@@ -155,15 +145,11 @@
         </div>
         <div class="info-row">
           <div class="info-label">Loại bàn:</div>
-          <div class="info-value">{{tableType}}</div>
+          <div class="info-value">{{seatingType}}</div>
         </div>
         <div class="info-row">
-          <div class="info-label">Số người:</div>
-          <div class="info-value">{{numberOfPeople}} người</div>
-        </div>
-        <div class="info-row">
-          <div class="info-label">Chọn món sau:</div>
-          <div class="info-value">{{isChooseLater}}</div>
+          <div class="info-label">Số bàn:</div>
+          <div class="info-value">{{tableCount}} bàn</div>
         </div>
         <div class="info-row">
           <div class="info-label">Ghi chú:</div>
@@ -171,10 +157,36 @@
         </div>
       </div>
 
+      {{#if items}}
+      <div class="section">
+        <h2 class="section-title">Danh sách món ăn</h2>
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th>Tên món</th>
+              <th>Số lượng</th>
+              <th>Giá</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each items}}
+            <tr>
+              <td>{{name}}</td>
+              <td>{{quantity}}</td>
+              <td>{{price}}</td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+      {{/if}}
+
       <div class="section">
         <h2 class="section-title">Địa chỉ nhà hàng</h2>
         <div class="address">
-          {{restaurantAddress}}
+          Nhà Hàng BeefBeef<br>
+          161 đường Quốc Hương, Thảo Điền, Quận 2,<br>
+          TP. Hồ Chí Minh
         </div>
       </div>
 
