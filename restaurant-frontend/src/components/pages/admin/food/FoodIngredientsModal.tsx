@@ -57,36 +57,27 @@ const FoodIngredientsModal: React.FC<FoodIngredientsModalProps> = ({
   }
 
   if (!dataDishIngredients) return null; 
-  console.log('dFoodIngredientsModal: 1');
 
   const renderIngredientRows = () => {
     return dataDishIngredients.map((item: any, index: number) => {
       const isDeleted = item._status === 'deleted';
       const isEdited = item._status === 'edited';
 
-    // console.log('item: ', item);
-    // console.log('isDeleted: ', isDeleted);
-    // console.log('isEdited: ', isEdited);
-    // console.log('item id: ', item.ingredientId);
-
-    // console.log('item status: ', item._status);
-
-
       return (
         <tr
           key={item.ingredientId}
           className={clsx(
             'border-b',
-            isDeleted && 'opacity-40 pointer-events-none',
+            isDeleted && 'opacity-40 ',
           )}
         >
           {/* STT */}
-          <td className="py-2 text-center">
+          <td className="py-2 text-center pointer-events-none">
             <span className="font-medium">{index + 1}</span>
           </td>
 
           {/* Tên nguyên liệu */}
-          <td className=" text-left pl-24">
+          <td className=" text-left pl-24 pointer-events-none">
             {isEdited ? (
               <Autocomplete
                 size="small"
@@ -160,7 +151,7 @@ const FoodIngredientsModal: React.FC<FoodIngredientsModalProps> = ({
           </td>
 
           {/* Số lượng */}
-          <td className="text-center min-w-[100px]">
+          <td className="text-center min-w-[100px] pointer-events-none">
             {isEdited ? (
               <TextField
                 size="small"
@@ -180,7 +171,7 @@ const FoodIngredientsModal: React.FC<FoodIngredientsModalProps> = ({
           </td>
 
           {/* Đơn vị */}
-          <td className="text-center min-w-[120px]">
+          <td className="text-center min-w-[120px] pointer-events-none">
             {isEdited ? (
               <Select
                 size="small"

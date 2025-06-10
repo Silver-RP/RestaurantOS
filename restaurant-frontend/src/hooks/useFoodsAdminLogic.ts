@@ -494,7 +494,6 @@ export function useDishIngredient(dishId: string, onClose: () => void) {
 
   useEffect(() => {
     fetchData(dishId);
-    console.log('Fetching ingredients for dishId:', dishId);
   }, [dishId]);
 
  
@@ -562,13 +561,18 @@ export function useDishIngredient(dishId: string, onClose: () => void) {
   };
 
   const handleStartEdit = (id: string) => {
-    console.log('Start editing ingredient with id:', id);
     setDataDishIngredients((prev: any[]) =>
-      prev.map((item: { _id: string; }) =>
-        item._id === id
-          ? { ...item, _status: 'edited' as IngredientStatus }
-          : item,
-      ),
+      prev.map((item) => {
+        if (item.ingredientId !== id) return item;
+  
+        const { _status, _original, ...cleanItem } = item; 
+  
+        return {
+          ...item,
+          _original: { ...cleanItem }, 
+          _status: 'edited' as IngredientStatus,
+        };
+      })
     );
   };
 
@@ -589,33 +593,55 @@ export function useDishIngredient(dishId: string, onClose: () => void) {
   const handleCancelEdit = (id: string) => {
     setDataDishIngredients((prev: any[]) =>
       prev.map((item) => {
-        if (item._id === id && item._original) {
-          return { ...item._original, _status: 'original' as IngredientStatus };
+        if (item.ingredientId === id && item._original) {
+          const { _original } = item;
+          return {
+            ..._original,
+            _status: 'original' as IngredientStatus,
+          };
         }
         return item;
-      }),
+      })
     );
   };
   
   const handleSoftDelete = (id: string) => {
     setDataDishIngredients((prev: any[]) =>
-      prev.map((item) =>
-        item._id === id
-          ? { ...item, _status: 'deleted' as IngredientStatus }
-          : item,
-      ),
+      prev.map((item) => {
+        if (item.ingredientId !== id) return item;
+  
+        const { _status, _original, ...cleanItem } = item;
+  
+        return {
+          ...item,
+          _status: 'deleted' as IngredientStatus,
+          _original: _original || { ...cleanItem },
+        };
+      })
     );
   };
   
+  
   const handleUndoDelete = (id: string) => {
     setDataDishIngredients((prev: any[]) =>
-      prev.map((item) =>
-        item._id === id
-          ? { ...item, _status: 'original' as IngredientStatus }
-          : item,
-      ),
+      prev.map((item) => {
+        if (item.ingredientId !== id) return item;
+  
+        if (item._original) {
+          return {
+            ...item._original,
+            _status: 'original' as IngredientStatus,
+          };
+        }
+  
+        return {
+          ...item,
+          _status: 'original' as IngredientStatus,
+        };
+      })
     );
   };
+  
   
   const getBatchChanges = () => {
     const edited = dataDishIngredients.filter((item: { _status: string; }) => item._status === 'edited');
