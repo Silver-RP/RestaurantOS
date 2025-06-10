@@ -118,7 +118,6 @@ const MailerService = {
       price: number;
     }[];
   }) {
-    console.log('📋 [MailerService] Preparing reservation confirmation email');
     const {
       _id,
       user,
@@ -133,17 +132,14 @@ const MailerService = {
       items,
     } = reservation;
 
-    console.log('⏰ [MailerService] Original time value:', time);
-    console.log('📅 [MailerService] Original date value:', date);
-
     const orderIdShort = _id.toString().slice(-6).toUpperCase();
-    console.log('🆔 [MailerService] Reservation ID:', orderIdShort);
 
     const emailContext = {
+      orderId: orderIdShort,
       name: full_name,
       phone,
       email,
-      time: time, // Giữ nguyên giá trị time gốc
+      time: time,
       date: new Date(date).toLocaleDateString('vi-VN', {
         weekday: 'long',
         day: 'numeric',
@@ -161,11 +157,6 @@ const MailerService = {
         })) || [],
       reservationDetailUrl: `${process.env.CLIENT_BASE_URL || '#'}/profile/reservations?reservationId=${_id}`,
     };
-
-    console.log(
-      '📨 [MailerService] Prepared email context:',
-      JSON.stringify(emailContext, null, 2),
-    );
 
     await this.sendTemplateEmail({
       to: user.email,

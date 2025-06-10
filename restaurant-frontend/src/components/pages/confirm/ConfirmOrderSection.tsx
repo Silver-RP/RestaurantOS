@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ButtonComponents from '@components/common/ButtonComponents';
@@ -360,7 +361,10 @@ const OrderConfirmation = () => {
                 <div>
                   <span className="text-gray-300">Thời gian đến lấy hàng:</span>
                   <p className="font-medium">{getScheduledTimeDisplay()}</p>
-                  <p>Địa chỉ: Nhà Hàng BeefBeef – 161 Quốc Hương, Thảo Điền, Quận 2</p>
+                  <p>
+                    Địa chỉ: Nhà Hàng BeefBeef – 161 Quốc Hương, Thảo Điền, Quận
+                    2
+                  </p>
                 </div>
               </>
             ) : (
