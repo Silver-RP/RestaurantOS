@@ -192,6 +192,7 @@ interface UseIngredientFormProps {
         slug: string;
         unit: string;
         price_per_unit: number;
+        lowStockThreshold?: number;
     }) => void;
 }
 
@@ -200,6 +201,7 @@ export function useIngredientLogic({ initialData, onSubmit }: UseIngredientFormP
     const [slug, setSlug] = useState('');
     const [unit, setUnit] = useState('');
     const [pricePerUnit, setPricePerUnit] = useState(0);
+    const [lowStockThreshold, setLowStockThreshold] = useState(0);
     const [isDeleted, setIsDeleted] = useState(false);
     const [deletedAt, setDeletedAt] = useState<Date | null>(null);
 
@@ -213,6 +215,7 @@ export function useIngredientLogic({ initialData, onSubmit }: UseIngredientFormP
             setSlug(initialData.slug);
             setUnit(initialData.unit || '');
             setPricePerUnit(initialData.price_per_unit || 0);
+            setLowStockThreshold(initialData.lowStockThreshold || 0);
             setIsDeleted(initialData.isDeleted || false);
             setDeletedAt(initialData.deletedAt ? new Date(initialData.deletedAt) : null);
         }
@@ -242,6 +245,12 @@ export function useIngredientLogic({ initialData, onSubmit }: UseIngredientFormP
         if (trimmedUnit.length > 50) return toast.error('Đơn vị không được quá 50 ký tự');
 
         if (pricePerUnit <= 0) return toast.error('Giá trên đơn vị phải lớn hơn 0');
+        if (isNaN(pricePerUnit)) return toast.error('Giá trên đơn vị phải là một số hợp lệ');
+
+        if(lowStockThreshold < 0) return toast.error('Ngưỡng tồn kho thấp không được nhỏ hơn 0');
+        if (lowStockThreshold && isNaN(lowStockThreshold)) {
+            return toast.error('Ngưỡng tồn kho thấp phải là một số hợp lệ');
+        }
 
         if (isDeleted && !deletedAt) return toast.error('Vui lòng chọn ngày xóa món ăn');
         if (isDeleted && deletedAt && deletedAt > new Date()) {
@@ -253,6 +262,7 @@ export function useIngredientLogic({ initialData, onSubmit }: UseIngredientFormP
             slug: trimmedSlug,
             unit: trimmedUnit,
             price_per_unit: pricePerUnit,
+            lowStockThreshold: lowStockThreshold || 0,
         };
 
         onSubmit(data);
@@ -276,6 +286,7 @@ export function useIngredientLogic({ initialData, onSubmit }: UseIngredientFormP
     return {
         name, setName, slug, setSlug,
         unit, setUnit, pricePerUnit, setPricePerUnit,
+        lowStockThreshold, setLowStockThreshold,
         isDeleted, setIsDeleted, deletedAt, setDeletedAt,
         handleSubmit, generateSlug,
         handleDeleteClick, showConfirm, setShowConfirm, handleConfirmDelete,

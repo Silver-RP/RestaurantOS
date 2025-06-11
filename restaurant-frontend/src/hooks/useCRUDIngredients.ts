@@ -51,6 +51,7 @@ export const useCRUDIngredients = (slug?: string) => {
         slug: string;
         unit: string;
         price_per_unit: number;
+        lowStockThreshold?: number;
     }) => {
         dispatch(showOverlayLoading("Đang thêm nguyên liệu..."));
         try {
@@ -87,6 +88,7 @@ export const useCRUDIngredients = (slug?: string) => {
         slug: string;
         unit: string;
         price_per_unit: number;
+        lowStockThreshold?: number;
     }, ingredientId: string) => {
         dispatch(showOverlayLoading("Đang cập nhật nguyên liệu..."));
         try {

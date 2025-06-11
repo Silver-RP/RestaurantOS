@@ -4,6 +4,7 @@ export type Ingredient = {
     currentStock: number;
     slug: string;
     price_per_unit: number;
+    lowStockThreshold: number;
     unit: string;
     isDeleted: boolean;
     deletedAt?: Date | null;   

@@ -23,6 +23,7 @@ const EditIngredientPage = () => {
     slug: ingredient.slug,
     unit: ingredient.unit || 'kg',
     price_per_unit: ingredient.price_per_unit,
+    lowStockThreshold: ingredient.lowStockThreshold || 0,
     _id: ingredient._id,
     createdAt: ingredient.createdAt,
     updatedAt: ingredient.updatedAt,
@@ -50,7 +51,10 @@ const EditIngredientPage = () => {
       </button>
 
       <IngredientForm
-        initialData={initialData}
+        initialData={{
+          ...initialData,
+          currentStock: ingredient.currentStock,
+        }}
         onSubmit={handleSubmit}
       />
     </div>

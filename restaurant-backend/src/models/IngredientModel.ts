@@ -6,6 +6,7 @@ export interface IIngredient extends Document {
   unit: string;
   slug?: string;
   price_per_unit: number;
+  lowStockThreshold?: number;
   isDeleted: boolean;
   deletedAt: Date | null;
 }
@@ -15,6 +16,7 @@ const ingredientSchema = new mongoose.Schema({
   unit: { type: String, required: true },
   slug: { type: String, unique: true, sparse: true },
   price_per_unit: { type: Number, required: true, min: 0 },
+  lowStockThreshold: { type: Number, default: 0, min: 0 },
   isDeleted: { type: Boolean, default: false },
   deletedAt: { type: Date, default: null },
 }, { timestamps: true });

@@ -28,6 +28,7 @@ name: string;
 slug: string;
 unit: string;
 price_per_unit: number;
+lowStockThreshold?: number;
 }): Promise<void> => {
   try {
     const res = await api.post('/ingredients/create-ingredients', data);
@@ -53,6 +54,7 @@ export const updateIngredientApi = async (data: {
   slug: string;
   unit: string;
   price_per_unit: number;
+  lowStockThreshold?: number;
   }, ingredientId: string): Promise<void> => {
   try {
     const res = await api.put(`/ingredients/update-ingredients/${ingredientId}`, data);

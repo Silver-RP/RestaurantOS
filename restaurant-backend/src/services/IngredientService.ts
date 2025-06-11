@@ -109,11 +109,11 @@ class IngredientService {
       Ingredient.countDocuments(match),
     ]);
 
-    console.log('Results:', results.map(r => ({
-      name: r.name,
-      currentStock: r.currentStock,
-      dailyStock: r.dailyStock,
-      })));
+    // console.log('Results:', results.map(r => ({
+    //   name: r.name,
+    //   currentStock: r.currentStock,
+    //   dailyStock: r.dailyStock,
+    //   })));
     
     const offset = (page - 1) * limit;
     const pagingCounter = offset + 1;
@@ -143,6 +143,7 @@ class IngredientService {
         slug: ingredientData.slug,
         unit: ingredientData.unit,
         price_per_unit: ingredientData.price_per_unit,
+        lowStockThreshold: ingredientData.lowStockThreshold || 0,
       };
       const newIngredient = new Ingredient(allowedFields);
 
@@ -178,6 +179,7 @@ class IngredientService {
         slug: ingredientData.slug,
         unit: ingredientData.unit,
         price_per_unit: ingredientData.price_per_unit,
+        lowStockThreshold: ingredientData.lowStockThreshold || 0,
       };
 
       const updatedIngredient = await Ingredient.findByIdAndUpdate(id, allowedFields, {

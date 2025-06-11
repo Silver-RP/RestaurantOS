@@ -14,6 +14,7 @@ interface IngredientFormProps {
     slug: string;
     unit: string;
     price_per_unit: number;
+    lowStockThreshold?: number;
   }) => void;
 }
 
@@ -30,6 +31,8 @@ const IngredientForm: React.FC<IngredientFormProps> = ({
     setUnit,
     pricePerUnit,
     setPricePerUnit,
+    lowStockThreshold, 
+    setLowStockThreshold,
     slug,
     setSlug,
     handleDeleteClick,
@@ -135,6 +138,21 @@ const IngredientForm: React.FC<IngredientFormProps> = ({
               className="border rounded px-4 py-2 w-full"
               required
             />
+          </div>
+          <div>
+            <label className="block mb-1 text-sm font-medium text-admintext">
+              Ngưỡng cảnh báo tồn kho
+            </label>
+            <input
+              type="number"
+              min={0}
+              value={lowStockThreshold}
+              onChange={(e) => setLowStockThreshold(Number(e.target.value))}
+              className="border rounded px-4 py-2 w-full"
+            />
+           <div className="mt-1 text-sm text-gray-500">
+            * Giá trị ngưỡng được tính theo <strong>đơn vị của nguyên liệu</strong>
+          </div>
           </div>
 
         </div>

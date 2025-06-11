@@ -12,6 +12,7 @@ const CreateFoodPage = () => {
     slug: string;
     unit: string;
     price_per_unit: number;
+    lowStockThreshold?: number;
   }) => {
     createIngredient(data);
   };

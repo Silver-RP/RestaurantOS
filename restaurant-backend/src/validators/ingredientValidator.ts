@@ -11,6 +11,7 @@ export const ingredientSchema = z.object({
     'pcs', 'pack', 'box', 'bottle', 'can', 'unit',
   ]),
   price_per_unit: z.number().min(0).transform((val) => parseFloat(val.toFixed(2))),
+  lowStockThreshold: z.number().min(0).optional(),
 });
 
 export type IngredientInput = z.infer<typeof ingredientSchema>;
