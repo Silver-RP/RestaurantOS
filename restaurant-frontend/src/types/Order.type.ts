@@ -89,7 +89,14 @@ interface User {
 }
 
 export interface Order {
-  postPayment: any;
+  postPayment: {
+    redirectUrl?: string;
+    bankingInfo?: {
+      accountNumber: string;
+      accountName: string;
+      bankName: string;
+    };
+  };
   _id: string;
   user_id: User; // Sửa từ string thành User
   address_id: {
@@ -173,15 +180,12 @@ export interface CancelOrderRequest {
 }
 
 export interface OrderQueryParams {
+  filters?: Record<string, string | number | boolean>;
+  status?: Status[];
   page?: number;
   limit?: number;
-  status?: Status | Status[];
-  startDate?: string;
-  endDate?: string;
-  sortBy?: string;
-  sort?: 'createdAt' | 'total_price' | 'updatedAt';
-  sortOrder?: 'asc' | 'desc';
-  filters: { [key: string]: string } | null;
+  searchTerm?: string;
+  sortType?: 'newest' | 'oldest';
 }
 
 export interface PlaceOrderRequest {
