@@ -107,8 +107,17 @@ class OrderController {
       const status = req.query.status as string | undefined;
       const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
       const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 5;
+      const sortType = (req.query.sortType as 'newest' | 'oldest') || 'newest';
+      const searchTerm = req.query.searchTerm as string | undefined;
 
-      const result = await OrderService.getUserOrders(userId, status, page, limit);
+      const result = await OrderService.getUserOrders(
+        userId, 
+        status, 
+        page, 
+        limit,
+        sortType,
+        searchTerm
+      );
 
       return res.status(200).json({
         message: 'Orders retrieved successfully',

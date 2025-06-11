@@ -1,18 +1,17 @@
 // hooks/useOrder.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  getOrders,
   getOrderById,
   createOrder,
   cancelOrder,
   placeDirectOrder,
   requestReturn,
-  requestCancel,
   getAllOrders,
   updateOrderStatus,
   updatePaymentStatus,
   retryPayment,
   changePaymentMethod,
+  getUserOrders,
 } from '@/api/OrderApi';
 import { checkIsLoggedIn } from './useCart';
 import {
@@ -20,15 +19,17 @@ import {
   // CancelOrderRequest,
   CreateOrderRequest,
   PlaceOrderRequest,
-  OrdersResponse,
-  OrderDetailResponse,
 } from '../types/Order.type';
 import { toast } from 'react-toastify';
 
 export const useOrders = (params: OrderQueryParams) => {
   return useQuery({
     queryKey: ['orders', params],
-    queryFn: () => getOrders(params),
+    queryFn: () => getUserOrders(params),
+    refetchOnWindowFocus: false,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: true
   });
 };
 

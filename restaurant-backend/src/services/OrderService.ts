@@ -525,7 +525,7 @@ class OrderService {
     filters: any;
   }) {
     try {
-      const { page, limit, sortBy, sortOrder, filters } = options;
+    const { page, limit, sortBy, sortOrder, filters } = options;
 
       const searchOptions = {
         page,
@@ -557,7 +557,7 @@ class OrderService {
 
       const result = await SearchService.search(Order, searchOptions);
 
-      return {
+    return {
         orders: result.items,
         total: result.total,
         currentPage: result.currentPage,
@@ -571,27 +571,59 @@ class OrderService {
 
   async getUserOrders(
     userId: mongoose.Types.ObjectId,
-    status: string | undefined,
+    status: string | string[] | undefined,
     page: number = 1,
     limit: number = 5,
+    sortType: 'newest' | 'oldest' = 'newest',
+    searchTerm?: string
   ) {
     try {
       const query: any = { user_id: userId };
 
+      // Handle status array
       if (status) {
-        query.status = status;
+        if (Array.isArray(status)) {
+          query.status = { $in: status };
+        } else {
+          query.status = status;
+        }
       }
 
+      if (searchTerm) {
+        try {
+          const searchId = new mongoose.Types.ObjectId(searchTerm);
+          // Find orders containing the search term in _id
+          query.$expr = {
+            $regexMatch: {
+              input: { $toString: '$_id' },
+              regex: searchId.toString()
+            }
+          };
+        } catch (error) {
+          // If searchTerm is not a valid hex string, search by string pattern
+          query.$expr = {
+            $regexMatch: {
+              input: { $toString: '$_id' },
+              regex: searchTerm
+            }
+          };
+        }
+      }
+
+      // Get total count for pagination
       const totalItems = await Order.countDocuments(query);
       const totalPages = Math.ceil(totalItems / limit);
+      const skip = (page - 1) * limit;
 
+      // Get orders with pagination and sort
       const orders = await Order.find(query)
         .populate('address_id')
-        .sort({ createdAt: -1 })
-        .skip((page - 1) * limit)
+        .sort({ createdAt: sortType === 'oldest' ? 1 : -1 })
+        .skip(skip)
         .limit(limit)
         .lean();
 
+      // Get order details for paginated orders
       const orderIds = orders.map((order) => order._id);
 
       const orderDetails = await OrderDetail.find({
