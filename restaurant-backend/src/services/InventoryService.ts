@@ -1,5 +1,5 @@
 import { InventoryTransaction } from "../models/InventoryTransactionModel";
-import { IInventoryDaily, InventoryDaily } from "../models/InventoryDailyModel";
+import { IInventoryDaily, InventoryDaily } from "../importData/inventoryModelSample/InventoryDailyModel";
 import {
     buildMatchCriteria,
     addLookupStages,

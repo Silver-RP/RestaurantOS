@@ -7,7 +7,7 @@ export interface IInventoryTransaction extends Document {
     notes?: string;
     ingredient_id: mongoose.Types.ObjectId;
     user_id: mongoose.Types.ObjectId;
-    adjustment_id?: mongoose.Types.ObjectId;
+    adjustment_batch_id?: mongoose.Types.ObjectId;
 }
 
 const inventoryTransactionSchema = new mongoose.Schema({
@@ -21,7 +21,7 @@ const inventoryTransactionSchema = new mongoose.Schema({
     notes: { type: String },
     ingredient_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Ingredient', required: true },
     user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    adjustment_id: { type: mongoose.Schema.Types.ObjectId, ref: 'InventoryAdjustment', default: null },
+    adjustment_batch_id: { type: mongoose.Schema.Types.ObjectId, ref: 'InventoryAdjustmentBatch', default: null }
   }, { timestamps: true });
   
 inventoryTransactionSchema.index({ ingredient_id: 1, transaction_date: 1 });

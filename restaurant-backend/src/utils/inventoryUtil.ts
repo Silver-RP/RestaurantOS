@@ -1,5 +1,5 @@
 import { InventoryTransaction } from '../models/InventoryTransactionModel';
-import { InventoryDaily } from '../models/InventoryDailyModel';
+import { InventoryDaily } from '../importData/inventoryModelSample/InventoryDailyModel';
 import mongoose from 'mongoose';
 import dayjs from 'dayjs';
 
