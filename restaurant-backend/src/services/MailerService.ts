@@ -14,13 +14,25 @@ type MailTemplateParams = {
 
 const MailerService = {
   async sendTemplateEmail({ to, subject, template, context }: MailTemplateParams) {
-    await transporter.sendMail({
-      from: `"BeefBeef Restaurant" <${process.env.MAIL_USERNAME}>`,
-      to,
-      subject,
-      template,
-      context,
-    } as any);
+    console.log('📧 [MailerService] Starting to send template email');
+    console.log('📝 [MailerService] Template name:', template);
+    console.log('🔍 [MailerService] Template context:', JSON.stringify(context, null, 2));
+    console.log('📨 [MailerService] Email to:', to);
+    console.log('📌 [MailerService] Email subject:', subject);
+
+    try {
+      await transporter.sendMail({
+        from: `"BeefBeef Restaurant" <${process.env.MAIL_USERNAME}>`,
+        to,
+        subject,
+        template,
+        context,
+      } as any);
+      console.log('✅ [MailerService] Email sent successfully');
+    } catch (error) {
+      console.error('❌ [MailerService] Error sending email:', error);
+      throw error;
+    }
   },
 
   async sendOrderConfirmation(
@@ -31,7 +43,7 @@ const MailerService = {
     const name = isPickup ? order.receiver : order.receiverInfo?.full_name || '';
     const phone = isPickup ? order.receiver_phone : order.receiverInfo?.phone || '';
     const address = isPickup
-      ? `Nhận tại nhà hàng<br><span style="font-weight: 600;">Nhà Hàng BeefBeef</span><br>161 đường Quốc Hương, Thảo Điền, Quận 2,<br>TP. Hồ Chí Minh`
+      ? 'Nhận tại nhà hàng<br><span style="font-weight: 600;">Nhà Hàng BeefBeef</span><br>161 đường Quốc Hương, Thảo Điền, Quận 2,<br>TP. Hồ Chí Minh'
       : `${order.receiverInfo?.street_address}, ${order.receiverInfo?.ward}, ${order.receiverInfo?.district}, ${order.receiverInfo?.province}`;
 
     await this.sendTemplateEmail({
@@ -86,6 +98,71 @@ const MailerService = {
         }),
         invoiceUrl: `${process.env.CLIENT_BASE_URL || '#'}/profile/orders?orderId=${order._id}`,
       },
+    });
+  },
+
+  async sendReservationConfirmation(reservation: {
+    _id: string;
+    user: IUser;
+    full_name: string;
+    phone: string;
+    email: string;
+    time: string;
+    date: string;
+    seating_type: string;
+    table_count: number;
+    note?: string;
+    items?: {
+      name: string;
+      quantity: number;
+      price: number;
+    }[];
+  }) {
+    const {
+      _id,
+      user,
+      full_name,
+      phone,
+      email,
+      time,
+      date,
+      seating_type,
+      table_count,
+      note,
+      items,
+    } = reservation;
+
+    const orderIdShort = _id.toString().slice(-6).toUpperCase();
+
+    const emailContext = {
+      orderId: orderIdShort,
+      name: full_name,
+      phone,
+      email,
+      time: time,
+      date: new Date(date).toLocaleDateString('vi-VN', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'numeric',
+        year: 'numeric',
+      }),
+      seatingType: seating_type,
+      tableCount: table_count,
+      note: note || 'Không có ghi chú',
+      items:
+        items?.map((item) => ({
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price.toLocaleString('vi-VN') + '₫',
+        })) || [],
+      reservationDetailUrl: `${process.env.CLIENT_BASE_URL || '#'}/profile/reservations?reservationId=${_id}`,
+    };
+
+    await this.sendTemplateEmail({
+      to: user.email,
+      subject: `Xác nhận đặt bàn #${orderIdShort}`,
+      template: 'reservation-confirmation',
+      context: emailContext,
     });
   },
 
@@ -167,31 +244,6 @@ const MailerService = {
     }
 
     return 'Chưa xác định thời gian giao hàng';
-  },
-
-  async sendOrderCancellation({
-    order,
-    userEmail,
-    reason,
-  }: {
-    order: IOrder;
-    userEmail: string;
-    reason: string;
-  }) {
-    try {
-      await this.sendTemplateEmail({
-        to: userEmail,
-        subject: `Đơn hàng #${order._id.toString().slice(-6).toUpperCase()} đã bị hủy`,
-        template: 'order-cancellation-email',
-        context: {
-          orderId: order._id.toString().slice(-6).toUpperCase(),
-          reason,
-        },
-      });
-    } catch (error: any) {
-      console.error(`Lỗi khi gửi email thông báo hủy đơn hàng: ${error.message}`);
-      throw error;
-    }
   },
 };
 

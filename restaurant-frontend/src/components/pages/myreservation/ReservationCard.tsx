@@ -160,7 +160,7 @@ const ReservationCard: React.FC<Props> = ({ reservation, onCancel }) => {
             className="px-4 py-1.5 text-xs bg-transparent border border-secondaryColor text-white font-normal font-sans"
             disabled
           >
-            Đã xác nhận
+            Yêu cầu huỷ đặt bàn
           </button>
         )}
 

@@ -72,7 +72,6 @@ export const fetchFoodByFavorite = async (
         params: { type },
       },
     );
-    console.log(res.data.data)
     return res.data.data;
   } catch (error) {
     console.error('Error fetching food by favorite:', error);
@@ -178,6 +177,48 @@ export const permanentlyDeleteFoodAPI = async (foodId: string): Promise<void> =>
     return res.data;
   } catch (error) {
     console.error('Error permanently deleting food:', error);
+    throw error;
+  }
+}
+
+export const fetchDishIngredientsApi = async (dishId: string): Promise<any> => {
+  try {
+    const res = await api.get(`/food/${dishId}/ingredients`);
+    return res.data.data;
+  } catch (error) {
+    console.error('Error fetching dish ingredients:', error);
+    throw error;
+  }
+};
+
+export const addDishIngredientApi = async (ingredientData: any, dishId: string): Promise<any> => {
+  try {
+    const res = await api.post(`/food/${dishId}/ingredients`, ingredientData);
+    return res.data;
+  } catch (error) {
+    console.error('Error adding dish ingredient:', error);
+    throw error;
+  }
+}
+
+export const updateDishIngredientApi = async (dishIngredientData: any, dishId: string): Promise<any> => {
+  try {
+    const res = await api.put(`/food/${dishId}/ingredients`, dishIngredientData);
+    return res.data;
+  } catch (error) {
+    console.error('Error updating dish ingredient:', error);
+    throw error;
+  }
+}
+
+export const deleteDishIngredientApi = async (_ids: string[], dishId: string): Promise<any> => {
+  try {
+    const res = await api.delete(`/food/${dishId}/ingredients`, {
+      data: { ids: _ids },
+      });
+    return res.data;
+  } catch (error) {
+    console.error('Error deleting dish ingredient:', error);
     throw error;
   }
 }

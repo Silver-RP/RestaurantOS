@@ -1,9 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Request, Response, NextFunction } from 'express';
 import OrderService from '../services/OrderService';
 import { IUser } from '../models/UserModel';
 import { Types } from 'mongoose';
 import OrderValidate from '../validators/orderValidator';
-import MailerService from '../services/MailerService';
 
 class OrderController {
   async placeOrder(req: Request, res: Response): Promise<any> {

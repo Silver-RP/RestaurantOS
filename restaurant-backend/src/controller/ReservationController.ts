@@ -3,29 +3,49 @@ import { IUser } from '../models/UserModel';
 import ReservationService from '../services/ReservationService';
 
 export const ReservationController = {
-  create: async (req: Request, res: Response): Promise<void> => {
+  create: async (req: Request, res: Response): Promise<Response> => {
     try {
       const user = req.user as IUser;
 
       if (!user?.id) {
-        res.status(401).json({ success: false, message: 'Unauthorized' });
-        return;
+        return res.status(401).json({ message: 'Unauthorized' });
       }
 
-      console.log('📥 Received reservation data:', req.body);
-      console.log('👤 User ID:', user.id);
+      const {
+        full_name,
+        phone,
+        date,
+        time,
+        table_type,
+        number_of_people,
+        note,
+        is_choose_later,
+        email,
+        selectedItems,
+      } = req.body;
 
-      const reservation = await ReservationService.createReservation(req.body, user.id);
+      const data = {
+        full_name,
+        phone,
+        date,
+        time,
+        table_type,
+        number_of_people,
+        note,
+        is_choose_later,
+        email,
+        selectedItems,
+      };
 
-      res.status(201).json({
-        success: true,
+      const reservation = await ReservationService.createReservation(data, user.id);
+
+      return res.status(201).json({
         message: 'Đặt bàn thành công',
         data: reservation,
       });
     } catch (error: any) {
       console.error('❌ Create reservation error:', error);
-      res.status(500).json({
-        success: false,
+      return res.status(error.statusCode || 500).json({
         message: error?.message || 'Đã xảy ra lỗi khi tạo đơn đặt bàn',
       });
     }

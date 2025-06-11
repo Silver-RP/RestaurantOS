@@ -13,7 +13,7 @@ import { createPayPalOrder } from '../services/payments/PaypalService';
 
 import axios from 'axios';
 import MailerService from './MailerService';
-import User from '../models/UserModel';
+import User, { IUser } from '../models/UserModel';
 
 enum Status {
   ORDER_PLACED = 'ORDER_PLACED',

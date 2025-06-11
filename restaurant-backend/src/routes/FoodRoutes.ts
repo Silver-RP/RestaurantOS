@@ -33,4 +33,11 @@ router.get('/trashFood', FoodController.getTrashFood);
 router.patch('/restoreDish/:foodId', FoodController.restoreFood);
 router.delete('/deleteFood/:foodId', FoodController.permanentlyDeleteFood);
 
+// Management of food ingredients
+router.get('/:dishId/ingredients', FoodController.getDishIngredients);
+router.post('/:dishId/ingredients', FoodController.addDishIngredient);
+router.put('/:dishId/ingredients', FoodController.updateDishIngredient);
+router.delete('/:dishId/ingredients', FoodController.deleteDishIngredient);
+
+
 export default router;
