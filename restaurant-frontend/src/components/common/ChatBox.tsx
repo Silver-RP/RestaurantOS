@@ -15,8 +15,6 @@ const Chatbox: React.FC = () => {
     messages: realMessages,
     handleSend: sendRealMessage,
     chatId,
-    typingUserId,
-    loading,
   } = useChatbox();
 
   const { faqs } = useFaq();
@@ -92,6 +90,7 @@ const Chatbox: React.FC = () => {
           onShowInput={toggleShowInput}
           onFAQClick={handleFAQClick}
           faqList={faqs.map((f) => f.question)}
+          currentUserId={chatId ?? undefined} 
         />
       ) : (
         <ChatToggleButton unreadCount={unreadCount} onClick={toggleChat} />

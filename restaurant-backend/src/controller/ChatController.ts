@@ -183,7 +183,6 @@ const ChatController = {
     }
   },
 
-  // controller/ChatController.ts
   async deleteMessage(req: Request, res: Response): Promise<void> {
     try {
       const { chatId, messageId } = req.params;
@@ -205,7 +204,6 @@ const ChatController = {
     }
   },
 
-  // ChatController.ts
   async editMessage(req: Request, res: Response): Promise<void> {
     try {
       const { chatId, messageId } = req.params;

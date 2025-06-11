@@ -19,6 +19,7 @@ interface ChatWindowProps {
   onShowInput: () => void;
   onFAQClick: (question: string) => void;
   faqList: string[];
+  currentUserId?: string;
 }
 
 const ChatWindow: React.FC<ChatWindowProps> = ({
@@ -31,7 +32,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   onShowInput,
   onFAQClick,
   faqList,
+  currentUserId,
 }) => {
+  console.log('[DEBUG] currentUserId:', currentUserId); // 👈 dòng này để kiểm tra
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -82,7 +85,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
       {!showInput ? (
         <div className="p-4 space-y-3 text-sm">
-          <p className="font-semibold text-yellow-300">❓ Câu hỏi thường gặp:</p>
+          <p className="font-semibold text-yellow-300">
+            ❓ Câu hỏi thường gặp:
+          </p>
           {faqList.map((faq, idx) => (
             <button
               key={idx}
@@ -104,26 +109,45 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
           {/* Message display */}
           <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 text-sm scrollbar-thin scrollbar-thumb-yellow-400 scrollbar-track-transparent scrollbar-thumb-rounded-full hover:scrollbar-thumb-yellow-500">
             {messages.map((msg, idx) => {
-              const sender = msg.sender || msg.sender_role || 'bot';
+              const senderId = msg.sender || '';
               const text = msg.text || msg.content || '';
+              const isMine = senderId === currentUserId;
 
+              console.log(`[DEBUG] msg[${idx}]:`, {
+                senderId,
+                currentUserId,
+                isMine,
+                text,
+              });
               return (
-                <div key={idx} className={`flex ${sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  {sender !== 'user' && (
-                    <img src="/bot-avatar.png" className="w-7 h-7 rounded-full mr-3" />
+                <div
+                  key={idx}
+                  className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}
+                >
+                  {!isMine && (
+                    <img
+                      src="/bot-avatar.png"
+                      className="w-7 h-7 rounded-full mr-3"
+                    />
                   )}
-                  <div className={`max-w-[75%] px-4 py-3 rounded-lg text-sm ${sender === 'user' ? 'bg-yellow-300 text-black' : 'bg-white text-black'}`}>
+                  <div
+                    className={`max-w-[75%] px-4 py-3 rounded-lg ${isMine ? 'bg-yellow-300 text-black' : 'bg-white text-black'}`}
+                  >
                     <p>{text}</p>
                     <p className="text-xs text-gray-500 mt-1 text-right">
                       {new Date().toLocaleTimeString()}
                     </p>
                   </div>
-                  {sender === 'user' && (
-                    <img src="/user-avatar.png" className="w-7 h-7 rounded-full ml-3" />
+                  {isMine && (
+                    <img
+                      src="/user-avatar.png"
+                      className="w-7 h-7 rounded-full ml-3"
+                    />
                   )}
                 </div>
               );
             })}
+
             <div ref={messageEndRef} />
           </div>
 

@@ -18,11 +18,10 @@ const userSocketMap = new Map<string, string[]>();
 export const initSocket = (io: Server) => {
   globalThis.io = io;
   io.on('connection', (socket: Socket) => {
-    console.log('🟢 Socket connected:', socket.id);
+    console.log('Socket connected:', socket.id);
 
     // JOIN ROOM
     socket.on('join', async ({ userId, chatId, roles }: JoinPayload) => {
-      socket.join(userId);
       socket.join(chatId);
 
       const existing = userSocketMap.get(userId) || [];
@@ -38,7 +37,7 @@ export const initSocket = (io: Server) => {
       }
 
       socket.emit('joinComplete', { chatId });
-      console.log(`📥 ${roles} joined: user ${userId}, chat ${chatId}`);
+      console.log(`${roles} joined: user ${userId}, chat ${chatId}`);
     });
 
     // SEND MESSAGE
@@ -61,8 +60,8 @@ export const initSocket = (io: Server) => {
           message.sender_role === 'user' ? 'cashier' : 'user',
         );
 
-        io.to(receiverId).emit('unreadCount', { chatId, count: unreadCount });
-        io.to(receiverId).emit('newMessageAlert', { chatId, message });
+        io.to(chatId).emit('unreadCount', { chatId, count: unreadCount });
+        io.to(chatId).emit('newMessageAlert', { chatId, message });
       } catch (error) {
         console.error('❌ Error sending message:', error);
       }
@@ -79,9 +78,9 @@ export const initSocket = (io: Server) => {
           readAt: new Date(),
         });
 
-        console.log(`✅ Message ${messageId} marked as read by ${userId}`);
+        console.log(`Message ${messageId} marked as read by ${userId}`);
       } catch (err) {
-        console.error('❌ Error marking as read:', err);
+        console.error('Error marking as read:', err);
       }
     });
 
@@ -93,7 +92,7 @@ export const initSocket = (io: Server) => {
 
     // DISCONNECT
     socket.on('disconnect', () => {
-      console.log('🔴 Socket disconnected:', socket.id);
+      console.log('Socket disconnected:', socket.id);
       for (const [userId, sockets] of userSocketMap.entries()) {
         const filtered = sockets.filter((id) => id !== socket.id);
         if (filtered.length > 0) {
