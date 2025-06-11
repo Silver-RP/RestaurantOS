@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { useSearchParams } from 'react-router-dom';
-import { ingredientUnits } from './ingredientUnits';
+import { ingredientUnits } from '../../../../types/ingredientUnitsType';
 
 type FiltersType = {
   unit?: string;

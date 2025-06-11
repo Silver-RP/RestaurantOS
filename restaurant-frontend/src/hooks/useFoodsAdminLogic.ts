@@ -7,7 +7,7 @@ import { FoodDetail } from 'types/Dish.types';
 import { toast } from 'react-toastify';
 import { useCRUDFoods } from './useCRUDFoods';
 import { fetchAllIngredients } from '../api/IngredientsApi';
-import { Ingredient } from '@/types/Ingredient';
+import { Ingredient } from '@/types/IngredientType';
 
 type SortField =
   | 'name'

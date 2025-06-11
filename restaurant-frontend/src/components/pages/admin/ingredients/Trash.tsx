@@ -1,6 +1,6 @@
 import { useIngredientsTrashLogic } from '../../../../hooks/useIngredientsAdminLogic';
 import React from 'react';
-import { ingredientUnits } from './ingredientUnits';
+import { ingredientUnits } from '../../../../types/ingredientUnitsType';
 import AdminPagination from '../AdminPagination';
 import {
   FaSort,

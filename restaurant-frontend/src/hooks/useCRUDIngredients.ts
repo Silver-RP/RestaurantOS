@@ -12,7 +12,7 @@ import {
     restoreIngredientAPI,
     permanentlyDeleteIngredientAPI
 } from '@/api/IngredientsApi';
-import { IngredientFilterParams } from '@/types/Ingredient';
+import { IngredientFilterParams } from '@/types/IngredientType';
 
 
 export const useCRUDIngredients = (slug?: string) => {

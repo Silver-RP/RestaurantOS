@@ -1,11 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Ingredient } from '../../../../types/Ingredient';
+import { Ingredient } from '../../../../types/IngredientType';
 import { FaChevronDown } from 'react-icons/fa';
 import { useIngredientLogic } from '@/hooks/useIngredientsAdminLogic';
 import ConfirmModal from '@/components/common/ConfirmModal';
 import { FiTrash2 } from "react-icons/fi"
-import { ingredientUnits } from './ingredientUnits';
+import { ingredientUnits } from '../../../../types/ingredientUnitsType';
 
 interface IngredientFormProps {
   initialData?: Ingredient;

@@ -1,12 +1,12 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import slugify from 'slugify';
-import { Ingredient } from 'types/Ingredient';
+import { Ingredient } from '@/types/IngredientType';
 import { toast } from 'react-toastify';
 import { useCRUDIngredients } from './useCRUDIngredients';
 
 import { fetchAllIngredients } from '../api/IngredientsApi';
-import { IngredientResponse, IngredientFilterParams } from '../types/Ingredient';
+import { IngredientResponse, IngredientFilterParams } from '../types/IngredientType';
 import { useSearchParams } from 'react-router-dom';
 
 type SortField = 'name' | 'unit' | 'price' | 'deletedAt' | 'currentStock' | null;
@@ -97,6 +97,9 @@ export function useIngredientsAdminLogic() {
         return `${count} ${unit}`;
     }
 
+    
+
+
 
     return {
         ingredients,
@@ -116,7 +119,7 @@ export function useIngredientsAdminLogic() {
         handleEnter,
         handleClick,
         getSortIcon,
-        formatQuantity
+        formatQuantity,
     };
 }
 
@@ -247,7 +250,7 @@ export function useIngredientLogic({ initialData, onSubmit }: UseIngredientFormP
         if (pricePerUnit <= 0) return toast.error('Giá trên đơn vị phải lớn hơn 0');
         if (isNaN(pricePerUnit)) return toast.error('Giá trên đơn vị phải là một số hợp lệ');
 
-        if(lowStockThreshold < 0) return toast.error('Ngưỡng tồn kho thấp không được nhỏ hơn 0');
+        if (lowStockThreshold < 0) return toast.error('Ngưỡng tồn kho thấp không được nhỏ hơn 0');
         if (lowStockThreshold && isNaN(lowStockThreshold)) {
             return toast.error('Ngưỡng tồn kho thấp phải là một số hợp lệ');
         }

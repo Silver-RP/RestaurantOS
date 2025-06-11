@@ -1,5 +1,5 @@
 import api from './axiosInstance';
-import { IngredientResponse, IngredientFilterParams } from 'types/Ingredient';
+import { IngredientResponse, IngredientFilterParams } from '@/types/IngredientType';
 
 export const fetchAllIngredients = async ( params: IngredientFilterParams): Promise<IngredientResponse> => {
   const queryString = new URLSearchParams();

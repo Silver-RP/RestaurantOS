@@ -1,6 +1,6 @@
 import { useIngredientsAdminLogic } from '../../../../hooks/useIngredientsAdminLogic';
 import React from 'react';
-import { ingredientUnits } from './ingredientUnits';
+import { ingredientUnits } from '../../../../types/ingredientUnitsType';
 import AdminPagination from '../AdminPagination';
 import {
   FaSort,
@@ -11,6 +11,7 @@ import {
 } from 'react-icons/fa';
 import { FiTrash2 } from 'react-icons/fi';
 import AdvancedFilterPanel from './AdvancedFilterPanel';
+import IngredientStockStatus from './IngredientStockStatus';
 
 const MenuTable: React.FC = () => {
   const {
@@ -31,7 +32,7 @@ const MenuTable: React.FC = () => {
     handleEnter,
     handleClick,
     getSortIcon,
-    formatQuantity
+    formatQuantity,
   } = useIngredientsAdminLogic();
 
   const renderSortIcon = (field: typeof sortField) => {
@@ -166,12 +167,14 @@ const MenuTable: React.FC = () => {
                     Tên nguyên liệu {renderSortIcon('name')}
                   </span>
                 </th>
-                <th className="px-4 py-2 cursor-pointer" onClick={() => handleSort('currentStock')}>
+                <th
+                  className="px-4 py-2 cursor-pointer"
+                  onClick={() => handleSort('currentStock')}
+                >
                   <span className="flex items-center gap-1">
                     Tồn kho hiện tại {renderSortIcon('currentStock')}
                   </span>
                 </th>
-
 
                 <th
                   className="px-4 py-2 cursor-pointer whitespace-nowrap"
@@ -191,6 +194,16 @@ const MenuTable: React.FC = () => {
                   </span>
                 </th>
 
+                <th
+                  className="px-4 py-2 cursor-pointer whitespace-nowrap"
+                  onClick={() => handleSort('stockStatus')}
+                >
+                  <span className="flex items-center gap-1">
+                    trạng thái
+                    {/* {renderSortIcon('stockStatus')} */}
+                  </span>
+                </th>
+
                 <th className="px-4 py-2 ">Hành động</th>
               </tr>
             </thead>
@@ -199,7 +212,12 @@ const MenuTable: React.FC = () => {
                 <tr key={index} className="border-b hover:bg-gray-50">
                   <td className="px-4 py-2">{index + 1}</td>
                   <td className="px-4 py-2 font-medium">{item.name}</td>
-                    <td className="px-4 py-2 font-medium">{formatQuantity(item.currentStock ,item.unit as "gram" | "ml")}</td>
+                  <td className="px-4 py-2 font-medium">
+                    {formatQuantity(
+                      item.currentStock,
+                      item.unit as 'gram' | 'ml',
+                    )}
+                  </td>
                   <td className="px-4 py-2">
                     {ingredientUnits.find((cat) => cat.value === item.unit)
                       ?.label || item.unit}
@@ -207,6 +225,9 @@ const MenuTable: React.FC = () => {
 
                   <td className="px-4 py-2">
                     {item.price_per_unit.toLocaleString()}
+                  </td>
+                  <td className="px-4 py-2">
+                    <IngredientStockStatus item={item} />
                   </td>
                   <td className="px-4 py-2 space-x-2">
                     <button
