@@ -14,6 +14,7 @@ import {
   FaImage,
 } from 'react-icons/fa';
 import { GiHotMeal, GiWheat } from 'react-icons/gi';
+import { FaCalendarAlt } from "react-icons/fa";
 import classNames from 'classnames';
 import { useAdminSidebar } from '../contexts/AdminSidebarContext';
 import AdminHeader from '../components/layout/AdminHeader';
@@ -73,7 +74,7 @@ const AdminLayout: React.FC = () => {
             />
             <NavItem
               href="/admin/reservations"
-              icon={<FaCartPlus />}
+              icon={<FaCalendarAlt />}
               label="Đặt bàn"
               expanded={isSidebarOpen}
             />

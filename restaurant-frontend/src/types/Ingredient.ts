@@ -1,6 +1,7 @@
 export type Ingredient = {
     _id: string;
     name: string;
+    currentStock: number;
     slug: string;
     price_per_unit: number;
     unit: string;

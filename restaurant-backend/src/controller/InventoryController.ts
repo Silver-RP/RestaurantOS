@@ -6,7 +6,7 @@ import mongoose from 'mongoose';
 
 class InventoryController{
 
-    async getInventoryTransantion(req: Request, res: Response): Promise<any> {
+    async getInventoryTransaction(req: Request, res: Response): Promise<any> {
         const query = req.query;
         const resultTransaction = await InventoryService.getInventoryTransactions(query);
         if (resultTransaction) {
@@ -21,7 +21,7 @@ class InventoryController{
         }
     }
 
-    async createInventoryTransantion(req: Request, res: Response): Promise<any>{
+    async createInventoryTransaction(req: Request, res: Response): Promise<any>{
         const data = req.body;
         const userId = (req.user as IUser ).id as Types.ObjectId; 
         const transaction = await InventoryService.createInventoryTransaction(data, userId.toString());

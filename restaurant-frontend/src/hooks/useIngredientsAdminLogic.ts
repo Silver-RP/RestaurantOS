@@ -9,7 +9,7 @@ import { fetchAllIngredients } from '../api/IngredientsApi';
 import { IngredientResponse, IngredientFilterParams } from '../types/Ingredient';
 import { useSearchParams } from 'react-router-dom';
 
-type SortField = 'name' | 'unit' | 'price' | 'deletedAt' | null;
+type SortField = 'name' | 'unit' | 'price' | 'deletedAt' | 'currentStock' | null;
 type SortDirection = 'asc' | 'desc';
 
 export function useIngredientsAdminLogic() {
@@ -24,6 +24,7 @@ export function useIngredientsAdminLogic() {
 
     const sortMapping: Record<string, { asc: string; desc: string }> = {
         name: { asc: 'nameAZ', desc: 'nameZA' },
+        currentStock: { asc: 'currentLow', desc: 'currentHigh' },
         unit: { asc: 'unitAZ', desc: 'unitZA' },
         price: { asc: 'priceLow', desc: 'priceHigh' },
     };
@@ -90,6 +91,13 @@ export function useIngredientsAdminLogic() {
         return null;
     };
 
+    const formatQuantity = (count: number, unit: 'gram' | 'ml'): string => {
+        if (unit === 'gram' && count >= 1000) return `${(count / 1000).toFixed(1)} Kilogram`;
+        if (unit === 'ml' && count >= 1000) return `${(count / 1000).toFixed(1)} L`;
+        return `${count} ${unit}`;
+    }
+
+
     return {
         ingredients,
         loading,
@@ -108,6 +116,7 @@ export function useIngredientsAdminLogic() {
         handleEnter,
         handleClick,
         getSortIcon,
+        formatQuantity
     };
 }
 
@@ -333,7 +342,7 @@ export function useIngredientsTrashLogic() {
         const direction =
             sortField === field ? (sortDirection === 'asc' ? 'desc' : 'asc') : 'asc';
 
-        setSortField(field as SortField);
+        setSortField(field as 'name' | 'unit' | 'price' | 'deletedAt' | null);
         setSortDirection(direction);
 
         const sortValue = sortMapping[field]?.[direction] || 'default';
