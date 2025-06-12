@@ -6,6 +6,8 @@ import { Category } from 'types/Category.type';
 import { FoodDetail } from 'types/Dish.types';
 import { toast } from 'react-toastify';
 import { useCRUDFoods } from './useCRUDFoods';
+import { fetchAllIngredients } from '../api/IngredientsApi';
+import { Ingredient } from '@/types/IngredientType';
 
 type SortField =
   | 'name'
@@ -21,6 +23,15 @@ type SortField =
   | null;
 
 type SortDirection = 'asc' | 'desc';
+type IngredientStatus = 'original' | 'edited' | 'deleted' ;
+type IngredientField = {
+  _id?: string;
+  ingredientId?: string;
+  name: string;
+  quantity: string;
+  unit: string;
+  _status?: IngredientStatus;
+};
 
 // Foods index page logic
 export function useFoodsAdminLogic() {
@@ -146,6 +157,8 @@ export function useFoodLogic({ initialData, categories, onSubmit }: UseFoodFormP
   const [discountUntil, setDiscountUntil] = useState<Date | null>(null);
   const [isDishNew, setIsDishNew] = useState(false);
   const [newUntil, setNewUntil] = useState<Date | null>(null);
+  const [isRecommend, setIsRecommend] = useState(false);
+  const [recommendUntil, setRecommendUntil] = useState<Date | null>(null);
   const [description, setDescription] = useState('');
   const [shortDescription, setShortDescription] = useState('');
   const [ingredients, setIngredients] = useState('');
@@ -174,6 +187,8 @@ export function useFoodLogic({ initialData, categories, onSubmit }: UseFoodFormP
       setDiscountUntil(initialData.discountUntil || null);
       setIsDishNew(initialData.isDishNew || false);
       setNewUntil(initialData.newUntil || null);
+      setIsRecommend(initialData.isRecommend || false);
+      setRecommendUntil(initialData.recommendUntil || null);
       setDescription(initialData.description || '');
       setShortDescription(initialData.shortDescription || '');
       setIngredients(initialData.ingredients || '');
@@ -217,6 +232,8 @@ export function useFoodLogic({ initialData, categories, onSubmit }: UseFoodFormP
     if (!['hidden', 'available', 'soldout'].includes(status)) return toast.error('Trạng thái không hợp lệ');
     if (isDishNew && newUntil && newUntil <= new Date())
       return toast.error('Ngày kết thúc món mới phải lớn hơn hiện tại');
+    if (isRecommend && recommendUntil && recommendUntil <= new Date())
+      return toast.error('Ngày kết thúc món đề xuất phải lớn hơn hiện tại');
     if (discountPrice > 0 && discountUntil && discountUntil <= new Date())
       return toast.error('Ngày kết thúc khuyến mãi phải lớn hơn hiện tại');
     if (images.length === 0) return toast.error('Phải chọn ít nhất 1 ảnh');
@@ -240,6 +257,11 @@ export function useFoodLogic({ initialData, categories, onSubmit }: UseFoodFormP
     if (isDishNew && newUntil) {
       const date = new Date(newUntil); 
       formData.append('newUntil', date.toISOString());
+    }
+    formData.append('isRecommend', String(isRecommend));
+    if (isRecommend && recommendUntil) {
+      const date = new Date(recommendUntil);
+      formData.append('recommendUntil', date.toISOString());
     }
     
     if (discountPrice > 0 && discountUntil) {
@@ -281,7 +303,7 @@ export function useFoodLogic({ initialData, categories, onSubmit }: UseFoodFormP
     // States
     name, setName, slug, setSlug, categoryId, setCategoryId, status, setStatus,
     price, setPrice, discountPrice, setDiscountPrice, discountUntil, setDiscountUntil,
-    isDishNew, setIsDishNew, newUntil, setNewUntil, description, setDescription,
+    isDishNew, setIsDishNew, newUntil, setNewUntil, isRecommend, setIsRecommend, recommendUntil, setRecommendUntil, description, setDescription,
     shortDescription, setShortDescription, ingredients, setIngredients, images,
     handleImageChange, handleRemoveImage, countInStock, setCountInStock,
     origin, setOrigin, alcoholType, setAlcoholType, alcoholContent, setAlcoholContent,
@@ -435,4 +457,216 @@ export function useFoodsTrashLogic() {
     handleConfirmPermanentDelete,
   };
 }
+
+export function useDishIngredient(dishId: string, onClose: () => void) {
+  const [dataDishIngredients, setDataDishIngredients] = useState<any[]>([]);
+  const [dishData, setDishData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showInputRows, setShowInputRows] = useState(false);
+  const [ingredientOptions, setIngredientOptions] = useState<Ingredient[]>([]);
+  const [newIngredients, setNewIngredients] = useState<IngredientField[]>([]);
+  const { getDishIngredients, addDishIngredient, updateDishIngredient, deleteDishIngredient } = useCRUDFoods();
+
+  const fetchData = async (dishId: string) => {
+    try {
+      setIsLoading(true);
+      const data = await getDishIngredients(dishId);
+      const ingredientList = await fetchAllIngredients({ limit: 1000, sort: 'nameAZ' });
+      setIngredientOptions(ingredientList.docs);
+
+      if (!data?.dish) {
+        throw new Error('Dish not found');
+      }
+
+      setDishData(data.dish);
+      setDataDishIngredients(data.ingredients || []);
+
+    } catch (err) {
+      setError('Lỗi khi tải nguyên liệu món ăn');
+      console.error('Lỗi khi tải nguyên liệu món ăn:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData(dishId);
+  }, [dishId]);
+
+ 
+  const handleDeleteNewIngredient = (index: number) => {
+    const updated = [...newIngredients];
+    updated.splice(index, 1);
+    setNewIngredients(updated);
+  
+    if (updated.length === 0) setShowInputRows(false); // ẩn lại nếu không còn dòng
+  };
+
+  const handleNewIngredientChange = (
+    index: number,
+    field: keyof IngredientField,
+    value: string
+  ) => {
+    const updated = [...newIngredients];
+  
+    if (field === '_status') {
+      if (['original', 'edited', 'deleted'].includes(value)) {
+        updated[index]._status = value as IngredientStatus;
+      }
+    } else {
+      updated[index][field] = value;
+    }
+  
+    setNewIngredients(updated);
+  };
+
+  const handleSave = async () => {
+    for (const item of newIngredients) {
+      if (!item.ingredientId || !item.quantity || !item.unit) {
+        toast.error('Vui lòng điền đầy đủ thông tin nguyên liệu!');
+        return;
+      }
+    }
+
+    const toUpdate = dataDishIngredients.filter((i: { _status: string; }) => i._status === 'edited');
+    const toDelete = dataDishIngredients.filter((i: { _status: string; }) => i._status === 'deleted');
+
+    if (newIngredients.length === 0 && toUpdate.length === 0 && toDelete.length === 0) {
+      toast.info('Không có thay đổi nào để lưu');
+      return;
+    }
+    
+    try {
+      if (newIngredients.length > 0) {
+        const payload = newIngredients.map((item) => ({
+          _id: item._id,
+          ingredientId: item.ingredientId,
+          quantity: Number(item.quantity),
+          unit: item.unit,
+        }));
+        await addDishIngredient(payload, dishId);
+      }
+    
+      if (toUpdate.length > 0) {
+        const payload = toUpdate.map((item) => ({
+          _id: item._id,
+          ingredientId: item.ingredientId,
+          quantity: Number(item.quantity),
+          unit: item.unit,
+        }));
+        await updateDishIngredient(payload, dishId);
+      }
+    
+      if (toDelete.length > 0) {
+        const ids = toDelete.map((item) => item._id); 
+        await deleteDishIngredient(ids, dishId);
+      }
+    
+      await fetchData(dishId); 
+    
+      setDataDishIngredients([]); 
+      setNewIngredients([]);
+      setShowInputRows(false);
+      toast.success('Cập nhật nguyên liệu thành công');
+      onClose();
+    } catch (err) {
+      setError('Lỗi khi cập nhật nguyên liệu món ăn');
+      console.error('Lỗi khi lưu nguyên liệu món ăn:', err);
+    }
+  };
+
+  const handleStartEdit = (id: string) => {
+    setDataDishIngredients((prev: any[]) =>
+      prev.map((item) => {
+        if (item._id !== id) return item;
+  
+        const { _status, _original, ...cleanItem } = item; 
+  
+        return {
+          ...item,
+          _original: { ...cleanItem }, 
+          _status: 'edited' as IngredientStatus,
+        };
+      })
+    );
+  };
+
+  const handleUpdateIngredient = (
+    id: string,
+    field: keyof IngredientField,
+    value: string,
+  ) => {
+    setDataDishIngredients((prev: any[]) =>
+      prev.map((item) =>
+        item._id === id
+          ? { ...item, [field]: value, _status: 'edited' as IngredientStatus }
+          : item,
+      ),
+    );
+  };
+
+  const handleCancelEdit = (id: string) => {
+    setDataDishIngredients((prev: any[]) =>
+      prev.map((item) => {
+        if (item._id === id && item._original) {
+          const { _original } = item;
+          return {
+            ..._original,
+            _status: 'original' as IngredientStatus,
+          };
+        }
+        return item;
+      })
+    );
+  };
+  
+  const handleSoftDelete = (id: string) => {
+    setDataDishIngredients((prev: any[]) =>
+      prev.map((item) => {
+        if (item._id !== id) return item;
+  
+        const { _status, _original, ...cleanItem } = item;
+  
+        return {
+          ...item,
+          _status: 'deleted' as IngredientStatus,
+          _original: _original || { ...cleanItem },
+        };
+      })
+    );
+  };
+  
+  const handleUndoDelete = (id: string) => {
+    setDataDishIngredients((prev: any[]) =>
+      prev.map((item) => {
+        if (item._id !== id) return item;
+  
+        if (item._original) {
+          return {
+            ...item._original,
+            _status: 'original' as IngredientStatus,
+          };
+        }
+  
+        return {
+          ...item,
+          _status: 'original' as IngredientStatus,
+        };
+      })
+    );
+  };
+  
+  const hasIngredients = dataDishIngredients && dataDishIngredients.length > 0;
+
+  return { dataDishIngredients, isLoading, error, 
+    handleUpdateIngredient, dishData,
+    showInputRows, ingredientOptions, handleSave,
+    setShowInputRows, handleDeleteNewIngredient, 
+    setNewIngredients, hasIngredients, newIngredients, 
+    handleNewIngredientChange, handleSoftDelete, 
+    handleUndoDelete, handleStartEdit, handleCancelEdit,
+  };
+}
+
 

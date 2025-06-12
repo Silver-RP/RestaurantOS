@@ -1,5 +1,6 @@
 import express from 'express';
 import swaggerUi from 'swagger-ui-express';
+import { engine } from 'express-handlebars';
 import { generateSwaggerSpec, getSwaggerRoutes } from './utils/swaggerOptions';
 import AuthRoutes from './routes/AuthRoutes';
 import UserRoutes from './routes/UserRoutes';
@@ -8,6 +9,7 @@ import CateRoutes from './routes/CategoryRoutes';
 import ReservationContactRoutes from './routes/ReservationContactRoutes';
 import ReservationDetailContactRoutes from './routes/ReservationDetailContactRoutes';
 import ProfileRoutes from './routes/ProfileRoutes';
+import ReservationRoutes from './routes/ReservationRouter';
 import BannerRoutes from './routes/BannerRoutes';
 import PostsRoutes from './routes/PostsRoutes';
 
@@ -20,12 +22,15 @@ import CartRouter from './routes/CartRoutes';
 import FavoriteRoutes from './routes/FavoriteRoutes';
 import AddressRouter from './routes/AddressRoutes';
 import PaymentRoutes from './routes/PaymentRoutes';
+import ingredientsRouter from './routes/IngredientsRouter';
 
 import dotenv from 'dotenv';
 import connectDB from './config/db';
 import cookieParser from 'cookie-parser';
 import passport from 'passport';
 import cors from 'cors';
+import path from 'path';
+
 const app = express();
 
 // Import file authSwagger để đăng ký metadata
@@ -47,6 +52,9 @@ app.use(
     credentials: true,
   }),
 );
+app.engine('.hbs', engine({ extname: '.hbs', defaultLayout: false }));
+app.set('view engine', '.hbs');
+app.set('views', path.join(__dirname, 'views'));
 
 const port = process.env.PORT || 4000;
 
@@ -77,10 +85,8 @@ const swaggerDefinition = {
 
 const allRoutes = getSwaggerRoutes();
 
-// Tạo Swagger specification
 const swaggerSpec = generateSwaggerSpec(allRoutes, swaggerDefinition);
 
-// Thiết lập Swagger UI
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use(passport.initialize());
@@ -92,7 +98,6 @@ app.get('/', (req, res) => {
   res.send('API is running...');
 });
 
-// Định nghĩa routes
 app.use('/api/auth', AuthRoutes);
 app.use('/api/user', UserRoutes);
 app.use('/api/profile', AuthMiddleWare.verifyToken, ProfileRoutes);
@@ -104,6 +109,7 @@ app.use(
 );
 app.use('/api/permission', PermissionRoutes);
 app.use('/api/category', CateRoutes);
+app.use('/api/reservation', AuthMiddleWare.verifyToken, ReservationRoutes);
 app.use('/api/banner', BannerRoutes);
 app.use('/api/reservationcontact', ReservationContactRoutes);
 app.use('/api/reservationdetailcontact', ReservationDetailContactRoutes);
@@ -120,7 +126,9 @@ app.use('/api/order', AuthMiddleWare.verifyToken, OrderRoutes);
 app.use('/api/cart', AuthMiddleWare.verifyToken, CartRouter);
 app.use('/api/favorite', AuthMiddleWare.verifyToken, FavoriteRoutes);
 app.use('/api/address', AuthMiddleWare.verifyToken, AddressRouter);
-app.use('/api/payment', PaymentRoutes); 
+app.use('/api/payment', PaymentRoutes);
+
+app.use('/api/ingredients', AuthMiddleWare.verifyToken, ingredientsRouter);
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
   console.log('Mongo URI:', process.env.MONGO_URI);

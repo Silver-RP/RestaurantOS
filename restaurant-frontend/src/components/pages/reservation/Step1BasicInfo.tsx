@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ReservationFormData } from '../../../types/ReservationFormData.type';
+import { ReservationFormData } from '../../../types/reservation.type';
 import ButtonComponents from '@components/common/ButtonComponents';
 import { reservationSchema } from '@/utils/zodSchemas';
 import { Listbox } from '@headlessui/react';
@@ -72,20 +72,18 @@ const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({
   }, [formData.date, timeOptions]);
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
-
-    setFormData((prev) => ({ ...prev, [name]: value }));
-
-    const result = reservationSchema.safeParse({ ...formData, [name]: value });
-
+    const parsedValue = name === 'number_of_people' ? Number(value) : value;
+  
+    setFormData((prev) => ({ ...prev, [name]: parsedValue }));
+  
+    const result = reservationSchema.safeParse({ ...formData, [name]: parsedValue });
+  
     if (!result.success) {
       const fieldErrors = result.error.flatten().fieldErrors;
-      const errorMessage =
-        fieldErrors[name as keyof typeof fieldErrors]?.[0] || '';
+      const errorMessage = fieldErrors[name as keyof typeof fieldErrors]?.[0] || '';
       setErrors((prev) => ({ ...prev, [name]: errorMessage }));
     } else {
       setErrors((prev) => ({ ...prev, [name]: '' }));
@@ -119,13 +117,15 @@ const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({
           <label className="text-sm">Họ tên</label>
           <input
             type="text"
-            name="name"
+            name="full_name"
             placeholder="Tên của bạn"
-            value={formData.name}
+            value={formData.full_name}
             onChange={handleChange}
             className="p-3 bg-transparent text-white placeholder:text-gray-400 border border-[#074b6b] rounded focus:outline-none focus:ring-1 focus:ring-secondaryColor focus:border-secondaryColor focus:bg-transparent transition"
           />
-          {errors.name && <p className="text-red-400 text-sm">{errors.name}</p>}
+          {errors.full_name && (
+            <p className="text-red-400 text-sm">{errors.full_name}</p>
+          )}
         </div>
 
         <div className="flex flex-col gap-2">
@@ -165,16 +165,16 @@ const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({
           <div className="relative">
             <input
               type="number"
-              name="people"
+              name="number_of_people"
               min={1}
               max={100}
               placeholder="Nhập số người"
-              value={formData.people}
+              value={formData.number_of_people}
               onChange={handleChange}
               className="h-[48px] w-full px-4 bg-transparent border border-[#074b6b] text-white placeholder:text-gray-400 rounded focus:outline-none focus:border-secondaryColor focus:ring-1 focus:ring-secondaryColor transition pr-10 no-spinner"
             />
-            {errors.people && (
-              <p className="text-red-400 text-sm">{errors.people}</p>
+            {errors.number_of_people && (
+              <p className="text-red-400 text-sm">{errors.number_of_people}</p>
             )}
           </div>
         </div>

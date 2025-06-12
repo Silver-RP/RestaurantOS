@@ -1,28 +1,32 @@
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import OrderValidator from '../validators/orderValidator';
-import { Address } from '../models/AddressModel';
+import { Address, IAddress } from '../models/AddressModel';
 import { Order, IOrder } from '../models/OrderModel';
 import { OrderDetail } from '../models/OrderDetailModel';
 import Cart from '../models/CartModel';
 import { Dish } from '../models/DishModel';
+import Payment from '../models/PaymentModel';
 import SearchService from './SearchService';
 import { createVNPayPaymentUrl } from '../services/payments/VnPayService';
+import { createMomoPaymentUrl } from '../services/payments/MomoService';
+import { createPayPalOrder } from '../services/payments/PaypalService';
 
-enum DeliveryStatus {
+import axios from 'axios';
+import MailerService from './MailerService';
+import User, { IUser } from '../models/UserModel';
+
+enum Status {
   ORDER_PLACED = 'ORDER_PLACED',
   ORDER_CONFIRMED = 'ORDER_CONFIRMED',
-  PENDING = 'PENDING',
   PENDING_PICKUP = 'PENDING_PICKUP',
   PICKED_UP = 'PICKED_UP',
   IN_TRANSIT = 'IN_TRANSIT',
   DELIVERED = 'DELIVERED',
   DELIVERY_FAILED = 'DELIVERY_FAILED',
   RETURN_REQUESTED = 'RETURN_REQUESTED',
-  CANCEL_RETURN_REQUESTED = 'CANCEL_RETURN_REQUESTED',
   RETURN_APPROVED = 'RETURN_APPROVED',
   RETURN_REJECTED = 'RETURN_REJECTED',
   RETURNED = 'RETURNED',
-  CANCEL_REQUESTED = 'CANCEL_REQUESTED', 
   CANCELLED = 'CANCELLED',
 }
 
@@ -37,9 +41,12 @@ enum OrderStatus {
   RETURNED = 'RETURNED',
 }
 class OrderService {
+  getStripeSession(sessionId: any) {
+    throw new Error('Method not implemented.');
+  }
 
-  private getStatusText(delivery_status: string): string {
-    switch (delivery_status) {
+  private getStatusText(status: string): string {
+    switch (status) {
       case 'ORDER_PLACED':
         return 'Đã đặt hàng';
       case 'ORDER_CONFIRMED':
@@ -56,20 +63,16 @@ class OrderService {
         return 'Giao hàng thất bại';
       case 'RETURN_REQUESTED':
         return 'Yêu cầu trả hàng';
-      case 'CANCEL_RETURN_REQUESTED':
-        return 'Hủy yêu cầu trả hàng';
       case 'RETURN_APPROVED':
         return 'Xác nhận trả hàng';
       case 'RETURN_REJECTED':
         return 'Trả hàng bị từ chối';
       case 'RETURNED':
         return 'Đã trả hàng';
-      case 'CANCEL_REQUESTED':
-        return 'Yêu cầu hủy đơn hàng';
       case 'CANCELLED':
         return 'Đã hủy';
       default:
-        return delivery_status;
+        return status;
     }
   }
 
@@ -105,6 +108,7 @@ class OrderService {
     delivery_time_type: string,
     total_quantity: number,
     note: string,
+    shipping_fee: number,
     receiver: string | null,
     receiver_phone: string | null,
     scheduled_time: Date | null,
@@ -112,7 +116,6 @@ class OrderService {
   ) {
     const items_price = totalAmount;
     const vat_amount = items_price * 0.08;
-    const shipping_fee = 5000;
     const total_price = items_price + vat_amount + shipping_fee;
 
     const newOrder = new Order({
@@ -125,7 +128,7 @@ class OrderService {
       shipping_fee,
       total_price,
       total_quantity,
-      delivery_status: 'PENDING',
+      status: 'ORDER_PLACED',
       order_type,
       delivery_time_type,
       note,
@@ -169,59 +172,156 @@ class OrderService {
     );
   }
 
+  private generateTransactionCode(
+    paymentMethod: string,
+    paymentId: string | number,
+    date: Date = new Date(),
+  ): string {
+    const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '');
+    const shortId = paymentId.toString().slice(-6);
+
+    const prefixMap: Record<string, string> = {
+      banking: 'BANKING',
+      momo: 'MOMO',
+      momo_atm: 'MOMO_ATM',
+      vnpay: 'VNPAY',
+      credit_card: 'PAYPAL',
+      cash: 'CASH',
+    };
+
+    const prefix = prefixMap[paymentMethod.toLowerCase()] || 'PAY';
+
+    return `${prefix}-${dateStr}-${shortId}`;
+  }
+
   async handlePostPaymentLogic(order: IOrder, clientIp: string) {
     const payment_method = order.payment_method;
-    let redirectUrl = null;
+    let redirectUrl: string | null = null;
     let bankingInfo = null;
 
+    const amount = order.total_price || 0;
+
+    const newPayment = await Payment.create({
+      orderId: order._id,
+      payment_method,
+      payment_status: 'UNPAID',
+      amount,
+      transaction_code: null,
+      bankingInfo: null,
+    });
+
+    const paymentTransactionId = newPayment._id.toString();
+    const transactionCode = this.generateTransactionCode(payment_method, paymentTransactionId);
+
+    await Payment.findByIdAndUpdate(paymentTransactionId, {
+      transaction_code: transactionCode,
+    });
+
+    if (payment_method === 'BANKING') {
+      const bank_name = 'Vietcombank';
+      const bank_code = '970436';
+      const account_number = '0123456789';
+      const account_name = 'Công ty TNHH BeefBeef';
+      const transfer_note = `ORDER-${order._id}`;
+
+      const qrRes = await axios.post('https://api.vietqr.io/v2/generate', {
+        accountNo: account_number,
+        accountName: account_name,
+        acqId: bank_code,
+        amount,
+        addInfo: transfer_note,
+        format: 'base64',
+      });
+
+      const qr_base64 = qrRes?.data?.data?.qrDataURL;
+
+      bankingInfo = {
+        bank_name,
+        account_number,
+        account_name,
+        qr_code: qr_base64,
+        transfer_note,
+      };
+      await Payment.findByIdAndUpdate(paymentTransactionId, { bankingInfo });
+    }
+
     switch (payment_method) {
-      case 'BANKING':
-        bankingInfo = {
-          bank_name: 'Vietcombank',
-          account_number: '0123456789',
-          account_name: 'Công ty ABC',
-          qr_code: 'https://example.com/qr.png',
-          transfer_note: `ORDER-${order._id}`,
-        };
+      case 'MOMO':
+        redirectUrl = await createMomoPaymentUrl(order, 'wallet', paymentTransactionId);
         break;
-
-      // case 'MOMO':
-      //   redirectUrl = await momoService.createPaymentUrl(order);
-      //   break;
-
+      case 'MOMO_ATM':
+        redirectUrl = await createMomoPaymentUrl(order, 'atm', paymentTransactionId);
+        break;
       case 'VNPAY':
-        redirectUrl = createVNPayPaymentUrl(order, clientIp);
+        redirectUrl = createVNPayPaymentUrl(order, clientIp, paymentTransactionId);
         break;
-
-      // case 'CREDIT_CARD':
-      //   redirectUrl = await creditCardService.createPaymentUrl(order);
-      //   break;
+      case 'CREDIT_CARD':
+        const orderWithItems = await this.getOrderById(order._id);
+        redirectUrl = await createPayPalOrder(orderWithItems as any, paymentTransactionId);
+        break;
+      default:
+        redirectUrl = null;
+        break;
     }
 
     return {
       type: payment_method,
       redirectUrl,
       bankingInfo,
+      orderTotal: order.total_price,
     };
   }
 
-  async markOrderPaid(orderId: string, amount: number) {
-    const order = await Order.findById(orderId);
-    if (!order) throw new Error('Order not found');
+  async markPaymentPaid(
+    paymentId: string,
+    paidAmount: number,
+    transactionCode: string,
+    userId: string | null,
+  ) {
+    const payment = await Payment.findById(paymentId);
+    if (!payment) throw new Error('Payment not found');
 
-    if (order.total_price !== amount) {
-      throw new Error('Paid amount does not match order total');
+    const allowedDifference = 1000;
+
+    if (Math.abs((payment.amount || 0) - paidAmount) > allowedDifference) {
+      throw new Error('Paid amount does not match expected payment amount');
     }
 
-    order.payment_status = 'PAID';
-    order.paid_at = new Date();
-    await order.save();
+    payment.payment_status = 'PAID';
+    payment.payment_date = new Date();
+    payment.amount = paidAmount;
 
-    return order;
+    if (userId) {
+      payment.confirmed_by = new mongoose.Types.ObjectId(userId);
+    }
+
+    await payment.save();
+    if (!payment.orderId) throw new Error('Payment is not associated with any order');
+
+    const order = await Order.findById(payment.orderId);
+    if (!order) throw new Error('Order not found');
+
+    if (order.payment_status !== 'PAID') {
+      order.payment_status = 'PAID';
+      order.paid_at = new Date();
+      await order.save();
+    }
+
+    await this.sendOrderPaymentSuccessEmail(payment._id);
+
+    return { order, payment };
   }
 
-  async markOrderFailed(orderId: string) {
-    const order = await Order.findById(orderId);
+  async markPaymentFailed(paymentId: string, reason?: string) {
+    const payment = await Payment.findById(paymentId);
+    if (!payment) throw new Error('Payment not found');
+
+    payment.payment_status = 'FAILED';
+    payment.payment_date = new Date();
+    payment.failure_reason = reason || 'Unknown failure';
+    await payment.save();
+
+    const order = await Order.findById(payment.orderId);
     if (!order) throw new Error('Order not found');
 
     order.payment_status = 'FAILED';
@@ -242,6 +342,7 @@ class OrderService {
       delivery_time_type,
       scheduled_time,
       note,
+      shipping_fee,
       receiver,
       receiver_phone,
     } = input;
@@ -275,6 +376,7 @@ class OrderService {
         delivery_time_type,
         total_quantity,
         note,
+        shipping_fee,
         receiver,
         receiver_phone,
         scheduled_time,
@@ -318,6 +420,103 @@ class OrderService {
     }
   }
 
+  async changePaymentMethod(orderId: string, paymentMethod: string, userId: string) {
+    if (!orderId || !paymentMethod) {
+      throw new Error('Missing orderId or paymentMethod');
+    }
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+      const order = await Order.findById(orderId).session(session);
+      if (!order) throw new Error('Order not found');
+
+      if (order.user_id.toString() !== userId) {
+        throw new Error('Not authorized to change this order');
+      }
+
+      const invalidStatuses = ['PAID', 'CANCELLED', 'COMPLETED', 'RETURNED'];
+      if (
+        invalidStatuses.includes(order.payment_status) ||
+        invalidStatuses.includes(order.status) ||
+        order.status === 'CANCELLED'
+      ) {
+        throw new Error(
+          'Cannot change payment method for paid, cancelled, completed or returned orders',
+        );
+      }
+
+      const validMethods = ['CASH', 'VNPAY', 'MOMO', 'CREDIT_CARD', 'BANKING', 'MOMO_ATM'];
+      if (!validMethods.includes(paymentMethod)) {
+        throw new Error('Invalid payment method');
+      }
+
+      if (order.payment_method === paymentMethod) {
+        await session.commitTransaction();
+        session.endSession();
+        return order;
+      }
+
+      const payments = await Payment.find({
+        orderId: orderId,
+        payment_status: { $in: ['UNPAID', 'PENDING', 'FAILED'] },
+      }).session(session);
+
+      if (payments.length > 0) {
+        for (const payment of payments) {
+          payment.payment_method = paymentMethod as
+            | 'CASH'
+            | 'BANKING'
+            | 'VNPAY'
+            | 'MOMO'
+            | 'MOMO_ATM'
+            | 'CREDIT_CARD';
+          await payment.save({ session });
+        }
+      } else {
+        await Payment.create(
+          [
+            {
+              orderId: order._id,
+              payment_method: paymentMethod as
+                | 'CASH'
+                | 'BANKING'
+                | 'VNPAY'
+                | 'MOMO'
+                | 'MOMO_ATM'
+                | 'CREDIT_CARD',
+              payment_status: 'UNPAID',
+              amount: order.total_price,
+              transaction_code: null,
+              bankingInfo: null,
+            },
+          ],
+          { session },
+        );
+      }
+
+      order.payment_method = paymentMethod as
+        | 'CASH'
+        | 'BANKING'
+        | 'VNPAY'
+        | 'MOMO'
+        | 'MOMO_ATM'
+        | 'CREDIT_CARD';
+      order.payment_status = 'UNPAID';
+      await order.save({ session });
+
+      await session.commitTransaction();
+      session.endSession();
+
+      return order;
+    } catch (error) {
+      await session.abortTransaction();
+      session.endSession();
+      throw error;
+    }
+  }
+
   async getAllOrders(options: {
     page: number;
     limit: number;
@@ -326,7 +525,7 @@ class OrderService {
     filters: any;
   }) {
     try {
-      const { page, limit, sortBy, sortOrder, filters } = options;
+    const { page, limit, sortBy, sortOrder, filters } = options;
 
       const searchOptions = {
         page,
@@ -358,7 +557,7 @@ class OrderService {
 
       const result = await SearchService.search(Order, searchOptions);
 
-      return {
+    return {
         orders: result.items,
         total: result.total,
         currentPage: result.currentPage,
@@ -372,27 +571,59 @@ class OrderService {
 
   async getUserOrders(
     userId: mongoose.Types.ObjectId,
-    deliveryStatuses: string[] | null,
+    status: string | string[] | undefined,
     page: number = 1,
     limit: number = 5,
+    sortType: 'newest' | 'oldest' = 'newest',
+    searchTerm?: string
   ) {
     try {
       const query: any = { user_id: userId };
 
-      if (deliveryStatuses && deliveryStatuses.length > 0) {
-        query.delivery_status = { $in: deliveryStatuses };
+      // Handle status array
+      if (status) {
+        if (Array.isArray(status)) {
+          query.status = { $in: status };
+        } else {
+          query.status = status;
+        }
       }
 
+      if (searchTerm) {
+        try {
+          const searchId = new mongoose.Types.ObjectId(searchTerm);
+          // Find orders containing the search term in _id
+          query.$expr = {
+            $regexMatch: {
+              input: { $toString: '$_id' },
+              regex: searchId.toString()
+            }
+          };
+        } catch (error) {
+          // If searchTerm is not a valid hex string, search by string pattern
+          query.$expr = {
+            $regexMatch: {
+              input: { $toString: '$_id' },
+              regex: searchTerm
+            }
+          };
+        }
+      }
+
+      // Get total count for pagination
       const totalItems = await Order.countDocuments(query);
       const totalPages = Math.ceil(totalItems / limit);
+      const skip = (page - 1) * limit;
 
+      // Get orders with pagination and sort
       const orders = await Order.find(query)
         .populate('address_id')
-        .sort({ createdAt: -1 })
-        .skip((page - 1) * limit)
+        .sort({ createdAt: sortType === 'oldest' ? 1 : -1 })
+        .skip(skip)
         .limit(limit)
         .lean();
 
+      // Get order details for paginated orders
       const orderIds = orders.map((order) => order._id);
 
       const orderDetails = await OrderDetail.find({
@@ -400,7 +631,7 @@ class OrderService {
       })
         .populate({
           path: 'dish_id',
-          select: 'name images categories',
+          select: 'name images categories slug',
           populate: {
             path: 'categories',
             model: 'categories',
@@ -430,6 +661,7 @@ class OrderService {
             dish_id: dish?._id,
             dish_name: dish?.name,
             dish_images: dish?.images || [],
+            dish_slug: dish?.slug || '',
             categories: categoryNames,
           };
         });
@@ -461,11 +693,32 @@ class OrderService {
       if (!order) {
         throw { statusCode: 404, message: 'Order not found' };
       }
+
       const orderItems = await OrderDetail.find({ order_id: orderId }).populate('dish_id').lean();
+
+      const payments = await Payment.find({ orderId }).sort({ createdAt: -1 }).lean();
+      const payment = payments[0];
+
+      let postPayment = null;
+      if (payment?.payment_method === 'BANKING' && payment?.bankingInfo) {
+        postPayment = {
+          paymentId: payment._id,
+          bankingInfo: payment.bankingInfo,
+          type: payment.payment_method,
+          orderTotal: order.total_price,
+        };
+      } else {
+        postPayment = {
+          paymentId: payment?._id,
+          type: payment?.payment_method,
+          orderTotal: order.total_price,
+        };
+      }
 
       return {
         ...order,
         order_items: orderItems,
+        postPayment,
       };
     } catch (error: any) {
       throw {
@@ -483,67 +736,73 @@ class OrderService {
       }
 
       // Validate status
-      const validStatuses: string[] = Object.values(DeliveryStatus);
+      const validStatuses: string[] = Object.values(Status);
       if (!validStatuses.includes(status)) {
         throw { statusCode: 400, message: 'Invalid delivery status' };
       }
 
       // Restrict admin updates to admin-relevant statuses
       const adminStatuses = [
-        DeliveryStatus.ORDER_CONFIRMED,
-        DeliveryStatus.PENDING_PICKUP,
-        DeliveryStatus.PICKED_UP,
-        DeliveryStatus.IN_TRANSIT,
-        DeliveryStatus.DELIVERED,
-        DeliveryStatus.DELIVERY_FAILED,
-        DeliveryStatus.RETURN_APPROVED,
-        DeliveryStatus.RETURN_REJECTED,
-        DeliveryStatus.RETURNED,
+        Status.ORDER_CONFIRMED,
+        Status.PENDING_PICKUP,
+        Status.PICKED_UP,
+        Status.IN_TRANSIT,
+        Status.DELIVERED,
+        Status.DELIVERY_FAILED,
+        Status.RETURN_APPROVED,
+        Status.RETURN_REJECTED,
+        Status.RETURNED,
       ];
-      if (!adminStatuses.includes(status as DeliveryStatus)) {
+      if (!adminStatuses.includes(status as Status)) {
         throw { statusCode: 403, message: 'Status not allowed for admin update' };
       }
 
       // Define valid status transitions
       const validTransitions: { [key: string]: string[] } = {
-        [DeliveryStatus.ORDER_PLACED]: [DeliveryStatus.ORDER_CONFIRMED, DeliveryStatus.CANCELLED],
-        [DeliveryStatus.ORDER_CONFIRMED]: [DeliveryStatus.PENDING_PICKUP, DeliveryStatus.CANCELLED],
-        [DeliveryStatus.PENDING_PICKUP]: [
-          DeliveryStatus.PICKED_UP,
-          DeliveryStatus.CANCEL_REQUESTED,
-        ],
-        [DeliveryStatus.PICKED_UP]: [DeliveryStatus.IN_TRANSIT],
-        [DeliveryStatus.IN_TRANSIT]: [DeliveryStatus.DELIVERED, DeliveryStatus.DELIVERY_FAILED],
-        [DeliveryStatus.DELIVERED]: [DeliveryStatus.RETURN_REQUESTED], // DELIVERED can only transition to RETURN_REQUESTED
-        [DeliveryStatus.DELIVERY_FAILED]: [DeliveryStatus.PENDING_PICKUP, DeliveryStatus.CANCELLED], // Allow retry or cancel
-        [DeliveryStatus.RETURN_REQUESTED]: [
-          DeliveryStatus.RETURN_APPROVED,
-          DeliveryStatus.RETURN_REJECTED,
-        ],
-        [DeliveryStatus.RETURN_APPROVED]: [DeliveryStatus.RETURNED],
-        [DeliveryStatus.RETURN_REJECTED]: [], // No further transitions
-        [DeliveryStatus.RETURNED]: [], // No further transitions
-        [DeliveryStatus.CANCEL_REQUESTED]: [DeliveryStatus.CANCELLED],
-        [DeliveryStatus.CANCELLED]: [], // No further transitions
-        [DeliveryStatus.CANCEL_RETURN_REQUESTED]: [DeliveryStatus.CANCELLED],
+        [Status.ORDER_PLACED]: [Status.ORDER_CONFIRMED, Status.CANCELLED],
+        [Status.ORDER_CONFIRMED]: [Status.PENDING_PICKUP],
+        [Status.PENDING_PICKUP]: [Status.PICKED_UP, Status.IN_TRANSIT],
+        [Status.PICKED_UP]: [Status.IN_TRANSIT],
+        [Status.IN_TRANSIT]: [Status.DELIVERED, Status.DELIVERY_FAILED],
+        [Status.DELIVERED]: [Status.RETURN_REQUESTED],
+        [Status.DELIVERY_FAILED]: [Status.PENDING_PICKUP, Status.CANCELLED],
+        [Status.RETURN_REQUESTED]: [Status.RETURN_APPROVED, Status.RETURN_REJECTED],
+        [Status.RETURN_APPROVED]: [Status.RETURNED],
+        [Status.RETURN_REJECTED]: [],
+        [Status.RETURNED]: [],
+        [Status.CANCELLED]: [],
       };
 
-      if (
-        validTransitions[order.delivery_status] &&
-        !validTransitions[order.delivery_status].includes(status)
-      ) {
+      if (validTransitions[order.status] && !validTransitions[order.status].includes(status)) {
         throw {
           statusCode: 400,
           message: `Không thể chuyển từ trạng thái "${this.getStatusText(
-            order.delivery_status,
+            order.status,
           )}" sang "${this.getStatusText(status)}"`,
         };
       }
 
-      order.delivery_status = status as DeliveryStatus;
-
-      // Set delivered_at timestamp for DELIVERED status
-      if (status === DeliveryStatus.DELIVERED) {
+      order.status = status as
+        | 'ORDER_PLACED'
+        | 'ORDER_CONFIRMED'
+        | 'PENDING_PICKUP'
+        | 'PICKED_UP'
+        | 'IN_TRANSIT'
+        | 'DELIVERED'
+        | 'DELIVERY_FAILED'
+        | 'RETURN_REQUESTED'
+        | 'RETURN_APPROVED'
+        | 'RETURN_REJECTED'
+        | 'RETURNED'
+        | 'CANCELLED';
+      if (status === Status.DELIVERED) {
+        if (order.payment_status !== 'PAID') {
+          throw {
+            statusCode: 400,
+            message:
+              'Không thể chuyển sang trạng thái " ĐÃ GIAO HÀNG " khi đơn hàng chưa thanh toán',
+          };
+        }
         order.delivered_at = new Date();
       }
 
@@ -558,58 +817,56 @@ class OrderService {
     }
   }
 
-  mapDeliveryStatusToOrderStatus(
-    deliveryStatus: DeliveryStatus,
-    orderType: 'DINE_IN' | 'ONLINE',
-  ): OrderStatus {
-    if (orderType === 'DINE_IN') {
-      switch (deliveryStatus) {
-        case DeliveryStatus.PENDING_PICKUP:
-          return OrderStatus.PREPARING;
-        case DeliveryStatus.PICKED_UP:
-        case DeliveryStatus.IN_TRANSIT:
-          return OrderStatus.SHIPPING;
-        case DeliveryStatus.DELIVERED:
-          return OrderStatus.COMPLETED;
-        case DeliveryStatus.DELIVERY_FAILED:
-          return OrderStatus.PENDING;
-        case DeliveryStatus.RETURN_REQUESTED:
-        case DeliveryStatus.RETURNED:
-          return OrderStatus.RETURNED;
-        case DeliveryStatus.CANCEL_REQUESTED:
-          return OrderStatus.CANCEL_REQUESTED;
-        case DeliveryStatus.CANCELLED:
-          return OrderStatus.CANCELLED;
-        default:
-          return OrderStatus.PENDING;
-      }
-    } else if (orderType === 'ONLINE') {
-      switch (deliveryStatus) {
-        case DeliveryStatus.PENDING:
-          return OrderStatus.PENDING;
-        case DeliveryStatus.PENDING_PICKUP:
-          return OrderStatus.PREPARING;
-        case DeliveryStatus.PICKED_UP:
-        case DeliveryStatus.IN_TRANSIT:
-          return OrderStatus.SHIPPING;
-        case DeliveryStatus.DELIVERED:
-          return OrderStatus.COMPLETED;
-        case DeliveryStatus.DELIVERY_FAILED:
-          return OrderStatus.CANCELLED;
-        case DeliveryStatus.RETURN_REQUESTED:
-        case DeliveryStatus.RETURNED:
-          return OrderStatus.RETURNED;
-        case DeliveryStatus.CANCEL_REQUESTED:
-          return OrderStatus.CANCEL_REQUESTED;
-        case DeliveryStatus.CANCELLED:
-          return OrderStatus.CANCELLED;
-        default:
-          return OrderStatus.PENDING;
-      }
-    }
+  // mapDeliveryStatusToOrderStatus(
+  //   deliveryStatus: Status,
+  //   orderType: 'DINE_IN' | 'ONLINE',
+  // ): OrderStatus {
+  //   if (orderType === 'DINE_IN') {
+  //     switch (deliveryStatus) {
+  //       case Status.PENDING_PICKUP:
+  //         return OrderStatus.PREPARING;
+  //       case Status.PICKED_UP:
+  //       case Status.IN_TRANSIT:
+  //         return OrderStatus.SHIPPING;
+  //       case Status.DELIVERED:
+  //         return OrderStatus.COMPLETED;
+  //       case Status.DELIVERY_FAILED:
+  //         return OrderStatus.PENDING;
+  //       case Status.RETURN_REQUESTED:
+  //       case Status.RETURNED:
+  //         return OrderStatus.RETURNED;
+  //       case Status.CANCELLED:
+  //         return OrderStatus.CANCELLED;
+  //       default:
+  //         return OrderStatus.PENDING;
+  //     }
+  //   } else if (orderType === 'ONLINE') {
+  //     switch (deliveryStatus) {
+  //       case Status.PENDING:
+  //         return OrderStatus.PENDING;
+  //       case Status.PENDING_PICKUP:
+  //         return OrderStatus.PREPARING;
+  //       case Status.PICKED_UP:
+  //       case Status.IN_TRANSIT:
+  //         return OrderStatus.SHIPPING;
+  //       case Status.DELIVERED:
+  //         return OrderStatus.COMPLETED;
+  //       case Status.DELIVERY_FAILED:
+  //         return OrderStatus.CANCELLED;
+  //       case Status.RETURN_REQUESTED:
+  //       case Status.RETURNED:
+  //         return OrderStatus.RETURNED;
+  //       case Status.CANCEL_REQUESTED:
+  //         return OrderStatus.CANCEL_REQUESTED;
+  //       case Status.CANCELLED:
+  //         return OrderStatus.CANCELLED;
+  //       default:
+  //         return OrderStatus.PENDING;
+  //     }
+  //   }
 
-    return OrderStatus.PENDING;
-  }
+  //   return OrderStatus.PENDING;
+  // }
 
   async cancelOrder(orderId: mongoose.Types.ObjectId, reason: string) {
     try {
@@ -618,15 +875,14 @@ class OrderService {
         throw { statusCode: 404, message: 'Order not found' };
       }
 
-      if (order.status !== 'PENDING' || order.delivery_status !== 'PENDING_PICKUP') {
+      if (order.status !== 'ORDER_PLACED') {
         throw {
           statusCode: 400,
-          message: 'Order can only be cancelled when status and delivery_status are PENDING',
+          message: 'Order can only be cancelled when status and status are PENDING',
         };
       }
 
       order.status = 'CANCELLED';
-      order.delivery_status = 'CANCELLED';
       order.cancelled_at = new Date();
       order.cancelled_reason = reason;
 
@@ -648,15 +904,13 @@ class OrderService {
         throw { statusCode: 404, message: 'Order not found' };
       }
 
-      if (order.status !== 'COMPLETED' || order.delivery_status !== 'DELIVERED') {
+      if (order.status !== 'DELIVERED') {
         throw {
           statusCode: 400,
-          message:
-            'Return can only be requested when status is COMPLETED and delivery_status is DELIVERED',
+          message: 'Return can only be requested when status is DELIVERED',
         };
       }
 
-      // Kiểm tra thời gian từ khi giao hàng
       if (!order.delivered_at) {
         throw {
           statusCode: 400,
@@ -675,7 +929,7 @@ class OrderService {
         };
       }
       order.status = OrderStatus.RETURN_REQUESTED.toString() as any;
-      order.delivery_status = DeliveryStatus.RETURN_REQUESTED.toString() as any;
+      order.status = Status.RETURN_REQUESTED.toString() as any;
       order.returned_at = new Date();
       order.cancelled_reason = reason;
 
@@ -690,33 +944,71 @@ class OrderService {
     }
   }
 
-  async requestCancel(orderId: mongoose.Types.ObjectId, reason: string) {
-    try {
-      const order = await Order.findById(orderId);
-      if (!order) {
-        throw { statusCode: 404, message: 'Order not found' };
-      }
+  // async requestCancel(orderId: mongoose.Types.ObjectId, reason: string) {
+  //   try {
+  //     const order = await Order.findById(orderId);
+  //     if (!order) {
+  //       throw { statusCode: 404, message: 'Order not found' };
+  //     }
 
-      if (order.status !== 'PREPARING' || order.delivery_status !== 'PENDING_PICKUP') {
-        throw {
-          statusCode: 400,
-          message:
-            'Cancel request chỉ được phép khi status = PREPARING và delivery_status = PENDING_PICKUP',
-        };
-      }
+  //     if (order.status !== 'PREPARING' || order.delivery_status !== 'PENDING_PICKUP') {
+  //       throw {
+  //         statusCode: 400,
+  //         message:
+  //           'Cancel request chỉ được phép khi status = PREPARING và delivery_status = PENDING_PICKUP',
+  //       };
+  //     }
+  //     order.status = 'CANCEL_REQUESTED';
+  //     order.delivery_status = 'CANCEL_REQUESTED';
+  //     order.cancelled_at = new Date();
+  //     order.cancelled_reason = reason;
+  //     await order.save();
+  //     return order;
+  //   } catch (error: any) {
+  //     throw {
+  //       statusCode: error.statusCode || 500,
+  //       message: error.message || 'Error requesting cancel',
+  //     };
+  //   }
+  // }
 
-      order.status = 'CANCEL_REQUESTED';
-      order.delivery_status = 'CANCEL_REQUESTED';
-      order.cancelled_at = new Date();
-      order.cancelled_reason = reason;
-      await order.save();
-      return order;
-    } catch (error: any) {
-      throw {
-        statusCode: error.statusCode || 500,
-        message: error.message || 'Error requesting cancel',
-      };
-    }
+  async sendOrderConfirmationEmail(orderId: Types.ObjectId) {
+    const order = await Order.findById(orderId)
+      .populate('user_id', 'email name')
+      .populate('address_id')
+      .lean();
+
+    if (!order) throw new Error('Order not found');
+
+    const items = await OrderDetail.find({ order_id: orderId }).lean();
+
+    const user = order.user_id as unknown as IUser;
+    const receiver = order.address_id as unknown as IAddress;
+
+    await MailerService.sendOrderConfirmation({
+      ...(order as any),
+      user,
+      receiverInfo: receiver,
+      items: items as any,
+    });
+  }
+
+  async sendOrderPaymentSuccessEmail(paymentId: Types.ObjectId) {
+    const payment = await Payment.findById(paymentId).populate('orderId').lean();
+    if (!payment) throw new Error('Payment not found');
+    if (!payment.orderId) throw new Error('Order not found in payment');
+
+    const order = await Order.findById(payment.orderId).lean();
+    if (!order || !order.user_id) throw new Error('Order or user not found');
+
+    const user = await User.findById(order.user_id).lean();
+    if (!user || !user.email) throw new Error('User or email not found');
+
+    await MailerService.sendOrderPaymentSuccess({
+      payment,
+      order,
+      userEmail: user.email,
+    });
   }
 }
 

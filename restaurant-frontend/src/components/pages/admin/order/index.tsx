@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
@@ -14,8 +15,11 @@ import OrderDetail from './OrderDetail';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { AllOrder } from '@/types/Order.type';
-import { toast } from 'react-toastify';
 import { ToastConfigAdmin } from '@/components/common/ToastConfig';
+import {
+  getStatusText,
+  getStatusColor,
+} from '@/components/pages/admin/order/OrderCommon';
 
 const OrderTable: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -32,7 +36,9 @@ const OrderTable: React.FC = () => {
     limit: Number(searchParams.get('limit')) || 10,
     sortBy: searchParams.get('sortBy') || 'createdAt',
     sortOrder: (searchParams.get('sortOrder') as 'asc' | 'desc') || 'desc',
-    filters: Object.fromEntries(searchParams.entries()),
+    filters: Object.fromEntries(
+      searchParams as any as Iterable<[string, string]>,
+    ),
   });
 
   const handleEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -79,76 +85,6 @@ const OrderTable: React.FC = () => {
     return <FaSort />;
   };
 
-  const getStatusColor = (delivery_status: string) => {
-    switch (delivery_status) {
-      case 'ORDER_PLACED':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'ORDER_CONFIRMED':
-        return 'bg-blue-100 text-blue-800';
-      case 'PENDING_PICKUP':
-        return 'bg-orange-100 text-orange-800';
-      case 'PICKED_UP':
-        return 'bg-purple-100 text-purple-800';
-      case 'IN_TRANSIT':
-        return 'bg-indigo-100 text-indigo-800';
-      case 'DELIVERED':
-        return 'bg-green-100 text-green-800';
-      case 'DELIVERY_FAILED':
-        return 'bg-red-100 text-red-800';
-      case 'RETURN_REQUESTED':
-        return 'bg-gray-100 text-gray-800';
-      case 'CANCEL_RETURN_REQUESTED':
-        return 'bg-pink-100 text-pink-800';
-      case 'RETURN_APPROVED':
-        return 'bg-teal-100 text-teal-800';
-      case 'RETURN_REJECTED':
-        return 'bg-red-200 text-red-900';
-      case 'RETURNED':
-        return 'bg-gray-200 text-gray-900';
-      case 'CANCEL_REQUESTED':
-        return 'bg-orange-200 text-orange-900';
-      case 'CANCELLED':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getStatusText = (delivery_status: string) => {
-    switch (delivery_status) {
-      case 'ORDER_PLACED':
-        return 'Đã đặt hàng';
-      case 'ORDER_CONFIRMED':
-        return 'Đã xác nhận';
-      case 'PENDING_PICKUP':
-        return 'Chờ nhận hàng';
-      case 'PICKED_UP':
-        return 'Đã nhận hàng';
-      case 'IN_TRANSIT':
-        return 'Đang giao';
-      case 'DELIVERED':
-        return 'Đã giao';
-      case 'DELIVERY_FAILED':
-        return 'Giao hàng thất bại';
-      case 'RETURN_REQUESTED':
-        return 'Yêu cầu trả hàng';
-      case 'CANCEL_RETURN_REQUESTED':
-        return 'Hủy yêu cầu trả hàng';
-      case 'RETURN_APPROVED':
-        return 'Xác nhận trả hàng';
-      case 'RETURN_REJECTED':
-        return 'Trả hàng bị từ chối'; 
-      case 'RETURNED':
-        return 'Đã trả hàng';
-      case 'CANCEL_REQUESTED':
-        return 'Yêu cầu hủy';
-      case 'CANCELLED':
-        return 'Đã hủy';
-      default:
-        return delivery_status;
-    }
-  };
-
   const getPaymentMethodText = (method: string) => {
     switch (method) {
       case 'CASH':
@@ -175,21 +111,20 @@ const OrderTable: React.FC = () => {
     }
   };
 
-  const getOrderTypeText = (type: string) => {
-    switch (type) {
-      case 'ONLINE':
-        return 'Online';
-      case 'OFFLINE':
-        return 'Tại cửa hàng';
-      default:
-        return type;
-    }
-  };
+  // const getOrderTypeText = (type: string) => {
+  //   switch (type) {
+  //     case 'ONLINE':
+  //       return 'Online';
+  //     case 'OFFLINE':
+  //       return 'Tại cửa hàng';
+  //     default:
+  //       return type;
+  //   }
+  // };
 
   const getCustomerName = (order: AllOrder) => {
     if (order.address_id?.full_name) {
       const name = order.address_id?.full_name;
-      console.log('Customer name:', name);
       return name;
     }
     if (order.receiver) {
@@ -217,7 +152,7 @@ const OrderTable: React.FC = () => {
       return format(new Date(dateString), 'HH:mm - dd/MM/yyyy', {
         locale: vi,
       });
-    } catch (error) {
+    } catch {
       return 'N/A';
     }
   };
@@ -231,7 +166,7 @@ const OrderTable: React.FC = () => {
   };
 
   return (
-    <main className="!p-0 bg-white rounded-lg shadow-md">
+    <main className="!p-0 bg-white rounded-lg ">
       <div className="flex flex-wrap gap-4 mb-4 items-center justify-between">
         <div className="flex gap-4">
           <div className="w-full relative">
@@ -266,7 +201,9 @@ const OrderTable: React.FC = () => {
       {showFilterPanel && (
         <OrderFilterPanel
           key={searchParams.toString()}
-          initialFilters={Object.fromEntries(searchParams.entries())}
+          initialFilters={Object.fromEntries(
+            searchParams as any as Iterable<[string, string]>,
+          )}
           searchParams={searchParams}
           setSearchParams={setSearchParams}
           onApply={(filters) => {
@@ -287,7 +224,7 @@ const OrderTable: React.FC = () => {
 
       <div className="text-sm text-gray-700 mb-4">
         Hiển thị <strong>{orders?.orders?.length || 0}</strong> trên tổng{' '}
-        <strong>{orders?.total || 0}</strong> đơn hàng
+        <strong>{orders?.orders?.length || 0}</strong>
       </div>
 
       {isLoading ? (
@@ -314,7 +251,8 @@ const OrderTable: React.FC = () => {
           <table className="min-w-[1200px] w-full bg-white text-sm text-gray-700">
             <thead>
               <tr className="bg-gray-100 text-left">
-                <th className="px-4 py-2">Mã Đơn Hàng</th>
+                <th className="px-4 py-2">No.</th>
+                {/* <th className="px-4 py-2">Mã Đơn Hàng</th> */}
                 <th className="px-4 py-2">Tên khách hàng</th>
                 <th className="px-4 py-2">SĐT</th>
                 <th
@@ -364,9 +302,12 @@ const OrderTable: React.FC = () => {
               {(orders?.orders as AllOrder[])?.map(
                 (order: AllOrder, index: number) => (
                   <tr key={order._id} className="border-b hover:bg-gray-50">
-                    <td className="px-4 py-2">
-                      {order._id.slice(-6).toUpperCase()}
+                    <td className="px-4 py-2 text-center">
+                      {index + 1 + (orders.currentPage - 1)}
                     </td>
+                    {/* <td className="px-4 py-2">
+                      {order._id.slice(-6).toUpperCase()}
+                    </td> */}
                     <td className="px-4 py-2">
                       <div className="font-medium">
                         {getCustomerName(order)}
@@ -377,10 +318,13 @@ const OrderTable: React.FC = () => {
                     <td className="px-4 py-2">
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(
-                          order.delivery_status,
+                          order.status,
                         )}`}
                       >
-                        {getStatusText(order.delivery_status)}
+                        {getStatusText(
+                          order.status,
+                          order.delivery_type as 'DELIVERY' | 'PICKUP',
+                        )}
                       </span>
                     </td>
                     <td className="px-4 py-2 font-medium">
@@ -432,7 +376,7 @@ const OrderTable: React.FC = () => {
             newParams.set('page', String(page));
             setSearchParams(newParams);
           }}
-          limit={Number(searchParams.get('limit') || 10)}
+          limit={Number(searchParams.get('limit') || 12)}
           onLimitChange={(newLimit) => {
             setSearchParams((prev) => {
               const newParams = new URLSearchParams(prev);
@@ -441,9 +385,8 @@ const OrderTable: React.FC = () => {
               return newParams;
             });
           }}
-
         />
-          )}
+      )}
 
       {selectedOrderId && (
         <OrderDetail

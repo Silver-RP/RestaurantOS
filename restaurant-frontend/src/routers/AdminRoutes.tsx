@@ -6,6 +6,10 @@ import FoodList from "../components/pages/admin/food/index";
 import DashboardPage from "@components/pages/admin/Dashborad";
 import AdminLayout from "../layouts/AdminLayout";
 import { AdminSidebarProvider } from "../contexts/AdminSidebarContext";
+import IngredientsList from "../components/pages/admin/ingredients/Index";
+import CreateIngredient from "../components/pages/admin/ingredients/Create";
+import EditIngredient from "../components/pages/admin/ingredients/Edit";
+import TrashIngredient from "../components/pages/admin/ingredients/Trash";
 
 import FoodCreatePage from "../components/pages/admin/food/Create";
 import FoodEditPage from "../components/pages/admin/food/Edit";
@@ -17,6 +21,7 @@ import CreateUserPage from "@/components/pages/admin/user/CreateUserPage";
 import SearchResults from "@/components/pages/admin/food/SearchResults";
 import TrashPage from "@/components/pages/admin/food/Trash";
 import OrderPage from "@components/pages/admin/order";
+import OrderTable from "@components/pages/admin/reservation";
 import BannerPage from '@/components/pages/admin/banner';
 import CreateBannerPage from '@/components/pages/admin/banner/Create';
 import EditBannerPage from '@/components/pages/admin/banner/Edit';
@@ -45,6 +50,7 @@ const adminRoutes = [
       { path: "foods/search", element: <SearchResults /> },
       { path: 'categories', element: <CategoriesPage />},
       { path: 'orders', element: <OrderPage /> },
+      { path: 'reservations', element: <OrderTable /> },
       { path: "categories/create", element: <CreateCategoryPage /> },
       { path: "categories/edit/:id", element: <EditCategoryPage /> },
       { path: "users", element: <ProtectedRoute><UserIndexPage /></ProtectedRoute> },
@@ -56,6 +62,14 @@ const adminRoutes = [
       { path: "*", element: <Navigate to="/admin" /> },      { path: "posts", element: <Post /> },
       { path: "posts/create", element: <CreatePostPage /> },
       { path: "posts/edit/:id", element: <EditPostPage /> },
+      { path: "ingredients", element: <IngredientsList /> },
+      { path: "ingredients/create", element: <CreateIngredient /> },
+      { path: "ingredients/edit/:slug", element: <EditIngredient /> },
+      { path: "ingredients/trash", element: <TrashIngredient /> },
+      
+
+
+      { path: "*", element: <Navigate to="/admin" /> },
     ],
   },
 ];

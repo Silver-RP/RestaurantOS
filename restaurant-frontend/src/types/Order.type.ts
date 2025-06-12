@@ -1,26 +1,16 @@
-import { Address } from './Address.type';
-
-export type DeliveryStatus =
-  | 'PENDING'
+export type Status =
+  | 'ORDER_PLACED'
+  | 'ORDER_CONFIRMED'
   | 'PENDING_PICKUP'
   | 'PICKED_UP'
   | 'IN_TRANSIT'
   | 'DELIVERED'
-  | 'FAILED'
-  | 'CANCELLED'
   | 'DELIVERY_FAILED'
   | 'RETURN_REQUESTED'
-  | 'RETURNED';
-
-export type OrderStatus =
-  | 'PENDING'
-  | 'CONFIRMED'
-  | 'PREPARING'
-  | 'READY'
-  | 'COMPLETED'
-  | 'CANCELLED'
+  | 'RETURN_APPROVED'
+  | 'RETURN_REJECTED'
   | 'RETURNED'
-  | 'SHIPPING';
+  | 'CANCELLED';
 
 export type PaymentMethod =
   | 'CASH'
@@ -74,6 +64,7 @@ export interface OrderItem {
   unit_price: number;
   quantity: number;
   total_amount: number;
+  dish_slug: string;
   note?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -97,7 +88,15 @@ interface User {
   status: string;
 }
 
-interface Order {
+export interface Order {
+  postPayment: {
+    redirectUrl?: string;
+    bankingInfo?: {
+      accountNumber: string;
+      accountName: string;
+      bankName: string;
+    };
+  };
   _id: string;
   user_id: User; // Sửa từ string thành User
   address_id: {
@@ -127,7 +126,6 @@ interface Order {
   total_quantity: number;
   payment_status?: 'UNPAID' | 'PAID' | 'FAILED' | 'REFUNDED';
   paid_at: string | null;
-  payment_status?: string; // Thêm tùy chọn
   note: string | null;
   receiver: string | null;
   receiver_phone: string | null;
@@ -147,9 +145,10 @@ interface Order {
 export interface OrdersResponse {
   message: string;
   orders: Order[];
-  total: number;
+  totalItems: number;
   currentPage: number;
   totalPages: number;
+  filters?: { [key: string]: string };
 }
 
 export interface OrderDetailResponse {
@@ -181,16 +180,12 @@ export interface CancelOrderRequest {
 }
 
 export interface OrderQueryParams {
+  filters?: Record<string, string | number | boolean>;
+  status?: Status[];
   page?: number;
   limit?: number;
-  status?: OrderStatus;
-  delivery_status?: DeliveryStatus | DeliveryStatus[];
-  startDate?: string;
-  endDate?: string;
-  sortBy?: string;
-  sort?: 'createdAt' | 'total_price' | 'updatedAt';
-  sortOrder?: 'asc' | 'desc';
-  filters: { [key: string]: string } | null;
+  searchTerm?: string;
+  sortType?: 'newest' | 'oldest';
 }
 
 export interface PlaceOrderRequest {
@@ -208,6 +203,8 @@ export interface PlaceOrderRequest {
   };
   address_id?: string;
   note?: string;
+  voucher_id?: string;
+  shipping_fee?: number;
   scheduled_time?: string;
   receiver?: string;
   receiver_phone?: string;
@@ -237,7 +234,7 @@ export interface AllOrder {
     status: string;
   };
   address_id: {
-    _id: string;
+    id: string;
     user_id: string;
     full_name: string;
     phone: string;
@@ -247,9 +244,10 @@ export interface AllOrder {
     street_address: string;
     address_type: string;
     is_default: boolean;
+    lat: number;
+    lon: number;
     createdAt: string;
     updatedAt: string;
-    id: string;
   } | null; // Cho phép null
   cashier_order_id: string | null;
   payment_method: string;
@@ -261,7 +259,6 @@ export interface AllOrder {
   items_price: number;
   total_price: number;
   total_quantity: number;
-  is_paid: boolean;
   paid_at: string | null;
   payment_status?: string; // Thêm trường payment_status (tùy chọn)
   note: string | null;
@@ -272,7 +269,7 @@ export interface AllOrder {
   returned_at: string | null;
   delivered_at: string | null;
   order_type: string;
-  delivery_time_type: string;
+  delivery_time_type: DeliveryTimeType;
   scheduled_time: string | null;
   createdAt: string;
   updatedAt: string;

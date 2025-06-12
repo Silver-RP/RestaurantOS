@@ -92,8 +92,8 @@ const Register = () => {
   };
   useEffect(() => {
     if (success) {
-      toast.success('Đăng ký thành công!');
-      navigate('/login');
+      toast.success('Đăng ký thành công! Vui lòng xác minh email của bạn.');
+      navigate('/verify-otp-email', { state: { email: formData.email } });
       dispatch(clearStatus());
     }
     if (error) {

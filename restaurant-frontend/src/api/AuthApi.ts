@@ -1,6 +1,7 @@
 import { AxiosError } from 'axios';
 import api from './axiosInstance';
 import axiosInstance from './axiosInstance';
+import { se } from 'date-fns/locale';
 
 interface SendOtpResponse {
   message: string;
@@ -29,6 +30,13 @@ const authApi = {
       email,
     });
     return res.data;
+  }, 
+
+  sendOtpVerifyEmail: async (email: string): Promise<SendOtpResponse> => {
+    const res = await api.post<SendOtpResponse>('/auth/resend-verification', {
+      email: email.trim(),
+    });
+    return res.data;
   },
 
   verifyOtp: async (email: string, otp: string): Promise<VerifyOtpResponse> => {
@@ -36,6 +44,17 @@ const authApi = {
       email: email.trim(),
       otp: otp.trim(),
     });
+    return res.data;
+  },
+
+  verifyOtpEmail: async (email: string, otp: string): Promise<VerifyOtpResponse> => {
+    const res = await api.post<VerifyOtpResponse>(
+      '/auth/verify-resend-otpEmail',
+      {
+        email: email.trim(),
+        otp: otp.trim(),
+      },
+    );
     return res.data;
   },
 

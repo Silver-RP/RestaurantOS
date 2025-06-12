@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import ModalSelectAddress, { Address } from './ModalSelectAddress';
 import { AddAddressModal } from '../address/AddAddressModal';
-import { toast } from 'react-toastify'; 
+import { toast } from 'react-toastify';
 import ModalSelectDeliveryTime, {
   DeliveryTime,
 } from './ModalSelectDeliveryTime';
+import ModalSelectPickupTime, { PickupTime } from './ModalSelectPickupTime';
 
 interface Props {
   addresses: Address[];
@@ -16,7 +17,7 @@ interface Props {
   deliveryMethod?: 'delivery' | 'pickup';
   onDeliveryMethodChange?: (method: 'delivery' | 'pickup') => void;
   receiver?: string;
-  receiverPhone?: string; 
+  receiverPhone?: string;
   onReceiverChange?: (name: string, phone: string) => void;
   refetch: () => void;
   onValidationRef?: (validateFn: () => boolean) => void;
@@ -40,13 +41,16 @@ const ShippingAddressSection = ({
   const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isDeliveryTimeModalOpen, setIsDeliveryTimeModalOpen] = useState(false);
-  const [deliveryTime, setDeliveryTime] = useState<DeliveryTime>(initialDeliveryTime);
+
+  const [deliveryTime, setDeliveryTime] =
+    useState<DeliveryTime>(initialDeliveryTime);
   const [localReceiver, setLocalReceiver] = useState(receiver);
   const [localReceiverPhone, setLocalReceiverPhone] = useState(receiverPhone);
-  
+
   // Validation states
   const [receiverError, setReceiverError] = useState(false);
   const [phoneError, setPhoneError] = useState(false);
+  const [pickupTimeError, setPickupTimeError] = useState(false);
 
   const selected = addresses.find((addr) => addr.id === String(selectedId));
 
@@ -69,7 +73,7 @@ const ShippingAddressSection = ({
   // Validation functions
   const validatePhone = (phone: string): boolean => {
     // Vietnamese phone number regex
-    const phoneRegex = /^(0|\+84)[3|5|7|8|9][0-9]{8}$/;
+    const phoneRegex = /^(0|\+84)[2|3|5|7|8|9][0-9]{8}$/;
     return phoneRegex.test(phone.replace(/\s/g, ''));
   };
 
@@ -79,23 +83,23 @@ const ShippingAddressSection = ({
 
   const handleReceiverChange = (value: string) => {
     setLocalReceiver(value);
-    
+
     // Validate on change
     if (receiverError && value.trim().length > 0) {
       setReceiverError(false);
     }
-    
+
     onReceiverChange(value, localReceiverPhone);
   };
 
   const handlePhoneChange = (value: string) => {
     setLocalReceiverPhone(value);
-    
+
     // Validate on change
     if (phoneError && validatePhone(value)) {
       setPhoneError(false);
     }
-    
+
     onReceiverChange(localReceiver, value);
   };
 
@@ -112,16 +116,15 @@ const ShippingAddressSection = ({
       setPhoneError(true);
     }
   };
-
   // Public validation method that parent can call
   const validatePickupInfo = (): boolean => {
     let isValid = true;
-    
+
     if (!validateReceiver(localReceiver)) {
       setReceiverError(true);
       isValid = false;
     }
-    
+
     if (localReceiverPhone.trim() === '') {
       setPhoneError(true);
       isValid = false;
@@ -129,14 +132,23 @@ const ShippingAddressSection = ({
       setPhoneError(true);
       isValid = false;
     }
-    
+
+    // Remove pickup time validation since we always have a default time
+    setPickupTimeError(false);
+
     return isValid;
   };
 
   // Expose validation function to parent via ref
   React.useEffect(() => {
     onValidationRef(validatePickupInfo);
-  }, [localReceiver, localReceiverPhone, onValidationRef]);
+  }, [
+    localReceiver,
+    localReceiverPhone,
+    deliveryTime,
+    deliveryMethod,
+    onValidationRef,
+  ]);
 
   const getFormattedAddress = (address: Address) => {
     return [
@@ -190,19 +202,31 @@ const ShippingAddressSection = ({
     setDeliveryTime(selectedTime);
     onDeliveryTimeChange(selectedTime);
   };
-
   const getFormattedDeliveryTime = () => {
-    if (deliveryTime.type === 'now') return 'Giao hàng ngay khi chuẩn bị xong';
-    if (deliveryTime.type === 'scheduled' && deliveryTime.scheduledTime) {
-      return `Giao vào ${deliveryTime.scheduledTime.toLocaleString('vi-VN', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      })}`;
+    const isPickup = deliveryMethod === 'pickup';
+
+    if (deliveryTime.type === 'now') {
+      return isPickup
+        ? 'Dự kiến nhận hàng trong 30-45 phút tính từ lúc đặt hàng.'
+        : 'Dự kiến nhận hàng trong 45-90 phút tính từ lúc đặt hàng.';
     }
-    return 'Chưa chọn thời gian giao hàng';
+
+    if (deliveryTime.type === 'scheduled' && deliveryTime.scheduledTime) {
+      return `${isPickup ? 'Nhận hàng' : 'Giao'} vào ${deliveryTime.scheduledTime.toLocaleString(
+        'vi-VN',
+        {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        },
+      )}`;
+    }
+
+    return isPickup
+      ? 'Chưa chọn thời gian nhận hàng'
+      : 'Chưa chọn thời gian giao hàng';
   };
 
   return (
@@ -210,7 +234,6 @@ const ShippingAddressSection = ({
       <h2 className="font-semibold text-lg text-white mb-3">
         Phương Thức Nhận Hàng
       </h2>
-
       {/* Delivery method */}
       <div className="flex gap-4 mb-4">
         <label className="flex items-center cursor-pointer">
@@ -234,7 +257,6 @@ const ShippingAddressSection = ({
           <span>Đến lấy tại cửa hàng</span>
         </label>
       </div>
-
       {deliveryMethod === 'delivery' ? (
         <>
           <h3 className="font-semibold text-white mb-2">Địa Chỉ Nhận Hàng</h3>
@@ -286,6 +308,10 @@ const ShippingAddressSection = ({
                 Thay đổi
               </p>
             </div>
+            <p className="text-xs text-white/50 mt-1">
+              (<span className="text-red-400">*</span>Thời gian thực tế có thể
+              thay đổi tùy vào lưu lượng đơn hàng và tình trạng bếp.)
+            </p>
           </div>
         </>
       ) : (
@@ -305,9 +331,9 @@ const ShippingAddressSection = ({
               value={localReceiver}
               onChange={(e) => handleReceiverChange(e.target.value)}
               onBlur={handleReceiverBlur}
-              className={`w-full p-2 border rounded bg-transparent text-white focus:outline-none ${
-                receiverError 
-                  ? 'border-red-500 focus:border-red-500' 
+              className={`w-full p-2 border rounded bg-transparent text-white focus:border-secondaryColor focus:outline-none ${
+                receiverError
+                  ? 'border-red-500 focus:border-red-500'
                   : 'border-white/20 focus:border-blue-500'
               }`}
             />
@@ -316,9 +342,10 @@ const ShippingAddressSection = ({
                 Vui lòng nhập tên người nhận hàng
               </p>
             )}
-            
+
             <label className="block mt-3 mb-1 text-sm text-white/70">
-              Số điện thoại người nhận hàng <span className="text-red-500">*</span>
+              Số điện thoại người nhận hàng{' '}
+              <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -326,24 +353,49 @@ const ShippingAddressSection = ({
               value={localReceiverPhone}
               onChange={(e) => handlePhoneChange(e.target.value)}
               onBlur={handlePhoneBlur}
-              className={`w-full p-2 border rounded bg-transparent text-white focus:outline-none ${
-                phoneError 
-                  ? 'border-red-500 focus:border-red-500' 
+              className={`w-full p-2 border rounded bg-transparent text-white focus:border-secondaryColor focus:outline-none ${
+                phoneError
+                  ? 'border-red-500 focus:border-red-500'
                   : 'border-white/20 focus:border-blue-500'
               }`}
             />
             {phoneError && (
               <p className="text-red-500 text-xs mt-1">
-                {localReceiverPhone.trim() === '' 
+                {localReceiverPhone.trim() === ''
                   ? 'Vui lòng nhập số điện thoại người nhận hàng'
-                  : 'Số điện thoại không đúng định dạng'
-                }
+                  : 'Số điện thoại không đúng định dạng'}
               </p>
             )}
+
+            {/* Delivery time for pickup orders */}
+            <div className="mt-4 pt-4 border-t border-white/10">
+              <h3 className="font-semibold text-white mb-2">
+                Đặt giờ đến nhận hàng
+              </h3>
+              <div className="flex items-center">
+                <p className="text-sm text-white/70">
+                  {getFormattedDeliveryTime()}
+                </p>
+                <p
+                  onClick={() => setIsDeliveryTimeModalOpen(true)}
+                  className="text-blue-500 mx-3 text-sm cursor-pointer"
+                >
+                  Chọn giờ
+                </p>
+              </div>
+              {pickupTimeError && (
+                <p className="text-red-500 text-xs mt-1">
+                  Vui lòng chọn thời gian nhận hàng
+                </p>
+              )}
+              <p className="text-xs text-white/50 mt-1">
+                (<span className="text-red-400">*</span>Thời gian thực tế có thể
+                thay đổi tùy vào lưu lượng đơn hàng và tình trạng bếp.)
+              </p>
+            </div>
           </div>
         </>
       )}
-
       {/* Modals */}
       <ModalSelectAddress
         isOpen={isSelectModalOpen}
@@ -355,15 +407,25 @@ const ShippingAddressSection = ({
           setIsSelectModalOpen(false);
         }}
         onAddAddress={handleOpenAddModal}
-      />
-
-      <ModalSelectDeliveryTime
-        isOpen={isDeliveryTimeModalOpen}
-        onClose={() => setIsDeliveryTimeModalOpen(false)}
-        onSelect={handleDeliveryTimeSelect}
-        currentSelection={deliveryTime}
-      />
-
+      />{' '}
+      {/* Show different time selection modal based on delivery method */}
+      {deliveryMethod === 'delivery' ? (
+        <ModalSelectDeliveryTime
+          isOpen={isDeliveryTimeModalOpen}
+          onClose={() => setIsDeliveryTimeModalOpen(false)}
+          onSelect={handleDeliveryTimeSelect}
+          currentSelection={deliveryTime}
+        />
+      ) : (
+        <ModalSelectPickupTime
+          isOpen={isDeliveryTimeModalOpen}
+          onClose={() => setIsDeliveryTimeModalOpen(false)}
+          onSelect={
+            handleDeliveryTimeSelect as (pickupTime: PickupTime) => void
+          }
+          currentSelection={deliveryTime as PickupTime}
+        />
+      )}
       <AddAddressModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}

@@ -19,8 +19,8 @@ interface ProductInfoProps {
   products: Product[];
   note?: string;
   shippingFee?: number;
-  paymentMethod: string;
-  onPaymentMethodChange: (method: string) => void;
+  paymentMethod: string | null;
+  onPaymentMethodChange: (method: string | null) => void;
   vouchers?: Voucher[];
   onProceedToPayment?: () => void;
   onNoteChange?: (note: string) => void;
@@ -31,9 +31,9 @@ const ProductInfoSection = ({
   products,
   note,
   shippingFee = 0,
-  paymentMethod,
   onPaymentMethodChange,
   vouchers = [],
+  paymentMethod,
   onProceedToPayment,
   onNoteChange,
   onProductNoteChange,
@@ -141,10 +141,12 @@ const ProductInfoSection = ({
                     <div className="mt-1.5">
                       <input
                         type="text"
-                        placeholder="Ghi chú cho món này (không bỏ ớt, thêm gia vị...)"
-                        className="w-full max-w-xs text-xs bg-gray-800 border border-gray-600 rounded p-1.5 text-white/80 focus:border-secondaryColor focus:outline-none"
+                        placeholder="Ghi chú cho món ăn..."
+                        className="w-full max-w-xs text-xs bg-bodyBackground  border border-gray-600 rounded p-1.5 text-white/80 focus:border-secondaryColor focus:outline-none"
                         defaultValue={product.notes || ''}
-                        onChange={(e) => handleProductNoteChange(idx, e.target.value)}
+                        onChange={(e) =>
+                          handleProductNoteChange(idx, e.target.value)
+                        }
                       />
                     </div>
                   </div>
@@ -153,18 +155,26 @@ const ProductInfoSection = ({
                   <div>
                     {product.discountedPrice !== product.price ? (
                       <div className="text-sm mt-1 flex flex-col">
-                        <span className="line-through text-gray-400">{product.price.toLocaleString()} VND</span>
-                        <span className="text-secondaryColor font-semibold">{product.discountedPrice.toLocaleString()} VND</span>
+                        <span className="line-through text-gray-400">
+                          {product.price.toLocaleString()} VND
+                        </span>
+                        <span className="text-secondaryColor font-semibold">
+                          {product.discountedPrice.toLocaleString()} VND
+                        </span>
                       </div>
                     ) : (
-                      <div className="text-sm mt-1">{product.price.toLocaleString()} VND</div>
+                      <div className="text-sm mt-1">
+                        {product.price.toLocaleString()} VND
+                      </div>
                     )}
                   </div>
                 </td>
                 <td className="p-2 text-center">x{product.quantity}</td>
                 <td className="p-2 font-semibold text-right">
                   {product.discountedPrice !== undefined
-                    ? (product.discountedPrice * product.quantity).toLocaleString()
+                    ? (
+                        product.discountedPrice * product.quantity
+                      ).toLocaleString()
                     : (product.price * product.quantity).toLocaleString()}
                   VND
                 </td>
@@ -183,7 +193,7 @@ const ProductInfoSection = ({
           value={orderNote}
           onChange={handleNoteChange}
           placeholder="Nhập lời nhắn..."
-          className="w-full border border-white/20 bg-transparent px-2 py-1 sm:px-3 sm:py-2 rounded text-white placeholder:text-white/40 text-xs sm:text-sm md:text-base"
+          className="w-full border border-white/20 bg-transparent px-2 py-1 sm:px-3 sm:py-2 rounded text-white focus:border-secondaryColor focus:outline-none placeholder:text-white/40 text-xs sm:text-sm md:text-base"
           rows={3}
         />
       </div>
@@ -192,7 +202,7 @@ const ProductInfoSection = ({
         {/* Phương thức thanh toán */}
         <div className="flex-1">
           <PaymentMethodSelector
-            selectedMethod={paymentMethod}
+            selectedMethod={paymentMethod ?? ''}
             onChange={onPaymentMethodChange}
           />
         </div>
@@ -226,7 +236,9 @@ const ProductInfoSection = ({
 
             <div className="flex justify-between items-center">
               <span className="text-white/80">Bạn tiết kiệm</span>
-              <span className="text-green-400">{productDiscountTotal.toLocaleString()} VND</span>
+              <span className="text-green-400">
+                {productDiscountTotal.toLocaleString()} VND
+              </span>
             </div>
 
             <div className="flex justify-between items-center">
@@ -264,7 +276,9 @@ const ProductInfoSection = ({
             variant="filled"
             size="medium"
             className="mt-4 w-full text-xs sm:text-sm md:text-base"
-            onClick={onProceedToPayment || (() => console.log('Thanh toán clicked'))}
+            onClick={
+              onProceedToPayment || (() => console.log('Thanh toán clicked'))
+            }
           >
             TIẾN HÀNH THANH TOÁN
           </ButtonComponents>

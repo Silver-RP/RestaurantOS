@@ -8,6 +8,8 @@ import { useGetCart } from '@hooks/useCart';
 import { useNavigate } from 'react-router-dom';
 import { useUserAddresses } from '@/hooks/useAddress';
 import { toast } from 'react-toastify';
+import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
+
 
 interface Product {
   image: string;
@@ -22,6 +24,7 @@ interface Product {
 }
 
 interface OrderData {
+  address_id?: string | null;
   address?: {
     full_name: string;
     phone: string;
@@ -30,7 +33,13 @@ interface OrderData {
     district: string;
     province: string;
   };
-  payment_method: 'CASH' | 'BANKING' | 'VNPAY' | 'MOMO';
+  payment_method:
+    | 'CASH'
+    | 'BANKING'
+    | 'VNPAY'
+    | 'MOMO'
+    | 'MOMO_ATM'
+    | 'CREDIT_CARD';
   delivery_type: 'DELIVERY' | 'PICKUP';
   items: Array<{
     dish_id: string;
@@ -57,7 +66,7 @@ interface OrderData {
 const CheckoutPage = () => {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState('CASH');
+  const [paymentMethod, setPaymentMethod] = useState<string>('');
   const [deliveryMethod, setDeliveryMethod] = useState<'delivery' | 'pickup'>(
     'delivery',
   );
@@ -109,7 +118,7 @@ const CheckoutPage = () => {
       navigate('/cart');
     }
   }, [cart, navigate]);
-  
+
   useEffect(() => {
     setAddresses(fetchedAddresses);
     setSelectedId(
@@ -145,13 +154,10 @@ const CheckoutPage = () => {
       },
     ]);
   }, [fetchedAddresses]);
-
-  const handleAddAddress = async (newAddr: Omit<Address, 'id'>) => {
+  const handleAddAddress = async (newAddr: Omit<Address, '_id'>) => {
     const newAddress: Address = {
       ...newAddr,
-      id: addresses.length
-        ? Math.max(...addresses.map((addr) => Number(addr.id))) + 1
-        : 1,
+      _id: crypto.randomUUID(), // generate a temporary string ID
     };
 
     setAddresses((prevAddresses) => {
@@ -164,7 +170,7 @@ const CheckoutPage = () => {
       return [...prevAddresses, newAddress];
     });
 
-    setSelectedId(newAddress.id);
+    setSelectedId(newAddress._id);
   };
 
   const handleDeliveryTimeChange = (time: DeliveryTime) => {
@@ -192,8 +198,7 @@ const CheckoutPage = () => {
     };
     setProducts(updatedProducts);
   };
-
-  const selectedAddress = addresses.find((addr) => addr.id === selectedId);
+  const selectedAddress = addresses.find((addr) => addr._id === selectedId || addr.id === selectedId);
 
   useEffect(() => {
     if (deliveryMethod === 'pickup') {
@@ -208,22 +213,26 @@ const CheckoutPage = () => {
   }, [deliveryMethod, deliveryTime.type]);
 
   const handleProceedToPayment = () => {
-    // Verify address is selected when delivery is chosen
     if (!selectedAddress && deliveryMethod === 'delivery') {
-      alert('Vui lòng chọn địa chỉ giao hàng');
+      toast.error('Vui lòng chọn địa chỉ giao hàng');
       return;
     }
 
     // Verify receiver info when pickup is chosen
     if (deliveryMethod === 'pickup') {
       if (!receiver || !receiverPhone) {
-        toast.error("Vui lòng nhập thông tin người nhận");
+        toast.error('Vui lòng nhập thông tin người nhận');
         return;
       }
-      if (!/^(0|\+84)[3|5|7|8|9][0-9]{8}$/.test(receiverPhone)) {
+      if (!/^(0|\+84)[2|3|5|7|8|9][0-9]{8}$/.test(receiverPhone)) {
         toast.error('Số điện thoại không đúng định dạng');
         return;
       }
+    }
+
+    if (!paymentMethod) {
+      toast.error('Vui lòng chọn phương thức thanh toán');
+      return;
     }
 
     const items_price = products.reduce((sum, item) => {
@@ -237,7 +246,7 @@ const CheckoutPage = () => {
     const total_quantity = products.reduce(
       (sum, item) => sum + item.quantity,
       0,
-    );
+    );   
 
     const orderData: OrderData = {
       payment_method: paymentMethod as 'CASH' | 'BANKING' | 'VNPAY' | 'MOMO',
@@ -259,9 +268,9 @@ const CheckoutPage = () => {
       vat_amount,
       total_price,
       total_quantity,
-    };
-    if (deliveryMethod === 'delivery') {
+    };    if (deliveryMethod === 'delivery') {
       if (selectedAddress) {
+        orderData.address_id = selectedAddress._id || selectedAddress.id,
         orderData.address = {
           full_name: selectedAddress.full_name,
           phone: selectedAddress.phone,
@@ -288,42 +297,44 @@ const CheckoutPage = () => {
   };
 
   return (
-    <div className="flex py-10 bg-bodyBackground min-h-screen text-white">
-      <div className="w-11/12 md:w-container95 lg:w-container90 xl:w-container85 2xl:w-mainContainer mx-auto space-y-6">
-        <h1 className="text-2xl font-bold">Thanh toán</h1>
+    <>
+      <BreadCrumbComponents />
+      <div className="flex py-10 bg-bodyBackground min-h-screen text-white">
+        <div className="w-11/12 md:w-container95 lg:w-container90 xl:w-container85 2xl:w-mainContainer mx-auto space-y-6">
+          <h1 className="text-2xl font-bold">Thanh toán</h1>
 
-        <ShippingAddressSection
-          addresses={addresses}
-          refetch={refetch}
-          selectedId={selectedId}
-          onSelect={setSelectedId}
-          onAdd={handleAddAddress}
-          onDeliveryTimeChange={handleDeliveryTimeChange}
-          initialDeliveryTime={deliveryTime}
-          deliveryMethod={deliveryMethod}
-          onDeliveryMethodChange={setDeliveryMethod}
-          receiver={receiver}
-          receiverPhone={receiverPhone}
-          onReceiverChange={(name, phone) => {
-            setReceiver(name);
-            setReceiverPhone(phone);
-          }}
+          <ShippingAddressSection
+            addresses={addresses}
+            refetch={refetch}
+            selectedId={selectedId}
+            onSelect={setSelectedId}
+            onAdd={handleAddAddress}
+            onDeliveryTimeChange={handleDeliveryTimeChange}
+            initialDeliveryTime={deliveryTime}
+            deliveryMethod={deliveryMethod}
+            onDeliveryMethodChange={setDeliveryMethod}
+            receiver={receiver}
+            receiverPhone={receiverPhone}
+            onReceiverChange={(name, phone) => {
+              setReceiver(name);
+              setReceiverPhone(phone);
+            }}
+          />
 
-        />
-
-        <ProductInfoSection
-          products={products}
-          note={orderNote}
-          shippingFee={shippingFee}
-          paymentMethod={paymentMethod}
-          onPaymentMethodChange={setPaymentMethod}
-          vouchers={vouchers}
-          onProceedToPayment={handleProceedToPayment}
-          onNoteChange={handleOrderNoteChange}
-          onProductNoteChange={handleProductNotes}
-        />
+          <ProductInfoSection
+            products={products}
+            note={orderNote}
+            shippingFee={shippingFee}
+            paymentMethod={paymentMethod}
+            onPaymentMethodChange={setPaymentMethod}
+            vouchers={vouchers}
+            onProceedToPayment={handleProceedToPayment}
+            onNoteChange={handleOrderNoteChange}
+            onProductNoteChange={handleProductNotes}
+          />
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

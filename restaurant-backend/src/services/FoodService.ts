@@ -7,6 +7,7 @@ import { buildQuery } from '../utils/queryBuilder';
 import { getSortQuery } from '../utils/sorting';
 import UploadService from './UploadImageService';
 import { OrderDetail } from '../models/OrderDetailModel';
+import DishIngredient from '../models/DishIngredientModel';
 
 class FoodService {
   async createFoodWithImages(foodData: any, files: Express.Multer.File[]) {
@@ -30,6 +31,7 @@ class FoodService {
       images: formattedImages,
       newUntil: foodData.isDishNew ? foodData.newUntil : null,
       discountUntil: foodData.discount_price > 0 ? foodData.discountUntil : null,
+      recommendUntil: foodData.isRecommend ? foodData.recommendUntil : null,
     };
 
     try {
@@ -455,7 +457,6 @@ class FoodService {
   */
   async permanentlyDeleteDish(id: string) {
     try {
-      console.log('Permanently deleting dish with ID:', id);
       const dish = await Dish.findById(id);
       if (!dish) {
         throw new Error('Món ăn không tồn tại');
@@ -477,6 +478,140 @@ class FoodService {
       console.error('Lỗi xoá món ăn vĩnh viễn:', error);
       throw new Error(error.message || 'Lỗi khi xoá món ăn vĩnh viễn');
     }
+  }
+
+  async getDishIngredients(dishId: string) {
+    try {
+      const dishInfo = await Dish.findById(dishId).select('name images ingredients').lean();
+  
+      if (!dishInfo) {
+        return { message: 'Dish not found' };
+      }
+  
+      const ingredientsRaw = await DishIngredient.find({ dishId: new mongoose.Types.ObjectId(dishId) })
+        .populate({
+          path: 'ingredientId',
+          select: 'name'
+        })
+        .lean();
+  
+      const ingredients = ingredientsRaw.map(item => ({
+        _id: item._id,
+        ingredientId: item.ingredientId._id,
+        ingredientName: (item.ingredientId as any).name,
+        quantity: item.quantity,
+        unit: item.unit,
+      }))
+      .sort((a, b) => a.ingredientName.localeCompare(b.ingredientName));
+  
+      return {
+        dish: {
+          id: dishInfo._id,
+          name: dishInfo.name,
+          image: dishInfo.images?.[0] || null,
+          ingredients: dishInfo.ingredients || '',
+        },
+        ingredients: ingredients || [],
+      };
+  
+    } catch (error) {
+      console.error('Error getting dish ingredients:', error);
+      throw new Error('Error getting dish ingredients');
+    }
+  }
+  
+  async addManyDishIngredients(
+    dishId: string,
+    ingredients: { ingredientId: string; quantity: number; unit: string }[]
+  ) {
+    try {
+      const addedIngredients = [];
+  
+      for (const ing of ingredients) {
+        const { ingredientId, quantity, unit } = ing;
+  
+        const exists = await DishIngredient.findOne({
+          dish: new mongoose.Types.ObjectId(dishId),
+          ingredient: new mongoose.Types.ObjectId(ingredientId),
+        });
+  
+        if (exists) {
+          console.log(`Ingredient ${ingredientId} already exists for dish ${dishId}`);
+          continue; 
+        }
+  
+        const newItem = await DishIngredient.create({
+          dishId: new mongoose.Types.ObjectId(dishId),
+          ingredientId: new mongoose.Types.ObjectId(ingredientId),
+          quantity,
+          unit,
+        });
+  
+        addedIngredients.push(newItem);
+      }
+  
+      return addedIngredients;
+    } catch (error) {
+      console.error('Error adding dish ingredients:', error);
+      throw new Error('Error adding dish ingredients');
+    }
+  }
+  
+  async updateManyDishIngredients(
+    dishId: string,
+    updates: { _id: string; ingredientId: string; quantity: number; unit: string }[]
+  ) {
+    const results = [];
+  
+    for (const item of updates) {
+      const { _id, ingredientId, quantity, unit } = item;
+
+      if (
+        !mongoose.Types.ObjectId.isValid(_id) ||
+        !mongoose.Types.ObjectId.isValid(ingredientId)
+      ) continue;
+  
+      const exists = await DishIngredient.findOne({
+        _id: { $ne: _id },
+        dishId: new mongoose.Types.ObjectId(dishId),
+        ingredientId: new mongoose.Types.ObjectId(ingredientId),
+      });
+  
+      if (exists) {
+        console.log(`Nguyên liệu ${ingredientId} đã tồn tại trong món ăn ${dishId}, bỏ qua.`);
+        continue;
+      }
+  
+      const updated = await DishIngredient.findOneAndUpdate(
+        { _id, dishId: new mongoose.Types.ObjectId(dishId) },
+        {
+          ingredientId: new mongoose.Types.ObjectId(ingredientId),
+          quantity,
+          unit,
+        },
+        { new: true }
+      );
+  
+      if (updated) results.push(updated);
+    }
+  
+    return results;
+  }
+  
+  async deleteManyDishIngredients(ids: string[], dishId: string) {
+    const results = [];
+    for (const id of ids) {
+      if (!mongoose.Types.ObjectId.isValid(id)) continue;
+  
+      const deleted = await DishIngredient.findOneAndDelete({
+        _id: id,
+        dishId: new mongoose.Types.ObjectId(dishId),
+      });
+
+      if (deleted) results.push(deleted);
+    }
+  
+    return results;
   }
 
   // updateFoodWithImages's private methods

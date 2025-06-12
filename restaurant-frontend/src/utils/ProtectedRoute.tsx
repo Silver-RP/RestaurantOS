@@ -6,7 +6,6 @@ import { Navigate } from 'react-router-dom';
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const { user } = useSelector((state: RootState) => state.user);
-  console.log('user in header', user);
   const roles = user?.roles || [];
 
   if (

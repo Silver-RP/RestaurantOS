@@ -13,7 +13,6 @@ export const getProfile = async (
   data: User;
 }> => {
   const response = await axiosInstance.get(`/profile/getProfile/${userId}`);
-  console.log(response.data);
   
   return response.data;
 };

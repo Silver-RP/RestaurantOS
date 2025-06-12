@@ -1,12 +1,11 @@
 import { useFoodsTrashLogic } from '../../../../hooks/useFoodsAdminLogic';
-import React, { useEffect } from 'react';
+import React from 'react';
 import AdminPagination from '../AdminPagination';
 import { FaSort, FaArrowUp, FaArrowDown, FaSearch } from 'react-icons/fa';
 import { FaUndoAlt } from 'react-icons/fa';
 import { FaTrashAlt } from 'react-icons/fa';
 import { BiUndo } from 'react-icons/bi';
 import ConfirmModal from '@/components/common/ConfirmModal';
-import { useFoodLogic } from '@/hooks/useFoodsAdminLogic';
 
 
 const TrashTable: React.FC = () => {
@@ -233,7 +232,7 @@ const TrashTable: React.FC = () => {
                 newParams.set('page', String(page));
                 setSearchParams(newParams);
               }}
-              limit={Number(searchParams.get('limit') || 10)}
+              limit={Number(searchParams.get('limit') || 12)}
               onLimitChange={(newLimit) => {
                 setSearchParams((prev) => {
                   const newParams = new URLSearchParams(prev);
@@ -245,6 +244,10 @@ const TrashTable: React.FC = () => {
             />
           )}
         </div>
+      )}
+
+      {foodList.length === 0 && !loading && (
+        <p className="text-center text-gray-500">Không có món nào bị xoá trong thùng rác.</p>
       )}
     </div>
   );

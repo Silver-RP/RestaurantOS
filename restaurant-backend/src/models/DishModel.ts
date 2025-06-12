@@ -8,7 +8,7 @@ export interface IDish extends mongoose.Document {
   discount_price?: number;
   description: string;
   shortDescription?: string;
-  ingredientsl?: string;
+  ingredients?: string;
   status: 'hidden' | 'available' | 'soldout';
   views: number;
   ordered_count: number;
@@ -20,6 +20,8 @@ export interface IDish extends mongoose.Document {
   countInStock: number;
   isDishNew: boolean;
   newUntil?: Date;
+  isRecommend?: boolean;
+  recommendUntil?: Date;
   totalSoldQuantity?: number;
   discountUntil?: Date;
   alcohol_type?: string;
@@ -62,6 +64,8 @@ const dishSchema = new mongoose.Schema(
     countInStock: { type: Number, default: 0, min: 0 },
     isDishNew: { type: Boolean, default: false },
     newUntil: { type: Date },
+    isRecommend: { type: Boolean, default: false },
+    recommendUntil: { type: Date },
     totalSoldQuantity: { type: Number, default: 0 },
     discountUntil: { type: Date },
     alcohol_type: { type: String },

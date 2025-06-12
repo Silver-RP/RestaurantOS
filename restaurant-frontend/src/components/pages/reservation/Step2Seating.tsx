@@ -1,6 +1,6 @@
 import React from 'react';
 import ButtonComponents from '@components/common/ButtonComponents';
-import { ReservationFormData } from '../../../types/ReservationFormData.type';
+import { ReservationFormData } from '../../../types/reservation.type';
 import { FilledStar, EmptyStar } from '../../common/StarIcons'; 
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
@@ -69,10 +69,10 @@ const renderStars = (count: number) => {
 
 const Step2Seating: React.FC<Step2SeatingProps> = ({ formData, setFormData, onNext, onBack }) => {
   const handleSelect = (id: string, name: string) => {
-    setFormData((prev) => ({ ...prev, seating: id, seatingName: name, }));
+    setFormData((prev) => ({ ...prev, table_type: id, seatingName: name, }));
   };
   const handleNextClick = () => {
-    if (!formData.seating) {
+    if (!formData.table_type) {
       confirmAlert({
         customUI: ({ onClose }) => {
           return (
@@ -97,7 +97,7 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({ formData, setFormData, onNe
       <div
         key={option.id}
         className={`flex bg-white/5 overflow-hidden rounded-lg shadow-xl border 
-          ${formData.seating === option.id ? 'border-secondaryColor' : 'border-transparent'}
+          ${formData.table_type === option.id ? 'border-secondaryColor' : 'border-transparent'}
           transition-all duration-300 hover:scale-[1.01]`}
       >
         <div className="xl:w-[300px] lg:w-[240px] w-[120px] h-[250px] shrink-0">
@@ -129,12 +129,12 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({ formData, setFormData, onNe
           <div className="mt-3">
             
             <ButtonComponents
-              variant={formData.seating === option.id ? 'selected' : 'filled'}
+              variant={formData.table_type === option.id ? 'selected' : 'filled'}
               size="small"
               onClick={() => handleSelect(option.id,  option.name)}
               className="w-full"
             >
-              {formData.seating === option.id ? 'Đã chọn' : 'Chọn'}
+              {formData.table_type === option.id ? 'Đã chọn' : 'Chọn'}
             </ButtonComponents>
           </div>
         </div>
