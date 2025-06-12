@@ -4,19 +4,28 @@ import { ingredientSchema } from '../validators/ingredientValidator';
 import { IngredientInput } from '../validators/ingredientValidator';
 import { PaginateResult } from 'mongoose';
 
+import {
+  buildMatchQuery,
+  buildSortStage,
+  getTodayUTC,
+  buildIngredientAggregate,
+} from '../utils/IngredientUitl';
+
+interface IngredientFilterParams {
+  maxPrice?: number;
+  minPrice?: number;
+  unit?: string;
+  group?: string;
+  page?: number;
+  limit?: number;
+  search?: string;
+  sort?: string;
+  isDeleted?: boolean;
+}
+
 class IngredientService {
 
-  async getAllIngredients(params: {
-    maxPrice?: number;
-    minPrice?: number;
-    unit?: string;
-    group?: string;
-    page?: number;
-    limit?: number;
-    search?: string;
-    sort?: string;
-    isDeleted?: boolean;
-  }): Promise<PaginateResult<any>> {
+  async getAllIngredients(params: IngredientFilterParams ): Promise<PaginateResult<any>> {
     const {
       page = 1,
       limit = 12,
@@ -29,106 +38,19 @@ class IngredientService {
       maxPrice,
     } = params;
   
-    const match: any = { isDeleted };
+    const match = buildMatchQuery({ search, isDeleted, unit, group, minPrice, maxPrice });
+    const sortStage = buildSortStage(sort);
+    const todayUtc = getTodayUTC();
   
-    if (search) {
-      match.name = { $regex: search, $options: 'i' };
-    }
-    if (unit) {
-      match.unit = unit;
-    }
-
-    if (group) {
-      match.group = group;
-    }
-
-    console.log('Filter parameters group:', group);
-
-    if (minPrice !== undefined || maxPrice !== undefined) {
-      match.price_per_unit = {};
-      if (minPrice !== undefined) match.price_per_unit.$gte = minPrice;
-      if (maxPrice !== undefined) match.price_per_unit.$lte = maxPrice;
-    }
+    const aggregate = buildIngredientAggregate({ match, sortStage, page, limit, todayUtc });
   
-    // sort mapping
-    const sortMap: Record<string, any> = {
-      nameAZ: { name: 1 },
-      nameZA: { name: -1 },
-      groupAZ: { group: 1 },
-      groupZA: { group: -1 },
-      unitAZ: { unit: 1 },
-      unitZA: { unit: -1 },
-      priceLow: { price_per_unit: 1 },
-      priceHigh: { price_per_unit: -1 },
-      currentLow: { currentStock: 1 },
-      currentHigh: { currentStock: -1 },
-    };
-    const sortStage = sortMap[sort] || { createdAt: -1 };
-  
-    const today = new Date();
-    const todayUtc = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
-
-    const aggregate = Ingredient.aggregate([
-      { $match: match },
-    
-      {
-        $lookup: {
-          from: 'inventorydailybatches',
-          let: { ingredientId: '$_id' },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $lte: ['$batch_date', todayUtc],
-                }
-              }
-            },
-            { $unwind: '$items' },
-            {
-              $match: {
-                $expr: {
-                  $eq: ['$items.ingredient_id', '$$ingredientId'] 
-                }
-              }
-            },
-            {
-              $group: {
-                _id: null,
-                totalQuantity: { $sum: '$items.quantity' }
-              }
-            }
-          ],
-          as: 'dailyStock'
-        }
-      },
-    
-      {
-        $addFields: {
-          currentStock: {
-            $ifNull: [{ $arrayElemAt: ['$dailyStock.totalQuantity', 0] }, 0]
-          }
-        }
-      },
-    
-      { $sort: sortStage },
-      { $skip: (page - 1) * limit },
-      { $limit: limit }
-    ]);
-    
     const [results, totalCount] = await Promise.all([
       aggregate.exec(),
       Ingredient.countDocuments(match),
     ]);
-
-    // console.log('Results:', results.map(r => ({
-    //   name: r.name,
-    //   currentStock: r.currentStock,
-    //   dailyStock: r.dailyStock,
-    //   })));
-    
+  
     const offset = (page - 1) * limit;
-    const pagingCounter = offset + 1;
-
+  
     return {
       docs: results,
       totalDocs: totalCount,
@@ -138,7 +60,7 @@ class IngredientService {
       hasNextPage: page * limit < totalCount,
       hasPrevPage: page > 1,
       offset,
-      pagingCounter,
+      pagingCounter: offset + 1,
     };
   }
 

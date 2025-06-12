@@ -149,6 +149,7 @@ const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
           onClick={() => {
             const emptyFilters: FiltersType = {
               unit: '',
+              group: '',
               minPrice: '',
               maxPrice: '',
             };
