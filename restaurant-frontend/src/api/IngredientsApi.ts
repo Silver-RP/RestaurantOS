@@ -27,6 +27,8 @@ export const createIngredientApi = async (data: {
 name: string;
 slug: string;
 unit: string;
+group?: string;
+subGroup?: string;
 price_per_unit: number;
 lowStockThreshold?: number;
 }): Promise<void> => {
@@ -53,6 +55,8 @@ export const updateIngredientApi = async (data: {
   name: string;
   slug: string;
   unit: string;
+  group?: string;
+  subGroup?: string;
   price_per_unit: number;
   lowStockThreshold?: number;
   }, ingredientId: string): Promise<void> => {

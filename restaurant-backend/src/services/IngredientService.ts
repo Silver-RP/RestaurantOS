@@ -77,9 +77,13 @@ class IngredientService {
         name: ingredientData.name,
         slug: ingredientData.slug,
         unit: ingredientData.unit,
+        group: ingredientData.group,
+        subGroup: ingredientData.subGroup,
         price_per_unit: ingredientData.price_per_unit,
         lowStockThreshold: ingredientData.lowStockThreshold || 0,
       };
+
+      console.log('Creating ingredient with data:', allowedFields);
       const newIngredient = new Ingredient(allowedFields);
 
       return await newIngredient.save();
@@ -114,6 +118,8 @@ class IngredientService {
         slug: ingredientData.slug,
         unit: ingredientData.unit,
         price_per_unit: ingredientData.price_per_unit,
+        group: ingredientData.group,
+        subGroup: ingredientData.subGroup,
         lowStockThreshold: ingredientData.lowStockThreshold || 0,
       };
 

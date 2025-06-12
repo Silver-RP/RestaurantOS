@@ -22,6 +22,8 @@ const EditIngredientPage = () => {
     name: ingredient.name,
     slug: ingredient.slug,
     unit: ingredient.unit || 'kg',
+    group: ingredient.group || '',
+    subGroup: ingredient.subGroup || '',
     price_per_unit: ingredient.price_per_unit,
     lowStockThreshold: ingredient.lowStockThreshold || 0,
     _id: ingredient._id,
@@ -35,8 +37,12 @@ const EditIngredientPage = () => {
     name: string;
     slug: string;
     unit: string;
+    group?: string;
+    subGroup?: string;
     price_per_unit: number;
+    lowStockThreshold?: number;
   }) => {
+    console.log('Submitting data:', data);
     updateIngredient(data, ingredient._id);
   };
 

@@ -120,7 +120,7 @@ const AdminLayout: React.FC = () => {
           </nav>
         </div>
 
-        <div className="mb-6 flex justify-center">
+        <div className="my-5 flex justify-center">
           <NavItem
             href="/logout"
             icon={<FaSignOutAlt />}

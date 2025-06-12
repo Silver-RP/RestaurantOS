@@ -10,6 +10,8 @@ export const ingredientSchema = z.object({
     'litre', 'ml',
     'pcs', 'pack', 'box', 'bottle', 'can', 'unit',
   ]),
+  group: z.string().max(50).optional(),
+  subGroup: z.string().max(50).optional(),
   price_per_unit: z.number().min(0).transform((val) => parseFloat(val.toFixed(2))),
   lowStockThreshold: z.number().min(0).optional(),
 });

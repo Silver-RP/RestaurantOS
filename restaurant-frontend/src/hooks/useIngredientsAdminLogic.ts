@@ -194,6 +194,8 @@ interface UseIngredientFormProps {
         name: string;
         slug: string;
         unit: string;
+        group?: string;
+        subGroup?: string;
         price_per_unit: number;
         lowStockThreshold?: number;
     }) => void;
@@ -203,6 +205,8 @@ export function useIngredientLogic({ initialData, onSubmit }: UseIngredientFormP
     const [name, setName] = useState('');
     const [slug, setSlug] = useState('');
     const [unit, setUnit] = useState('');
+    const [group, setGroup] = useState('');
+    const [subGroup, setSubGroup] = useState('');
     const [pricePerUnit, setPricePerUnit] = useState(0);
     const [lowStockThreshold, setLowStockThreshold] = useState(0);
     const [isDeleted, setIsDeleted] = useState(false);
@@ -217,6 +221,8 @@ export function useIngredientLogic({ initialData, onSubmit }: UseIngredientFormP
             setName(initialData.name);
             setSlug(initialData.slug);
             setUnit(initialData.unit || '');
+            setGroup(initialData.group || '');
+            setSubGroup(initialData.subGroup || '');
             setPricePerUnit(initialData.price_per_unit || 0);
             setLowStockThreshold(initialData.lowStockThreshold || 0);
             setIsDeleted(initialData.isDeleted || false);
@@ -265,6 +271,8 @@ export function useIngredientLogic({ initialData, onSubmit }: UseIngredientFormP
             slug: trimmedSlug,
             unit: trimmedUnit,
             price_per_unit: pricePerUnit,
+            group: group || undefined,
+            subGroup: subGroup || undefined,
             lowStockThreshold: lowStockThreshold || 0,
         };
 
@@ -288,7 +296,9 @@ export function useIngredientLogic({ initialData, onSubmit }: UseIngredientFormP
 
     return {
         name, setName, slug, setSlug,
-        unit, setUnit, pricePerUnit, setPricePerUnit,
+        unit, setUnit, group, setGroup,
+        subGroup, setSubGroup,
+        pricePerUnit, setPricePerUnit,
         lowStockThreshold, setLowStockThreshold,
         isDeleted, setIsDeleted, deletedAt, setDeletedAt,
         handleSubmit, generateSlug,

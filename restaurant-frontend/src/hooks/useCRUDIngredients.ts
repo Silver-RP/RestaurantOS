@@ -50,6 +50,8 @@ export const useCRUDIngredients = (slug?: string) => {
         name: string;
         slug: string;
         unit: string;
+        group?: string;
+        subGroup?: string;
         price_per_unit: number;
         lowStockThreshold?: number;
     }) => {
@@ -73,6 +75,7 @@ export const useCRUDIngredients = (slug?: string) => {
             if (!response.docs || response.docs.length === 0) {
                 throw new Error('Không tìm thấy nguyên liệu');
             }
+            console.log('Ingredient data 1:', response.docs[0]);
             const data = response.docs[0];
             return data;
         } catch (error) {
