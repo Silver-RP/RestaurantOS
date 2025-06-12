@@ -104,6 +104,14 @@ const TrashIngredientTable: React.FC = () => {
                     Tên nguyên liệu {renderSortIcon('name')}
                   </span>
                 </th>
+                <th
+                  className="px-4 py-2 cursor-pointer whitespace-nowrap"
+                  onClick={() => handleSort('group')}
+                >
+                  <span className="flex items-center gap-1">
+                    Nhóm nguyên liệu {renderSortIcon('group')}
+                  </span>
+                </th>
 
                 <th
                   className="px-4 py-2 cursor-pointer whitespace-nowrap"
@@ -140,6 +148,15 @@ const TrashIngredientTable: React.FC = () => {
                 <tr key={index} className="border-b hover:bg-gray-50">
                   <td className="px-4 py-2">{index + 1}</td>
                   <td className="px-4 py-2 font-medium">{item.name}</td>
+                  <td className="px-4 py-2 font-medium">
+                    {item.group || 'Chưa phân loại'}
+                    {item.group && (
+                       <span className="text-xs text-gray-500 block">
+                        {item.subGroup.toLowerCase()}
+                       </span>
+                    )}
+                   
+                  </td>
                   <td className="px-4 py-2">
                     {ingredientUnits.find((cat) => cat.value === item.unit)
                       ?.label || item.unit}

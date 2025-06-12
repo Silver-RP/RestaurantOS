@@ -21,7 +21,6 @@ const MenuTable: React.FC = () => {
     searchParams,
     setSearchParams,
     sortField,
-    sortDirection,
     showFilterPanel,
     setShowFilterPanel,
     search,
@@ -168,6 +167,14 @@ const MenuTable: React.FC = () => {
                   </span>
                 </th>
                 <th
+                  className="px-4 py-2 cursor-pointer whitespace-nowrap"
+                  onClick={() => handleSort('group')}
+                >
+                  <span className="flex items-center gap-1">
+                   Nhóm nguyên liệu {renderSortIcon('group')}
+                  </span>
+                </th>
+                <th
                   className="px-4 py-2 cursor-pointer"
                   onClick={() => handleSort('currentStock')}
                 >
@@ -213,6 +220,15 @@ const MenuTable: React.FC = () => {
                   <td className="px-4 py-2">{index + 1}</td>
                   <td className="px-4 py-2 font-medium">{item.name}</td>
                   <td className="px-4 py-2 font-medium">
+                    {item.group || 'Chưa phân loại'}
+                    {item.group && (
+                       <span className="text-xs text-gray-500 block">
+                        {item.subGroup.toLowerCase()}
+                       </span>
+                    )}
+                   
+                  </td>
+                  <td className="px-4 py-2 font-medium">
                     {formatQuantity(
                       item.currentStock,
                       item.unit as 'gram' | 'ml',
@@ -223,7 +239,7 @@ const MenuTable: React.FC = () => {
                       ?.label || item.unit}
                   </td>
 
-                  <td className="px-4 py-2">
+                  <td className="px-4 py-2  text-center">
                     {item.price_per_unit.toLocaleString()}
                   </td>
                   <td className="px-4 py-2">

@@ -9,6 +9,7 @@ class IngredientController {
                 maxPrice: req.query.maxPrice ? parseFloat(req.query.maxPrice as string) : undefined,
                 minPrice: req.query.minPrice ? parseFloat(req.query.minPrice as string) : undefined,
                 unit: typeof req.query.unit === 'string' ? req.query.unit : undefined,
+                group: typeof req.query.group === 'string' ? req.query.group : undefined,
                 page: req.query.page ? parseInt(req.query.page as string, 10) : 1,
                 limit: req.query.limit ? parseInt(req.query.limit as string, 10) : 12,
                 search: req.query.search?.toString() || '',

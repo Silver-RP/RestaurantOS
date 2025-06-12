@@ -9,7 +9,7 @@ import { fetchAllIngredients } from '../api/IngredientsApi';
 import { IngredientResponse, IngredientFilterParams } from '../types/IngredientType';
 import { useSearchParams } from 'react-router-dom';
 
-type SortField = 'name' | 'unit' | 'price' | 'deletedAt' | 'currentStock' | null;
+type SortField = 'name' | 'group' | 'unit' | 'price' | 'deletedAt' | 'currentStock' | null;
 type SortDirection = 'asc' | 'desc';
 
 export function useIngredientsAdminLogic() {
@@ -24,6 +24,7 @@ export function useIngredientsAdminLogic() {
 
     const sortMapping: Record<string, { asc: string; desc: string }> = {
         name: { asc: 'nameAZ', desc: 'nameZA' },
+        group: { asc: 'groupAZ', desc: 'groupZA' },
         currentStock: { asc: 'currentLow', desc: 'currentHigh' },
         unit: { asc: 'unitAZ', desc: 'unitZA' },
         price: { asc: 'priceLow', desc: 'priceHigh' },
@@ -97,10 +98,6 @@ export function useIngredientsAdminLogic() {
         return `${count} ${unit}`;
     }
 
-    
-
-
-
     return {
         ingredients,
         loading,
@@ -144,6 +141,7 @@ export const useIngredientsAdmin = () => {
             maxPrice: getNumber('maxPrice'),
             minPrice: getNumber('minPrice'),
             unit: params.get('unit') || undefined,
+            group: params.get('group') || undefined,
             isDeleted: params.get('isDeleted') === 'true' ? true : undefined,
         };
     };
@@ -304,7 +302,7 @@ export function useIngredientsTrashLogic() {
     const [error, setError] = useState<string | null>(null);
     const [searchParams, setSearchParams] = useSearchParams();
 
-    const [sortField, setSortField] = useState<'name' | 'unit' | 'price' | 'deletedAt' | null>(null);
+    const [sortField, setSortField] = useState<'name' | 'unit' | 'group' | 'price' | 'deletedAt' | null>(null);
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
     const [search, setSearch] = useState('');
     const [ingredientIdToRestore, setIngredientIdToRestore] = useState<string | null>(null);
@@ -347,6 +345,7 @@ export function useIngredientsTrashLogic() {
 
     const sortMapping: Record<string, { asc: string; desc: string }> = {
         name: { asc: 'nameAZ', desc: 'nameZA' },
+        group: { asc: 'groupAZ', desc: 'groupZA' },
         unit: { asc: 'unitAZ', desc: 'unitZA' },
         price: { asc: 'priceLow', desc: 'priceHigh' },
         deletedAt: { asc: 'deletedAtOld', desc: 'deletedAtNew' },

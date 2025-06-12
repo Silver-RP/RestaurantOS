@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { useSearchParams } from 'react-router-dom';
-import { ingredientUnits } from '../../../../types/ingredientUnitsType';
+import { ingredientUnits, IngredientGroup } from '../../../../types/ingredientUnitsType';
 
 type FiltersType = {
   unit?: string;
+  group?: string;
   minPrice?: string;
   maxPrice?: string;
 };
@@ -19,10 +20,10 @@ const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
   onApply,
   initialFilters = {},
 }) => {
-  
   const [searchParams, setSearchParams] = useSearchParams();
   const [filters, setFilters] = useState<FiltersType>({
     unit: initialFilters.unit || '',
+    group: initialFilters.group || '',
     minPrice: initialFilters.minPrice || '',
     maxPrice: initialFilters.maxPrice || '',
   });
@@ -68,7 +69,7 @@ const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
       <h2 className="text-lg font-semibold mb-4">Bộ lọc nâng cao</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
-        <div className="col-span-2">
+        <div className="col-span-1">
           <label className="block mb-1 text-sm">Đơn vị</label>
           <div className="flex gap-2 flex-col">
             <select
@@ -86,28 +87,48 @@ const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
             </select>
           </div>
         </div>
+        <div className="col-span-1">
+          <label className="block mb-1 text-sm">Nhóm</label>
+          <div className="flex gap-2 flex-col">
+            <select
+              name="group"
+              className="w-full border rounded px-2 py-1"
+              value={filters.group}
+              onChange={handleChange}
+            >
+              <option value="">Tất cả</option>
+              {IngredientGroup.map(( item ) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
 
         {/* Giá */}
-        <div className="col-span-2">
+        <div className="col-span-1">
           <label className="block mb-1 text-sm">Giá (đ)</label>
           <div className="flex gap-8 flex-col">
             <input
               name="minPrice"
               type="number"
-              placeholder="Từ"
+              placeholder="Từ 0"
+              min={0}
               className="w-full border rounded px-2 py-1"
               value={filters.minPrice}
               onChange={handleChange}
             />
           </div>
         </div>
-        <div className="col-span-2">
+        <div className="col-span-1">
           <label className="block mb-1 text-sm">Giá (đ)</label>
           <div className="flex gap-8 flex-col">
             <input
               name="maxPrice"
               type="number"
               placeholder="Đến"
+              min={0}
               className="w-full border rounded px-2 py-1"
               value={filters.maxPrice}
               onChange={handleChange}

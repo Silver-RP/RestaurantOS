@@ -1,6 +1,8 @@
 export type Ingredient = {
     _id: string;
     name: string;
+    group: string;
+    subGroup: string;
     currentStock: number;
     slug: string;
     price_per_unit: number;
@@ -38,6 +40,7 @@ export type IngredientFilterParams = {
     maxPrice?: number;
     minPrice?: number;
     unit?: string;
+    group?: string;
     search?: string;
     sort?: string;
     sortField?: string;

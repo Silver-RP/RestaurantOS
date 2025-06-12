@@ -11,3 +11,14 @@ export const ingredientUnits = [
   { value: 'can', label: 'Lon' },
   { value: 'unit', label: 'Phần' },
 ];
+
+export const IngredientGroup = [
+  'Thịt',
+  'Hải sản',
+  'Rau củ và nấm',
+  'Gia vị và nguyên liệu',
+  'Sữa và Phô mai',
+  'Tinh bột và Bánh',
+  'Đồ uống có cồn',
+  'Đồ uống không có cồn',
+]

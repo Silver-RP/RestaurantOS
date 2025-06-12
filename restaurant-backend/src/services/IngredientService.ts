@@ -10,6 +10,7 @@ class IngredientService {
     maxPrice?: number;
     minPrice?: number;
     unit?: string;
+    group?: string;
     page?: number;
     limit?: number;
     search?: string;
@@ -23,6 +24,7 @@ class IngredientService {
       sort = '',
       isDeleted = false,
       unit,
+      group,
       minPrice,
       maxPrice,
     } = params;
@@ -35,6 +37,13 @@ class IngredientService {
     if (unit) {
       match.unit = unit;
     }
+
+    if (group) {
+      match.group = group;
+    }
+
+    console.log('Filter parameters group:', group);
+
     if (minPrice !== undefined || maxPrice !== undefined) {
       match.price_per_unit = {};
       if (minPrice !== undefined) match.price_per_unit.$gte = minPrice;
@@ -45,6 +54,8 @@ class IngredientService {
     const sortMap: Record<string, any> = {
       nameAZ: { name: 1 },
       nameZA: { name: -1 },
+      groupAZ: { group: 1 },
+      groupZA: { group: -1 },
       unitAZ: { unit: 1 },
       unitZA: { unit: -1 },
       priceLow: { price_per_unit: 1 },
@@ -228,10 +239,14 @@ class IngredientService {
       const sortMapping: Record<string, Record<string, 1 | -1>> = {
         nameAZ: { name: 1 },
         nameZA: { name: -1 },
+        groupAZ: { group: 1 },
+        groupZA: { group: -1 },
         unitAZ: { unit: 1 },
         unitZA: { unit: -1 },
         priceLow: { price_per_unit: 1 },
         priceHigh: { price_per_unit: -1 },
+        deletedAtNew: { deletedAt: -1 },
+        deletedAtOld: { deletedAt: 1 },
       };
 
       const sortOption = sortMapping[sort] || { createdAt: -1 };
