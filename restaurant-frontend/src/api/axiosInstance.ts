@@ -29,6 +29,7 @@ const redirectToLogin = () => {
   redirectingToLogin = true;
   Cookies.remove('accessToken');
   Cookies.remove('refreshToken');
+  Cookies.remove('userInfo');
   
   // Reset redirect flag after navigation
   const resetRedirectFlag = () => {
@@ -40,17 +41,24 @@ const redirectToLogin = () => {
   window.location.href = '/login';
 };
 
-axiosInstance.interceptors.request.use(config => {
-  const accessToken = Cookies.get('accessToken');
-  if (accessToken) {
-    config.headers['Authorization'] = `Bearer ${accessToken}`;
+// Request interceptor
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token = Cookies.get('accessToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
   }
-  return config;
-});
+);
 
+// Response interceptor
 axiosInstance.interceptors.response.use(
-  response => response,
-  async error => {
+  (response) => response,
+  async (error) => {
     const originalRequest = error.config;
 
     if (error.response?.status === 401 && !originalRequest._retry) {
@@ -62,7 +70,7 @@ axiosInstance.interceptors.response.use(
             originalRequest.headers['Authorization'] = 'Bearer ' + token;
             return axiosInstance(originalRequest);
           })
-          .catch(() => Promise.reject(error));
+          .catch(err => Promise.reject(err));
       }
 
       originalRequest._retry = true;
@@ -76,16 +84,18 @@ axiosInstance.interceptors.response.use(
           throw new Error('No access token received');
         }
 
+        // Set new access token
         Cookies.set('accessToken', newAccessToken, {
-          expires: 1 / (24 * 60), 
-          sameSite: 'Lax',
-          secure: false,
+          expires: 1 / 24, // 1 hour
+          sameSite: import.meta.env.PROD ? 'None' : 'Lax',
+          secure: import.meta.env.PROD,
         });
 
         processQueue(null, newAccessToken);
         originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
         return axiosInstance(originalRequest);
       } catch (refreshError) {
+        processQueue(refreshError, null);
         redirectToLogin();
         return Promise.reject(refreshError);
       } finally {

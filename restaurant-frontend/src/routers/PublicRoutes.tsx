@@ -51,7 +51,7 @@ const PublicRoutes = [
       { path: 'reservation', element: <ReservationPage /> },
       { path: 'favorites', element: <FavoritePage /> },
       { path: '*', element: <Navigate to="/" /> },
-      { path: '/post-details', element: <PostDetailsPage /> },
+      { path: '/post-details/:id', element: <PostDetailsPage /> },
       { path: '/confirm', element: <ConfirmOrder /> },
     ],
   },

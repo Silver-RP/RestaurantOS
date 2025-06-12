@@ -1,4 +1,4 @@
-import ButtonComponents from "../../../components/common/ButtonComponents";
+import React from 'react';
 import {
   FaShareAlt,
   FaFacebookF,
@@ -8,13 +8,19 @@ import {
 } from 'react-icons/fa';
 import { IoList } from 'react-icons/io5';
 import { MdOutlineAccessTime, MdComment } from 'react-icons/md';
+import ButtonComponents from "../../../components/common/ButtonComponents";
+import { PostType } from '../../../types/PostType';
 
-const PostContent = () => {
+interface PostContentProps {
+  post: PostType;
+}
+
+const PostContent: React.FC<PostContentProps> = ({ post }) => {
   return (
     <section className="bg-[#012B40] text-white lg:py-16 px-6">
       <div className="max-w-full lg:max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold mb-4">
-          Món Beef Stack của nhà hàng chúng tôi
+          {post.title}
         </h1>
 
         {/* Chia sẻ */}
@@ -33,60 +39,59 @@ const PostContent = () => {
         {/* Thông tin */}
         <div className="flex flex-wrap gap-4 text-sm text-gray-300 mb-6 mt-4">
           <span className="flex items-center gap-2">
-            <FaUser /> Đăng bởi: <strong>Tin Tức</strong>
+            <FaUser /> Đăng bởi: <strong>{post.user_id.username}</strong>
           </span>
           <span className="flex items-center gap-2">
-            <IoList /> Chủ đề: Thực phẩm lành mạnh
+            <IoList /> Chủ đề: {post.categories_id.Cate_name}
           </span>
           <span className="flex items-center gap-2">
-            <MdOutlineAccessTime /> Ngày: Thứ Sáu, 18 Tháng 2, 2022
+            <MdOutlineAccessTime />
+            Ngày: {new Date(post.createdAt).toLocaleDateString('vi-VN', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}
           </span>
           <span className="flex items-center gap-2">
             <MdComment /> Bình luận: 0
           </span>
           <span className="flex items-center gap-2">
-            <FaHeart /> Lượt xem: 1405
+            <FaHeart /> Lượt xem: {post.views || 0}
           </span>
         </div>
 
         {/* Hình ảnh */}
-        <div className="mb-6 flex justify-center">
-          <img
-            src="/assets/images/posts/Post.jpg"
-            alt="Người phụ nữ đang ăn"
-            className="rounded-lg shadow-lg w-full h-auto max-w-[393.94px] max-h-[480.61px] object-cover"
-          />
+        <div className="mb-6">
+          {post.images && post.images.length > 0 && (
+            <div className="flex justify-center">
+              <img
+                src={post.images[0]}
+                alt={post.title}
+                className="rounded-lg shadow-lg w-full h-auto max-w-[800px] object-cover"
+              />
+            </div>
+          )}
+          {post.images && post.images.length > 1 && (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
+              {post.images.slice(1).map((image, index) => (
+                <img
+                  key={index}
+                  src={image}
+                  alt={`${post.title} - ${index + 2}`}
+                  className="rounded-lg shadow-lg w-full h-48 object-cover"
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Nội dung */}
-        <div className="space-y-4 leading-relaxed text-gray-200 mb-12">
-          <p>
-            Món Beef Stack tại nhà hàng chúng tôi là một tác phẩm nghệ thuật ẩm thực, được chế biến từ những miếng bò thượng hạng,
-            chọn lọc kỹ càng từ những phần thịt tươi ngon nhất.
-          </p>
-          <p>
-            Thịt bò được nướng vừa chín tới, giữ trọn vẹn độ mềm mại, mọng nước và hương vị đậm đà,
-            khiến mỗi miếng cắn vào là một trải nghiệm tuyệt vời.
-          </p>
-          <p>
-            Đặc biệt, món ăn này được kết hợp hoàn hảo với lớp phô mai béo ngậy tan chảy trên bề mặt,
-            cùng với rau củ tươi ngon được chế biến khéo léo, mang đến một hương vị hài hòa, tươi mới.
-          </p>
-          <p>
-            Để tăng thêm phần hấp dẫn, Beef Stack còn được gia giảm với những gia vị đặc trưng,
-            mang lại sự cân bằng giữa sự thơm ngon và một chút cay nồng nhẹ nhàng, tạo nên một món ăn đầy mê hoặc.
-          </p>
-          <p>
-            Không chỉ đẹp mắt trong cách bày trí, món Beef Stack còn là sự lựa chọn hoàn hảo
-            cho những thực khách yêu thích món ăn nướng, đậm đà mà vẫn đầy đủ dinh dưỡng.
-          </p>
-          <p>
-            Món ăn này không chỉ mang lại cảm giác thỏa mãn về mặt vị giác mà còn là một bữa tiệc màu sắc và hương thơm,
-            khiến cho mỗi bữa ăn tại nhà hàng của chúng tôi trở nên đặc biệt và khó quên.
-          </p>
+        <div className="prose prose-lg prose-invert max-w-none mb-12">
+          <div dangerouslySetInnerHTML={{ __html: post.content }} />
         </div>
 
-        {/* Thẻ tags */}
+        {/* Thẻ tags - hiện tại đang giả lập, có thể map nếu có dữ liệu */}
         <div className="mb-10 text-right">
           <span className="font-semibold mr-2 text-sm">Thẻ:</span>
           <button className="bg-gray-100 text-black px-2 py-0.5 text-xs rounded mr-2">leotheme</button>
@@ -95,7 +100,7 @@ const PostContent = () => {
           <button className="bg-gray-100 text-black px-2 py-0.5 text-xs rounded">opencart</button>
         </div>
 
-        {/* Danh mục liên quan */}
+        {/* Danh mục liên quan - giả lập */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-gray-300 pt-6 mb-10">
           <div>
             <h3 className="font-semibold text-white mb-2">Trong cùng danh mục</h3>

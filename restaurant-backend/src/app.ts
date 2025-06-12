@@ -9,6 +9,7 @@ import ReservationContactRoutes from './routes/ReservationContactRoutes';
 import ReservationDetailContactRoutes from './routes/ReservationDetailContactRoutes';
 import ProfileRoutes from './routes/ProfileRoutes';
 import BannerRoutes from './routes/BannerRoutes';
+import PostsRoutes from './routes/PostsRoutes';
 
 import StaffRoutes from './routes/StaffRoutes';
 import FoodRoutes from './routes/FoodRoutes';
@@ -114,6 +115,7 @@ app.use(
 );
 
 app.use('/api/food', FoodRoutes);
+app.use('/api/posts', PostsRoutes);
 app.use('/api/order', AuthMiddleWare.verifyToken, OrderRoutes);
 app.use('/api/cart', AuthMiddleWare.verifyToken, CartRouter);
 app.use('/api/favorite', AuthMiddleWare.verifyToken, FavoriteRoutes);
