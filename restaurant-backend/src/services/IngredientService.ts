@@ -16,6 +16,7 @@ interface IngredientFilterParams {
   minPrice?: number;
   unit?: string;
   group?: string;
+  stockStatus?: 'in_stock' | 'out_of_stock' | 'low_stock';
   page?: number;
   limit?: number;
   search?: string;
@@ -34,15 +35,16 @@ class IngredientService {
       isDeleted = false,
       unit,
       group,
+      stockStatus,
       minPrice,
       maxPrice,
     } = params;
-  
+
     const match = buildMatchQuery({ search, isDeleted, unit, group, minPrice, maxPrice });
     const sortStage = buildSortStage(sort);
     const todayUtc = getTodayUTC();
   
-    const aggregate = buildIngredientAggregate({ match, sortStage, page, limit, todayUtc });
+    const aggregate = buildIngredientAggregate({ match, sortStage, stockStatusFilter: stockStatus || undefined, page, limit, todayUtc });
   
     const [results, totalCount] = await Promise.all([
       aggregate.exec(),

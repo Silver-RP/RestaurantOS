@@ -206,8 +206,7 @@ const MenuTable: React.FC = () => {
                   onClick={() => handleSort('stockStatus')}
                 >
                   <span className="flex items-center gap-1">
-                    trạng thái
-                    {/* {renderSortIcon('stockStatus')} */}
+                    trạng thái {renderSortIcon('stockStatus')}
                   </span>
                 </th>
 

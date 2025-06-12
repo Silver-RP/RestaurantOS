@@ -9,7 +9,7 @@ import { fetchAllIngredients } from '../api/IngredientsApi';
 import { IngredientResponse, IngredientFilterParams } from '../types/IngredientType';
 import { useSearchParams } from 'react-router-dom';
 
-type SortField = 'name' | 'group' | 'unit' | 'price' | 'deletedAt' | 'currentStock' | null;
+type SortField = 'name' | 'group' | 'unit' | 'price' | 'deletedAt' | 'currentStock' | 'stockStatus' | null;
 type SortDirection = 'asc' | 'desc';
 
 export function useIngredientsAdminLogic() {
@@ -28,6 +28,7 @@ export function useIngredientsAdminLogic() {
         currentStock: { asc: 'currentLow', desc: 'currentHigh' },
         unit: { asc: 'unitAZ', desc: 'unitZA' },
         price: { asc: 'priceLow', desc: 'priceHigh' },
+        stockStatus: { asc: 'stockStatusIn', desc: 'stockStatusOut' },
     };
 
     const handleSort = (field: string) => {
@@ -142,6 +143,7 @@ export const useIngredientsAdmin = () => {
             minPrice: getNumber('minPrice'),
             unit: params.get('unit') || undefined,
             group: params.get('group') || undefined,
+            stockStatus: params.get('stockStatus') || undefined,
             isDeleted: params.get('isDeleted') === 'true' ? true : undefined,
         };
     };

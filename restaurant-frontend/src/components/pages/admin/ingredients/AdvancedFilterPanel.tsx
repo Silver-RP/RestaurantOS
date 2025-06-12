@@ -6,6 +6,7 @@ import { ingredientUnits, IngredientGroup } from '../../../../types/ingredientUn
 type FiltersType = {
   unit?: string;
   group?: string;
+  stockStatus?: string;
   minPrice?: string;
   maxPrice?: string;
 };
@@ -24,6 +25,7 @@ const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
   const [filters, setFilters] = useState<FiltersType>({
     unit: initialFilters.unit || '',
     group: initialFilters.group || '',
+    stockStatus: initialFilters.stockStatus || '',
     minPrice: initialFilters.minPrice || '',
     maxPrice: initialFilters.maxPrice || '',
   });
@@ -51,12 +53,6 @@ const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
         toast.error('Giá trị rating phải từ 0 đến 5');
         return;
       }
-      const thousandFields = [
-        'priceMin',
-        'priceMax',
-        'discountMin',
-        'discountMax',
-      ];
 
       setFilters((prev) => ({ ...prev, [name]: num }));
     } else {
@@ -105,6 +101,22 @@ const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
             </select>
           </div>
         </div>
+        <div className="col-span-1">
+          <label className="block mb-1 text-sm">Trạng thái kho</label>
+          <div className="flex gap-2 flex-col">
+            <select
+              name="stockStatus"
+              className="w-full border rounded px-2 py-1"
+              value={filters.stockStatus}
+              onChange={handleChange}
+            >
+              <option value="">Tất cả</option>
+              <option value="in_stock">Còn hàng</option>
+              <option value="low_stock">Sắp hết</option>
+              <option value="out_of_stock">Hết hàng</option>
+            </select>
+          </div>
+        </div>
 
         {/* Giá */}
         <div className="col-span-1">
@@ -150,6 +162,7 @@ const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
             const emptyFilters: FiltersType = {
               unit: '',
               group: '',
+              stockStatus: '',
               minPrice: '',
               maxPrice: '',
             };

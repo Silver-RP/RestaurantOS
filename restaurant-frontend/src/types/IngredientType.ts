@@ -41,6 +41,7 @@ export type IngredientFilterParams = {
     minPrice?: number;
     unit?: string;
     group?: string;
+    stockStatus?: string;
     search?: string;
     sort?: string;
     sortField?: string;

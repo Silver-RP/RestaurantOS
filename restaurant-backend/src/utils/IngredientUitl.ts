@@ -44,6 +44,8 @@ export function buildSortStage(sort: string): Record<string, number> {
         priceHigh: { price_per_unit: -1 },
         currentLow: { currentStock: 1 },
         currentHigh: { currentStock: -1 },
+        stockStatusIn: { stockStatus: 1 },
+        stockStatusOut: { stockStatus: -1 },
     };
 
     return sortMap[sort] || { createdAt: -1 };
@@ -57,12 +59,14 @@ export function getTodayUTC(): Date {
 export function buildIngredientAggregate({
     match,
     sortStage,
+    stockStatusFilter,
     page,
     limit,
     todayUtc,
 }: {
     match: any;
     sortStage: any;
+    stockStatusFilter?: 'in_stock' | 'low_stock' | 'out_of_stock';
     page: number;
     limit: number;
     todayUtc: Date;
@@ -106,8 +110,55 @@ export function buildIngredientAggregate({
                 },
             },
         },
+        {
+            $addFields: {
+                stockStatus: {
+                    $switch: {
+                        branches: [
+                            { case: { $lte: ['$currentStock', 0] }, then: 'out_of_stock' },
+                            {
+                                case: {
+                                    $lte: [
+                                        '$currentStock',
+                                        {
+                                            $ifNull: [
+                                                '$lowStockThreshold',
+                                                {
+                                                    $switch: {
+                                                        branches: [
+                                                            { case: { $eq: ['$unit', 'mg'] }, then: 100000 },
+                                                            { case: { $eq: ['$unit', 'gram'] }, then: 1000 },
+                                                            { case: { $eq: ['$unit', 'kg'] }, then: 5 },
+                                                            { case: { $eq: ['$unit', 'ml'] }, then: 1000 },
+                                                            { case: { $eq: ['$unit', 'litre'] }, then: 3 },
+                                                            { case: { $eq: ['$unit', 'pcs'] }, then: 10 },
+                                                            { case: { $eq: ['$unit', 'unit'] }, then: 10 },
+                                                            { case: { $eq: ['$unit', 'bottle'] }, then: 5 },
+                                                            { case: { $eq: ['$unit', 'can'] }, then: 5 },
+                                                            { case: { $eq: ['$unit', 'pack'] }, then: 3 },
+                                                            { case: { $eq: ['$unit', 'box'] }, then: 2 },
+                                                        ],
+                                                        default: 10,
+                                                    },
+                                                },
+                                            ],
+                                        },
+                                    ],
+                                },
+                                then: 'low_stock',
+                            },
+                        ],
+                        default: 'in_stock',
+                    },
+                },
+            },
+        },
+        ...(stockStatusFilter
+            ? [{ $match: { stockStatus: stockStatusFilter } }]
+            : []),
         { $sort: sortStage },
         { $skip: (page - 1) * limit },
         { $limit: limit },
     ]);
 }
+
