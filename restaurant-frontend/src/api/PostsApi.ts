@@ -1,15 +1,40 @@
 import api from './axiosInstance';
 import { PostType } from '../types/PostType';
 
+export interface PostsResponse {
+  docs: PostType[];
+  totalDocs: number;
+  totalPages: number;
+  page: number;
+  limit: number;
+  hasPrevPage: boolean;
+  hasNextPage: boolean;
+  prevPage: number | null;
+  nextPage: number | null;
+}
+
+export interface PostsQueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}
+
 const PostsApi = {
-  getAllPosts: async (): Promise<PostType[]> => {
-    const response = await api.get('/posts/getAllPosts');
-    return response.data.data;
+  getAllPosts: async (params?: PostsQueryParams): Promise<PostsResponse> => {
+    const response = await api.get('/posts/getAllPosts', { params });
+    return response.data;
   },
 
   getPostById: async (id: string): Promise<PostType> => {
-    const response = await api.get(`/posts/${id}`);
-    return response.data.data;
+    try {
+      const response = await api.get(`/posts/${id}`);
+      return response.data.data;
+    } catch (error: any) {
+      console.error('Error fetching post:', error);
+      throw new Error(error?.response?.data?.message || 'Không thể tải bài viết');
+    }
   },
 
   createPost: async (formData: FormData): Promise<{ success: boolean; message: string; data: PostType }> => {
