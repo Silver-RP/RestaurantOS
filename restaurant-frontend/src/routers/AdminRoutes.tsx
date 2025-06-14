@@ -25,9 +25,12 @@ import OrderTable from "@components/pages/admin/reservation";
 import BannerPage from '@/components/pages/admin/banner';
 import CreateBannerPage from '@/components/pages/admin/banner/Create';
 import EditBannerPage from '@/components/pages/admin/banner/Edit';
-
 import EditUserPage from '@/components/pages/admin/user/EditUserPage';
 import ProtectedRoute from '@/utils/ProtectedRoute';
+import Post from '@/components/pages/admin/posts';
+import CreatePostPage from '@/components/pages/admin/posts/Create';
+import EditPostPage from '@/components/pages/admin/posts/Edit';
+
 
 
 const adminRoutes = [
@@ -56,6 +59,9 @@ const adminRoutes = [
       { path: "banners", element: <BannerPage /> },
       { path: "banners/create", element: <CreateBannerPage /> },
       { path: "banners/edit/:id", element: <EditBannerPage /> },
+      { path: "*", element: <Navigate to="/admin" /> },      { path: "posts", element: <Post /> },
+      { path: "posts/create", element: <CreatePostPage /> },
+      { path: "posts/edit/:id", element: <EditPostPage /> },
       { path: "ingredients", element: <IngredientsList /> },
       { path: "ingredients/create", element: <CreateIngredient /> },
       { path: "ingredients/edit/:slug", element: <EditIngredient /> },
