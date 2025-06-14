@@ -56,6 +56,7 @@ export function getTodayUTC(): Date {
     return new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
 }
 
+// Mở rộng build aggregate theo ngày, tuần, tháng để làm báo cáo
 export function buildIngredientAggregate({
     match,
     sortStage,

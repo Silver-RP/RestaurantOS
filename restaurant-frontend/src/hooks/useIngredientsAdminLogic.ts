@@ -8,6 +8,8 @@ import { useCRUDIngredients } from './useCRUDIngredients';
 import { fetchAllIngredients } from '../api/IngredientsApi';
 import { IngredientResponse, IngredientFilterParams } from '../types/IngredientType';
 import { useSearchParams } from 'react-router-dom';
+import { IngredientOption } from '../types/IngredientType';
+
 
 type SortField = 'name' | 'group' | 'unit' | 'price' | 'deletedAt' | 'currentStock' | 'stockStatus' | null;
 type SortDirection = 'asc' | 'desc';
@@ -481,5 +483,63 @@ export function useIngredientsTrashLogic() {
         handleConfirmRestore,
         handlePermanentDeleteClick,
         handleConfirmPermanentDelete,
+    };
+}
+
+/* 
+    Hook to manage warehouse logic
+*/
+export interface IngredientInputItem {
+    ingredientId: string;
+    quantity: string;
+    unit: string;
+    note: string;
+}
+
+export function useIngredientInput(initial: IngredientInputItem[] = []) {
+    const [items, setItems] = useState<IngredientInputItem[]>(initial);
+    const [ingredientOptions, setIngredientOptions] = useState<IngredientOption[]>([]);
+
+    useEffect(() => {
+        const fetchOptions = async () => {
+            const res = await fetchAllIngredients({});
+            setIngredientOptions(res.docs.map((ingredient: Ingredient) => ({
+                id: ingredient._id,
+                name: ingredient.name,
+                unit: ingredient.unit,
+            })));
+        };
+        fetchOptions();
+    }, []);
+
+    const addNewItem = () => {
+            setItems(prev => [
+                    ...prev,
+                    { ingredientId: '', quantity: '', unit: '', note: '' }
+            ]);
+    };
+
+    const updateItem = (index: number, field: keyof IngredientInputItem, value: string) => {
+        const updated = [...items];
+        updated[index][field] = value;
+        setItems(updated);
+    };
+
+    const deleteItem = (index: number) => {
+        const updated = [...items];
+        updated.splice(index, 1);
+        setItems(updated);
+    };
+
+    const reset = () => setItems(initial);
+
+    return {
+        items,
+        ingredientOptions,
+        setItems,
+        addNewItem,
+        updateItem,
+        deleteItem,
+        reset,
     };
 }
