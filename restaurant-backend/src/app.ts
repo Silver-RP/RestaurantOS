@@ -22,6 +22,7 @@ import CartRouter from './routes/CartRoutes';
 import FavoriteRoutes from './routes/FavoriteRoutes';
 import AddressRouter from './routes/AddressRoutes';
 import PaymentRoutes from './routes/PaymentRoutes';
+import DashboardRoutes from './routes/DashboardRoutes';
 import ingredientsRouter from './routes/IngredientsRouter';
 
 import dotenv from 'dotenv';
@@ -41,6 +42,7 @@ import './swaggers/CartSwagger';
 import './swaggers/StaffSwagger';
 import './swaggers/UserSwagger';
 import './swaggers/CategorySwagger';
+
 
 dotenv.config();
 connectDB();
@@ -124,6 +126,7 @@ app.use('/api/food', FoodRoutes);
 app.use('/api/posts', PostsRoutes);
 app.use('/api/order', AuthMiddleWare.verifyToken, OrderRoutes);
 app.use('/api/cart', AuthMiddleWare.verifyToken, CartRouter);
+app.use('/api/dashboard', AuthMiddleWare.verifyToken, DashboardRoutes);
 app.use('/api/favorite', AuthMiddleWare.verifyToken, FavoriteRoutes);
 app.use('/api/address', AuthMiddleWare.verifyToken, AddressRouter);
 app.use('/api/payment', PaymentRoutes);

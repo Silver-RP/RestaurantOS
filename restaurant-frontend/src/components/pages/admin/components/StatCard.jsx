@@ -43,7 +43,20 @@ AreaGradient.propTypes = {
 
 function StatCard({ title, value, interval, trend, data, xAxis, percent }) {
   const theme = useTheme();
-  const daysInWeek = getDaysInMonth(4, 2024);
+
+  // Ensure data length matches xAxis length
+  const normalizedData = React.useMemo(() => {
+    if (!data || !xAxis?.data) return [];
+    // If data is longer than xAxis, truncate it
+    if (data.length > xAxis.data.length) {
+      return data.slice(0, xAxis.data.length);
+    }
+    // If data is shorter than xAxis, pad with zeros
+    if (data.length < xAxis.data.length) {
+      return [...data, ...Array(xAxis.data.length - data.length).fill(0)];
+    }
+    return data;
+  }, [data, xAxis?.data]);
 
   const trendColors = {
     up:
@@ -93,10 +106,10 @@ function StatCard({ title, value, interval, trend, data, xAxis, percent }) {
               {interval}
             </Typography>
           </Stack>
-          <Box sx={{ width: '100%', height: 50 }}>
+          <Box sx={{ width: '100%', height: 50 }}>  
             <SparkLineChart
               color={chartColor}
-              data={data}
+              data={normalizedData}
               area
               showHighlight
               showTooltip
