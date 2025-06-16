@@ -68,6 +68,26 @@ export const IngredientInputTable = ({
                 renderInput={(params) => (
                   <TextField {...params} placeholder="Chọn nguyên liệu" />
                 )}
+                renderOption={(props, option) => {
+                  const isUsed =
+                    items.some(
+                      (i, iIdx) =>
+                        i.ingredientId === option.id && iIdx !== index,
+                    );
+              
+                  return (
+                    <li
+                      {...props}
+                      key={option.id}
+                      style={{
+                        opacity: isUsed ? 0.5 : 1,
+                        pointerEvents: isUsed ? 'none' : 'auto',
+                      }}
+                    >
+                      {option.name} {isUsed && '(Đã thêm)'}
+                    </li>
+                  );
+                }}
               />
             </TableCell>
             <TableCell>

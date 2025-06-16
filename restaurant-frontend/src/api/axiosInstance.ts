@@ -39,7 +39,9 @@ const redirectToLogin = () => {
   };
   window.addEventListener('unload', resetRedirectFlag);
   toast.error('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.');
-  window.location.href = '/login';
+  setTimeout(() => {
+    window.location.href = '/login';
+  }, 2000);
 };
 
 // Request interceptor

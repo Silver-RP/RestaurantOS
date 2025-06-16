@@ -1,8 +1,7 @@
-import React, { useState, useEffect, ChangeEvent } from 'react';
+import React, { useState} from 'react';
 import { useNavigate } from 'react-router-dom';
 import ImageUploadPreview from '../ImageUploadPreview';
-import Select from 'react-select';
-import '@toast-ui/editor/dist/toastui-editor.css'; // Thêm dòng này đầu file để có CSS
+import '@toast-ui/editor/dist/toastui-editor.css'; 
 import { Editor } from '@toast-ui/react-editor';
 import { Editor as ToastEditor } from '@toast-ui/react-editor';
 import '@toast-ui/editor/dist/toastui-editor.css';

@@ -502,7 +502,7 @@ export function useIngredientInput(initial: IngredientInputItem[] = []) {
 
     useEffect(() => {
         const fetchOptions = async () => {
-            const res = await fetchAllIngredients({});
+            const res = await fetchAllIngredients({limit: 1000, sort: 'nameAZ'});
             setIngredientOptions(res.docs.map((ingredient: Ingredient) => ({
                 id: ingredient._id,
                 name: ingredient.name,

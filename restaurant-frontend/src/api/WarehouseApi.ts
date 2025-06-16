@@ -4,7 +4,7 @@ import { IngredientResponse, IngredientFilterParams } from '@/types/IngredientTy
 export const warehouseImportIngredientsApi = async (
     data: {
         ingredients: {
-            name: string;
+            ingredient_id: string;
             quantity: number;
             unit: string;
             note: string;
@@ -12,7 +12,8 @@ export const warehouseImportIngredientsApi = async (
     },
 ): Promise<void> => {
     try {
-        const res = await api.post('/warehouse/import-ingredients', data);
+        console.log('Importing ingredients:', data);
+        const res = await api.post('/inventory/inventory-daily', data);
         return res.data;
     } catch (error) {
         console.error('Error importing ingredients:', error);

@@ -1,5 +1,6 @@
 import { InventoryTransaction } from "../models/InventoryTransactionModel";
 import { IInventoryDaily, InventoryDaily } from "../importData/inventoryModelSample/InventoryDailyModel";
+import { InventoryDailyBatch, IInventoryDailyBatch } from "../models/InventoryDailyBatchModel";
 import {
     buildMatchCriteria,
     addLookupStages,
@@ -78,6 +79,64 @@ class InventoryService {
 
         return buildResponse(data, page, limit, total);
     }
+
+    async createInventoryBatch(
+        type: 'import' | 'audit',
+        items: {
+            ingredient_id: string;
+            quantity: number;
+            unit?: string;
+            note?: string;
+            initial_quantity?: number;
+        }[],
+        userId: string
+    ): Promise<IInventoryDailyBatch> {
+        if (!items?.length) {
+            throw new Error('Danh sách nguyên liệu không hợp lệ!');
+        }
+
+        const batch_date = dayjs().startOf('day').toDate();
+
+        const existing = await InventoryDailyBatch.exists({ batch_date, type });
+        if (existing) {
+            throw new Error(`Đã tồn tại batch ${type} ngày hôm nay!`);
+        }
+
+        const formattedItems = items.map((item) => {
+            const { ingredient_id, quantity, note, initial_quantity } = item;
+            if (!ingredient_id || !quantity) {
+                throw new Error('Thiếu thông tin nguyên liệu!');
+            }
+
+            return {
+                ingredient_id: new mongoose.Types.ObjectId(ingredient_id),
+                quantity,
+                initial_quantity: type === 'audit' ? initial_quantity ?? 0 : undefined,
+                notes: note,
+            };
+        });
+
+        return await InventoryDailyBatch.create({
+            batch_date,
+            type,
+            user_id: userId,
+            items: formattedItems,
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     async createInventoryTransaction(data: any, userId: string) {
         const {
@@ -171,14 +230,14 @@ class InventoryService {
             .populate('ingredient_id', 'name unit')
             .populate('user_id', 'name email')
             .lean();
-    
+
         if (!daily) {
             throw new Error('Inventory daily not found');
         }
-    
+
         return daily;
     }
-    
+
     async updateInventoryTransaction(id: string, transaction: IInventoryDaily): Promise<void> {
 
     }

@@ -2,16 +2,14 @@ import { useIngredientInput } from "@/hooks/useIngredientsAdminLogic";
 import { IngredientInputTable } from "./IngredientInputTable";
 import { DialogContent } from "@mui/material";
 
-export function IngredientInputPanel() {
-    const {
-      items,
-      ingredientOptions,
-      addNewItem,
-      updateItem,
-      deleteItem,
-      reset,
-    } = useIngredientInput();
-  
+
+export function IngredientInputPanel({
+  items,
+  ingredientOptions,
+  updateItem,
+  deleteItem,
+  addNewItem,
+}: ReturnType<typeof useIngredientInput>) {
     return (
       <>
        <DialogContent className="overflow-x-auto" style={{ maxWidth: '100%', minWidth: '800px' }}>

@@ -12,7 +12,7 @@ router.put('/inventory-transaction/:id', InventoryController.updateTransaction);
 
 
 router.get('/inventory-daily', InventoryController.getInventoryDaily);
-// router.post('/inventory-daily', InventoryController.createInventoryDaily);
+router.post('/inventory-daily', InventoryController.importInventoryDaily); // Import daily inventory data
 router.get('/inventory-daily/:id', InventoryController.getInventoryDailyById);
 // router.delete('/inventory-daily/:id', InventoryController.softDeleteInventoryDaily);// Soft delete via isDeleted flag
 

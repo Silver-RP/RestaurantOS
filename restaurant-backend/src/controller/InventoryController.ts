@@ -4,7 +4,7 @@ import { IUser } from '../models/UserModel';
 import { Types } from 'mongoose';
 import mongoose from 'mongoose';
 
-class InventoryController{
+class InventoryController {
 
     async getInventoryTransaction(req: Request, res: Response): Promise<any> {
         const query = req.query;
@@ -21,9 +21,27 @@ class InventoryController{
         }
     }
 
-    async createInventoryTransaction(req: Request, res: Response): Promise<any>{
+    async importInventoryDaily(req: Request, res: Response): Promise<any> {
+        const { ingredients, type = 'import' } = req.body;
+        const userId = (req.user as IUser).id as Types.ObjectId;
+
+        try {
+            const result = await InventoryService.createInventoryBatch(type, ingredients, userId.toString());
+
+            return res.status(201).json({
+                status: 'success',
+                message: 'Lưu batch nhập kho thành công!',
+                data: result,
+            });
+        } catch (error: any) {
+            console.error('Import error:', error);
+            return res.status(400).json({ message: error.message || 'Lỗi khi nhập kho!' });
+        }
+    }
+
+    async createInventoryTransaction(req: Request, res: Response): Promise<any> {
         const data = req.body;
-        const userId = (req.user as IUser ).id as Types.ObjectId; 
+        const userId = (req.user as IUser).id as Types.ObjectId;
         const transaction = await InventoryService.createInventoryTransaction(data, userId.toString());
         if (transaction !== undefined) {
             return res.status(201).json({
@@ -36,12 +54,12 @@ class InventoryController{
         }
     }
 
-    async getInventoryTransactionById(req: Request, res: Response): Promise<any>{
+    async getInventoryTransactionById(req: Request, res: Response): Promise<any> {
         const { id } = req.params;
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({ success: false, message: 'Invalid transaction ID' });
-          }
-      
+        }
+
         const transaction = await InventoryService.getInventoryTransactionById(id);
         if (transaction) {
             return res.status(200).json({
