@@ -39,6 +39,48 @@ class InventoryController {
         }
     }
 
+    async exportInventoryDaily(req: Request, res: Response): Promise<any> {
+        const { ingredients, type='export' } = req.body;
+        const userId = (req.user as IUser).id as Types.ObjectId;
+
+        try {
+            const result = await InventoryService.createInventoryBatch( type, ingredients, userId.toString());
+
+            return res.status(201).json({
+                status: 'success',
+                message: 'Lưu batch xuất kho thành công!',
+                data: result,
+            });
+        } catch (error: any) {
+            console.error('Export error:', error);
+            return res.status(400).json({ message: error.message || 'Lỗi khi xuất kho!' });
+        }
+    }
+
+    async auditInventoryDaily(req: Request, res: Response): Promise<any> {
+        const { ingredients, type = 'audit' } = req.body;
+        const userId = (req.user as IUser).id as Types.ObjectId;
+
+        try {
+            const result = await InventoryService.createInventoryBatch(type, ingredients, userId.toString());
+
+            return res.status(201).json({
+                status: 'success',
+                message: 'Lưu batch kiểm kê kho thành công!',
+                data: result,
+            });
+        } catch (error: any) {
+            console.error('Audit error:', error);
+            return res.status(400).json({ message: error.message || 'Lỗi khi kiểm kê kho!' });
+        }
+    }
+
+
+
+
+
+
+
     async createInventoryTransaction(req: Request, res: Response): Promise<any> {
         const data = req.body;
         const userId = (req.user as IUser).id as Types.ObjectId;

@@ -12,10 +12,8 @@ import {
 import { FiTrash2 } from 'react-icons/fi';
 import AdvancedFilterPanel from './AdvancedFilterPanel';
 import IngredientStockStatus from './IngredientStockStatus';
-import WarehouseTransactionModal from './WarehouseTransactionModal';
-import WarehouseAuditModal from './WarehouseAuditModal';
-import WarehouseExportModal from './WarehouseExportModal';
-import { WarehouseImportModal } from './WarehouseImportModal';
+import { WarehouseModal } from './WarehouseModal';
+import { WarehouseTransactionViewModal } from './WarehouseTransactionViewModal';
 
 const MenuTable: React.FC = () => {
   const {
@@ -289,30 +287,11 @@ const MenuTable: React.FC = () => {
         </div>
       )}
 
-      {/* Import Modal */}
-      <WarehouseImportModal
-        open={openModal === 'import'}
+      <WarehouseModal
+        open={!!openModal}
+        type={openModal || 'import'}
         onClose={() => setOpenModal('')}
       />
-
-
-      {/* Export Modal */}
-      {/* <WarehouseExportModal
-        open={openModal === 'export'}
-        onClose={() => setOpenModal('')}
-      /> */}
-
-      {/* Audit Modal */}
-      {/* <WarehouseAuditModal
-        open={openModal === 'audit'}
-        onClose={() => setOpenModal('')}
-      /> */}
-
-      {/* Transaction Modal */}
-      {/* <WarehouseTransactionModal
-        open={openModal === 'transaction'}
-        onClose={() => setOpenModal('')}
-      /> */}
 
     </div>
   );

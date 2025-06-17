@@ -1,5 +1,6 @@
 import { InventoryTransaction } from "../models/InventoryTransactionModel";
-import { IInventoryDaily, InventoryDaily } from "../importData/inventoryModelSample/InventoryDailyModel";
+import { InventoryDaily } from "../importData/inventoryModelSample/InventoryDailyModel";
+import IngredientModel, { IIngredient } from "../models/IngredientModel";
 import { InventoryDailyBatch, IInventoryDailyBatch } from "../models/InventoryDailyBatchModel";
 import {
     buildMatchCriteria,
@@ -80,8 +81,9 @@ class InventoryService {
         return buildResponse(data, page, limit, total);
     }
 
+
     async createInventoryBatch(
-        type: 'import' | 'audit',
+        type: 'import' | 'export' | 'audit',
         items: {
             ingredient_id: string;
             quantity: number;
@@ -91,38 +93,101 @@ class InventoryService {
         }[],
         userId: string
     ): Promise<IInventoryDailyBatch> {
+        console.log('Creating inventory batch:', type, items.length, 'items by user', userId);
+
         if (!items?.length) {
             throw new Error('Danh sách nguyên liệu không hợp lệ!');
         }
 
         const batch_date = dayjs().startOf('day').toDate();
 
-        // const existing = await InventoryDailyBatch.exists({ batch_date, type });
-        // if (existing) {
-        //     throw new Error(`Đã tồn tại batch ${type} ngày hôm nay!`);
-        // }
-
+        // Chuẩn hoá items
         const formattedItems = items.map((item) => {
             const { ingredient_id, quantity, note, initial_quantity } = item;
-            if (!ingredient_id || !quantity) {
-                throw new Error('Thiếu thông tin nguyên liệu!');
+
+            if (!ingredient_id || quantity == null || quantity < 0) {
+                throw new Error('Thiếu hoặc sai thông tin nguyên liệu!');
             }
+
+            // Export sẽ ghi số âm để thuận lợi cho tổng tồn kho
+            const adjustedQuantity = type === 'export' ? -Math.abs(quantity) : quantity;
 
             return {
                 ingredient_id: new mongoose.Types.ObjectId(ingredient_id),
-                quantity,
+                quantity: adjustedQuantity,
                 initial_quantity: type === 'audit' ? initial_quantity ?? 0 : undefined,
-                notes: note,
+                notes: note?.trim() || '',
             };
         });
 
-        return await InventoryDailyBatch.create({
+        // ⚠️ Nếu muốn cập nhật tồn kho thật (khi dùng collection phụ IngredientStock chẳng hạn)
+        // có thể xử lý ở đây — nhưng bạn đang dùng aggregate nên không cần.
+
+        // Optional: kiểm tra ghi đè batch cùng ngày
+        // const existing = await InventoryDailyBatch.exists({ batch_date, type });
+        // if (existing) throw new Error(`Đã tồn tại batch ${type} ngày hôm nay!`);
+
+        // Ghi log cảnh báo nếu export vượt kho (nếu muốn)
+        if (type === 'export') {
+            for (const item of formattedItems) {
+                const ingredient = await IngredientModel.findById(item.ingredient_id);
+                if (!ingredient) continue;
+
+                // Lấy tồn kho hiện tại
+                const todayStock = await IngredientModel.aggregate([
+                    { $match: { _id: item.ingredient_id } },
+                    {
+                        $lookup: {
+                            from: 'inventorydailybatches',
+                            let: { ingredientId: '$_id' },
+                            pipeline: [
+                                { $match: { $expr: { $lte: ['$batch_date', batch_date] } } },
+                                { $unwind: '$items' },
+                                {
+                                    $match: {
+                                        $expr: { $eq: ['$items.ingredient_id', '$$ingredientId'] },
+                                    },
+                                },
+                                {
+                                    $group: {
+                                        _id: null,
+                                        total: { $sum: '$items.quantity' },
+                                    },
+                                },
+                            ],
+                            as: 'stock',
+                        },
+                    },
+                    {
+                        $addFields: {
+                            currentStock: {
+                                $ifNull: [{ $arrayElemAt: ['$stock.total', 0] }, 0],
+                            },
+                        },
+                    },
+                ]);
+
+                const current = todayStock[0]?.currentStock ?? 0;
+                const afterExport = current + item.quantity; // quantity là số âm
+
+                if (afterExport < 0) {
+                    console.warn(`⚠️ Xuất vượt tồn kho! ${ingredient.name} hiện còn ${current}, sau khi xuất còn ${afterExport}`);
+                }
+            }
+        }
+
+        // Tạo batch mới
+        const batch = await InventoryDailyBatch.create({
             batch_date,
             type,
-            user_id: userId,
+            user_id: new mongoose.Types.ObjectId(userId),
             items: formattedItems,
         });
+
+        return batch;
     }
+
+
 
 
 
@@ -238,13 +303,6 @@ class InventoryService {
         return daily;
     }
 
-    async updateInventoryTransaction(id: string, transaction: IInventoryDaily): Promise<void> {
-
-    }
-
-    async deleteInventoryTransaction(id: string): Promise<void> {
-
-    }
 
 }
 

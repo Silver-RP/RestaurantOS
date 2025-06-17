@@ -1,19 +1,17 @@
 import api from './axiosInstance';
-import { IngredientResponse, IngredientFilterParams } from '@/types/IngredientType';
+import { IngredientFilterParams } from '@/types/IngredientType';
 
 export const warehouseImportIngredientsApi = async (
     data: {
         ingredients: {
             ingredient_id: string;
             quantity: number;
-            unit: string;
             note: string;
         }[];
     },
 ): Promise<void> => {
     try {
-        console.log('Importing ingredients:', data);
-        const res = await api.post('/inventory/inventory-daily', data);
+        const res = await api.post('/inventory/inventory-daily/import', data);
         return res.data;
     } catch (error) {
         console.error('Error importing ingredients:', error);
@@ -23,13 +21,16 @@ export const warehouseImportIngredientsApi = async (
 
 export const warehouseExportIngredientApi = async (
     data: {
-        ingredientId: string;
-        quantity: number;
-        note?: string;
+        ingredients: {
+            ingredient_id: string;
+            quantity: number;
+            note: string;
+        }[];
     },
 ): Promise<void> => {
+    console.log('Exporting ingredient:', data);
     try {
-        const res = await api.post('/warehouse/export-ingredients', data);
+        const res = await api.post('/inventory/inventory-daily/export', data);
         return res.data;
     } catch (error) {
         console.error('Error exporting ingredient:', error);
@@ -40,14 +41,14 @@ export const warehouseExportIngredientApi = async (
 export const warehouseAuditApi = async (
     data: {
         ingredients: {
-            ingredientId: string;
+            ingredient_id: string;
             quantity: number;
-            note?: string;
+            note: string;
         }[];
     },
 ): Promise<void> => {
     try {
-        const res = await api.post('/warehouse/audit-ingredients', data);
+        const res = await api.post('/inventory/inventory-daily/audit', data);
         return res.data;
     } catch (error) {
         console.error('Error auditing ingredients:', error);

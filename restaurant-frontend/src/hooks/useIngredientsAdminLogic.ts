@@ -9,6 +9,7 @@ import { fetchAllIngredients } from '../api/IngredientsApi';
 import { IngredientResponse, IngredientFilterParams } from '../types/IngredientType';
 import { useSearchParams } from 'react-router-dom';
 import { IngredientOption } from '../types/IngredientType';
+import { ingredientUnits } from '@/types/ingredientUnitsType';
 
 
 type SortField = 'name' | 'group' | 'unit' | 'price' | 'deletedAt' | 'currentStock' | 'stockStatus' | null;
@@ -95,11 +96,39 @@ export function useIngredientsAdminLogic() {
         return null;
     };
 
-    const formatQuantity = (count: number, unit: 'gram' | 'ml'): string => {
-        if (unit === 'gram' && count >= 1000) return `${(count / 1000).toFixed(1)} Kilogram`;
-        if (unit === 'ml' && count >= 1000) return `${(count / 1000).toFixed(1)} L`;
-        return `${count} ${unit}`;
-    }
+    const formatNumber = (num: number) =>
+        Number.isInteger(num) ? num.toString() : num.toFixed(1);
+
+    const formatQuantity = (count: number, unit: string): string => {
+        if (unit === 'mg') {
+            if (count >= 1_000_000) {
+                return `${formatNumber(count / 1_000_000)} Kilogram`;
+            }
+            if (count >= 1_000) {
+                return `${formatNumber(count / 1_000)} Gram`;
+            }
+        }
+
+        if (unit === 'gram' && count >= 1_000) {
+            return `${formatNumber(count / 1_000)} Kilogram`;
+        }
+
+        if (unit === 'ml') {
+            if (count >= 100_000) {
+                return `${formatNumber(count / 1_000_000)} Lít`;
+            }
+            if (count >= 1_000) {
+                return `${formatNumber(count / 1_000)} Mililít`;
+            }
+        }
+
+        if (unit === 'litre' && count >= 1_000) {
+            return `${formatNumber(count / 1_000)} Lít`;
+        }
+
+        const unitLabel = ingredientUnits.find(u => u.value === unit)?.label || unit;
+        return `${formatNumber(count)} ${unitLabel}`;
+    };
 
     return {
         ingredients,
@@ -502,7 +531,7 @@ export function useIngredientInput(initial: IngredientInputItem[] = []) {
 
     useEffect(() => {
         const fetchOptions = async () => {
-            const res = await fetchAllIngredients({limit: 1000, sort: 'nameAZ'});
+            const res = await fetchAllIngredients({ limit: 1000, sort: 'nameAZ' });
             setIngredientOptions(res.docs.map((ingredient: Ingredient) => ({
                 id: ingredient._id,
                 name: ingredient.name,
@@ -513,10 +542,10 @@ export function useIngredientInput(initial: IngredientInputItem[] = []) {
     }, []);
 
     const addNewItem = () => {
-            setItems(prev => [
-                    ...prev,
-                    { ingredientId: '', quantity: '', unit: '', note: '' }
-            ]);
+        setItems(prev => [
+            ...prev,
+            { ingredientId: '', quantity: '', unit: '', note: '' }
+        ]);
     };
 
     const updateItem = (index: number, field: keyof IngredientInputItem, value: string) => {
