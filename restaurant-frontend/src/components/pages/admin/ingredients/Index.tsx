@@ -13,6 +13,7 @@ import { FiTrash2 } from 'react-icons/fi';
 import AdvancedFilterPanel from './AdvancedFilterPanel';
 import IngredientStockStatus from './IngredientStockStatus';
 import { WarehouseModal } from './WarehouseModal';
+import { WarehouseAuditModal } from './WarehouseAuditModal';
 import { WarehouseTransactionViewModal } from './WarehouseTransactionViewModal';
 
 const MenuTable: React.FC = () => {
@@ -43,7 +44,9 @@ const MenuTable: React.FC = () => {
     return <FaSort />;
   };
 
-  const [openModal, setOpenModal] = useState<'' | 'import' | 'export' | 'audit' | 'transaction'>('');
+  const [openModal, setOpenModal] = useState<
+    '' | 'import' | 'export' | 'audit' | 'transaction'
+  >('');
   return (
     <div>
       <div className="flex flex-wrap gap-4 mb-4 items-center justify-between">
@@ -137,7 +140,7 @@ const MenuTable: React.FC = () => {
             Kiểm kê kho
           </button>
           <button
-             onClick={() => setOpenModal('transaction')}
+            onClick={() => setOpenModal('transaction')}
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-600 rounded hover:bg-gray-700 transition-colors"
           >
             <span className="text-lg">🕒</span>
@@ -174,7 +177,7 @@ const MenuTable: React.FC = () => {
                   onClick={() => handleSort('group')}
                 >
                   <span className="flex items-center gap-1">
-                   Nhóm nguyên liệu {renderSortIcon('group')}
+                    Nhóm nguyên liệu {renderSortIcon('group')}
                   </span>
                 </th>
                 <th
@@ -224,17 +227,13 @@ const MenuTable: React.FC = () => {
                   <td className="px-4 py-2 font-medium">
                     {item.group || 'Chưa phân loại'}
                     {item.group && (
-                       <span className="text-xs text-gray-500 block">
+                      <span className="text-xs text-gray-500 block">
                         {item.subGroup.toLowerCase()}
-                       </span>
+                      </span>
                     )}
-                   
                   </td>
                   <td className="px-4 py-2 font-medium">
-                    {formatQuantity(
-                      item.currentStock,
-                      item.unit as 'gram' | 'ml',
-                    )}
+                    {formatQuantity(item.currentStock, item.unit)}
                   </td>
                   <td className="px-4 py-2">
                     {ingredientUnits.find((cat) => cat.value === item.unit)
@@ -287,12 +286,21 @@ const MenuTable: React.FC = () => {
         </div>
       )}
 
-      <WarehouseModal
-        open={!!openModal}
-        type={openModal || 'import'}
-        onClose={() => setOpenModal('')}
-      />
+      {(openModal === 'import' || openModal === 'export') && (
+        <WarehouseModal
+          open={true}
+          type={openModal}
+          onClose={() => setOpenModal('')}
+        />
+      )}
 
+      {openModal === 'audit' && (
+        <WarehouseAuditModal
+          open={true}
+          type="audit"
+          onClose={() => setOpenModal('')}
+        />
+      )}
     </div>
   );
 };

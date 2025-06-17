@@ -2,6 +2,7 @@ import { InventoryTransaction } from "../models/InventoryTransactionModel";
 import { InventoryDaily } from "../importData/inventoryModelSample/InventoryDailyModel";
 import IngredientModel, { IIngredient } from "../models/IngredientModel";
 import { InventoryDailyBatch, IInventoryDailyBatch } from "../models/InventoryDailyBatchModel";
+import { InventoryAdjustmentBatch } from "../models/InventoryAdjustmentBatchModel";
 import {
     buildMatchCriteria,
     addLookupStages,
@@ -12,7 +13,14 @@ import {
     getCountAndData,
     buildResponse,
     createTransaction,
-    updateInventoryDaily
+    updateInventoryDaily,
+    checkExistingBatch,
+    checkStockBeforeExport,
+    formatItems,
+    setInitialQuantities,
+    createBatch,
+    handleAuditAdjustments
+
 } from "../utils/inventoryUtil";
 import mongoose from "mongoose";
 import dayjs from "dayjs";
@@ -20,13 +28,6 @@ import { GetTransactionQuery, GetInventoryDailyQuery } from "../types/inventoryT
 
 class InventoryService {
 
-    /**
-     * Retrieves all inventory transactions, populating ingredient and user details.
-     * @returns {Promise<Array>} An array of inventory transactions with populated details.
-     * Search for transactions by ingredient name, user name, or notes.
-     * Filter: transaction_type, ingredient_name, user_name, transaction_date (range).
-     * Sort: transaction_date, quantity, createdAt, transaction_type, ingredient.name, user.name
-     */
     async getInventoryTransactions(query: GetTransactionQuery): Promise<any> {
         const {
             search,
@@ -81,9 +82,8 @@ class InventoryService {
         return buildResponse(data, page, limit, total);
     }
 
-
     async createInventoryBatch(
-        type: 'import' | 'export' | 'audit',
+        type: 'import' | 'export' | 'audit' | 'adjustment',
         items: {
             ingredient_id: string;
             quantity: number;
@@ -93,99 +93,35 @@ class InventoryService {
         }[],
         userId: string
     ): Promise<IInventoryDailyBatch> {
-        console.log('Creating inventory batch:', type, items.length, 'items by user', userId);
-
+    
         if (!items?.length) {
             throw new Error('Danh sách nguyên liệu không hợp lệ!');
         }
-
+    
         const batch_date = dayjs().startOf('day').toDate();
-
-        // Chuẩn hoá items
-        const formattedItems = items.map((item) => {
-            const { ingredient_id, quantity, note, initial_quantity } = item;
-
-            if (!ingredient_id || quantity == null || quantity < 0) {
-                throw new Error('Thiếu hoặc sai thông tin nguyên liệu!');
-            }
-
-            // Export sẽ ghi số âm để thuận lợi cho tổng tồn kho
-            const adjustedQuantity = type === 'export' ? -Math.abs(quantity) : quantity;
-
-            return {
-                ingredient_id: new mongoose.Types.ObjectId(ingredient_id),
-                quantity: adjustedQuantity,
-                initial_quantity: type === 'audit' ? initial_quantity ?? 0 : undefined,
-                notes: note?.trim() || '',
-            };
-        });
-
-        // ⚠️ Nếu muốn cập nhật tồn kho thật (khi dùng collection phụ IngredientStock chẳng hạn)
-        // có thể xử lý ở đây — nhưng bạn đang dùng aggregate nên không cần.
-
-        // Optional: kiểm tra ghi đè batch cùng ngày
-        // const existing = await InventoryDailyBatch.exists({ batch_date, type });
-        // if (existing) throw new Error(`Đã tồn tại batch ${type} ngày hôm nay!`);
-
-        // Ghi log cảnh báo nếu export vượt kho (nếu muốn)
+        const formattedItems = formatItems(items, type);
+        
+        await checkExistingBatch(batch_date, type);
+        
         if (type === 'export') {
-            for (const item of formattedItems) {
-                const ingredient = await IngredientModel.findById(item.ingredient_id);
-                if (!ingredient) continue;
-
-                // Lấy tồn kho hiện tại
-                const todayStock = await IngredientModel.aggregate([
-                    { $match: { _id: item.ingredient_id } },
-                    {
-                        $lookup: {
-                            from: 'inventorydailybatches',
-                            let: { ingredientId: '$_id' },
-                            pipeline: [
-                                { $match: { $expr: { $lte: ['$batch_date', batch_date] } } },
-                                { $unwind: '$items' },
-                                {
-                                    $match: {
-                                        $expr: { $eq: ['$items.ingredient_id', '$$ingredientId'] },
-                                    },
-                                },
-                                {
-                                    $group: {
-                                        _id: null,
-                                        total: { $sum: '$items.quantity' },
-                                    },
-                                },
-                            ],
-                            as: 'stock',
-                        },
-                    },
-                    {
-                        $addFields: {
-                            currentStock: {
-                                $ifNull: [{ $arrayElemAt: ['$stock.total', 0] }, 0],
-                            },
-                        },
-                    },
-                ]);
-
-                const current = todayStock[0]?.currentStock ?? 0;
-                const afterExport = current + item.quantity; // quantity là số âm
-
-                if (afterExport < 0) {
-                    console.warn(`⚠️ Xuất vượt tồn kho! ${ingredient.name} hiện còn ${current}, sau khi xuất còn ${afterExport}`);
-                }
-            }
+            await checkStockBeforeExport(await formattedItems, batch_date);
+        } else if (type === 'audit') {
+            await setInitialQuantities(await formattedItems, batch_date);
         }
-
-        // Tạo batch mới
-        const batch = await InventoryDailyBatch.create({
-            batch_date,
-            type,
-            user_id: new mongoose.Types.ObjectId(userId),
-            items: formattedItems,
-        });
-
+    
+        const batch = await createBatch(await formattedItems, batch_date, userId, type);
+        
+        if (type === 'audit') {
+            await handleAuditAdjustments(await formattedItems, items, batch, batch_date, userId);
+        }
+    
         return batch;
     }
+    
+    
+    
+
+
 
 
 

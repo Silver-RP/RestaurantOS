@@ -82,8 +82,11 @@ export function buildIngredientAggregate({
                     {
                         $match: {
                             $expr: {
-                                $lte: ['$batch_date', todayUtc],
-                            },
+                                $and: [
+                                  { $lte: ['$batch_date', todayUtc] },
+                                  { $ne: ['$type', 'audit'] }
+                                ]
+                              }
                         },
                     },
                     { $unwind: '$items' },

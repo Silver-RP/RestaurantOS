@@ -99,36 +99,32 @@ export function useIngredientsAdminLogic() {
     const formatNumber = (num: number) =>
         Number.isInteger(num) ? num.toString() : num.toFixed(1);
 
-    const formatQuantity = (count: number, unit: string): string => {
-        if (unit === 'mg') {
-            if (count >= 1_000_000) {
+        const formatQuantity = (count: number, unit: string): string => {
+            if (unit === 'mg') {
+              if (count >= 1_000_000) {
                 return `${formatNumber(count / 1_000_000)} Kilogram`;
-            }
-            if (count >= 1_000) {
+              }
+              if (count >= 1_000) {
                 return `${formatNumber(count / 1_000)} Gram`;
+              }
             }
-        }
-
-        if (unit === 'gram' && count >= 1_000) {
-            return `${formatNumber(count / 1_000)} Kilogram`;
-        }
-
-        if (unit === 'ml') {
-            if (count >= 100_000) {
-                return `${formatNumber(count / 1_000_000)} Lít`;
+          
+            if (unit === 'gram') {
+              if (count >= 1_000) {
+                return `${formatNumber(count / 1_000)} Kilogram`;
+              }
             }
-            if (count >= 1_000) {
-                return `${formatNumber(count / 1_000)} Mililít`;
+          
+            if (unit === 'ml') {
+              if (count >= 1_000) {
+                return `${formatNumber(count / 1_000)} Lít`;
+              }
             }
-        }
-
-        if (unit === 'litre' && count >= 1_000) {
-            return `${formatNumber(count / 1_000)} Lít`;
-        }
-
-        const unitLabel = ingredientUnits.find(u => u.value === unit)?.label || unit;
-        return `${formatNumber(count)} ${unitLabel}`;
-    };
+          
+            const unitLabel = ingredientUnits.find(u => u.value === unit)?.label || unit;
+            return `${formatNumber(count)} ${unitLabel}`;
+          };
+          
 
     return {
         ingredients,
@@ -536,6 +532,7 @@ export function useIngredientInput(initial: IngredientInputItem[] = []) {
                 id: ingredient._id,
                 name: ingredient.name,
                 unit: ingredient.unit,
+                currentStock: ingredient.currentStock,
             })));
         };
         fetchOptions();
@@ -572,3 +569,76 @@ export function useIngredientInput(initial: IngredientInputItem[] = []) {
         reset,
     };
 }
+
+export interface AuditItem {
+    ingredientId: string;
+    unit?: string;
+    estimatedQuantity: number;
+    actualQuantity: number;
+    reason?: string;
+    note?: string;
+}
+
+export function useInventoryAuditInput(initial: AuditItem[] = []) {
+    const [items, setItems] = useState<AuditItem[]>(initial);
+    const [ingredientOptions, setIngredientOptions] = useState<IngredientOption[]>([]);
+
+    useEffect(() => {
+        const fetchOptions = async () => {
+            const res = await fetchAllIngredients({ limit: 1000, sort: 'nameAZ' });
+            setIngredientOptions(
+                res.docs.map((ingredient: Ingredient) => ({
+                    id: ingredient._id,
+                    name: ingredient.name,
+                    unit: ingredient.unit,
+                    currentStock: ingredient.currentStock,
+
+                }))
+            );
+        };
+        fetchOptions();
+    }, []);
+
+    const addNewItem = () => {
+        setItems((prev) => [
+            ...prev,
+            {
+                ingredientId: '',
+                unit: '',
+                estimatedQuantity: 0,
+                actualQuantity: 0,
+                reason: '',
+                note: '',
+            },
+        ]);
+    };
+
+    const updateItem = (index: number, field: keyof AuditItem, value: string | number) => {
+        const updated = [...items];
+        if (field === 'estimatedQuantity' || field === 'actualQuantity') {
+            updated[index][field] = value as number;
+        } else {
+            updated[index][field] = value as string;
+        }
+        setItems(updated);
+    };
+
+    const deleteItem = (index: number) => {
+        const updated = [...items];
+        updated.splice(index, 1);
+        setItems(updated);
+    };
+
+    const reset = () => setItems(initial);
+
+    return {
+        items,
+        ingredientOptions,
+        setItems,
+        addNewItem,
+        updateItem,
+        deleteItem,
+        reset,
+    };
+}
+

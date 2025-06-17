@@ -40,21 +40,32 @@ export const warehouseExportIngredientApi = async (
 
 export const warehouseAuditApi = async (
     data: {
-        ingredients: {
+        items: {
             ingredient_id: string;
-            quantity: number;
-            note: string;
+            actual_quantity: number;
+            reason: string;
+            notes: string;
         }[];
-    },
+        adjustment_date: string;
+    }
 ): Promise<void> => {
     try {
-        const res = await api.post('/inventory/inventory-daily/audit', data);
+        const formatted = {
+            ingredients: data.items.map((item) => ({
+                ingredient_id: item.ingredient_id,
+                quantity: item.actual_quantity, 
+                reason: item.reason,
+                note: item.notes,
+            })),
+        };
+
+        const res = await api.post('/inventory/inventory-daily/audit', formatted);
         return res.data;
     } catch (error) {
         console.error('Error auditing ingredients:', error);
         throw error;
     }
-}
+};
 
 export const getWarehouseTransactionsApi = async (
     params: IngredientFilterParams,

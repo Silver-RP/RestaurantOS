@@ -1,16 +1,13 @@
 // components/warehouse/WarehouseModal.tsx
 import React from 'react';
 import { Dialog, DialogTitle } from '@mui/material';
-import { IngredientInputPanel } from './IngredientInputPanel';
+import { InventoryAuditPanel } from './InventoryAuditPanel';
 import { WarehouseTransactionViewModal } from './WarehouseTransactionViewModal';
 import TimeDisplay from '@/components/common/TimeDisplay';
-import { useIngredientInput } from '@/hooks/useIngredientsAdminLogic';
-import {
-  useWarehouseImport,
-  useWarehouseExport,
-} from '@/hooks/useWarehouse';
+import { useInventoryAuditInput } from '@/hooks/useIngredientsAdminLogic';
+import { useWarehouseAudit } from '@/hooks/useWarehouse';
 
-type WarehouseModalType = 'import' | 'export' | 'transaction';
+type WarehouseModalType = 'audit' | 'transaction';
 
 interface Props {
   open: boolean;
@@ -18,29 +15,11 @@ interface Props {
   onClose: () => void;
 }
 
-const getDialogTitle = (type: WarehouseModalType) => {
-  switch (type) {
-    case 'import':
-      return 'Nhập kho nguyên liệu';
-    case 'export':
-      return 'Xuất kho nguyên liệu';
-    case 'transaction':
-      return 'Lịch sử giao dịch';
-  }
-};
 
-export const WarehouseModal: React.FC<Props> = ({ open, type, onClose }) => {
-  const ingredientInput = useIngredientInput();
+export const WarehouseAuditModal: React.FC<Props> = ({ open, type, onClose }) => {
+  const ingredientInput = useInventoryAuditInput();
 
-  const handleImport = useWarehouseImport({
-    items: ingredientInput.items,
-    onSuccess: () => {
-      ingredientInput.reset();
-      onClose();
-    },
-  }).handleSubmit;
-
-  const handleExport = useWarehouseExport({
+  const handleAudit = useWarehouseAudit({
     items: ingredientInput.items,
     onSuccess: () => {
       ingredientInput.reset();
@@ -49,26 +28,25 @@ export const WarehouseModal: React.FC<Props> = ({ open, type, onClose }) => {
   }).handleSubmit;
 
   const handleSubmit = () => {
-    if (type === 'import') return handleImport();
-    if (type === 'export') return handleExport();
+    if (type === 'audit') return handleAudit();
   };
 
-
+  
 
   if (!open) return null;
 
 
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
       <DialogTitle className="bg-gray-50 flex justify-between items-center">
-        <span className="text-xl font-bold">{getDialogTitle(type)}</span>
+        <span className="text-xl font-bold">Kiểm kê kho nguyên liệu</span>
         <TimeDisplay />
       </DialogTitle>
       <div className="p-4 bg-white">
         {type !== 'transaction' ? (
           <>
-            <IngredientInputPanel {...ingredientInput} />
+            <InventoryAuditPanel {...ingredientInput} />
             <div className="mt-4 flex justify-end gap-2">
               <button
                 className="px-4 py-2 bg-gray-300 rounded"
