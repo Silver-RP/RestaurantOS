@@ -1,11 +1,17 @@
 import { InventoryTransaction } from '../models/InventoryTransactionModel';
 import { InventoryDaily } from '../importData/inventoryModelSample/InventoryDailyModel';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import dayjs from 'dayjs';
 import { IInventoryDailyBatch, InventoryDailyBatch } from '../models/InventoryDailyBatchModel';
 import IngredientModel from '../models/IngredientModel';
 import { InventoryAdjustmentBatch } from '../models/InventoryAdjustmentBatchModel';
 
+
+interface TransactionItem {
+    ingredient_id: Types.ObjectId;
+    quantity: number;
+    notes?: string;
+}
 
 // Get all Inventory Transactions/Dailies Service
 
@@ -219,7 +225,7 @@ export async function checkExistingBatch(batch_date: Date, type: string) {
     if (existing) throw new Error(`Đã tồn tại batch ${type} ngày hôm nay!`);
 }
 
-export async function  checkStockBeforeExport(formattedItems: any[], batch_date: Date) {
+export async function checkStockBeforeExport(formattedItems: any[], batch_date: Date) {
     for (const item of formattedItems) {
         const ingredient = await IngredientModel.findById(item.ingredient_id);
         if (!ingredient) continue;
@@ -272,7 +278,7 @@ export async function createBatch(formattedItems: any[], batch_date: Date, userI
     });
 }
 
-export async function handleAuditAdjustments(formattedItems: any[],  items: any[], batch: IInventoryDailyBatch, batch_date: Date, userId: string) {
+export async function handleAuditAdjustments(formattedItems: any[], items: any[], batch: IInventoryDailyBatch, batch_date: Date, userId: string) {
     const adjustmentItems = formattedItems
         .filter(item => item.quantity !== item.initial_quantity)
         .map(item => ({
@@ -311,5 +317,45 @@ export async function handleAuditAdjustments(formattedItems: any[],  items: any[
                 notes: item.notes
             }))
         });
+
+        const adjustmentBatch = await InventoryAdjustmentBatch.create({
+            adjustment_date: batch_date,
+            user_id: new mongoose.Types.ObjectId(userId),
+            daily_batch_id: batch._id,
+            items: adjustmentItems,
+        });
+
+        await InventoryTransaction.insertMany(
+            adjustmentItems.map(item => ({
+                transaction_type: 'adjustment',
+                quantity: Math.abs(item.difference),
+                transaction_date: batch_date,
+                notes: item.notes || '',
+                ingredient_id: item.ingredient_id,
+                user_id: userId,
+                adjustment_batch_id: adjustmentBatch._id,
+            }))
+        );
     }
+}
+
+export async function createInventoryTransactions({ type, items, batch_date, userId }: {
+    type: 'import' | 'export' | 'adjustment';
+    items: TransactionItem[];
+    batch_date: Date;
+    userId: string | Types.ObjectId;
+}) {
+    if (!['import', 'export', 'adjustment'].includes(type)) return;
+
+    await InventoryTransaction.insertMany(
+        items.map(item => ({
+            transaction_type: type,
+            quantity: Math.abs(item.quantity), 
+            transaction_date: batch_date,
+            notes: item.notes || '',
+            ingredient_id: item.ingredient_id,
+            user_id: userId,
+            adjustment_batch_id: null,
+        }))
+    );
 }

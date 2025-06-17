@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
 export interface IInventoryAdjustmentBatch extends mongoose.Document {
+    _id: mongoose.Types.ObjectId;
     adjustment_date: Date;
     user_id: mongoose.Types.ObjectId;
     daily_batch_id: mongoose.Types.ObjectId;

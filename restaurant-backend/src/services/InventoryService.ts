@@ -19,7 +19,8 @@ import {
     formatItems,
     setInitialQuantities,
     createBatch,
-    handleAuditAdjustments
+    handleAuditAdjustments,
+    createInventoryTransactions
 
 } from "../utils/inventoryUtil";
 import mongoose from "mongoose";
@@ -99,7 +100,7 @@ class InventoryService {
         }
     
         const batch_date = dayjs().startOf('day').toDate();
-        const formattedItems = formatItems(items, type);
+        const formattedItems = await formatItems(items, type);
         
         await checkExistingBatch(batch_date, type);
         
@@ -110,11 +111,14 @@ class InventoryService {
         }
     
         const batch = await createBatch(await formattedItems, batch_date, userId, type);
+        if (type !== 'audit') {
+            await createInventoryTransactions({ type, items: formattedItems, batch_date, userId });
+        }
         
         if (type === 'audit') {
             await handleAuditAdjustments(await formattedItems, items, batch, batch_date, userId);
         }
-    
+
         return batch;
     }
     
