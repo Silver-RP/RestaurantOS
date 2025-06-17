@@ -26,6 +26,7 @@ export function addLookupStages(pipeline: any[]) {
             },
         },
         { $unwind: '$ingredient' },
+
         {
             $lookup: {
                 from: 'users',
@@ -34,7 +35,17 @@ export function addLookupStages(pipeline: any[]) {
                 as: 'user',
             },
         },
-        { $unwind: '$user' }
+        { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
+
+        {
+            $lookup: {
+                from: 'inventoryadjustmentbatches',
+                localField: 'adjustment_batch_id',
+                foreignField: '_id',
+                as: 'adjustment_batch',
+            },
+        },
+        { $unwind: { path: '$adjustment_batch', preserveNullAndEmptyArrays: true } }
     );
 }
 
@@ -96,6 +107,40 @@ export function addPaginationStage(pipeline: any[], page: number, limit: number)
 export function addProjectionStage(pipeline: any[], projection: Record<string, any>) {
     pipeline.push({ $project: projection });
 }
+
+export const projectionForInventoryTransaction = {
+    _id: 1,
+    transaction_type: 1,
+    quantity: 1,
+    transaction_date: 1,
+    notes: 1,
+    createdAt: 1,
+    updatedAt: 1,
+    ingredient: {
+        _id: '$ingredient._id',
+        name: '$ingredient.name',
+        unit: '$ingredient.unit',
+    },
+    user: {
+        _id: '$user._id',
+        name: '$user.name',
+        email: '$user.email',
+    },
+    adjustment_batch: {
+        _id: '$adjustment_batch._id',
+        adjustment_date: '$adjustment_batch.adjustment_date',
+        daily_batch_id: '$adjustment_batch.daily_batch_id',
+        // hoặc các trường khác tùy bạn
+    },
+    adjustment_type: {
+        $cond: {
+          if: { $ifNull: ['$adjustment_batch.daily_batch_id', false] },
+          then: 'audit',
+          else: 'manual',
+        },
+      }
+      
+};
 
 export async function getCountAndData(model: mongoose.Model<any>, pipeline: any[]) {
     const countPipeline = pipeline.slice(0, pipeline.findIndex(p => '$project' in p));

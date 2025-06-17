@@ -20,8 +20,8 @@ import {
     setInitialQuantities,
     createBatch,
     handleAuditAdjustments,
-    createInventoryTransactions
-
+    createInventoryTransactions,
+    projectionForInventoryTransaction
 } from "../utils/inventoryUtil";
 import mongoose from "mongoose";
 import dayjs from "dayjs";
@@ -55,28 +55,7 @@ class InventoryService {
         addSortStage(pipeline, sort);
         addPaginationStage(pipeline, page, limit);
 
-        const projectionForInventoryTransaction = {
-            _id: 1,
-            transaction_type: 1,
-            quantity: 1,
-            transaction_date: 1,
-            notes: 1,
-            createdAt: 1,
-            updatedAt: 1,
-            ingredient: {
-                _id: '$ingredient._id',
-                name: '$ingredient.name',
-                unit: '$ingredient.unit',
-            },
-            user: {
-                _id: '$user._id',
-                name: '$user.name',
-                email: '$user.email',
-            },
-            adjustment_id: 1,
-        }; // Consider projection to only retrieve necessary fields and add relevant fields related to Adjustment
-
-        addProjectionStage(pipeline, projectionForInventoryTransaction);// project only necessary fields
+        addProjectionStage(pipeline, projectionForInventoryTransaction);
 
         const [data, total] = await getCountAndData(InventoryTransaction, pipeline);// get data and total count
 
