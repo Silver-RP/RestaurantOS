@@ -9,9 +9,10 @@ import {
   TableHead,
   TableRow,
   TextField,
+  Tooltip,
 } from '@mui/material';
 import { IngredientInputItem } from '@/hooks/useIngredientsAdminLogic';
-import { ingredientUnits } from '../../../../types/ingredientUnitsType';
+import { getUnitLabel } from '../../../../types/ingredientUnitsType';
 import { IngredientOption } from '../../../../types/IngredientType';
 
 interface Props {
@@ -37,7 +38,7 @@ export const IngredientInputTable = ({
     <Table>
       <TableHead>
         <TableRow>
-          <TableCell >STT</TableCell>
+          <TableCell>STT</TableCell>
           <TableCell sx={{ minWidth: 220 }}>Nguyên liệu</TableCell>
           <TableCell>Số lượng</TableCell>
           <TableCell>Đơn vị</TableCell>
@@ -69,12 +70,10 @@ export const IngredientInputTable = ({
                   <TextField {...params} placeholder="Chọn nguyên liệu" />
                 )}
                 renderOption={(props, option) => {
-                  const isUsed =
-                    items.some(
-                      (i, iIdx) =>
-                        i.ingredientId === option.id && iIdx !== index,
-                    );
-              
+                  const isUsed = items.some(
+                    (i, iIdx) => i.ingredientId === option.id && iIdx !== index,
+                  );
+
                   return (
                     <li
                       {...props}
@@ -91,15 +90,27 @@ export const IngredientInputTable = ({
               />
             </TableCell>
             <TableCell>
-                <TextField
+              <Tooltip
+                title={!item.ingredientId ? 'Hãy chọn nguyên liệu trước' : ''}
+              >
+                <span>
+                  <TextField
                     size="small"
                     type="number"
                     value={item.quantity}
                     onChange={(e) =>
-                            onChange(index, 'quantity', String(Math.max(0, Number(e.target.value))))
-                        }
+                      onChange(
+                        index,
+                        'quantity',
+                        String(Math.max(0, Number(e.target.value))),
+                      )
+                    }
                     inputProps={{ min: 0, step: 0.1 }}
-                />
+                    disabled={!item.ingredientId}
+                    fullWidth
+                  />
+                </span>
+              </Tooltip>
             </TableCell>
             <TableCell>
               <Select
@@ -108,15 +119,12 @@ export const IngredientInputTable = ({
                 onChange={(e) => onChange(index, 'unit', e.target.value)}
                 fullWidth
                 displayEmpty
+                disabled={!item.ingredientId}
               >
                 <MenuItem disabled value="">
                   -- Chọn đơn vị --
                 </MenuItem>
-                {ingredientUnits.map(({ value, label }) => (
-                  <MenuItem key={value} value={value}>
-                    {label}
-                  </MenuItem>
-                ))}
+                <MenuItem value={item.unit}>{getUnitLabel(item.unit)}</MenuItem>
               </Select>
             </TableCell>
             <TableCell>

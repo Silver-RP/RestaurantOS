@@ -97,10 +97,10 @@ class InventoryService {
 
         const batch_date = dayjs().startOf('day').toDate();
 
-        const existing = await InventoryDailyBatch.exists({ batch_date, type });
-        if (existing) {
-            throw new Error(`Đã tồn tại batch ${type} ngày hôm nay!`);
-        }
+        // const existing = await InventoryDailyBatch.exists({ batch_date, type });
+        // if (existing) {
+        //     throw new Error(`Đã tồn tại batch ${type} ngày hôm nay!`);
+        // }
 
         const formattedItems = items.map((item) => {
             const { ingredient_id, quantity, note, initial_quantity } = item;
