@@ -1,3 +1,5 @@
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import {
   warehouseImportIngredientsApi,
@@ -6,6 +8,9 @@ import {
   warehouseTransactionsApi
 } from '@/api/WarehouseApi';
 import { IngredientInputItem, AuditItem } from "@/hooks/useIngredientsAdminLogic";
+import { InventoryTransactionResponse, InventoryTransactionFilterParams, SortField } from '@/types/InventoryType';
+
+type SortDirection = 'asc' | 'desc';
 
 export function useWarehouseImport({
   items,
@@ -151,20 +156,165 @@ export function useWarehouseAudit({ items, onSuccess }: {items: AuditItem[];onSu
   return { handleSubmit };
 }
 
-export function useWarahouseTransactionView({ items, onSuccess }: {
-  items: IngredientInputItem[];
-  onSuccess: () => void;
-}) {
-  const handleSubmit = async () => {
-    if (items.length === 0) {
-      toast.error('Chưa có nguyên liệu nào để xem giao dịch!');
-      return;
-    }
+export function useWarehouseTransactionView() {
+  const {
+    transactions,
+    loading,
+    error,
+    searchParams,
+    setSearchParams,
+  } = getWarahouseTransactionHistory();
 
+  const [sortField, setSortField] = useState<SortField>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [search, setSearch] = useState('');
+  const navigate = useNavigate();
 
-    onSuccess();
+  const transactionList = transactions?.docs || [];
+
+  const sortMapping: Record<string, Record<SortDirection, string>> = {
+    name: { asc: 'nameAZ', desc: 'nameZA' },
+    price: { asc: 'priceLow', desc: 'priceHigh' },
+    discount_price: { asc: 'discountLow', desc: 'discountHigh' },
+    countInStock: { asc: 'stockHigh', desc: 'stockLow' },
+    views: { asc: 'leastViews', desc: 'mostViewed' },
+    ordered_count: { asc: 'leastOrdered', desc: 'mostOrdered' },
+    average_rating: { asc: 'lowestRated', desc: 'highestRated' },
+    category: { asc: 'categoryAZ', desc: 'categoryZA' },
+    status: { asc: 'statusAZ', desc: 'statusZA' },
   };
 
-  return { handleSubmit };
+  const updateSearchParams = (callback: (params: URLSearchParams) => void) => {
+    setSearchParams((prev) => {
+      const newParams = new URLSearchParams(prev);
+      callback(newParams);
+      newParams.set('page', '1');
+      return newParams;
+    });
+  };
+
+  const handleSort = (field: string) => {
+    const direction = sortField === field && sortDirection === 'asc' ? 'desc' : 'asc';
+    setSortField(field as SortField);
+    setSortDirection(direction as SortDirection);
+    const sortValue = sortMapping[field]?.[direction] ?? 'default';
+
+    updateSearchParams((params) => {
+      params.set('sort', sortValue);
+    });
+  };
+
+  const applySearch = () => {
+    updateSearchParams((params) => {
+      if (search.trim()) {
+        params.set('keyword', search.trim());
+      } else {
+        params.delete('keyword');
+      }
+    });
+  };
+
+  const handleEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') applySearch();
+  };
+
+  const getSortIcon = (field: SortField) =>
+    sortField === field ? sortDirection : null;
+
+  const transactionTypeLabels: Record<string, string> = {
+    import: 'Nhập kho',
+    export: 'Xuất kho',
+    adjustment: 'Kiểm kê',
+  };
+    
+
+  return {
+    transactions,
+    loading,
+    error,
+    searchParams,
+    setSearchParams,
+    sortField,
+    sortDirection,
+    showFilterPanel,
+    setShowFilterPanel,
+    search,
+    setSearch,
+    navigate,
+    transactionList,
+    handleSort,
+    handleEnter,
+    handleClick: applySearch,
+    getSortIcon,
+    transactionTypeLabels
+  };
+}
+
+export function getWarahouseTransactionHistory() {
+  const [transactions, setTransactions] = useState<InventoryTransactionResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const parseFiltersFromSearchParams = (params: URLSearchParams): InventoryTransactionFilterParams => {
+    const getNumber = (key: string) => {
+      const val = params.get(key);
+      return val ? Number(val) : undefined;
+    };
+
+    return {
+      page: getNumber('page') || 1,
+      limit: getNumber('limit') || 12,
+      sort: params.get('sort') || 'default',
+      search: params.get('keyword') || undefined,
+      transaction_type: params.get('transaction_type') || undefined,
+      ingredient_id: params.get('ingredient_id') || undefined,
+      from: params.get('from') || undefined,
+      to: params.get('to') || undefined,
+      user_id: params.get('user_id') || undefined,
+    };
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const filters = parseFiltersFromSearchParams(searchParams);
+        const data = await warehouseTransactionsApi(filters);
+
+        if (isMounted) {
+          setTransactions(data as unknown as InventoryTransactionResponse); 
+          setError(null);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError('Đã xảy ra lỗi khi tải lịch sử giao dịch');
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [searchParams]);
+
+  return {
+    transactions,
+    loading,
+    error,
+    searchParams,
+    setSearchParams,
+  };
 }
 

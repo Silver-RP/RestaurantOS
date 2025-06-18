@@ -37,29 +37,37 @@ class InventoryService {
             type,
             from,
             to,
-            page = 1,
-            limit = 20,
             sort = 'transaction_date:desc',
         } = query;
-
-        const pipeline: any[] = [];
-        addLookupStages(pipeline); // JOIN ingredient and user
-
-        // FILTERS
+    
+        const limit = query.limit !== undefined ? Number(query.limit) : 12;
+        const page = query.page !== undefined ? Number(query.page) : 1;
+    
+        const basePipeline: any[] = [];
+        addLookupStages(basePipeline); // JOIN ingredient and user
+    
         const match = buildMatchCriteria({ ingredient_id, user_id, type, from, to });
         if (Object.keys(match).length > 0) {
-            pipeline.push({ $match: match });
+            basePipeline.push({ $match: match });
+        }
+    
+        if (search) {
+            addSearchStage(basePipeline, search);
         }
 
-        if (search) { addSearchStage(pipeline, search) }
-        addSortStage(pipeline, sort);
-        addPaginationStage(pipeline, page, limit);
-
-        addProjectionStage(pipeline, projectionForInventoryTransaction);
-
-        const [data, total] = await getCountAndData(InventoryTransaction, pipeline);// get data and total count
-
-        return buildResponse(data, page, limit, total);
+        const countPipeline = [...basePipeline, { $count: 'total' }];
+    
+        addSortStage(basePipeline, sort);
+        addPaginationStage(basePipeline, page, limit);
+        addProjectionStage(basePipeline, projectionForInventoryTransaction);
+    
+        const [docs, countResult] = await Promise.all([
+            InventoryTransaction.aggregate(basePipeline),
+            InventoryTransaction.aggregate(countPipeline),
+          ]);
+          
+        const total = countResult[0]?.total || 0;
+        return buildResponse(docs, page, limit, total);
     }
 
     async createInventoryBatch(
@@ -165,7 +173,7 @@ class InventoryService {
         const {
             search,
             page = 1,
-            limit = 20,
+            limit = 12,
             sort = 'inventory_date:desc',
         } = query;
 

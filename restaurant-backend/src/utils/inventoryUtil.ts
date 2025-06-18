@@ -96,12 +96,14 @@ export function addSortStage(pipeline: any[], sort: string) {
     });
 }
 
-export function addPaginationStage(pipeline: any[], page: number, limit: number) {
-    const skip = (page - 1) * limit;
-    pipeline.push(
-        { $skip: skip },
-        { $limit: limit }
-    );
+export function addPaginationStage(pipeline: any[], page?: number, limit?: number) {
+    if (typeof limit === 'number' && !isNaN(limit)) {
+        const skip = ((page || 1) - 1) * limit;
+        pipeline.push(
+            { $skip: skip },
+            { $limit: limit }
+        );
+    }
 }
 
 export function addProjectionStage(pipeline: any[], projection: Record<string, any>) {
@@ -123,7 +125,7 @@ export const projectionForInventoryTransaction = {
     },
     user: {
         _id: '$user._id',
-        name: '$user.name',
+        name: '$user.username',
         email: '$user.email',
     },
     adjustment_batch: {
@@ -146,26 +148,30 @@ export async function getCountAndData(model: mongoose.Model<any>, pipeline: any[
     const countPipeline = pipeline.slice(0, pipeline.findIndex(p => '$project' in p));
     countPipeline.push({ $count: 'total' });
 
-    const [data, countResult] = await Promise.all([
+    const [docs, countResult] = await Promise.all([
         model.aggregate(pipeline),
         model.aggregate(countPipeline),
     ]);
 
     const total = countResult[0]?.total || 0;
-    return [data, total];
+    return [docs, total];
 }
 
-export function buildResponse(data: any[], page: number, limit: number, total: number) {
+export function buildResponse(docs: any[], page: number, limit: number | undefined, total: number) {
+    const paginated = typeof limit === 'number' && !isNaN(limit);
     return {
-        data,
-        pagination: {
-            page,
-            limit,
-            total,
-            totalPages: Math.ceil(total / limit),
-        },
+        docs,
+        totalDocs: total,
+        page: paginated ? page : 1,
+        limit: paginated ? limit : total,
+        totalPages: paginated ? Math.ceil(total / limit!) : 1,
+        hasNextPage: paginated ? page * limit! < total : false,
+        hasPrevPage: paginated ? page > 1 : false,
+        offset: paginated ? (page - 1) * limit! : 0,
+        pagingCounter: paginated ? (page - 1) * limit! + 1 : 1,
     };
 }
+
 
 // Create Inventory Transaction + Daily Service
 

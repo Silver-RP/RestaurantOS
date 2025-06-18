@@ -96,35 +96,33 @@ export function useIngredientsAdminLogic() {
         return null;
     };
 
-    const formatNumber = (num: number) =>
-        Number.isInteger(num) ? num.toString() : num.toFixed(1);
+    const formatNumber = (num: number) => Number.isInteger(num) ? num.toString() : num.toFixed(1);
 
-        const formatQuantity = (count: number, unit: string): string => {
-            if (unit === 'mg') {
-              if (count >= 1_000_000) {
+    const formatQuantity = (count: number, unit: string): string => {
+        if (unit === 'mg') {
+            if (count >= 1_000_000) {
                 return `${formatNumber(count / 1_000_000)} Kilogram`;
-              }
-              if (count >= 1_000) {
+            }
+            if (count >= 1_000) {
                 return `${formatNumber(count / 1_000)} Gram`;
-              }
             }
-          
-            if (unit === 'gram') {
-              if (count >= 1_000) {
+        }
+
+        if (unit === 'gram') {
+            if (count >= 1_000) {
                 return `${formatNumber(count / 1_000)} Kilogram`;
-              }
             }
-          
-            if (unit === 'ml') {
-              if (count >= 1_000) {
+        }
+
+        if (unit === 'ml') {
+            if (count >= 1_000) {
                 return `${formatNumber(count / 1_000)} Lít`;
-              }
             }
-          
-            const unitLabel = ingredientUnits.find(u => u.value === unit)?.label || unit;
-            return `${formatNumber(count)} ${unitLabel}`;
-          };
-          
+        }
+
+        const unitLabel = ingredientUnits.find(u => u.value === unit)?.label || unit;
+        return `${formatNumber(count)} ${unitLabel}`;
+    };
 
     return {
         ingredients,

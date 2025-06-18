@@ -53,7 +53,7 @@ const MenuTable: React.FC = () => {
           <div className="w-96  relative">
             <input
               type="text"
-              placeholder="Tìm món..."
+              placeholder="Tìm nguyên liệu..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={handleEnter}
@@ -139,7 +139,7 @@ const MenuTable: React.FC = () => {
             Kiểm kê kho
           </button>
           <button
-            onClick={() => setOpenModal('transaction')}
+            onClick={() => navigate('/admin/warehouse/transaction-view')}
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-600 rounded hover:bg-gray-700 transition-colors"
           >
             <span className="text-lg">🕒</span>

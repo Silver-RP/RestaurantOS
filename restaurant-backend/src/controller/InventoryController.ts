@@ -10,11 +10,11 @@ class InventoryController {
         const query = req.query;
         const resultTransaction = await InventoryService.getInventoryTransactions(query);
         if (resultTransaction) {
+            console.log('Retrieved inventory transactions:', resultTransaction);
             return res.status(200).json({
                 status: 'success',
                 message: 'Inventory transactions retrieved successfully',
-                data: resultTransaction.data,
-                totalCount: resultTransaction.pagination.total
+                data: resultTransaction,
             });
         } else {
             return res.status(404).json({ message: 'No inventory transactions found' });
@@ -114,20 +114,20 @@ class InventoryController {
         }
     }
 
-    async getInventoryDaily(req: Request, res: Response): Promise<any> {
-        const query = req.query;
-        const resultDaily = await InventoryService.getInventoryDaily(query);
-        if (resultDaily) {
-            return res.status(200).json({
-                status: 'success',
-                message: 'Inventory daily records retrieved successfully',
-                data: resultDaily.data,
-                totalCount: resultDaily.pagination.total
-            });
-        } else {
-            return res.status(404).json({ message: 'No inventory daily records found' });
-        }
-    }
+    // async getInventoryDaily(req: Request, res: Response): Promise<any> {
+    //     const query = req.query;
+    //     const resultDaily = await InventoryService.getInventoryDaily(query);
+    //     if (resultDaily) {
+    //         return res.status(200).json({
+    //             status: 'success',
+    //             message: 'Inventory daily records retrieved successfully',
+    //             data: resultDaily.data,
+    //             totalCount: resultDaily.pagination.total
+    //         });
+    //     } else {
+    //         return res.status(404).json({ message: 'No inventory daily records found' });
+    //     }
+    // }
 
     async getInventoryDailyById(req: Request, res: Response): Promise<any> {
         const { id } = req.params;
