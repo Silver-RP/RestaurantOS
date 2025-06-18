@@ -46,6 +46,6 @@ export type SortField =
   | 'ingredient_name'
   | 'units'
   | 'quantity'
-  | 'users'
+  | 'user_name'
   | null;
 

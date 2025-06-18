@@ -180,10 +180,10 @@ const WarehouseTransactionViewPage: React.FC = () => {
 
                 <th
                   className="px-4 py-2 cursor-pointer whitespace-nowrap"
-                  onClick={() => handleSort('users')}
+                  onClick={() => handleSort('user_name')}
                 >
                   <span className="flex items-center gap-1">
-                    Người thực hiện {renderSortIcon('users')}
+                    Người thực hiện {renderSortIcon('user_name')}
                   </span>
                 </th>
 

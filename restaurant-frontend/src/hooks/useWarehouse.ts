@@ -174,15 +174,12 @@ export function useWarehouseTransactionView() {
   const transactionList = transactions?.docs || [];
 
   const sortMapping: Record<string, Record<SortDirection, string>> = {
-    name: { asc: 'nameAZ', desc: 'nameZA' },
-    price: { asc: 'priceLow', desc: 'priceHigh' },
-    discount_price: { asc: 'discountLow', desc: 'discountHigh' },
-    countInStock: { asc: 'stockHigh', desc: 'stockLow' },
-    views: { asc: 'leastViews', desc: 'mostViewed' },
-    ordered_count: { asc: 'leastOrdered', desc: 'mostOrdered' },
-    average_rating: { asc: 'lowestRated', desc: 'highestRated' },
-    category: { asc: 'categoryAZ', desc: 'categoryZA' },
-    status: { asc: 'statusAZ', desc: 'statusZA' },
+    transaction_type : {asc: 'transaction_type_asc', desc: 'transaction_type_desc'},
+    transaction_date: {asc: 'transaction_date_asc', desc: 'transaction_date_desc'},
+    ingredient_name: {asc: 'ingredient_name_asc', desc: 'ingredient_name_desc'},
+    units: {asc: 'unit_asc', desc: 'unit_desc'},
+    quantity: {asc: 'quantity_asc', desc: 'quantity_desc'},
+    user_name: {asc: 'user_name_asc', desc: 'user_name_desc'},
   };
 
   const updateSearchParams = (callback: (params: URLSearchParams) => void) => {

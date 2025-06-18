@@ -10,7 +10,6 @@ class InventoryController {
         const query = req.query;
         const resultTransaction = await InventoryService.getInventoryTransactions(query);
         if (resultTransaction) {
-            console.log('Retrieved inventory transactions:', resultTransaction);
             return res.status(200).json({
                 status: 'success',
                 message: 'Inventory transactions retrieved successfully',

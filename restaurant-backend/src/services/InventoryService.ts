@@ -37,11 +37,13 @@ class InventoryService {
             type,
             from,
             to,
-            sort = 'transaction_date:desc',
         } = query;
     
         const limit = query.limit !== undefined ? Number(query.limit) : 12;
         const page = query.page !== undefined ? Number(query.page) : 1;
+        const sort = query.sort || 'transaction_date:desc';
+
+        console.log('getInventoryTransactions sort query:', sort);
     
         const basePipeline: any[] = [];
         addLookupStages(basePipeline); // JOIN ingredient and user

@@ -87,14 +87,59 @@ export function addSearchStage(pipeline: any[], search: string) {
     });
 }
 
+const sortMapping: Record<string, { field: string, direction: 1 | -1 }> = {
+    transaction_type_asc: { field: 'transaction_type', direction: 1 },
+    transaction_type_desc: { field: 'transaction_type', direction: -1 },
+    transaction_date_asc: { field: 'transaction_date', direction: 1 },
+    transaction_date_desc: { field: 'transaction_date', direction: -1 },
+    ingredient_name_asc: { field: 'ingredient.name', direction: 1 },
+    ingredient_name_desc: { field: 'ingredient.name', direction: -1 },
+    unit_asc: { field: 'ingredient.unit', direction: 1 },
+    unit_desc: { field: 'ingredient.unit', direction: -1 },
+    quantity_asc: { field: 'quantity', direction: 1 },
+    quantity_desc: { field: 'quantity', direction: -1 },
+    user_name_asc: { field: 'user.username', direction: 1 },
+    user_name_desc: { field: 'user.username', direction: -1 },
+};
+
 export function addSortStage(pipeline: any[], sort: string) {
-    const [sortField, sortDirection] = sort.split(':');
-    pipeline.push({
-        $sort: {
-            [sortField]: sortDirection === 'asc' ? 1 : -1,
-        },
-    });
+    if (sort === 'transaction_type_asc' || sort === 'transaction_type_desc') {
+        pipeline.push({
+            $addFields: {
+              transaction_type_order: {
+                $switch: {
+                  branches: [
+                    { case: { $eq: ['$transaction_type', 'export'] }, then: 0 },
+                    { case: { $eq: ['$transaction_type', 'import'] }, then: 1 },
+                    { case: { $eq: ['$transaction_type', 'adjustment'] }, then: 2 },
+                  ],
+                  default: 3,
+                },
+              },
+            },
+          });
+        pipeline.push({
+            $sort: {
+                transaction_type_order: sort === 'transaction_type_asc' ? 1 : -1,
+            },
+        });
+    } else {
+        // các trường khác
+        const sortConfig = sortMapping[sort];
+        if (sortConfig) {
+            pipeline.push({
+                $sort: {
+                    [sortConfig.field]: sortConfig.direction,
+                },
+            });
+        } else {
+            // fallback
+            pipeline.push({ $sort: { transaction_date: -1 } });
+        }
+    }
 }
+
+
 
 export function addPaginationStage(pipeline: any[], page?: number, limit?: number) {
     if (typeof limit === 'number' && !isNaN(limit)) {
@@ -136,12 +181,12 @@ export const projectionForInventoryTransaction = {
     },
     adjustment_type: {
         $cond: {
-          if: { $ifNull: ['$adjustment_batch.daily_batch_id', false] },
-          then: 'audit',
-          else: 'manual',
+            if: { $ifNull: ['$adjustment_batch.daily_batch_id', false] },
+            then: 'audit',
+            else: 'manual',
         },
-      }
-      
+    }
+
 };
 
 export async function getCountAndData(model: mongoose.Model<any>, pipeline: any[]) {
@@ -401,7 +446,7 @@ export async function createInventoryTransactions({ type, items, batch_date, use
     await InventoryTransaction.insertMany(
         items.map(item => ({
             transaction_type: type,
-            quantity: Math.abs(item.quantity), 
+            quantity: Math.abs(item.quantity),
             transaction_date: batch_date,
             notes: item.notes || '',
             ingredient_id: item.ingredient_id,
