@@ -2,7 +2,6 @@
 import React from 'react';
 import { Dialog, DialogTitle } from '@mui/material';
 import { IngredientInputPanel } from './IngredientInputPanel';
-import { WarehouseTransactionViewModal } from './WarehouseTransactionViewModal';
 import TimeDisplay from '@/components/common/TimeDisplay';
 import { useIngredientInput } from '@/hooks/useIngredientsAdminLogic';
 import {
@@ -66,7 +65,6 @@ export const WarehouseModal: React.FC<Props> = ({ open, type, onClose }) => {
         <TimeDisplay />
       </DialogTitle>
       <div className="p-4 bg-white">
-        {type !== 'transaction' ? (
           <>
             <IngredientInputPanel {...ingredientInput} />
             <div className="mt-4 flex justify-end gap-2">
@@ -87,9 +85,6 @@ export const WarehouseModal: React.FC<Props> = ({ open, type, onClose }) => {
               </button>
             </div>
           </>
-        ) : (
-          <WarehouseTransactionViewModal />
-        )}
       </div>
     </Dialog>
   );

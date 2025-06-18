@@ -14,7 +14,6 @@ import AdvancedFilterPanel from './AdvancedFilterPanel';
 import IngredientStockStatus from './IngredientStockStatus';
 import { WarehouseModal } from './WarehouseModal';
 import { WarehouseAuditModal } from './WarehouseAuditModal';
-import { WarehouseTransactionViewModal } from './WarehouseTransactionViewModal';
 
 const MenuTable: React.FC = () => {
   const {

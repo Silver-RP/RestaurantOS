@@ -2,7 +2,6 @@
 import React from 'react';
 import { Dialog, DialogTitle } from '@mui/material';
 import { InventoryAuditPanel } from './InventoryAuditPanel';
-import { WarehouseTransactionViewModal } from './WarehouseTransactionViewModal';
 import TimeDisplay from '@/components/common/TimeDisplay';
 import { useInventoryAuditInput } from '@/hooks/useIngredientsAdminLogic';
 import { useWarehouseAudit } from '@/hooks/useWarehouse';
@@ -44,7 +43,6 @@ export const WarehouseAuditModal: React.FC<Props> = ({ open, type, onClose }) =>
         <TimeDisplay />
       </DialogTitle>
       <div className="p-4 bg-white">
-        {type !== 'transaction' ? (
           <>
             <InventoryAuditPanel {...ingredientInput} />
             <div className="mt-4 flex justify-end gap-2">
@@ -65,9 +63,6 @@ export const WarehouseAuditModal: React.FC<Props> = ({ open, type, onClose }) =>
               </button>
             </div>
           </>
-        ) : (
-          <WarehouseTransactionViewModal />
-        )}
       </div>
     </Dialog>
   );

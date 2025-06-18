@@ -3,6 +3,7 @@ import {
   warehouseImportIngredientsApi,
   warehouseExportIngredientApi,
   warehouseAuditApi,
+  warehouseTransactionsApi
 } from '@/api/WarehouseApi';
 import { IngredientInputItem, AuditItem } from "@/hooks/useIngredientsAdminLogic";
 
@@ -97,14 +98,8 @@ export function useWarehouseExport({ items, onSuccess }: {
   return { handleSubmit };
 }
 
-export function useWarehouseAudit({
-  items,
-  onSuccess,
-}: {
-  items: AuditItem[];
-  onSuccess: () => void;
-}) {
-  const handleSubmit = async () => {
+export function useWarehouseAudit({ items, onSuccess }: {items: AuditItem[];onSuccess: () => void;}) 
+  {const handleSubmit = async () => {
     if (items.length === 0) {
       toast.error('Chưa có nguyên liệu nào để kiểm kê!');
       return;
@@ -113,7 +108,7 @@ export function useWarehouseAudit({
     const hasInvalidItem = items.some((i) => {
       const missingBasicFields =
         !i.ingredientId?.trim() ||
-        // i.estimatedQuantity == null || i.estimatedQuantity < 0 ||
+        i.estimatedQuantity == null || i.estimatedQuantity < 0 ||
         i.actualQuantity == null || i.actualQuantity < 0;
     
       const hasDifference = i.actualQuantity !== i.estimatedQuantity;
@@ -156,4 +151,20 @@ export function useWarehouseAudit({
   return { handleSubmit };
 }
 
+export function useWarahouseTransactionView({ items, onSuccess }: {
+  items: IngredientInputItem[];
+  onSuccess: () => void;
+}) {
+  const handleSubmit = async () => {
+    if (items.length === 0) {
+      toast.error('Chưa có nguyên liệu nào để xem giao dịch!');
+      return;
+    }
+
+
+    onSuccess();
+  };
+
+  return { handleSubmit };
+}
 

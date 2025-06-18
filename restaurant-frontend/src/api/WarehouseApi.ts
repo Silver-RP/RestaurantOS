@@ -67,11 +67,11 @@ export const warehouseAuditApi = async (
     }
 };
 
-export const getWarehouseTransactionsApi = async (
+export const warehouseTransactionsApi = async (
     params: IngredientFilterParams,
 ): Promise<{ data: any[]; total: number }> => {
     try {
-        const res = await api.get('/warehouse/get-transactions', { params });
+        const res = await api.get('/inventory/inventory-transaction', { params });
         return res.data;
     } catch (error) {
         console.error('Error fetching warehouse transactions:', error);
