@@ -5,6 +5,8 @@ import { Order, IOrder } from '../models/OrderModel';
 import { OrderDetail } from '../models/OrderDetailModel';
 import Cart from '../models/CartModel';
 import { Dish } from '../models/DishModel';
+import DishIngredient  from '../models/DishIngredientModel';
+import { InventoryTransaction } from '../models/InventoryTransactionModel';
 import Payment from '../models/PaymentModel';
 import SearchService from './SearchService';
 import { createVNPayPaymentUrl } from '../services/payments/VnPayService';
@@ -40,6 +42,7 @@ enum OrderStatus {
   RETURN_REQUESTED = 'RETURN_REQUESTED',
   RETURNED = 'RETURNED',
 }
+
 class OrderService {
   getStripeSession(sessionId: any) {
     throw new Error('Method not implemented.');
@@ -330,6 +333,53 @@ class OrderService {
     return order;
   }
 
+  async exportInventoryFromOrder(
+    orderItems: { dish_id: Types.ObjectId; quantity: number }[],
+    orderId: Types.ObjectId,
+    userId: Types.ObjectId, 
+    session: mongoose.ClientSession
+  ) {
+
+    const dishIds = orderItems.map((item) => item.dish_id);
+    const dishIngredients = await DishIngredient.find({
+      dishId: { $in: dishIds },
+    }).lean();
+  
+    const ingredientQuantityMap = new Map<string, number>();
+  
+    for (const item of orderItems) {
+      const ingredientsForDish = dishIngredients.filter(
+        (di) => di.dishId.toString() === item.dish_id.toString()
+      );
+    
+      for (const di of ingredientsForDish) {
+        const totalQty =
+          (ingredientQuantityMap.get(di.ingredientId.toString()) || 0) +
+          di.quantity * item.quantity;
+    
+        ingredientQuantityMap.set(di.ingredientId.toString(), totalQty);
+      }
+    }
+  
+    const transactions: any[] = [];
+    for (const [ingredientId, quantity] of ingredientQuantityMap.entries()) {
+      transactions.push({
+        transaction_type: 'export',
+        quantity,
+        transaction_date: new Date(),
+        notes: 'Đơn hàng online',
+        ingredient_id: new mongoose.Types.ObjectId(ingredientId),
+        user_id: userId,
+        order_id: orderId,
+      });
+    }
+
+    console.log('Exporting inventory transactions:', transactions);
+
+    await InventoryTransaction.insertMany(transactions, { session });
+  }
+  
+
   async placeOrder(input: any) {
     const {
       userId,
@@ -399,6 +449,13 @@ class OrderService {
         });
         return orderDetail.save({ session });
       });
+
+      const formattedOrderItems = orderItems.map(item => ({
+        dish_id: new Types.ObjectId(item.dish_id as string), 
+        quantity: item.quantity,
+      }));
+
+      await this.exportInventoryFromOrder(formattedOrderItems, savedOrder._id, new Types.ObjectId(userId), session);
 
       await Promise.all(orderDetailPromises);
 

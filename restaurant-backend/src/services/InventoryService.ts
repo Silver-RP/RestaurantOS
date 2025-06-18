@@ -39,8 +39,6 @@ class InventoryService {
             to,
         } = query;
 
-        console.log('getInventoryTransactions query:', query);
-    
         const limit = query.limit !== undefined ? Number(query.limit) : 12;
         const page = query.page !== undefined ? Number(query.page) : 1;
         const sort = query.sort || 'transaction_date:desc';
