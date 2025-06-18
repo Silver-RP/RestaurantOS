@@ -118,6 +118,7 @@ const WarehouseTransactionViewPage: React.FC = () => {
           }}
         />
       )}
+      
       <div className="text-sm text-gray-700">
         Hiển thị <strong>{transactionList.length}</strong> trên tổng{' '}
         <strong>{transactions?.totalDocs || 0}</strong> giao dịch

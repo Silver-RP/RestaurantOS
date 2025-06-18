@@ -7,8 +7,11 @@ import {
   warehouseAuditApi,
   warehouseTransactionsApi
 } from '@/api/WarehouseApi';
+import { getAllStaffApi } from '@/api/UserApi';
+import { fetchAllIngredients } from '@/api/IngredientsApi';
 import { IngredientInputItem, AuditItem } from "@/hooks/useIngredientsAdminLogic";
 import { InventoryTransactionResponse, InventoryTransactionFilterParams, SortField } from '@/types/InventoryType';
+import { IngredientResponse } from '../types/IngredientType';
 
 type SortDirection = 'asc' | 'desc';
 
@@ -265,11 +268,11 @@ export function getWarahouseTransactionHistory() {
       limit: getNumber('limit') || 12,
       sort: params.get('sort') || 'default',
       search: params.get('keyword') || undefined,
-      transaction_type: params.get('transaction_type') || undefined,
-      ingredient_id: params.get('ingredient_id') || undefined,
-      from: params.get('from') || undefined,
-      to: params.get('to') || undefined,
-      user_id: params.get('user_id') || undefined,
+      transaction_type: params.get('transactionType') || undefined,
+      ingredient_id: params.get('ingredientId') || undefined,
+      from: params.get('dateFrom') || undefined,
+      to: params.get('dateTo') || undefined,
+      user_id: params.get('userId') || undefined,
     };
   };
 
@@ -315,3 +318,27 @@ export function getWarahouseTransactionHistory() {
   };
 }
 
+export function useWarehouseTransactionFilterPanel() {
+  const [staffs, setStaffs] = useState<any[]>([]);
+  const [ingredients, setIngredients] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchStaffs = async () => {
+      const staffs = await getAllStaffApi();
+      setStaffs(staffs as unknown as any[]);
+    };
+
+    const fetchIngredients = async () => {
+      const ingredients = await fetchAllIngredients({limit: 1000, page: 1, sort: 'nameAZ'});
+      setIngredients(ingredients.docs as unknown as any[]);
+    };
+
+    fetchStaffs();
+    fetchIngredients();
+  }, []);
+
+  return {
+    staffs,
+    ingredients,
+  };
+}

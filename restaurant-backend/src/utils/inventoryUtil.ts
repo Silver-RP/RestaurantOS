@@ -50,7 +50,7 @@ export function addLookupStages(pipeline: any[]) {
 }
 
 export function buildMatchCriteria(
-    { ingredient_id, user_id, type, from, to }: any,
+    { ingredient_id, user_id, transaction_type, from, to }: any,
     dateFieldName: string = 'transaction_date',
     allowTypeFilter = true
 ) {
@@ -62,8 +62,8 @@ export function buildMatchCriteria(
     if (user_id && mongoose.Types.ObjectId.isValid(user_id)) {
         match['user_id'] = new mongoose.Types.ObjectId(user_id);
     }
-    if (type && allowTypeFilter) {
-        match['transaction_type'] = type;
+    if (transaction_type && allowTypeFilter) {
+        match['transaction_type'] = transaction_type;
     }
     if (from || to) {
         match[dateFieldName] = {};
@@ -138,8 +138,6 @@ export function addSortStage(pipeline: any[], sort: string) {
         }
     }
 }
-
-
 
 export function addPaginationStage(pipeline: any[], page?: number, limit?: number) {
     if (typeof limit === 'number' && !isNaN(limit)) {

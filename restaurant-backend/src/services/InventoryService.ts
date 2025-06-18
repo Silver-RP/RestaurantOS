@@ -34,21 +34,21 @@ class InventoryService {
             search,
             ingredient_id,
             user_id,
-            type,
+            transaction_type,
             from,
             to,
         } = query;
+
+        console.log('getInventoryTransactions query:', query);
     
         const limit = query.limit !== undefined ? Number(query.limit) : 12;
         const page = query.page !== undefined ? Number(query.page) : 1;
         const sort = query.sort || 'transaction_date:desc';
-
-        console.log('getInventoryTransactions sort query:', sort);
     
         const basePipeline: any[] = [];
         addLookupStages(basePipeline); // JOIN ingredient and user
     
-        const match = buildMatchCriteria({ ingredient_id, user_id, type, from, to });
+        const match = buildMatchCriteria({ ingredient_id, user_id, transaction_type, from, to });
         if (Object.keys(match).length > 0) {
             basePipeline.push({ $match: match });
         }

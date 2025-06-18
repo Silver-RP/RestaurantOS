@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { toast } from 'react-toastify';
 import { useSearchParams } from 'react-router-dom';
-import { ingredientUnits, IngredientGroup } from '../../../../types/ingredientUnitsType';
+import { useWarehouseTransactionFilterPanel } from '@/hooks/useWarehouse';
 
 type FiltersType = {
   ingredientId?: string;
@@ -22,11 +21,12 @@ const AdvancedTransactionFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
   onApply,
   initialFilters = {},
 }) => {
+  const { staffs, ingredients } = useWarehouseTransactionFilterPanel();
   const [searchParams, setSearchParams] = useSearchParams();
   const [filters, setFilters] = useState<FiltersType>({
+    transactionType: initialFilters.transactionType || '',
     ingredientId: initialFilters.ingredientId || '',
     userId: initialFilters.userId || '',
-    transactionType: initialFilters.transactionType || '',
     dateFrom: initialFilters.dateFrom || '',
     dateTo: initialFilters.dateTo || '',
   });
@@ -42,23 +42,7 @@ const AdvancedTransactionFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
-    if (name === 'ratingMin' || name === 'ratingMax') {
-      const num = parseFloat(value);
-
-      if (value === '') {
-        setFilters((prev) => ({ ...prev, [name]: '' }));
-        return;
-      }
-
-      if (isNaN(num) || num < 0 || num > 5) {
-        toast.error('Giá trị rating phải từ 0 đến 5');
-        return;
-      }
-
-      setFilters((prev) => ({ ...prev, [name]: num }));
-    } else {
-      setFilters((prev) => ({ ...prev, [name]: value }));
-    }
+    setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
@@ -76,9 +60,9 @@ const AdvancedTransactionFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
               onChange={handleChange}
             >
               <option value="">Tất cả</option>
-              <option value="in_stock">Còn hàng</option>
-              <option value="low_stock">Sắp hết</option>
-              <option value="out_of_stock">Hết hàng</option>
+              <option value="import">Nhập kho</option>
+              <option value="export">Xuất kho</option>
+              <option value="adjustment">Kiểm kê</option>
             </select>
           </div>
         </div>
@@ -93,11 +77,11 @@ const AdvancedTransactionFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
               onChange={handleChange}
             >
               <option value="">Tất cả</option>
-              {/* {IngredientGroup.map(( item ) => (
-                <option key={item} value={item}>
-                  {item}
+              {staffs?.map((staff) => (
+                <option key={staff._id} value={staff._id}>
+                  {staff.username?.trim() || 'Chưa có tên'}
                 </option>
-              ))} */}
+              ))}
             </select>
           </div>
         </div>
@@ -112,16 +96,16 @@ const AdvancedTransactionFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
               onChange={handleChange}
             >
               <option value="">Tất cả</option>
-              {/* {ingredientUnits.map(({ value, label }) => (
-                <option key={value} value={value}>
-                  {label}
+              {ingredients.map((ingr) => (
+                <option key={ingr._id} value={ingr._id}>
+                  {ingr.name}
                 </option>
-              ))} */}
+              ))}
             </select>
           </div>
         </div>
-        
-        {/* Giá */}
+
+        {/* Ngày */}
         <div className="col-span-1">
           <label className="block mb-1 text-sm">Từ ngày</label>
           <div className="flex gap-8 flex-col">

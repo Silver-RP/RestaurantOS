@@ -71,9 +71,7 @@ export const warehouseTransactionsApi = async (
     params: IngredientFilterParams,
 ): Promise<{ data: any[]; total: number }> => {
     try {
-        console.log('Fetching warehouse transactions with params:', params);
         const res = await api.get('/inventory/inventory-transaction', { params });
-        console.log('Warehouse transactions response:', res.data);
         return res.data.data;
     } catch (error) {
         console.error('Error fetching warehouse transactions:', error);

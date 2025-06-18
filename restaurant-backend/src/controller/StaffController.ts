@@ -5,7 +5,7 @@ class StaffController {
   async getAllStaff(req: Request, res: Response) {
     try {
       const page = req.query.page ? parseInt(req.query.page as string) : 1;
-      const pageSize = req.query.pageSize ? parseInt(req.query.pageSize as string) : 10;
+      const pageSize = req.query.pageSize ? parseInt(req.query.pageSize as string) : 1000;
       const allStaff = await StaffService.getAllStaff(page, pageSize);
       return res.status(200).json(allStaff);
     } catch (error: any) {
