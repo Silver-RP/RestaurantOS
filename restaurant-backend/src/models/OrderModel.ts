@@ -39,6 +39,7 @@ export interface IOrder extends Document {
   order_type: 'DINE_IN' | 'ONLINE';
   delivery_time_type: 'ASAP' | 'SCHEDULED';
   scheduled_time?: Date | null;
+  voucher_id?: Types.ObjectId | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -108,6 +109,7 @@ const OrderSchema = new Schema<IOrder>(
       type: Date,
       default: null,
     },
+    voucher_id: { type: Schema.Types.ObjectId, ref: 'Voucher', default: null },
   },
   { timestamps: true },
 );

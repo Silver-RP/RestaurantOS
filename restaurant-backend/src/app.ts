@@ -23,6 +23,7 @@ import FavoriteRoutes from './routes/FavoriteRoutes';
 import AddressRouter from './routes/AddressRoutes';
 import PaymentRoutes from './routes/PaymentRoutes';
 import ingredientsRouter from './routes/IngredientsRouter';
+import VoucherRoutes from './routes/VoucherRoutes';
 
 import dotenv from 'dotenv';
 import connectDB from './config/db';
@@ -129,6 +130,7 @@ app.use('/api/address', AuthMiddleWare.verifyToken, AddressRouter);
 app.use('/api/payment', PaymentRoutes);
 
 app.use('/api/ingredients', AuthMiddleWare.verifyToken, ingredientsRouter);
+app.use('/api/voucher', VoucherRoutes);
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
   console.log('Mongo URI:', process.env.MONGO_URI);
