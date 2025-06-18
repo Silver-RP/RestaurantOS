@@ -11,7 +11,6 @@ import { getAllStaffApi } from '@/api/UserApi';
 import { fetchAllIngredients } from '@/api/IngredientsApi';
 import { IngredientInputItem, AuditItem } from "@/hooks/useIngredientsAdminLogic";
 import { InventoryTransactionResponse, InventoryTransactionFilterParams, SortField } from '@/types/InventoryType';
-import { IngredientResponse } from '../types/IngredientType';
 
 type SortDirection = 'asc' | 'desc';
 

@@ -1,8 +1,5 @@
 import { InventoryTransaction } from "../models/InventoryTransactionModel";
-import { InventoryDaily } from "../importData/inventoryModelSample/InventoryDailyModel";
-import IngredientModel, { IIngredient } from "../models/IngredientModel";
-import { InventoryDailyBatch, IInventoryDailyBatch } from "../models/InventoryDailyBatchModel";
-import { InventoryAdjustmentBatch } from "../models/InventoryAdjustmentBatchModel";
+import { IInventoryDailyBatch } from "../models/InventoryDailyBatchModel";
 import {
     buildMatchCriteria,
     addLookupStages,
@@ -23,7 +20,6 @@ import {
     createInventoryTransactions,
     projectionForInventoryTransaction
 } from "../utils/inventoryUtil";
-import mongoose from "mongoose";
 import dayjs from "dayjs";
 import { GetTransactionQuery, GetInventoryDailyQuery } from "../types/inventoryTypes";
 
@@ -107,127 +103,6 @@ class InventoryService {
         }
 
         return batch;
-    }
-    
-    
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    async createInventoryTransaction(data: any, userId: string) {
-        const {
-            transaction_type,
-            quantity,
-            transaction_date,
-            ingredient_id,
-            notes,
-            adjustment_id,
-        } = data;
-
-        const dateOnly = dayjs(transaction_date).startOf('day').toDate();
-
-        const newTransaction = await createTransaction({
-            transaction_type,
-            quantity,
-            transaction_date,
-            ingredient_id,
-            userId,
-            notes,
-            adjustment_id,
-        });
-
-        await updateInventoryDaily(transaction_type, quantity, ingredient_id, dateOnly, userId);
-
-        return newTransaction;
-    }
-
-    async getInventoryTransactionById(id: string): Promise<any> {
-        const transaction = await InventoryTransaction.findById(id)
-            .populate('ingredient_id', 'name unit')
-            .populate('user_id', 'name email')
-            .populate('adjustment_id', 'reason createdAt')
-            .lean();
-        if (!transaction) {
-            throw new Error('Transaction not found');
-        }
-        return transaction;
-    }
-
-    async getInventoryDaily(query: GetInventoryDailyQuery) {
-        const {
-            search,
-            page = 1,
-            limit = 12,
-            sort = 'inventory_date:desc',
-        } = query;
-
-        const pipeline: any[] = [];
-
-        addLookupStages(pipeline);
-
-        const match = buildMatchCriteria(query, 'inventory_date', false);
-        if (Object.keys(match).length > 0) {
-            pipeline.push({ $match: match });
-        }
-
-        if (search) {
-            addSearchStage(pipeline, search);
-        }
-
-        addSortStage(pipeline, sort);
-        addPaginationStage(pipeline, page, limit);
-
-        const projectionForInventoryDaily = {
-            _id: 1,
-            inventory_date: 1,
-            ingredient: {
-                _id: '$ingredient._id',
-                name: '$ingredient.name',
-                unit: '$ingredient.unit',
-            },
-            total_import_quantity: 1,
-            total_export_quantity: 1,
-            total_adjustment_quantity: 1,
-            current_quantity: 1,
-            createdAt: 1,
-            updatedAt: 1,
-        };
-
-
-        addProjectionStage(pipeline, projectionForInventoryDaily);
-
-        const [data, total] = await getCountAndData(InventoryDaily, pipeline);
-
-        return buildResponse(data, page, limit, total);
-    }
-
-    async getInventoryDailyById(id: string): Promise<any> {
-        const daily = await InventoryDaily.findById(id)
-            .populate('ingredient_id', 'name unit')
-            .populate('user_id', 'name email')
-            .lean();
-
-        if (!daily) {
-            throw new Error('Inventory daily not found');
-        }
-
-        return daily;
     }
 
 

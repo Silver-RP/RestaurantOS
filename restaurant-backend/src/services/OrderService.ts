@@ -379,7 +379,6 @@ class OrderService {
     await InventoryTransaction.insertMany(transactions, { session });
   }
   
-
   async placeOrder(input: any) {
     const {
       userId,
@@ -874,57 +873,6 @@ class OrderService {
     }
   }
 
-  // mapDeliveryStatusToOrderStatus(
-  //   deliveryStatus: Status,
-  //   orderType: 'DINE_IN' | 'ONLINE',
-  // ): OrderStatus {
-  //   if (orderType === 'DINE_IN') {
-  //     switch (deliveryStatus) {
-  //       case Status.PENDING_PICKUP:
-  //         return OrderStatus.PREPARING;
-  //       case Status.PICKED_UP:
-  //       case Status.IN_TRANSIT:
-  //         return OrderStatus.SHIPPING;
-  //       case Status.DELIVERED:
-  //         return OrderStatus.COMPLETED;
-  //       case Status.DELIVERY_FAILED:
-  //         return OrderStatus.PENDING;
-  //       case Status.RETURN_REQUESTED:
-  //       case Status.RETURNED:
-  //         return OrderStatus.RETURNED;
-  //       case Status.CANCELLED:
-  //         return OrderStatus.CANCELLED;
-  //       default:
-  //         return OrderStatus.PENDING;
-  //     }
-  //   } else if (orderType === 'ONLINE') {
-  //     switch (deliveryStatus) {
-  //       case Status.PENDING:
-  //         return OrderStatus.PENDING;
-  //       case Status.PENDING_PICKUP:
-  //         return OrderStatus.PREPARING;
-  //       case Status.PICKED_UP:
-  //       case Status.IN_TRANSIT:
-  //         return OrderStatus.SHIPPING;
-  //       case Status.DELIVERED:
-  //         return OrderStatus.COMPLETED;
-  //       case Status.DELIVERY_FAILED:
-  //         return OrderStatus.CANCELLED;
-  //       case Status.RETURN_REQUESTED:
-  //       case Status.RETURNED:
-  //         return OrderStatus.RETURNED;
-  //       case Status.CANCEL_REQUESTED:
-  //         return OrderStatus.CANCEL_REQUESTED;
-  //       case Status.CANCELLED:
-  //         return OrderStatus.CANCELLED;
-  //       default:
-  //         return OrderStatus.PENDING;
-  //     }
-  //   }
-
-  //   return OrderStatus.PENDING;
-  // }
-
   async cancelOrder(orderId: mongoose.Types.ObjectId, reason: string) {
     try {
       const order = await Order.findById(orderId);
@@ -1000,34 +948,6 @@ class OrderService {
       };
     }
   }
-
-  // async requestCancel(orderId: mongoose.Types.ObjectId, reason: string) {
-  //   try {
-  //     const order = await Order.findById(orderId);
-  //     if (!order) {
-  //       throw { statusCode: 404, message: 'Order not found' };
-  //     }
-
-  //     if (order.status !== 'PREPARING' || order.delivery_status !== 'PENDING_PICKUP') {
-  //       throw {
-  //         statusCode: 400,
-  //         message:
-  //           'Cancel request chỉ được phép khi status = PREPARING và delivery_status = PENDING_PICKUP',
-  //       };
-  //     }
-  //     order.status = 'CANCEL_REQUESTED';
-  //     order.delivery_status = 'CANCEL_REQUESTED';
-  //     order.cancelled_at = new Date();
-  //     order.cancelled_reason = reason;
-  //     await order.save();
-  //     return order;
-  //   } catch (error: any) {
-  //     throw {
-  //       statusCode: error.statusCode || 500,
-  //       message: error.message || 'Error requesting cancel',
-  //     };
-  //   }
-  // }
 
   async sendOrderConfirmationEmail(orderId: Types.ObjectId) {
     const order = await Order.findById(orderId)
