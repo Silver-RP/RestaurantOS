@@ -21,6 +21,7 @@ const VoucherForm: React.FC<VoucherFormProps> = ({
   const navigate = useNavigate();
   const [code, setCode] = useState(initialData?.code || '');
   const [description, setDescription] = useState(initialData?.description || '');
+  const [type, setType] = useState(initialData?.type || 'public');
   const [discountType, setDiscountType] = useState<'percent' | 'fixed'>(initialData?.discount_type || 'percent');
   const [discountValue, setDiscountValue] = useState<number | ''>(
     initialData?.discount_value || '',
@@ -64,6 +65,7 @@ const VoucherForm: React.FC<VoucherFormProps> = ({
     const dataToSend: Partial<Voucher> = {
       code,
       description: description || undefined,
+      type,
       discount_type: discountType,
       discount_value: discountValue,
       max_discount_value: typeof maxDiscountValue === 'number' ? maxDiscountValue : undefined,
@@ -103,6 +105,26 @@ const VoucherForm: React.FC<VoucherFormProps> = ({
 
           <div>
             <label className="block mb-1 text-sm font-medium text-admintext">
+              Loại voucher
+              {!initialData && <span className="text-red-600 ml-1">*</span>}
+            </label>
+            <div className="relative">
+              <select
+                value={type}
+                onChange={(e) => setType(e.target.value as 'public' | 'private')}
+                className="appearance-none border rounded px-4 py-2 w-full pr-10 text-sm"
+                required={!initialData}
+                disabled={!!initialData}
+              >
+                <option value="public">Công khai</option>
+                <option value="private">Riêng tư</option>
+              </select>
+              <FaChevronDown className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 pointer-events-none" />
+            </div>
+          </div>
+
+          <div>
+            <label className="block mb-1 text-sm font-medium text-admintext">
               Mô tả
             </label>
             <textarea
@@ -130,7 +152,7 @@ const VoucherForm: React.FC<VoucherFormProps> = ({
                 </option>
               ))}
             </select>
-            <FaChevronDown className="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-500 pointer-events-none" />
+            <FaChevronDown className="absolute top-2/3 right-3 transform -translate-y-1/2 text-gray-500 pointer-events-none" />
           </div>
 
           <div>

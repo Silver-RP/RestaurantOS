@@ -5,6 +5,8 @@ import {
   getVoucherById,
   updateVoucher,
   deleteVoucher,
+  getPublicActiveVouchers,
+  saveVoucherForUser,
 } from '../api/VoucherApi';
 import { Voucher } from '../types/Voucher.type';
 import { toast } from 'react-toastify';
@@ -15,10 +17,23 @@ interface BackendErrorResponse {
   message?: string;
 }
 
-export const useVouchers = () => {
+interface VoucherFilterParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  sort?: string;
+  status?: 'active' | 'inactive' | 'expired' | 'out_of_stock';
+  discount_type?: 'percent' | 'fixed';
+  min_discount_value?: number;
+  max_discount_value?: number;
+  min_order_value?: number;
+  max_order_value?: number;
+}
+
+export const useVouchers = (params?: VoucherFilterParams) => {
   return useQuery({
-    queryKey: ['vouchers'],
-    queryFn: () => getAllVouchers().then(res => res.data),
+    queryKey: ['vouchers', params],
+    queryFn: () => getAllVouchers(params).then(res => res.data),
   });
 };
 
@@ -113,5 +128,26 @@ export const useVoucherById = (id: string) => {
     queryKey: ['voucher', id],
     queryFn: () => getVoucherById(id).then(res => res.data),
     enabled: !!id,
+  });
+};
+
+export const useSaveVoucher = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (voucherId: string) => saveVoucherForUser(voucherId).then(res => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['public-active-vouchers'] });
+      toast.success('Lưu mã voucher thành công!');
+    },
+    onError: (err: AxiosError<BackendErrorResponse>) => {
+      toast.error(err?.response?.data?.error || err?.response?.data?.message || 'Lưu mã voucher thất bại!');
+    },
+  });
+};
+
+export const usePublicActiveVouchers = (params?: { page?: number; limit?: number }) => {
+  return useQuery({
+    queryKey: ['public-active-vouchers', params],
+    queryFn: () => getPublicActiveVouchers(params).then(res => res.data),
   });
 }; 
