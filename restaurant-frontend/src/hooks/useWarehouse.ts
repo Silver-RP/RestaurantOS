@@ -178,7 +178,6 @@ export function useWarehouseTransactionView() {
   const [showExportMenu, setShowExportMenu] = useState(false);
   const exportMenuRef = useRef<HTMLDivElement | null>(null);
   const [search, setSearch] = useState('');
-  const navigate = useNavigate();
 
   const transactionList = transactions?.docs || [];
 
@@ -281,7 +280,6 @@ export function useWarehouseTransactionView() {
     exportMenuRef,
     search,
     setSearch,
-    navigate,
     transactionList,
     handleSort,
     handleEnter,

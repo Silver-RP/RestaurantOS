@@ -3,7 +3,6 @@ import { useWarehouseTransactionView } from '../../../../hooks/useWarehouse';
 import {
   FaArrowDown,
   FaArrowUp,
-  FaEdit,
   FaSearch,
   FaSort,
   FaFileDownload,
@@ -13,7 +12,6 @@ import {
   FaFilter,
 } from 'react-icons/fa';
 import AdvancedTransactionFilterPanel from './AdvancedTransactionFilterPanel';
-import { GiWheat } from 'react-icons/gi';
 import AdminPagination from '../AdminPagination';
 
 const WarehouseTransactionViewPage: React.FC = () => {
@@ -31,7 +29,6 @@ const WarehouseTransactionViewPage: React.FC = () => {
     setShowFilterPanel,
     search,
     setSearch,
-    navigate,
     transactionList,
     handleSort,
     handleEnter,
@@ -42,21 +39,12 @@ const WarehouseTransactionViewPage: React.FC = () => {
     handleDownloadInventoryCsv,
     handleDownloadInventoryPdf,
   } = useWarehouseTransactionView();
-  const [selectedTransactionId, setSelectedTransactionId] = React.useState<
-    string | null
-  >(null);
-
+  
   const renderSortIcon = (field: typeof sortField) => {
     const iconType = getSortIcon(field);
     if (iconType === 'asc') return <FaArrowUp />;
     if (iconType === 'desc') return <FaArrowDown />;
     return <FaSort />;
-  };
-
-  const handleViewTransactionDetail = (transactionId: string) => {
-    if (selectedTransactionId !== transactionId) {
-      setSelectedTransactionId(transactionId);
-    }
   };
 
   return (
@@ -232,8 +220,6 @@ const WarehouseTransactionViewPage: React.FC = () => {
                     Lý do (điều chỉnh){' '}
                   </span>
                 </th>
-
-                <th className="px-4 py-2 ">Hành động</th>
               </tr>
             </thead>
             <tbody>
@@ -261,33 +247,7 @@ const WarehouseTransactionViewPage: React.FC = () => {
                   <td className="px-4 py-2">{transaction.quantity}</td>
                   <td className="px-4 py-2">{transaction.user.name}</td>
                   <td className="px-4 py-2">{transaction.notes}</td>
-                  <td className="px-4 py-2">
-                    {transaction.adjustment_batch?.reason}
-                  </td>
-                  <td className="px-4 py-2 space-x-2">
-                    <button
-                      className="relative group text-blue-500 hover:underline"
-                      onClick={() =>
-                        navigate(`/admin/foods/edit/${transaction._id}`)
-                      }
-                    >
-                      <FaEdit size={18} />
-                      <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 normal-case">
-                        Chỉnh sửa
-                      </span>
-                    </button>
-                    <button
-                      className="relative group text-blue-500 hover:underline"
-                      onClick={() =>
-                        handleViewTransactionDetail(transaction._id)
-                      }
-                    >
-                      <GiWheat size={18} />
-                      <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 normal-case">
-                        Nguyên liệu
-                      </span>
-                    </button>
-                  </td>
+                  <td className="px-4 py-2">{transaction.adjustment_batch?.reason}</td>
                 </tr>
               ))}
             </tbody>
@@ -315,15 +275,6 @@ const WarehouseTransactionViewPage: React.FC = () => {
         </div>
       )}
 
-      {/* Transaction Detail  */}
-
-      {/* {selectedDishId && (
-        <FoodIngredientsModal
-          dishId={selectedDishId}
-          open={true}
-          onClose={handleCloseFoodIngredientsModal}
-        />
-      )} */}
     </div>
   );
 };
