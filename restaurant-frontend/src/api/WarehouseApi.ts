@@ -78,3 +78,48 @@ export const warehouseTransactionsApi = async (
         throw error;
     }
 }
+
+export const downloadInventoryExcelApi = async (
+    params: IngredientFilterParams,
+): Promise<Blob> => {
+    try {
+        const res = await api.get('/inventory/inventory-transaction/export-excel', {
+            params,
+            responseType: 'blob',
+        });
+        return res.data;
+    } catch (error) {
+        console.error('Error downloading inventory Excel:', error);
+        throw error;
+    }
+}
+
+export const downloadInventoryCsvApi = async (
+    params: IngredientFilterParams,
+): Promise<Blob> => {
+    try {
+        const res = await api.get('/inventory/inventory-transaction/export-csv', {
+            params,
+            responseType: 'blob',
+        });
+        return res.data;
+    } catch (error) {
+        console.error('Error downloading inventory CSV:', error);
+        throw error;
+    }
+}
+
+export const downloadInventoryPdfApi = async (
+    params: IngredientFilterParams,
+): Promise<Blob> => {
+    try {
+        const res = await api.get('/inventory/inventory-transaction/export-pdf', {
+            params,
+            responseType: 'blob',
+        });
+        return res.data;
+    } catch (error) {
+        console.error('Error downloading inventory PDF:', error);
+        throw error;
+    }
+}

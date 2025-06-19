@@ -1,11 +1,11 @@
 import { InventoryTransaction } from '../models/InventoryTransactionModel';
-import { InventoryDaily } from '../importData/inventoryModelSample/InventoryDailyModel';
 import mongoose, { Types } from 'mongoose';
 import dayjs from 'dayjs';
 import { IInventoryDailyBatch, InventoryDailyBatch } from '../models/InventoryDailyBatchModel';
 import IngredientModel from '../models/IngredientModel';
 import { InventoryAdjustmentBatch } from '../models/InventoryAdjustmentBatchModel';
-
+import PDFDocument from 'pdfkit';
+import path from "path";
 
 interface TransactionItem {
     ingredient_id: Types.ObjectId;
@@ -106,18 +106,18 @@ export function addSortStage(pipeline: any[], sort: string) {
     if (sort === 'transaction_type_asc' || sort === 'transaction_type_desc') {
         pipeline.push({
             $addFields: {
-              transaction_type_order: {
-                $switch: {
-                  branches: [
-                    { case: { $eq: ['$transaction_type', 'export'] }, then: 0 },
-                    { case: { $eq: ['$transaction_type', 'import'] }, then: 1 },
-                    { case: { $eq: ['$transaction_type', 'adjustment'] }, then: 2 },
-                  ],
-                  default: 3,
+                transaction_type_order: {
+                    $switch: {
+                        branches: [
+                            { case: { $eq: ['$transaction_type', 'export'] }, then: 0 },
+                            { case: { $eq: ['$transaction_type', 'import'] }, then: 1 },
+                            { case: { $eq: ['$transaction_type', 'adjustment'] }, then: 2 },
+                        ],
+                        default: 3,
+                    },
                 },
-              },
             },
-          });
+        });
         pipeline.push({
             $sort: {
                 transaction_type_order: sort === 'transaction_type_asc' ? 1 : -1,
@@ -213,84 +213,6 @@ export function buildResponse(docs: any[], page: number, limit: number | undefin
         offset: paginated ? (page - 1) * limit! : 0,
         pagingCounter: paginated ? (page - 1) * limit! + 1 : 1,
     };
-}
-
-
-// Create Inventory Transaction + Daily Service
-
-export async function calculateInitialQuantityBeforeDate(ingredientId: string, date: Date): Promise<number> {
-    const result = await InventoryTransaction.aggregate([
-        {
-            $match: {
-                ingredient_id: ingredientId,
-                transaction_date: { $lt: date },
-            },
-        },
-        {
-            $group: {
-                _id: null,
-                total: {
-                    $sum: {
-                        $cond: [
-                            { $in: ['$transaction_type', ['import', 'adjustment']] }, '$quantity',
-                            { $multiply: ['$quantity', -1] },
-                        ]
-                    }
-                },
-            },
-        },
-    ]);
-
-    return result.length > 0 ? result[0].total : 0;
-}
-
-export async function createTransaction(transactionData: any) {
-    return InventoryTransaction.create({
-        ...transactionData,
-        user_id: transactionData.userId,
-        adjustment_id: transactionData.adjustment_id || null,
-    });
-}
-
-export async function updateInventoryDaily(transaction_type: string, quantity: number, ingredient_id: string, dateOnly: Date, userId: string) {
-    const daily = await InventoryDaily.findOne({ ingredient_id, inventory_date: dateOnly });
-
-    const { imported_quantity, exported_quantity } = calculateQuantities(transaction_type, quantity);
-
-    if (daily) {
-        await updateExistingDaily(daily, imported_quantity, exported_quantity);
-    } else {
-        await createNewDaily(ingredient_id, dateOnly, userId, imported_quantity, exported_quantity);
-    }
-}
-
-export function calculateQuantities(transaction_type: string, quantity: number) {
-    return {
-        imported_quantity: transaction_type === 'import' ? quantity : 0,
-        exported_quantity: transaction_type === 'export' ? quantity : 0,
-    };
-}
-
-export async function updateExistingDaily(daily: any, imported_quantity: number, exported_quantity: number) {
-    daily.imported_quantity += imported_quantity;
-    daily.exported_quantity += exported_quantity;
-    daily.actual_remaining_quantity = daily.initial_quantity + daily.imported_quantity - daily.exported_quantity;
-    await daily.save();
-}
-
-export async function createNewDaily(ingredient_id: string, dateOnly: Date, userId: string, imported_quantity: number, exported_quantity: number) {
-    const initial_quantity = await calculateInitialQuantityBeforeDate(ingredient_id, dateOnly);
-    const actual_remaining_quantity = initial_quantity + imported_quantity - exported_quantity;
-
-    await InventoryDaily.create({
-        inventory_date: dateOnly,
-        ingredient_id,
-        user_id: userId,
-        initial_quantity,
-        imported_quantity,
-        exported_quantity,
-        actual_remaining_quantity,
-    });
 }
 
 // createInventoryBatch function
@@ -452,4 +374,148 @@ export async function createInventoryTransactions({ type, items, batch_date, use
             adjustment_batch_id: null,
         }))
     );
+}
+
+// Create export functions for PDF
+
+export function validateQueryParams(query: any, match: any): void {
+    if (query.from && query.to) {
+        const fromDate = new Date(query.from);
+        const toDate = new Date(query.to);
+
+        if (isNaN(fromDate.getTime()) || isNaN(toDate.getTime())) {
+            throw new Error('Invalid date format');
+        }
+
+        match.transaction_date = {
+            $gte: fromDate,
+            $lte: toDate,
+        };
+    }
+
+    if (query.ingredient_id) {
+        if (!mongoose.Types.ObjectId.isValid(query.ingredient_id)) {
+            throw new Error('Invalid ingredient_id format');
+        }
+        match.ingredient_id = new mongoose.Types.ObjectId(query.ingredient_id);
+    }
+
+    if (query.transaction_type) {
+        match.transaction_type = query.transaction_type;
+    }
+}
+
+export async function createPdfDocument(transactions: any[]): Promise<Buffer> {
+    return new Promise((resolve, reject) => {
+        try {
+            const doc = new PDFDocument({
+                margin: 30,
+                bufferPages: true
+            });
+
+            const buffers: Buffer[] = [];
+
+            doc.on('data', (chunk: Buffer) => {
+                buffers.push(chunk);
+            });
+
+            doc.on('end', () => {
+                try {
+                    const pdfBuffer = Buffer.concat(buffers);
+                    console.log(`✅ PDF created successfully, size: ${pdfBuffer.length} bytes`);
+                    resolve(pdfBuffer);
+                } catch (error) {
+                    reject(new Error(`Failed to concatenate PDF buffers: ${error}`));
+                }
+            });
+
+            doc.on('error', (err: Error) => {
+                console.error('❌ PDF generation error:', err);
+                reject(err);
+            });
+
+            generatePdfContent(doc, transactions);
+
+            doc.end();
+
+        } catch (error) {
+            reject(new Error(`PDF creation failed: ${error}`));
+        }
+    });
+}
+
+export function generatePdfContent(doc: any, transactions: any[]): void {
+    try {
+
+        const fontPath = path.resolve(__dirname, '../../public/assets/fonts/Roboto-Regular.ttf');
+        doc.registerFont('Roboto', fontPath);
+        doc.font('Roboto');
+        doc.fontSize(16)
+            .text('Danh sách giao dịch kho', { align: 'center' });
+        doc.moveDown(1);
+
+        doc.fontSize(12)
+            .text(`Tổng số giao dịch: ${transactions.length}`, { align: 'left' });
+        doc.text(`Ngày xuất báo cáo: ${new Date().toLocaleDateString('vi-VN')}`);
+        doc.moveDown(1);
+
+        if (transactions.length === 0) {
+            doc.text('Không có giao dịch nào được tìm thấy.', { align: 'center' });
+        } else {
+            transactions.forEach((tx, index) => {
+                try {
+                    const ingredientName = tx.ingredient_id?.name || 'N/A';
+                    const username = tx.user_id?.username || 'N/A';
+                    const transactionType = translateType(tx.transaction_type || '');
+                    const quantity = tx.quantity || 0;
+                    const date = tx.transaction_date ?
+                        new Date(tx.transaction_date).toLocaleDateString('vi-VN') : 'N/A';
+                    const notes = tx.notes || 'Không có ghi chú';
+
+                    const line = `${index + 1}. [${transactionType}] ` +
+                        `Nguyên liệu: ${ingredientName}, ` +
+                        `Số lượng: ${quantity}, ` +
+                        `Ngày: ${date}, ` +
+                        `Người thao tác: ${username}, ` +
+                        `Ghi chú: ${notes}`;
+
+                    doc.fontSize(10).text(line, {
+                        width: doc.page.width - 60,
+                        align: 'left'
+                    });
+                    doc.moveDown(0.5);
+
+                    if (doc.y > doc.page.height - 100) {
+                        doc.addPage();
+                    }
+
+                } catch (itemError) {
+                    console.error(`❌ Error processing transaction ${index}:`, itemError);
+                    doc.text(`${index + 1}. Lỗi xử lý giao dịch này`);
+                    doc.moveDown(0.5);
+                }
+            });
+        }
+
+        const currentDate = new Date();
+        const formattedDate = currentDate.toLocaleDateString('vi-VN');
+        const formattedTime = currentDate.toLocaleTimeString('vi-VN');
+
+        doc.fontSize(8)
+            .text(`Được tạo bởi hệ thống quản lý kho - ${formattedDate} ${formattedTime}`,
+                30, doc.page.height - 50, { align: 'center' });
+
+    } catch (error) {
+        console.error('❌ Error generating PDF content:', error);
+        throw error;
+    }
+}
+
+export function translateType(type: string): string {
+    switch (type.toLowerCase()) {
+        case 'import': return 'Nhập kho';
+        case 'export': return 'Xuất kho';
+        case 'adjustment': return 'Điều chỉnh';
+        default: return type || 'Không xác định';
+    }
 }

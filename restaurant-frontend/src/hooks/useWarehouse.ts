@@ -1,16 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import {
   warehouseImportIngredientsApi,
   warehouseExportIngredientApi,
   warehouseAuditApi,
-  warehouseTransactionsApi
+  warehouseTransactionsApi,
+  downloadInventoryExcelApi,
+  downloadInventoryCsvApi,
+  downloadInventoryPdfApi,
 } from '@/api/WarehouseApi';
 import { getAllStaffApi } from '@/api/UserApi';
 import { fetchAllIngredients } from '@/api/IngredientsApi';
 import { IngredientInputItem, AuditItem } from "@/hooks/useIngredientsAdminLogic";
-import { InventoryTransactionResponse, InventoryTransactionFilterParams, SortField } from '@/types/InventoryType';
+import { InventoryTransactionResponse, SortField } from '@/types/InventoryType';
+import { downloadFileFromApi } from '@/utils/downloadUtil';
+import { warehouseParseFiltersFromSearchParams } from '@/utils/paramsUtil';
 
 type SortDirection = 'asc' | 'desc';
 
@@ -105,8 +110,8 @@ export function useWarehouseExport({ items, onSuccess }: {
   return { handleSubmit };
 }
 
-export function useWarehouseAudit({ items, onSuccess }: {items: AuditItem[];onSuccess: () => void;}) 
-  {const handleSubmit = async () => {
+export function useWarehouseAudit({ items, onSuccess }: { items: AuditItem[]; onSuccess: () => void; }) {
+  const handleSubmit = async () => {
     if (items.length === 0) {
       toast.error('Chưa có nguyên liệu nào để kiểm kê!');
       return;
@@ -117,10 +122,10 @@ export function useWarehouseAudit({ items, onSuccess }: {items: AuditItem[];onSu
         !i.ingredientId?.trim() ||
         i.estimatedQuantity == null || i.estimatedQuantity < 0 ||
         i.actualQuantity == null || i.actualQuantity < 0;
-    
+
       const hasDifference = i.actualQuantity !== i.estimatedQuantity;
       const missingReason = hasDifference && (!i.reason || i.reason.trim() === '');
-    
+
       return missingBasicFields || missingReason;
     });
 
@@ -170,18 +175,20 @@ export function useWarehouseTransactionView() {
   const [sortField, setSortField] = useState<SortField>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const exportMenuRef = useRef<HTMLDivElement | null>(null);
   const [search, setSearch] = useState('');
   const navigate = useNavigate();
 
   const transactionList = transactions?.docs || [];
 
   const sortMapping: Record<string, Record<SortDirection, string>> = {
-    transaction_type : {asc: 'transaction_type_asc', desc: 'transaction_type_desc'},
-    transaction_date: {asc: 'transaction_date_asc', desc: 'transaction_date_desc'},
-    ingredient_name: {asc: 'ingredient_name_asc', desc: 'ingredient_name_desc'},
-    units: {asc: 'unit_asc', desc: 'unit_desc'},
-    quantity: {asc: 'quantity_asc', desc: 'quantity_desc'},
-    user_name: {asc: 'user_name_asc', desc: 'user_name_desc'},
+    transaction_type: { asc: 'transaction_type_asc', desc: 'transaction_type_desc' },
+    transaction_date: { asc: 'transaction_date_asc', desc: 'transaction_date_desc' },
+    ingredient_name: { asc: 'ingredient_name_asc', desc: 'ingredient_name_desc' },
+    units: { asc: 'unit_asc', desc: 'unit_desc' },
+    quantity: { asc: 'quantity_asc', desc: 'quantity_desc' },
+    user_name: { asc: 'user_name_asc', desc: 'user_name_desc' },
   };
 
   const updateSearchParams = (callback: (params: URLSearchParams) => void) => {
@@ -226,7 +233,38 @@ export function useWarehouseTransactionView() {
     export: 'Xuất kho',
     adjustment: 'Kiểm kê',
   };
-    
+
+  const handleClickOutside = (event: MouseEvent) => {
+      if (exportMenuRef.current && !exportMenuRef.current.contains(event.target as Node)) {
+          setShowExportMenu(false);
+      }
+  };
+
+  useEffect(() => {
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const filters = warehouseParseFiltersFromSearchParams(searchParams);
+  const handleDownloadInventoryExcel = async () => {
+    const res = await downloadInventoryExcelApi(filters);
+    const response = new Response(res);
+    await downloadFileFromApi(response, 'inventory_transactions.xlsx');
+  };
+
+  const handleDownloadInventoryCsv = async () => {
+    const res = await downloadInventoryCsvApi(filters);
+    const response = new Response(res);
+    await downloadFileFromApi(response, 'inventory_transactions.csv');
+  };
+
+  const handleDownloadInventoryPdf = async () => {
+    const res = await downloadInventoryPdfApi(filters);
+    const response = new Response(res);
+    await downloadFileFromApi(response, 'inventory_transactions.pdf');
+  };
 
   return {
     transactions,
@@ -238,6 +276,9 @@ export function useWarehouseTransactionView() {
     sortDirection,
     showFilterPanel,
     setShowFilterPanel,
+    showExportMenu,
+    setShowExportMenu,
+    exportMenuRef,
     search,
     setSearch,
     navigate,
@@ -246,7 +287,10 @@ export function useWarehouseTransactionView() {
     handleEnter,
     handleClick: applySearch,
     getSortIcon,
-    transactionTypeLabels
+    transactionTypeLabels,
+    handleDownloadInventoryExcel,
+    handleDownloadInventoryCsv,
+    handleDownloadInventoryPdf
   };
 }
 
@@ -256,25 +300,6 @@ export function getWarahouseTransactionHistory() {
   const [error, setError] = useState<string | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const parseFiltersFromSearchParams = (params: URLSearchParams): InventoryTransactionFilterParams => {
-    const getNumber = (key: string) => {
-      const val = params.get(key);
-      return val ? Number(val) : undefined;
-    };
-
-    return {
-      page: getNumber('page') || 1,
-      limit: getNumber('limit') || 12,
-      sort: params.get('sort') || 'default',
-      search: params.get('keyword') || undefined,
-      transaction_type: params.get('transactionType') || undefined,
-      ingredient_id: params.get('ingredientId') || undefined,
-      from: params.get('dateFrom') || undefined,
-      to: params.get('dateTo') || undefined,
-      user_id: params.get('userId') || undefined,
-    };
-  };
-
   useEffect(() => {
     let isMounted = true;
 
@@ -283,11 +308,11 @@ export function getWarahouseTransactionHistory() {
       setError(null);
 
       try {
-        const filters = parseFiltersFromSearchParams(searchParams);
+        const filters = warehouseParseFiltersFromSearchParams(searchParams);
         const data = await warehouseTransactionsApi(filters);
 
         if (isMounted) {
-          setTransactions(data as unknown as InventoryTransactionResponse); 
+          setTransactions(data as unknown as InventoryTransactionResponse);
           setError(null);
         }
       } catch (err) {
@@ -328,7 +353,7 @@ export function useWarehouseTransactionFilterPanel() {
     };
 
     const fetchIngredients = async () => {
-      const ingredients = await fetchAllIngredients({limit: 1000, page: 1, sort: 'nameAZ'});
+      const ingredients = await fetchAllIngredients({ limit: 1000, page: 1, sort: 'nameAZ' });
       setIngredients(ingredients.docs as unknown as any[]);
     };
 

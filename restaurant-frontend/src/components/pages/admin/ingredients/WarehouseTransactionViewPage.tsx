@@ -6,8 +6,12 @@ import {
   FaEdit,
   FaSearch,
   FaSort,
+  FaFileDownload,
+  FaFileExcel,
+  FaFileCsv,
+  FaFilePdf,
+  FaFilter,
 } from 'react-icons/fa';
-import { FiTrash2 } from 'react-icons/fi';
 import AdvancedTransactionFilterPanel from './AdvancedTransactionFilterPanel';
 import { GiWheat } from 'react-icons/gi';
 import AdminPagination from '../AdminPagination';
@@ -19,6 +23,9 @@ const WarehouseTransactionViewPage: React.FC = () => {
     error,
     searchParams,
     setSearchParams,
+    showExportMenu,
+    setShowExportMenu,
+    exportMenuRef,
     sortField,
     showFilterPanel,
     setShowFilterPanel,
@@ -31,6 +38,9 @@ const WarehouseTransactionViewPage: React.FC = () => {
     handleClick,
     getSortIcon,
     transactionTypeLabels,
+    handleDownloadInventoryExcel,
+    handleDownloadInventoryCsv,
+    handleDownloadInventoryPdf,
   } = useWarehouseTransactionView();
   const [selectedTransactionId, setSelectedTransactionId] = React.useState<
     string | null
@@ -76,23 +86,47 @@ const WarehouseTransactionViewPage: React.FC = () => {
         <div className="flex gap-4 items-center">
           <button
             onClick={() => setShowFilterPanel(!showFilterPanel)}
-            className="px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-100"
+            className="flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-100"
           >
+            <FaFilter className="mr-2" />
             {showFilterPanel ? 'Ẩn bộ lọc' : 'Hiện bộ lọc'}
           </button>
-          <button
-            onClick={() => navigate('/admin/foods/create')}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            + Thêm món
-          </button>
-          <button
-            onClick={() => navigate('/admin/foods/trash')}
-            className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-          >
-            <FiTrash2 />
-            <span>Đã xoá</span>
-          </button>
+
+          <div className="relative" ref={exportMenuRef}>
+            <button
+              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              onClick={() => setShowExportMenu(!showExportMenu)}
+            >
+              <FaFileDownload className="mr-2" />
+              Xuất file
+            </button>
+
+            {showExportMenu && (
+              <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-300 rounded shadow-lg z-10">
+                <button
+                  onClick={handleDownloadInventoryExcel}
+                  className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 w-full"
+                >
+                  <FaFileExcel className="mr-2" />
+                  Excel
+                </button>
+                <button
+                  onClick={handleDownloadInventoryCsv}
+                  className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 w-full"
+                >
+                  <FaFileCsv className="mr-2" />
+                  CSV
+                </button>
+                <button
+                  onClick={handleDownloadInventoryPdf}
+                  className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 w-full"
+                >
+                  <FaFilePdf className="mr-2" />
+                  PDF
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
       {showFilterPanel && (
@@ -118,7 +152,7 @@ const WarehouseTransactionViewPage: React.FC = () => {
           }}
         />
       )}
-      
+
       <div className="text-sm text-gray-700">
         Hiển thị <strong>{transactionList.length}</strong> trên tổng{' '}
         <strong>{transactions?.totalDocs || 0}</strong> giao dịch
@@ -206,7 +240,7 @@ const WarehouseTransactionViewPage: React.FC = () => {
               {transactionList.map((transaction, index) => (
                 <tr key={index} className="border-b hover:bg-gray-50">
                   <td className="px-4 py-2">{index + 1}</td>
-                 
+
                   <td className="px-4 py-2 font-medium">
                     {transactionTypeLabels[transaction.transaction_type] ||
                       'Không xác định'}
