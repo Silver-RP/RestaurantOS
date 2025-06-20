@@ -17,7 +17,7 @@ const inventoryDailyBatchSchema = new mongoose.Schema({
     batch_date: { type: Date, required: true },
     type: {
         type: String,
-        enum: ['import', 'audit'],
+        enum: ['import', 'export', 'audit', 'adjustment'],
         required: true,
     },
     user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },

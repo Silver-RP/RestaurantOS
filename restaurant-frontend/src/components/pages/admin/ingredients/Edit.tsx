@@ -42,7 +42,6 @@ const EditIngredientPage = () => {
     price_per_unit: number;
     lowStockThreshold?: number;
   }) => {
-    console.log('Submitting data:', data);
     updateIngredient(data, ingredient._id);
   };
 

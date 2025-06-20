@@ -8,6 +8,9 @@ import { useCRUDIngredients } from './useCRUDIngredients';
 import { fetchAllIngredients } from '../api/IngredientsApi';
 import { IngredientResponse, IngredientFilterParams } from '../types/IngredientType';
 import { useSearchParams } from 'react-router-dom';
+import { IngredientOption } from '../types/IngredientType';
+import { ingredientUnits } from '@/types/ingredientUnitsType';
+
 
 type SortField = 'name' | 'group' | 'unit' | 'price' | 'deletedAt' | 'currentStock' | 'stockStatus' | null;
 type SortDirection = 'asc' | 'desc';
@@ -93,11 +96,33 @@ export function useIngredientsAdminLogic() {
         return null;
     };
 
-    const formatQuantity = (count: number, unit: 'gram' | 'ml'): string => {
-        if (unit === 'gram' && count >= 1000) return `${(count / 1000).toFixed(1)} Kilogram`;
-        if (unit === 'ml' && count >= 1000) return `${(count / 1000).toFixed(1)} L`;
-        return `${count} ${unit}`;
-    }
+    const formatNumber = (num: number) => Number.isInteger(num) ? num.toString() : num.toFixed(1);
+
+    const formatQuantity = (count: number, unit: string): string => {
+        if (unit === 'mg') {
+            if (count >= 1_000_000) {
+                return `${formatNumber(count / 1_000_000)} Kilogram`;
+            }
+            if (count >= 1_000) {
+                return `${formatNumber(count / 1_000)} Gram`;
+            }
+        }
+
+        if (unit === 'gram') {
+            if (count >= 1_000) {
+                return `${formatNumber(count / 1_000)} Kilogram`;
+            }
+        }
+
+        if (unit === 'ml') {
+            if (count >= 1_000) {
+                return `${formatNumber(count / 1_000)} Lít`;
+            }
+        }
+
+        const unitLabel = ingredientUnits.find(u => u.value === unit)?.label || unit;
+        return `${formatNumber(count)} ${unitLabel}`;
+    };
 
     return {
         ingredients,
@@ -483,3 +508,135 @@ export function useIngredientsTrashLogic() {
         handleConfirmPermanentDelete,
     };
 }
+
+/* 
+    Hook to manage warehouse logic
+*/
+export interface IngredientInputItem {
+    ingredientId: string;
+    quantity: string;
+    unit: string;
+    note: string;
+}
+
+export function useIngredientInput(initial: IngredientInputItem[] = []) {
+    const [items, setItems] = useState<IngredientInputItem[]>(initial);
+    const [ingredientOptions, setIngredientOptions] = useState<IngredientOption[]>([]);
+
+    useEffect(() => {
+        const fetchOptions = async () => {
+            const res = await fetchAllIngredients({ limit: 1000, sort: 'nameAZ' });
+            setIngredientOptions(res.docs.map((ingredient: Ingredient) => ({
+                id: ingredient._id,
+                name: ingredient.name,
+                unit: ingredient.unit,
+                currentStock: ingredient.currentStock,
+            })));
+        };
+        fetchOptions();
+    }, []);
+
+    const addNewItem = () => {
+        setItems(prev => [
+            ...prev,
+            { ingredientId: '', quantity: '', unit: '', note: '' }
+        ]);
+    };
+
+    const updateItem = (index: number, field: keyof IngredientInputItem, value: string) => {
+        const updated = [...items];
+        updated[index][field] = value;
+        setItems(updated);
+    };
+
+    const deleteItem = (index: number) => {
+        const updated = [...items];
+        updated.splice(index, 1);
+        setItems(updated);
+    };
+
+    const reset = () => setItems(initial);
+
+    return {
+        items,
+        ingredientOptions,
+        setItems,
+        addNewItem,
+        updateItem,
+        deleteItem,
+        reset,
+    };
+}
+
+export interface AuditItem {
+    ingredientId: string;
+    unit?: string;
+    estimatedQuantity: number;
+    actualQuantity: number;
+    reason?: string;
+    note?: string;
+}
+
+export function useInventoryAuditInput(initial: AuditItem[] = []) {
+    const [items, setItems] = useState<AuditItem[]>(initial);
+    const [ingredientOptions, setIngredientOptions] = useState<IngredientOption[]>([]);
+
+    useEffect(() => {
+        const fetchOptions = async () => {
+            const res = await fetchAllIngredients({ limit: 1000, sort: 'nameAZ' });
+            setIngredientOptions(
+                res.docs.map((ingredient: Ingredient) => ({
+                    id: ingredient._id,
+                    name: ingredient.name,
+                    unit: ingredient.unit,
+                    currentStock: ingredient.currentStock,
+
+                }))
+            );
+        };
+        fetchOptions();
+    }, []);
+
+    const addNewItem = () => {
+        setItems((prev) => [
+            ...prev,
+            {
+                ingredientId: '',
+                unit: '',
+                estimatedQuantity: 0,
+                actualQuantity: 0,
+                reason: '',
+                note: '',
+            },
+        ]);
+    };
+
+    const updateItem = (index: number, field: keyof AuditItem, value: string | number) => {
+        const updated = [...items];
+        if (field === 'estimatedQuantity' || field === 'actualQuantity') {
+            updated[index][field] = value as number;
+        } else {
+            updated[index][field] = value as string;
+        }
+        setItems(updated);
+    };
+
+    const deleteItem = (index: number) => {
+        const updated = [...items];
+        updated.splice(index, 1);
+        setItems(updated);
+    };
+
+    const reset = () => setItems(initial);
+
+    return {
+        items,
+        ingredientOptions,
+        setItems,
+        addNewItem,
+        updateItem,
+        deleteItem,
+        reset,
+    };
+}
+

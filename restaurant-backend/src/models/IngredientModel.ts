@@ -25,7 +25,6 @@ const ingredientSchema = new mongoose.Schema({
   deletedAt: { type: Date, default: null },
 }, { timestamps: true });
 
-ingredientSchema.index({ name: 1 }, { unique: true });
 ingredientSchema.plugin(mongoosePaginate);
 
 export type IngredientModel = PaginateModel<IIngredient>;

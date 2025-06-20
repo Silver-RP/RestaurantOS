@@ -22,6 +22,8 @@ import CartRouter from './routes/CartRoutes';
 import FavoriteRoutes from './routes/FavoriteRoutes';
 import AddressRouter from './routes/AddressRoutes';
 import PaymentRoutes from './routes/PaymentRoutes';
+import IngredientsRouter from './routes/IngredientsRouter';
+import InventoryRoutes from './routes/InventoryRoutes';
 import DashboardRoutes from './routes/DashboardRoutes';
 import ingredientsRouter from './routes/IngredientsRouter';
 import VoucherRoutes from './routes/VoucherRoutes';
@@ -132,7 +134,8 @@ app.use('/api/favorite', AuthMiddleWare.verifyToken, FavoriteRoutes);
 app.use('/api/address', AuthMiddleWare.verifyToken, AddressRouter);
 app.use('/api/payment', PaymentRoutes);
 
-app.use('/api/ingredients', AuthMiddleWare.verifyToken, ingredientsRouter);
+app.use('/api/ingredients', AuthMiddleWare.verifyToken, IngredientsRouter);
+app.use('/api/inventory', AuthMiddleWare.verifyToken, InventoryRoutes);
 app.use('/api/voucher', VoucherRoutes);
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);

@@ -2,7 +2,7 @@ export type GetTransactionQuery = {
     search?: string;
     ingredient_id?: string;
     user_id?: string;
-    type?: 'import' | 'export' | 'adjustment';
+    transaction_type?: 'import' | 'export' | 'adjustment';
     from?: string;
     to?: string;
     page?: number;

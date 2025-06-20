@@ -32,7 +32,7 @@ class StaffService {
         limit: pageSize,
         select:
           '-password -otp -otpExpiry -googleId -facebookId -roles -default_address_id -isEmailVerifided -exprireAt -isVerified',
-        sort: { createdAt: -1 },
+        sort: { username: 1 },
         populate: {
           path: 'roles',
           select: 'name',
@@ -40,7 +40,6 @@ class StaffService {
       };
 
       const allStaff = await User.paginate(query, options);
-      console.log('allStaff', allStaff);
       return {
         status: 'SUCCESS',
         data: allStaff.docs,
