@@ -155,57 +155,53 @@ export default class VoucherService {
     return 'active';
   }
 
-  static async getPublicActiveVouchers(page = 1, limit = 6) {
-    const query = { type: 'public', status: 'active' };
+  static async getPublicActiveVouchers(page = 1, limit = 12, userId?: string) {
+    // Lấy các voucher public còn hạn sử dụng: status là 'active' hoặc 'out_of_stock'
+    const query = { type: 'public', status: { $in: ['active', 'out_of_stock'] } };
     const sortOption = { createdAt: -1 };
-    return Voucher.paginate(query, { page, limit, sort: sortOption });
+    const result = await Voucher.paginate(query, { page, limit, sort: sortOption });
+
+    if (userId) {
+      // Không gắn is_saved nữa, chỉ trả về danh sách voucher public còn hạn sử dụng
+    }
+    return result;
   }
 
   static async saveVoucherForUser(userId: string, voucherId: string): Promise<IUserVoucher> {
-    try {
-      // Validate ObjectIds
-      if (!Types.ObjectId.isValid(userId) || !Types.ObjectId.isValid(voucherId)) {
-        throw new Error('Invalid user ID or voucher ID');
-      }
-
-      // Check if voucher exists and is active
-      const voucher = await Voucher.findById(voucherId);
-      if (!voucher) {
-        throw new Error('Voucher not found');
-      }
-      if (voucher.status !== 'active') {
-        throw new Error('Voucher is not active');
-      }
-      if (voucher.type !== 'public') {
-        throw new Error('This voucher is not available for public use');
-      }
-
-      // Check if user already has this voucher
-      const existingRecord = await UserVoucher.findOne({
-        user_id: new Types.ObjectId(userId),
-        voucher_id: new Types.ObjectId(voucherId)
-      });
-
-      if (existingRecord) {
-        if (existingRecord.status === 'used') {
-          throw new Error('You have already used this voucher');
-        }
-        if (existingRecord.status === 'expired') {
-          throw new Error('This voucher has expired');
-        }
-        return existingRecord; // Return existing record if status is 'saved'
-      }
-
-      // Create new record
-      const record = await UserVoucher.create({
-        user_id: new Types.ObjectId(userId),
-        voucher_id: new Types.ObjectId(voucherId),
-        status: 'saved'
-      });
-
-      return record;
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to save voucher for user');
+    if (!Types.ObjectId.isValid(userId) || !Types.ObjectId.isValid(voucherId)) {
+      throw new Error('Invalid user ID or voucher ID');
     }
+    // Check nếu đã có thì trả về luôn
+    const existingRecord = await UserVoucher.findOne({
+      user_id: new Types.ObjectId(userId),
+      voucher_id: new Types.ObjectId(voucherId)
+    });
+    if (existingRecord) {
+      return existingRecord;
+    }
+    // Tạo mới
+    const record = await UserVoucher.create({
+      user_id: new Types.ObjectId(userId),
+      voucher_id: new Types.ObjectId(voucherId),
+      status: 'saved'
+    });
+    return record;
+  }
+
+  static async getUserVouchers(userId: string) {
+    if (!Types.ObjectId.isValid(userId)) throw new Error('Invalid user id');
+    // Lấy tất cả UserVoucher của user, populate thông tin voucher
+    const userVouchers = await UserVoucher.find({ user_id: userId }).populate('voucher_id');
+    // Trả về dạng [{...voucher, user_voucher_status: ...}]
+    return userVouchers.map(uv => {
+      const voucher = uv.voucher_id && typeof uv.voucher_id === 'object' && 'code' in uv.voucher_id ? uv.voucher_id.toObject() : {};
+      return {
+        ...voucher,
+        user_voucher_status: uv.status,
+        user_voucher_id: uv._id,
+        user_voucher_savedAt: uv.createdAt,
+        user_voucher_updatedAt: uv.updatedAt,
+      };
+    });
   }
 } 

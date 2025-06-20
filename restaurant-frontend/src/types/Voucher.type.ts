@@ -14,4 +14,13 @@ export interface Voucher {
   status: 'active' | 'inactive' | 'expired' | 'out_of_stock';
   created_at?: string;
   updated_at?: string;
+  is_saved?: boolean;
+  saved_status?: 'saved' | 'used' | 'expired';
+}
+
+export interface UserVoucherDisplay extends Voucher {
+  user_voucher_status: 'saved' | 'used' | 'expired';
+  user_voucher_id: string;
+  user_voucher_savedAt?: string;
+  user_voucher_updatedAt?: string;
 } 

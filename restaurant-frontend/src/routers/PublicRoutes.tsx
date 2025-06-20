@@ -27,6 +27,9 @@ import FavoritePage from '@/pages/FavoritePage';
 import MyReservationsPage from '@/pages/MyReservationsPage';
 import PaymentSuccess from '@/pages/PaymentSuccess';
 import PaymentFailed from '@/pages/PaymentFailed';
+import VoucherPage from '../pages/VoucherPage';
+import UserVoucherList from '@/components/pages/voucher/UserVoucherList';
+
 
 const PublicRoutes = [
   {
@@ -44,6 +47,7 @@ const PublicRoutes = [
       { path: 'verify-otp-email', element: <EnterOTPEmail /> },
       { path: 'profile', element: <ProfilePage /> },
       { path: 'profile/address', element: <AddressPage /> },
+      { path: 'profile/vouchers', element: <UserVoucherList /> },
       { path: 'menu', element: <MenuPage /> },
       { path: 'foods/:slug', element: <ProductDetail /> },
       { path: 'contact', element: <ContactUsPage /> },
@@ -60,6 +64,8 @@ const PublicRoutes = [
       { path: '/profile/my-reservation', element: <MyReservationsPage /> },
       { path: '/payment-success', element: <PaymentSuccess /> },
       { path: '/payment-failed', element: <PaymentFailed /> },
+      { path: 'vouchers', element: <VoucherPage /> },
+      { path: '/profile/user-vouchers', element: <UserVoucherList /> },
     ],
   },
 ];

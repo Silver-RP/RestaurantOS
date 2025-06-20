@@ -145,7 +145,11 @@ export default class VoucherController {
     try {
       const page = req.query.page ? Number(req.query.page) : 1;
       const limit = req.query.limit ? Number(req.query.limit) : 6;
-      const vouchers = await VoucherService.getPublicActiveVouchers(page, limit);
+      let userId: string | undefined = undefined;
+      if (req.user && ((req.user as any)._id || (req.user as any).id)) {
+        userId = (req.user as any)._id || (req.user as any).id;
+      }
+      const vouchers = await VoucherService.getPublicActiveVouchers(page, limit, userId);
       res.json(vouchers);
     } catch (err: any) {
       res.status(500).json({ error: err.message });
@@ -154,9 +158,10 @@ export default class VoucherController {
 
   static async saveVoucherForUser(req: Request, res: Response) {
     try {
-      // Lấy userId từ middleware (req.user._id)
-      const user = req.user as { _id?: string };
-      const userId = user && user._id;
+      if (!req.user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+      const userId = (req.user as any)._id || (req.user as any).id;
       const { voucherId } = req.body;
 
       // Validate input
@@ -187,6 +192,22 @@ export default class VoucherController {
       res.status(201).json(record);
     } catch (err: any) {
       console.error('Error in saveVoucherForUser:', err);
+      res.status(500).json({ error: err.message });
+    }
+  }
+
+  static async getUserVouchers(req: Request, res: Response) {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+      const userId = (req.user as any)._id || (req.user as any).id;
+      if (!userId) {
+        return res.status(401).json({ error: 'User not authenticated or token missing _id' });
+      }
+      const vouchers = await VoucherService.getUserVouchers(userId);
+      res.json(vouchers);
+    } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
   }
