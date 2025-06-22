@@ -352,6 +352,7 @@ class UserService {
       throw new Error('Failed to change password: ' + error.message);
     }
   }
+  
   async addUser(userData: Partial<IUser>): Promise<any> {
     try {
       const {
@@ -460,4 +461,6 @@ class UserService {
     }
   }
 }
+
+
 export default new UserService();

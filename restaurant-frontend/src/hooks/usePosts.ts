@@ -1,15 +1,38 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import PostsApi from '../api/PostsApi';
+import PostsApi, { PostsResponse, PostsQueryParams } from '../api/PostsApi';
 import { toast } from 'react-toastify';
+import { useSearchParams } from 'react-router-dom';
 
 export const POSTS_QUERY_KEY = ['posts'];
 
 export const usePosts = () => {
   const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const page = Number(searchParams.get('page')) || 1;
+  const limit = Number(searchParams.get('limit')) || 10;
+  const search = searchParams.get('search') || '';
+  const sortBy = searchParams.get('sortBy') || 'createdAt';
+  const sortOrder = searchParams.get('sortOrder') || 'desc';
+
+  const queryParams: PostsQueryParams = {
+    page,
+    limit,
+    search,
+    sortBy,
+    sortOrder: sortOrder as 'asc' | 'desc'
+  };
 
   const { data, isLoading: isLoadingPosts, error } = useQuery({
-    queryKey: POSTS_QUERY_KEY,
-    queryFn: PostsApi.getAllPosts,
+    queryKey: [...POSTS_QUERY_KEY, queryParams],
+    queryFn: async () => {
+      const response = await PostsApi.getAllPosts(queryParams);
+      return response;
+    },
+    placeholderData: (previousData) => previousData,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnWindowFocus: false
   });
 
   const { mutate: createPost, isPending: isCreating } = useMutation({
@@ -44,6 +67,8 @@ export const usePosts = () => {
     error,
     createPost,
     updatePost,
+    searchParams,
+    setSearchParams,
   };
 };
 
@@ -51,6 +76,8 @@ export const usePostById = (id: string) => {
   return useQuery({
     queryKey: ['post', id],
     queryFn: () => PostsApi.getPostById(id),
-    enabled: !!id, // chỉ chạy khi có id
+    enabled: !!id,
+    retry: 1,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };

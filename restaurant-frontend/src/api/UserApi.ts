@@ -88,7 +88,6 @@ export const toggleUserBlockStatus = async (userId: string) => {
   return res.data;
 };
 
-
 export const filterUsers = async (
   params: FilterUserParams,
 ): Promise<{
@@ -110,3 +109,9 @@ export const filterUsers = async (
     pageSize: data.metadata?.pageSize || 10,
   };
 };
+
+export const getAllStaffApi = async (): Promise<{users: User[]}> => {
+  const response = await axiosInstance.get('/staff/getAllStaff');
+  return response.data.data;
+  
+}

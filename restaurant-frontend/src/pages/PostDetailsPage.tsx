@@ -11,7 +11,9 @@ const PostDetailsPage = () => {
   if (isLoading) {
     return (
       <OrderOnlineLayout>
-        <div className="p-6 text-white">Loading...</div>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-secondaryColor"></div>
+        </div>
       </OrderOnlineLayout>
     );
   }
@@ -19,7 +21,10 @@ const PostDetailsPage = () => {
   if (error || !post) {
     return (
       <OrderOnlineLayout>
-        <div className="p-6 text-white">Error loading post details</div>
+        <div className="flex flex-col items-center justify-center min-h-screen text-white">
+          <h2 className="text-2xl font-bold mb-4">Không thể tải bài viết</h2>
+          <p className="text-gray-400">Vui lòng thử lại sau</p>
+        </div>
       </OrderOnlineLayout>
     );
   }

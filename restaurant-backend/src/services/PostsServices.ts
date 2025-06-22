@@ -9,26 +9,56 @@ import { Types } from 'mongoose';
 import UploadImageService from '../services/UploadImageService';
 
 class PostsService {
-  async getAllPosts() {
+  async getAllPosts(page = 1, limit = 10, search = '', sortBy = 'createdAt', sortOrder: 'asc' | 'desc' = 'desc') {
     try {
-      const posts = await Post.find()
+      const query: any = {};
+      
+      // Add search functionality
+      if (search) {
+        query.$or = [
+          { title: { $regex: search, $options: 'i' } },
+          { desc: { $regex: search, $options: 'i' } }
+        ];
+      }
+
+      const skip = (page - 1) * limit;
+      const totalDocs = await Post.countDocuments(query);
+      const totalPages = Math.ceil(totalDocs / limit);
+
+      // Create sort object
+      const sort: any = {};
+      if (sortBy === 'category') {
+        sort['categories_id.Cate_name'] = sortOrder === 'asc' ? 1 : -1;
+      } else {
+        sort[sortBy] = sortOrder === 'asc' ? 1 : -1;
+      }
+
+      const posts = await Post.find(query)
         .populate({
-          path: 'categories_id',  // dùng categories_id thay vì categoryId
+          path: 'categories_id',
           model: 'categories',
           select: 'Cate_name Cate_slug Cate_img Cate_type',
         })
         .populate({
-          path: 'user_id',       // dùng user_id thay vì userId
+          path: 'user_id',
           model: 'User',
           select: 'username email avatar',
         })
-        .sort({ createdAt: -1 });
+        .sort(sort)
+        .skip(skip)
+        .limit(limit);
 
-      if (!posts || posts.length === 0) {
-        throw new Error('Không tìm thấy bài viết nào');
-      }
-
-      return posts;
+      return {
+        docs: posts,
+        totalDocs,
+        totalPages,
+        page,
+        limit,
+        hasPrevPage: page > 1,
+        hasNextPage: page < totalPages,
+        prevPage: page > 1 ? page - 1 : null,
+        nextPage: page < totalPages ? page + 1 : null
+      };
     } catch (error) {
       throw new Error(error instanceof Error ? error.message : 'Lỗi khi lấy danh sách bài viết');
     }

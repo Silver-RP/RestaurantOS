@@ -21,6 +21,7 @@ const inventoryTransactionSchema = new mongoose.Schema({
     notes: { type: String },
     ingredient_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Ingredient', required: true },
     user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    order_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Order', default: null },
     adjustment_batch_id: { type: mongoose.Schema.Types.ObjectId, ref: 'InventoryAdjustmentBatch', default: null }
   }, { timestamps: true });
   

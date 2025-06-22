@@ -12,6 +12,10 @@ export const ingredientUnits = [
   { value: 'unit', label: 'Phần' },
 ];
 
+export const getUnitLabel = (unit: string) => {
+  return ingredientUnits.find(u => u.value === unit)?.label || unit;
+};
+
 export const IngredientGroup = [
   'Thịt',
   'Mì',

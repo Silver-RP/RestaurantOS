@@ -3,25 +3,12 @@ import InventoryController from '../controller/InventoryController';
 
 const router = Router();
 
-// Inventory Transactions (Import / Export / Adjustment-linked)
 router.get('/inventory-transaction', InventoryController.getInventoryTransaction);
-router.post('/inventory-transaction', InventoryController.createInventoryTransaction);
-router.get('/inventory-transaction/:id', InventoryController.getInventoryTransactionById);
-router.put('/inventory-transaction/:id', InventoryController.updateTransaction);  // Only allow updating metadata like notes, within editable window
-// router.delete('/inventory-transaction/:id', InventoryController.softDeleteTransaction); // Soft delete via isDeleted flag
-
-
-router.get('/inventory-daily', InventoryController.getInventoryDaily);
-// router.post('/inventory-daily', InventoryController.createInventoryDaily);
-router.get('/inventory-daily/:id', InventoryController.getInventoryDailyById);
-// router.delete('/inventory-daily/:id', InventoryController.softDeleteInventoryDaily);// Soft delete via isDeleted flag
-
-
-// router.get('/inventory-adjustment', InventoryController.getInventoryAdjustment);
-// router.post('/inventory-adjustment', InventoryController.createInventoryAdjustment);
-// router.get('/inventory-adjustment/:id', InventoryController.getInventoryAdjustmentById);
-// router.put('/inventory-adjustment/:id', InventoryController.updateInventoryAdjustment);
-
-// router.get('/inventory-report', InventoryController.getInventoryReport);
+router.post('/inventory-daily/import', InventoryController.importInventoryDaily); 
+router.post('/inventory-daily/export', InventoryController.exportInventoryDaily); 
+router.post('/inventory-daily/audit', InventoryController.auditInventoryDaily);
+router.get('/inventory-transaction/export-excel', InventoryController.exportInventoryTransactionsExcel);
+router.get('/inventory-transaction/export-csv', InventoryController.exportInventoryTransactionsCsv);
+router.get('/inventory-transaction/export-pdf', InventoryController.exportInventoryTransactionsPdf);
 
 export default router;

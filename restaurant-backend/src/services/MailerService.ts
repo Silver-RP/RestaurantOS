@@ -14,11 +14,11 @@ type MailTemplateParams = {
 
 const MailerService = {
   async sendTemplateEmail({ to, subject, template, context }: MailTemplateParams) {
-    console.log('📧 [MailerService] Starting to send template email');
-    console.log('📝 [MailerService] Template name:', template);
-    console.log('🔍 [MailerService] Template context:', JSON.stringify(context, null, 2));
-    console.log('📨 [MailerService] Email to:', to);
-    console.log('📌 [MailerService] Email subject:', subject);
+    // console.log('📧 [MailerService] Starting to send template email');
+    // console.log('📝 [MailerService] Template name:', template);
+    // console.log('🔍 [MailerService] Template context:', JSON.stringify(context, null, 2));
+    // console.log('📨 [MailerService] Email to:', to);
+    // console.log('📌 [MailerService] Email subject:', subject);
 
     try {
       await transporter.sendMail({

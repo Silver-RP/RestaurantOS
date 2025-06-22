@@ -2,6 +2,7 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { refreshAccessToken } from './AuthApi';
+import { toast } from 'react-toastify';
 
 const axiosInstance = axios.create({
   baseURL: 'http://localhost:4000/api',
@@ -37,8 +38,10 @@ const redirectToLogin = () => {
     window.removeEventListener('unload', resetRedirectFlag);
   };
   window.addEventListener('unload', resetRedirectFlag);
-  
-  window.location.href = '/login';
+  toast.error('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.');
+  setTimeout(() => {
+    window.location.href = '/login';
+  }, 2000);
 };
 
 // Request interceptor

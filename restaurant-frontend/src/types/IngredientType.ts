@@ -49,3 +49,9 @@ export type IngredientFilterParams = {
     isDeleted?: boolean;
 };
 
+export type IngredientOption = {
+    id: string;
+    name: string;
+    unit: string;
+    currentStock: number;
+}

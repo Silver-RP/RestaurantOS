@@ -22,7 +22,9 @@ import CartRouter from './routes/CartRoutes';
 import FavoriteRoutes from './routes/FavoriteRoutes';
 import AddressRouter from './routes/AddressRoutes';
 import PaymentRoutes from './routes/PaymentRoutes';
-import ingredientsRouter from './routes/IngredientsRouter';
+import IngredientsRouter from './routes/IngredientsRouter';
+import InventoryRoutes from './routes/InventoryRoutes';
+import DashboardRoutes from './routes/DashboardRoutes';
 
 import dotenv from 'dotenv';
 import connectDB from './config/db';
@@ -41,6 +43,7 @@ import './swaggers/CartSwagger';
 import './swaggers/StaffSwagger';
 import './swaggers/UserSwagger';
 import './swaggers/CategorySwagger';
+
 
 dotenv.config();
 connectDB();
@@ -124,11 +127,14 @@ app.use('/api/food', FoodRoutes);
 app.use('/api/posts', PostsRoutes);
 app.use('/api/order', AuthMiddleWare.verifyToken, OrderRoutes);
 app.use('/api/cart', AuthMiddleWare.verifyToken, CartRouter);
+app.use('/api/dashboard', AuthMiddleWare.verifyToken, DashboardRoutes);
 app.use('/api/favorite', AuthMiddleWare.verifyToken, FavoriteRoutes);
 app.use('/api/address', AuthMiddleWare.verifyToken, AddressRouter);
 app.use('/api/payment', PaymentRoutes);
 
-app.use('/api/ingredients', AuthMiddleWare.verifyToken, ingredientsRouter);
+app.use('/api/ingredients', AuthMiddleWare.verifyToken, IngredientsRouter);
+app.use('/api/inventory', AuthMiddleWare.verifyToken, InventoryRoutes);
+
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
   console.log('Mongo URI:', process.env.MONGO_URI);

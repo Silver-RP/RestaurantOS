@@ -10,6 +10,7 @@ import IngredientsList from "../components/pages/admin/ingredients/Index";
 import CreateIngredient from "../components/pages/admin/ingredients/Create";
 import EditIngredient from "../components/pages/admin/ingredients/Edit";
 import TrashIngredient from "../components/pages/admin/ingredients/Trash";
+import WarehouseTransactionViewPage from "../components/pages/admin/ingredients/WarehouseTransactionViewPage";
 
 import FoodCreatePage from "../components/pages/admin/food/Create";
 import FoodEditPage from "../components/pages/admin/food/Edit";
@@ -66,6 +67,8 @@ const adminRoutes = [
       { path: "ingredients/create", element: <CreateIngredient /> },
       { path: "ingredients/edit/:slug", element: <EditIngredient /> },
       { path: "ingredients/trash", element: <TrashIngredient /> },
+      { path: "warehouse/transaction-view", element: <WarehouseTransactionViewPage /> },
+
       
 
 

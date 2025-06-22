@@ -56,6 +56,7 @@ export function getTodayUTC(): Date {
     return new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
 }
 
+// Mở rộng build aggregate theo ngày, tuần, tháng để làm báo cáo
 export function buildIngredientAggregate({
     match,
     sortStage,
@@ -75,39 +76,83 @@ export function buildIngredientAggregate({
         { $match: match },
         {
             $lookup: {
-                from: 'inventorydailybatches',
+                from: 'inventorytransactions',
                 let: { ingredientId: '$_id' },
                 pipeline: [
                     {
                         $match: {
                             $expr: {
-                                $lte: ['$batch_date', todayUtc],
-                            },
-                        },
-                    },
-                    { $unwind: '$items' },
-                    {
-                        $match: {
-                            $expr: {
-                                $eq: ['$items.ingredient_id', '$$ingredientId'],
-                            },
+                                $and: [
+                                    { $lte: ['$transaction_date', todayUtc] },
+                                    { $eq: ['$ingredient_id', '$$ingredientId'] },
+                                ]
+                            }
                         },
                     },
                     {
                         $group: {
-                            _id: null,
-                            totalQuantity: { $sum: '$items.quantity' },
+                            _id: '$transaction_type',
+                            total: { $sum: '$quantity' },
                         },
-                    },
+                    }
                 ],
-                as: 'dailyStock',
-            },
+                as: 'transactions',
+            }
         },
         {
             $addFields: {
                 currentStock: {
-                    $ifNull: [{ $arrayElemAt: ['$dailyStock.totalQuantity', 0] }, 0],
-                },
+                    $let: {
+                        vars: {
+                            importQty: {
+                                $ifNull: [
+                                    {
+                                        $first: {
+                                            $filter: {
+                                                input: '$transactions',
+                                                as: 't',
+                                                cond: { $eq: ['$$t._id', 'import'] }
+                                            }
+                                        }
+                                    }, { total: 0 }
+                                ]
+                            },
+                            exportQty: {
+                                $ifNull: [
+                                    {
+                                        $first: {
+                                            $filter: {
+                                                input: '$transactions',
+                                                as: 't',
+                                                cond: { $eq: ['$$t._id', 'export'] }
+                                            }
+                                        }
+                                    }, { total: 0 }
+                                ]
+                            },
+                            adjustmentQty: {
+                                $ifNull: [
+                                    {
+                                        $first: {
+                                            $filter: {
+                                                input: '$transactions',
+                                                as: 't',
+                                                cond: { $eq: ['$$t._id', 'adjustment'] }
+                                            }
+                                        }
+                                    }, { total: 0 }
+                                ]
+                            },
+                        },
+                        in: {
+                            $add: [
+                                '$$importQty.total',
+                                '$$adjustmentQty.total',
+                                { $multiply: ['$$exportQty.total', -1] }
+                            ]
+                        }
+                    }
+                }
             },
         },
         {
