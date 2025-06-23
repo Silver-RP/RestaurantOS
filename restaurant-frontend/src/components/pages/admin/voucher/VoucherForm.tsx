@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Voucher } from '../../../../types/Voucher.type';
 import { toast } from 'react-toastify';
 import { FaChevronDown } from 'react-icons/fa';
+import { getAllUsers } from '../../../../api/UserApi';
+import { User } from '../../../../types/User.type';
+import Select from 'react-select';
 
 interface VoucherFormProps {
   initialData?: Voucher;
@@ -14,9 +17,10 @@ const discountTypes = [
   { value: 'fixed', label: 'Số tiền cố định' },
 ];
 
-const VoucherForm: React.FC<VoucherFormProps> = ({
+const VoucherForm: React.FC<VoucherFormProps & { onAddUsers?: (userIds: string[]) => void }> = ({
   initialData,
   onSubmit,
+  onAddUsers,
 }) => {
   const navigate = useNavigate();
   const [code, setCode] = useState(initialData?.code || '');
@@ -41,6 +45,27 @@ const VoucherForm: React.FC<VoucherFormProps> = ({
   const [endDate, setEndDate] = useState<string | ''>(
     initialData?.end_date ? new Date(initialData.end_date).toISOString().split('T')[0] : '',
   );
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+  const [userOptions, setUserOptions] = useState<User[]>([]);
+  const [addUsers, setAddUsers] = useState<string[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+
+  useEffect(() => {
+    if (type === 'private') {
+      setLoadingUsers(true);
+      getAllUsers({ page: 1, limit: 1000 })
+        .then(res => setUserOptions(res.users))
+        .finally(() => setLoadingUsers(false));
+    }
+  }, [type]);
+
+  useEffect(() => {
+    if (initialData && initialData.type === 'private' && Array.isArray(initialData.userIds)) {
+      setSelectedUsers(initialData.userIds);
+      setAddUsers([]);
+    }
+  }, [initialData]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,6 +86,15 @@ const VoucherForm: React.FC<VoucherFormProps> = ({
       toast.error('Số lượng voucher phải là số dương!');
       return;
     }
+    const allUserIds = [...selectedUsers, ...addUsers];
+    if (type === 'private' && allUserIds.length === 0) {
+      toast.error('Vui lòng chọn user nhận voucher!');
+      return;
+    }
+    if (type === 'private' && typeof quantity === 'number' && allUserIds.length > quantity) {
+      toast.error('Tổng số user nhận voucher không được vượt quá số lượng voucher!');
+      return;
+    }
 
     const dataToSend: Partial<Voucher> = {
       code,
@@ -73,10 +107,19 @@ const VoucherForm: React.FC<VoucherFormProps> = ({
       quantity: quantity,
       start_date: startDate || undefined,
       end_date: endDate || undefined,
+      ...(type === 'private' ? { userIds: allUserIds } : {}),
     };
 
     onSubmit(dataToSend);
   };
+
+  // Tạo danh sách user chưa sở hữu voucher
+  const addableUserOptions = userOptions
+    .filter(user => !selectedUsers.includes(user._id))
+    .map(user => ({
+      value: user._id,
+      label: `${user.username} (${user.email})`,
+    }));
 
   return (
     <div className="p-6 bg-white shadow-lg rounded-lg w-full max-w-4xl mx-auto">
@@ -122,6 +165,58 @@ const VoucherForm: React.FC<VoucherFormProps> = ({
               <FaChevronDown className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 pointer-events-none" />
             </div>
           </div>
+
+          {type === 'private' && (
+            <>
+              {initialData ? (
+                <>
+                  <div>
+                    <label className="block mb-1 text-sm font-medium text-admintext">
+                      User đã sở hữu voucher
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedUsers.length === 0 ? (
+                        <span className="text-gray-400">Chưa có user nào</span>
+                      ) : (
+                        userOptions
+                          .filter(u => selectedUsers.includes(u._id))
+                          .map(u => (
+                            <span key={u._id} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium">
+                              {u.username} ({u.email})
+                            </span>
+                          ))
+                      )}
+                    </div>
+                  </div>
+                </>
+              ) : null}
+              <div>
+                <label className="block mb-1 text-sm font-medium text-admintext">
+                  {initialData ? 'Thêm user mới vào voucher (tối đa = số lượng)' : 'Chọn user nhận voucher (tối đa = số lượng)'}
+                  <span className="text-red-600 ml-1">*</span>
+                </label>
+                {loadingUsers ? (
+                  <div className="text-blue-500 text-sm py-2">Đang tải danh sách user...</div>
+                ) : (
+                  <Select
+                    isMulti
+                    options={addableUserOptions}
+                    value={addableUserOptions.filter(opt => addUsers.includes(opt.value))}
+                    onChange={opts => setAddUsers(Array.isArray(opts) ? opts.map(o => o.value) : [])}
+                    isSearchable
+                    placeholder="Chọn user để thêm..."
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                  />
+                )}
+                <div className="text-xs text-gray-500 mt-1">
+                  {initialData
+                    ? 'User đã sở hữu voucher sẽ không thể bỏ chọn.'
+                    : 'Chọn user sẽ nhận voucher này.'}
+                </div>
+              </div>
+            </>
+          )}
 
           <div>
             <label className="block mb-1 text-sm font-medium text-admintext">

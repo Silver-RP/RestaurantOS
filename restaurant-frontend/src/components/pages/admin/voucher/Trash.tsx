@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { useTrashVouchers, useRestoreVoucher } from '@/hooks/useVouchers';
+import { useTrashVouchers, useRestoreVoucher, useForceDeleteVoucher } from '@/hooks/useVouchers';
 import { Voucher } from '@/types/Voucher.type';
 import AdminPagination from '../AdminPagination';
-import { FaUndoAlt, FaSearch } from 'react-icons/fa';
+import { FaUndoAlt, FaSearch, FaTrash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import ConfirmModal from '@/components/common/ConfirmModal';
 
 const Trash: React.FC = () => {
   const [page, setPage] = useState(1);
@@ -11,12 +12,44 @@ const Trash: React.FC = () => {
   const [search, setSearch] = useState('');
   const { data, isLoading } = useTrashVouchers({ page, limit, search });
   const restoreVoucherMutation = useRestoreVoucher();
+  const forceDeleteVoucherMutation = useForceDeleteVoucher();
+  const [voucherToActOn, setVoucherToActOn] = useState<string | null>(null);
+  const [showRestoreConfirm, setShowRestoreConfirm] = useState(false);
+  const [showForceDeleteConfirm, setShowForceDeleteConfirm] = useState(false);
   const vouchers: Voucher[] = data?.docs || [];
   const totalPages = data?.totalPages || 1;
   const navigate = useNavigate();
 
-  const handleRestore = (id: string) => {
-    restoreVoucherMutation.mutate(id);
+  const handleRestoreClick = (id: string) => {
+    setVoucherToActOn(id);
+    setShowRestoreConfirm(true);
+  };
+
+  const handleConfirmRestore = () => {
+    if (voucherToActOn) {
+      restoreVoucherMutation.mutate(voucherToActOn, {
+        onSuccess: () => {
+          setShowRestoreConfirm(false);
+          setVoucherToActOn(null);
+        }
+      });
+    }
+  };
+
+  const handleForceDeleteClick = (id: string) => {
+    setVoucherToActOn(id);
+    setShowForceDeleteConfirm(true);
+  };
+
+  const handleConfirmForceDelete = () => {
+    if (voucherToActOn) {
+      forceDeleteVoucherMutation.mutate(voucherToActOn, {
+        onSuccess: () => {
+          setShowForceDeleteConfirm(false);
+          setVoucherToActOn(null);
+        },
+      });
+    }
   };
 
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -58,6 +91,26 @@ const Trash: React.FC = () => {
           </button>
         </div>
       </div>
+      {showRestoreConfirm && (
+        <ConfirmModal
+          title="Xác nhận khôi phục"
+          description="Bạn có chắc chắn muốn khôi phục voucher này?"
+          onConfirm={handleConfirmRestore}
+          onCancel={() => setShowRestoreConfirm(false)}
+        />
+      )}
+
+      {showForceDeleteConfirm && (
+        <ConfirmModal
+          title="XÁC NHẬN XOÁ VĨNH VIỄN"
+          description="Hành động này không thể hoàn tác. Bạn có chắc chắn muốn xóa vĩnh viễn voucher này không?"
+          onConfirm={handleConfirmForceDelete}
+          onCancel={() => setShowForceDeleteConfirm(false)}
+          confirmText="Xóa vĩnh viễn"
+          confirmVariant="danger"
+        />
+      )}
+
       <div className="text-sm text-gray-700 mb-2">
         Hiển thị <strong>{vouchers.length}</strong> trên tổng{' '}
         <strong>{data?.totalDocs || 0}</strong> voucher đã xóa
@@ -89,16 +142,22 @@ const Trash: React.FC = () => {
                   <td className="px-4 py-2">{voucher.type}</td>
                   <td className="px-4 py-2">{voucher.status}</td>
                   <td className="px-4 py-2">{voucher.updated_at ? new Date(voucher.updated_at).toLocaleDateString('vi-VN', { year: 'numeric', month: '2-digit', day: '2-digit' }) : ''}</td>
-                  <td className="px-4 py-2 space-x-2">
+                  <td className="px-4 py-2 flex items-center gap-4">
                     <button
-                      className="relative group text-green-600 hover:underline mr-2"
-                      onClick={() => handleRestore(voucher._id!)}
+                      className="relative group text-green-600 hover:text-green-800"
+                      title="Khôi phục"
+                      onClick={() => handleRestoreClick(voucher._id!)}
                       disabled={restoreVoucherMutation.isPending}
                     >
-                      <FaUndoAlt size={18} />
-                      <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 normal-case">
-                        Khôi phục
-                      </span>
+                      <FaUndoAlt size={16} />
+                    </button>
+                    <button
+                      className="relative group text-red-600 hover:text-red-800"
+                      title="Xóa vĩnh viễn"
+                      onClick={() => handleForceDeleteClick(voucher._id!)}
+                      disabled={forceDeleteVoucherMutation.isPending}
+                    >
+                      <FaTrash size={16} />
                     </button>
                   </td>
                 </tr>

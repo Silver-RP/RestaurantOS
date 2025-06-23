@@ -45,6 +45,11 @@ export async function restoreVoucher(id: string) {
   return res.data;
 }
 
+export async function forceDeleteVoucher(id: string) {
+  const res = await api.delete(`/voucher/forceDeleteVoucher/${id}`);
+  return res.data;
+}
+
 export interface UserVoucher {
   _id: string;
   user_id: string | { _id: string; [key: string]: unknown };
@@ -74,6 +79,11 @@ export async function getUserVouchers() {
 
 export async function getTrashVouchers(params?: VoucherFilterParams) {
   const res = await api.get<PaginatedResponse<Voucher>>('/voucher/getTrashVouchers', { params });
+  return res.data;
+}
+
+export async function addUsersToVoucher(voucherId: string, userIds: string[]) {
+  const res = await api.post(`/voucher/${voucherId}/add-users`, { userIds });
   return res.data;
 }
 

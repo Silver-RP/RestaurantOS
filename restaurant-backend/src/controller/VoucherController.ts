@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import VoucherService from '../services/VoucherService';
 import { Types } from 'mongoose';
+import Voucher from '../models/VoucherModel';
 
 export default class VoucherController {
   static async createVoucher(req: Request, res: Response) {
@@ -16,7 +17,13 @@ export default class VoucherController {
         quantity,
         start_date,
         end_date,
+        userIds,
       } = req.body;
+      if (type === 'private' && Array.isArray(userIds)) {
+        if (quantity > 0 && userIds.length > quantity) {
+          return res.status(400).json({ error: 'Số lượng user nhận voucher không được vượt quá số lượng voucher!' });
+        }
+      }
       const voucher = await VoucherService.createVoucher({
         code,
         description,
@@ -29,6 +36,10 @@ export default class VoucherController {
         start_date,
         end_date,
       });
+      // Nếu là private, tạo UserVoucher và gửi email
+      if (type === 'private' && Array.isArray(userIds) && userIds.length > 0) {
+        await VoucherService.assignVoucherToUsers(voucher, userIds);
+      }
       res.status(201).json(voucher);
     } catch (err: any) {
       res.status(400).json({ error: err.message });
@@ -104,7 +115,6 @@ export default class VoucherController {
     try {
       const {
         description,
-        type,
         discount_type,
         discount_value,
         max_discount_value,
@@ -112,10 +122,10 @@ export default class VoucherController {
         quantity,
         start_date,
         end_date,
+        userIds,
       } = req.body;
       const voucher = await VoucherService.updateVoucher(req.params.id, {
         description,
-        type,
         discount_type,
         discount_value,
         max_discount_value,
@@ -123,6 +133,7 @@ export default class VoucherController {
         quantity,
         start_date,
         end_date,
+        userIds,
       });
       if (!voucher) return res.status(404).json({ error: 'Voucher not found' });
       res.json(voucher);
@@ -154,11 +165,7 @@ export default class VoucherController {
     try {
       const page = req.query.page ? Number(req.query.page) : 1;
       const limit = req.query.limit ? Number(req.query.limit) : 6;
-      let userId: string | undefined = undefined;
-      if (req.user && ((req.user as any)._id || (req.user as any).id)) {
-        userId = (req.user as any)._id || (req.user as any).id;
-      }
-      const vouchers = await VoucherService.getPublicActiveVouchers(page, limit, userId);
+      const vouchers = await VoucherService.getPublicActiveVouchers(page, limit);
       res.json(vouchers);
     } catch (err: any) {
       res.status(500).json({ error: err.message });
@@ -265,4 +272,41 @@ export default class VoucherController {
       res.status(500).json({ error: err.message });
     }
   }
-} 
+
+  static async forceDeleteVoucher(req: Request, res: Response) {
+    try {
+      await VoucherService.forceDeleteVoucher(req.params.id);
+      res.json({ message: 'Voucher đã được xóa vĩnh viễn' });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message });
+    }
+  }
+
+  static async addUsersToVoucher(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const { userIds } = req.body;
+      if (!Array.isArray(userIds) || userIds.length === 0) {
+        return res.status(400).json({ error: 'Danh sách userIds không hợp lệ!' });
+      }
+      // Lấy voucher để kiểm tra
+      const voucher = await VoucherService.getVoucherById(id);
+      if (!voucher) return res.status(404).json({ error: 'Voucher not found' });
+      if (voucher.type !== 'private') return res.status(400).json({ error: 'Chỉ voucher private mới thêm user được!' });
+      // Lấy danh sách user đã sở hữu
+      const currentUserIds = Array.isArray(voucher.userIds) ? voucher.userIds : [];
+      // Lọc user mới chưa sở hữu
+      const newUserIds = userIds.filter((uid: string) => !currentUserIds.includes(uid));
+      if (newUserIds.length === 0) {
+        return res.status(400).json({ error: 'Tất cả user đã sở hữu voucher này!' });
+      }
+      // Thêm user mới và gửi email
+      const voucherDoc = await Voucher.findById(id);
+      if (!voucherDoc) return res.status(404).json({ error: 'Voucher not found' });
+      await VoucherService.assignVoucherToUsers(voucherDoc, newUserIds);
+      res.json({ added: newUserIds });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message });
+    }
+  }
+}

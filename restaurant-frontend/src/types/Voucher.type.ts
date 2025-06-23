@@ -16,6 +16,7 @@ export interface Voucher {
   updated_at?: string;
   is_saved?: boolean;
   saved_status?: 'saved' | 'used' | 'expired';
+  userIds?: string[];
 }
 
 export interface UserVoucherDisplay extends Voucher {

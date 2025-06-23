@@ -27,4 +27,10 @@ router.put('/restoreVoucher/:id', AuthMiddleWare.verifyToken, VoucherController.
 // Lấy danh sách voucher đã bị soft delete (status = 'deleted')
 router.get('/getTrashVouchers', AuthMiddleWare.verifyToken, VoucherController.getTrashVouchers);
 
+// Xóa vĩnh viễn voucher từ thùng rác
+router.delete('/forceDeleteVoucher/:id', AuthMiddleWare.verifyToken, VoucherController.forceDeleteVoucher);
+
+// Thêm route POST /voucher/:id/add-users, yêu cầu verifyToken, gọi VoucherController.addUsersToVoucher
+router.post('/voucher/:id/add-users', AuthMiddleWare.verifyToken, VoucherController.addUsersToVoucher);
+
 export default router; 

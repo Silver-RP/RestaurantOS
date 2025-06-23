@@ -11,6 +11,7 @@ import {
   getUserVouchers,
   getTrashVouchers,
   restoreVoucher,
+  forceDeleteVoucher,
 } from '../api/VoucherApi';
 import { Voucher } from '../types/Voucher.type';
 import { toast } from 'react-toastify';
@@ -50,7 +51,12 @@ export const useCreateVoucher = () => {
       toast.success('Tạo voucher thành công!');
     },
     onError: (err: AxiosError<BackendErrorResponse>) => {
-      toast.error(err?.response?.data?.error || err?.response?.data?.message || 'Tạo voucher thất bại!');
+      const errorMessage = err?.response?.data?.error || err?.response?.data?.message;
+      if (typeof errorMessage === 'string' && errorMessage.includes('E11000')) {
+        toast.error('Mã voucher này đã tồn tại. Vui lòng sử dụng mã khác.');
+      } else {
+        toast.error(errorMessage || 'Tạo voucher thất bại!');
+      }
     },
   });
 };
@@ -58,13 +64,18 @@ export const useCreateVoucher = () => {
 export const useUpdateVoucher = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string, data: Partial<Voucher> }) => updateVoucher(id, data),
+    mutationFn: ({ id, data }: { id: string; data: Partial<Voucher> }) => updateVoucher(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vouchers'] });
       toast.success('Cập nhật voucher thành công!');
     },
     onError: (err: AxiosError<BackendErrorResponse>) => {
-      toast.error(err?.response?.data?.error || err?.response?.data?.message || 'Cập nhật voucher thất bại!');
+      const errorMessage = err?.response?.data?.error || err?.response?.data?.message;
+      if (typeof errorMessage === 'string' && errorMessage.includes('E11000')) {
+        toast.error('Mã voucher này đã tồn tại. Vui lòng sử dụng mã khác.');
+      } else {
+        toast.error(errorMessage || 'Cập nhật voucher thất bại!');
+      }
     },
   });
 };
@@ -139,6 +150,20 @@ export const useRestoreVoucher = () => {
     },
     onError: (err: AxiosError<BackendErrorResponse>) => {
       toast.error(err?.response?.data?.error || err?.response?.data?.message || 'Khôi phục voucher thất bại!');
+    },
+  });
+};
+
+export const useForceDeleteVoucher = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => forceDeleteVoucher(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['trash-vouchers'] });
+      toast.success('Xóa vĩnh viễn voucher thành công!');
+    },
+    onError: (err: AxiosError<BackendErrorResponse>) => {
+      toast.error(err?.response?.data?.error || err?.response?.data?.message || 'Xóa vĩnh viễn voucher thất bại!');
     },
   });
 }; 

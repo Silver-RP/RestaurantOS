@@ -18,6 +18,8 @@ export interface IVoucher extends Document {
   updated_at?: Date;
 }
 
+export interface IVoucherDocument extends IVoucher {}
+
 const VoucherSchema = new Schema<IVoucher>(
   {
     code: { type: String, required: true, unique: true },
@@ -41,6 +43,7 @@ const VoucherSchema = new Schema<IVoucher>(
       enum: ['active', 'inactive', 'expired', 'out_of_stock', 'deleted'],
       default: 'active',
     },
+
   },
   {
     timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
