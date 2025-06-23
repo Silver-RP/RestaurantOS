@@ -13,7 +13,7 @@ export interface IVoucher extends Document {
   used: number;
   start_date?: Date;
   end_date?: Date;
-  status: 'active' | 'inactive' | 'expired' | 'out_of_stock';
+  status: 'active' | 'inactive' | 'expired' | 'out_of_stock' | 'deleted';
   created_at?: Date;
   updated_at?: Date;
 }
@@ -38,7 +38,7 @@ const VoucherSchema = new Schema<IVoucher>(
     end_date: { type: Date, required: false },
     status: {
       type: String,
-      enum: ['active', 'inactive', 'expired', 'out_of_stock'],
+      enum: ['active', 'inactive', 'expired', 'out_of_stock', 'deleted'],
       default: 'active',
     },
   },

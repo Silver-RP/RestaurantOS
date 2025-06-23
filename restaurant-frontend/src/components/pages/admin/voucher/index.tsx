@@ -111,7 +111,7 @@ const VoucherList: React.FC = () => {
   };
 
   return (
-    <div className="p-6">
+    <div >
       <div className="flex flex-wrap gap-4 mb-4 items-center justify-between">
         <div className="flex gap-4 ">
           <div className="w-96 relative">
@@ -140,6 +140,12 @@ const VoucherList: React.FC = () => {
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
             + Thêm Voucher
+          </button>
+          <button
+            onClick={() => navigate('/admin/vouchers/trash')}
+            className="px-4 py-2 bg-red-600 text-white rounded flex items-center gap-2 hover:bg-red-700"
+          >
+            <FiTrash2 /> ĐÃ XOÁ
           </button>
         </div>
       </div>

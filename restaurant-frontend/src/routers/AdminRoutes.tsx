@@ -34,6 +34,8 @@ import EditPostPage from '@/components/pages/admin/posts/Edit';
 import VoucherPage from '../components/pages/admin/voucher';
 import CreateVoucherPage from '../components/pages/admin/voucher/Create';
 import EditVoucherPage from '../components/pages/admin/voucher/Edit';
+import TrashVoucherPage from '../components/pages/admin/voucher/Trash';
+
 
 
 
@@ -73,8 +75,7 @@ const adminRoutes = [
       { path: 'vouchers', element: <VoucherPage /> },
       { path: 'vouchers/create', element: <CreateVoucherPage /> },
       { path: 'vouchers/edit/:id', element: <EditVoucherPage /> },
-      { path: "warehouse/transaction-view", element: <WarehouseTransactionViewPage /> },
-
+      { path: "vouchers/trash", element: <TrashVoucherPage /> },
       
 
 

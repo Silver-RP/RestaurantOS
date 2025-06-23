@@ -9,7 +9,7 @@ const VoucherList: React.FC = () => {
   const { data, isLoading } = usePublicActiveVouchers({ page, limit });
   const saveVoucherMutation = useSaveVoucher();
   const { data: userVouchersData } = useUserVouchers();
-  const userVouchers: UserVoucherDisplay[] = Array.isArray(userVouchersData) ? userVouchersData : [];
+  const userVouchers: UserVoucherDisplay[] = Array.isArray(userVouchersData) ? userVouchersData as UserVoucherDisplay[] : [];
   const savedVoucherIds = new Set(userVouchers.map(v => v._id));
   const vouchers: Voucher[] = data?.docs || [];
 
@@ -37,7 +37,10 @@ const VoucherList: React.FC = () => {
                 vouchers.map((voucher: Voucher) => {
                   let buttonLabel = 'Lưu mã';
                   let buttonDisabled = false;
-                  if (savedVoucherIds.has(voucher._id)) {
+                  if (voucher.status === 'out_of_stock') {
+                    buttonLabel = 'Hết lượt';
+                    buttonDisabled = true;
+                  } else if (savedVoucherIds.has(voucher._id)) {
                     buttonLabel = 'Đã lưu';
                     buttonDisabled = true;
                   } else if (saveVoucherMutation.isPending && saveVoucherMutation.variables === voucher._id) {
@@ -47,7 +50,7 @@ const VoucherList: React.FC = () => {
                   return (
                     <div
                       key={voucher._id}
-                      className="rounded-xl bg-[#0A1F2C] text-white p-5 shadow-lg flex flex-col gap-2 h-[180px] justify-between"
+                      className={`rounded-xl bg-[#0A1F2C] text-white p-5 shadow-lg flex flex-col gap-2 h-[180px] justify-between ${voucher.status === 'out_of_stock' ? 'opacity-50 relative' : ''}`}
                     >
                       <div>
                         <div className="flex justify-between items-center mb-2">
@@ -80,6 +83,11 @@ const VoucherList: React.FC = () => {
                         <span className="font-semibold text-gray-300">HSD: </span>
                         {voucher.end_date ? new Date(voucher.end_date).toLocaleDateString() : 'Không giới hạn'}
                       </div>
+                      {voucher.status === 'out_of_stock' && (
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <span className="bg-black bg-opacity-70 text-white text-xs px-3 py-1 rounded">Voucher đã hết lượt sử dụng</span>
+                        </div>
+                      )}
                     </div>
                   );
                 })

@@ -38,7 +38,7 @@ export default class VoucherService {
       max_order_value,
     } = params;
 
-    const query: any = {};
+    const query: any = { status: { $ne: 'deleted' } };
 
     // Search by code or description
     if (search) {
@@ -48,9 +48,92 @@ export default class VoucherService {
       ];
     }
 
-    // Filter by status
-    if (status) {
+    // Filter by status (không cho phép lấy deleted ở đây)
+    if (status && status !== 'deleted') {
       query.status = status;
+    }
+
+    // Filter by type
+    if (type) {
+      query.type = type;
+    }
+
+    // Filter by discount type
+    if (discount_type) {
+      query.discount_type = discount_type;
+    }
+
+    // Filter by discount value range
+    if (min_discount_value !== undefined || max_discount_value !== undefined) {
+      query.discount_value = {};
+      if (min_discount_value !== undefined) {
+        query.discount_value.$gte = min_discount_value;
+      }
+      if (max_discount_value !== undefined) {
+        query.discount_value.$lte = max_discount_value;
+      }
+    }
+
+    // Filter by order value range
+    if (min_order_value !== undefined || max_order_value !== undefined) {
+      query.min_order_value = {};
+      if (min_order_value !== undefined) {
+        query.min_order_value.$gte = min_order_value;
+      }
+      if (max_order_value !== undefined) {
+        query.min_order_value.$lte = max_order_value;
+      }
+    }
+
+    // Sort options
+    const sortMapping: Record<string, Record<string, 1 | -1>> = {
+      codeAZ: { code: 1 },
+      codeZA: { code: -1 },
+      typeAZ: { type: 1 },
+      typeZA: { type: -1 },
+      discountValueLow: { discount_value: 1 },
+      discountValueHigh: { discount_value: -1 },
+      orderValueLow: { min_order_value: 1 },
+      orderValueHigh: { min_order_value: -1 },
+      createdAtNew: { createdAt: -1 },
+      createdAtOld: { createdAt: 1 },
+      statusAZ: { status: 1 },
+      statusZA: { status: -1 }
+    };
+
+    const sortOption = sortMapping[sort] || { createdAt: -1 };
+
+    const result = await Voucher.paginate(query, {
+      page,
+      limit,
+      sort: sortOption,
+    });
+
+    return result;
+  }
+
+  static async getTrashVouchers(params: VoucherFilterParams): Promise<PaginateResult<IVoucher>> {
+    const {
+      page = 1,
+      limit = 12,
+      search = '',
+      sort = '',
+      type,
+      discount_type,
+      min_discount_value,
+      max_discount_value,
+      min_order_value,
+      max_order_value,
+    } = params;
+
+    const query: any = { status: 'deleted' };
+
+    // Search by code or description
+    if (search) {
+      query.$or = [
+        { code: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } }
+      ];
     }
 
     // Filter by type
@@ -125,7 +208,19 @@ export default class VoucherService {
 
   static async deleteVoucher(id: string) {
     if (!Types.ObjectId.isValid(id)) throw new Error('Invalid voucher id');
-    return Voucher.findByIdAndDelete(id);
+    // Soft delete: cập nhật status thành 'deleted'
+    return Voucher.findByIdAndUpdate(id, { status: 'deleted' }, { new: true });
+  }
+
+  static async restoreVoucher(id: string) {
+    if (!Types.ObjectId.isValid(id)) throw new Error('Invalid voucher id');
+    // Lấy voucher hiện tại
+    const voucher = await Voucher.findById(id);
+    if (!voucher) throw new Error('Voucher not found');
+    if (voucher.status !== 'deleted') throw new Error('Voucher is not deleted');
+    // Tính lại status phù hợp (inactive nếu chưa tới start_date, expired nếu hết hạn, out_of_stock nếu hết lượt, active nếu đủ điều kiện)
+    const newStatus = this.calcVoucherStatus(voucher.toObject());
+    return Voucher.findByIdAndUpdate(id, { status: newStatus }, { new: true });
   }
 
   static calcVoucherStatus(data: Partial<IVoucher>): 'active' | 'inactive' | 'expired' | 'out_of_stock' {

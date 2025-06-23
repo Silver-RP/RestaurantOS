@@ -135,7 +135,16 @@ export default class VoucherController {
     try {
       const voucher = await VoucherService.deleteVoucher(req.params.id);
       if (!voucher) return res.status(404).json({ error: 'Voucher not found' });
-      res.json({ message: 'Voucher deleted' });
+      res.json({ message: 'Voucher soft deleted' });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message });
+    }
+  }
+
+  static async restoreVoucher(req: Request, res: Response) {
+    try {
+      const voucher = await VoucherService.restoreVoucher(req.params.id);
+      res.json(voucher);
     } catch (err: any) {
       res.status(400).json({ error: err.message });
     }
@@ -206,6 +215,51 @@ export default class VoucherController {
         return res.status(401).json({ error: 'User not authenticated or token missing _id' });
       }
       const vouchers = await VoucherService.getUserVouchers(userId);
+      res.json(vouchers);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+
+  static async getTrashVouchers(req: Request, res: Response) {
+    try {
+      const {
+        page,
+        limit,
+        search,
+        sort,
+        type,
+        discount_type,
+        min_discount_value,
+        max_discount_value,
+        min_order_value,
+        max_order_value,
+      } = req.query;
+
+      const params: any = {};
+      if (page) params.page = Number(page);
+      if (limit) params.limit = Number(limit);
+      if (search) params.search = String(search);
+      if (sort) params.sort = String(sort);
+      if (type) params.type = String(type);
+      if (discount_type) params.discount_type = String(discount_type);
+      if (min_discount_value) {
+        const value = Number(min_discount_value);
+        if (!isNaN(value)) params.min_discount_value = value;
+      }
+      if (max_discount_value) {
+        const value = Number(max_discount_value);
+        if (!isNaN(value)) params.max_discount_value = value;
+      }
+      if (min_order_value) {
+        const value = Number(min_order_value);
+        if (!isNaN(value)) params.min_order_value = value;
+      }
+      if (max_order_value) {
+        const value = Number(max_order_value);
+        if (!isNaN(value)) params.max_order_value = value;
+      }
+      const vouchers = await VoucherService.getTrashVouchers(params);
       res.json(vouchers);
     } catch (err: any) {
       res.status(500).json({ error: err.message });

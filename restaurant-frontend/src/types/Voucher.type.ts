@@ -11,7 +11,7 @@ export interface Voucher {
   used: number;
   start_date?: string;
   end_date?: string;
-  status: 'active' | 'inactive' | 'expired' | 'out_of_stock';
+  status: 'active' | 'inactive' | 'expired' | 'out_of_stock' | 'deleted';
   created_at?: string;
   updated_at?: string;
   is_saved?: boolean;

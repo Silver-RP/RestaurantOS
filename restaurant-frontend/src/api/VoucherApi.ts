@@ -40,6 +40,11 @@ export async function deleteVoucher(id: string) {
   return res.data;
 }
 
+export async function restoreVoucher(id: string) {
+  const res = await api.put(`/voucher/restoreVoucher/${id}`);
+  return res.data;
+}
+
 export interface UserVoucher {
   _id: string;
   user_id: string | { _id: string; [key: string]: unknown };
@@ -64,6 +69,11 @@ export async function getPublicActiveVouchers(params?: { page?: number; limit?: 
 
 export async function getUserVouchers() {
   const res = await api.get<Voucher[]>('/voucher/user-vouchers');
+  return res.data;
+}
+
+export async function getTrashVouchers(params?: VoucherFilterParams) {
+  const res = await api.get<PaginatedResponse<Voucher>>('/voucher/getTrashVouchers', { params });
   return res.data;
 }
 

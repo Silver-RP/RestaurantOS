@@ -21,4 +21,10 @@ router.get('/public-vouchers', VoucherController.getPublicActiveVouchers);
 // Lấy tất cả voucher user đã lưu
 router.get('/user-vouchers', AuthMiddleWare.verifyToken, VoucherController.getUserVouchers);
 
+// Khôi phục voucher đã bị soft delete
+router.put('/restoreVoucher/:id', AuthMiddleWare.verifyToken, VoucherController.restoreVoucher);
+
+// Lấy danh sách voucher đã bị soft delete (status = 'deleted')
+router.get('/getTrashVouchers', AuthMiddleWare.verifyToken, VoucherController.getTrashVouchers);
+
 export default router; 

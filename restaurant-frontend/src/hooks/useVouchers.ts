@@ -9,6 +9,8 @@ import {
   saveVoucherForUser,
   UserVoucher,
   getUserVouchers,
+  getTrashVouchers,
+  restoreVoucher,
 } from '../api/VoucherApi';
 import { Voucher } from '../types/Voucher.type';
 import { toast } from 'react-toastify';
@@ -95,6 +97,7 @@ export const useSaveVoucher = () => {
     mutationFn: (voucherId: string) => saveVoucherForUser(voucherId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['public-active-vouchers'] });
+      queryClient.invalidateQueries({ queryKey: ['user-vouchers'] });
       toast.success('Lưu mã voucher thành công!');
     },
     onError: (error: unknown) => {
@@ -115,5 +118,27 @@ export const useUserVouchers = () => {
   return useQuery({
     queryKey: ['user-vouchers'],
     queryFn: getUserVouchers,
+  });
+};
+
+export const useTrashVouchers = (params?: VoucherFilterParams) => {
+  return useQuery({
+    queryKey: ['trash-vouchers', params],
+    queryFn: () => getTrashVouchers(params),
+  });
+};
+
+export const useRestoreVoucher = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => restoreVoucher(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['trash-vouchers'] });
+      queryClient.invalidateQueries({ queryKey: ['vouchers'] });
+      toast.success('Khôi phục voucher thành công!');
+    },
+    onError: (err: AxiosError<BackendErrorResponse>) => {
+      toast.error(err?.response?.data?.error || err?.response?.data?.message || 'Khôi phục voucher thất bại!');
+    },
   });
 }; 
