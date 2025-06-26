@@ -374,8 +374,6 @@ class OrderService {
       });
     }
 
-    console.log('Exporting inventory transactions:', transactions);
-
     await InventoryTransaction.insertMany(transactions, { session });
   }
   
