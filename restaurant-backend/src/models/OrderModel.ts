@@ -27,6 +27,7 @@ export interface IOrder extends Document {
   items_price: number;
   total_price?: number;
   total_quantity: number;
+  discount_amount?: number;
   payment_status: 'UNPAID' | 'PAID' | 'FAILED' | 'REFUNDED';
   paid_at?: Date | null;
   note?: string;
@@ -86,6 +87,7 @@ const OrderSchema = new Schema<IOrder>(
     items_price: { type: Number, required: true, default: 0 },
     total_price: { type: Number, default: 0 },
     total_quantity: { type: Number, required: true, default: 0 },
+    discount_amount: { type: Number, default: 0 },
     payment_status: {
       type: String,
       enum: ['UNPAID', 'PAID', 'FAILED', 'REFUNDED'],
