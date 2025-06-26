@@ -366,4 +366,51 @@ export default class VoucherService {
     }));
     await UserVoucher.insertMany(records);
   }
+
+  static async markVoucherUsed(userId: string, voucherId: string) {
+    await Voucher.findByIdAndUpdate(
+      voucherId,
+      { $inc: { used: 1 } }
+    );
+    await UserVoucher.findOneAndUpdate(
+      { user_id: userId, voucher_id: voucherId },
+      { status: 'used', used_at: new Date() }
+    );
+  }
+
+  static async validateVoucherForOrder({
+    voucher_id,
+    user_id,
+    items,
+    discount_amount
+  }: {
+    voucher_id: string,
+    user_id: string,
+    items: any[],
+    discount_amount?: number
+  }) {
+    if (!voucher_id) return;
+    const voucher = await Voucher.findById(voucher_id);
+    if (!voucher) throw { statusCode: 400, message: 'Voucher không tồn tại!' };
+    const now = new Date();
+    if (voucher.start_date && now < new Date(voucher.start_date)) throw { statusCode: 400, message: 'Voucher chưa đến thời gian sử dụng!' };
+    if (voucher.end_date && now > new Date(voucher.end_date)) throw { statusCode: 400, message: 'Voucher đã hết hạn!' };
+    if (voucher.quantity > 0 && voucher.used >= voucher.quantity) throw { statusCode: 400, message: 'Voucher đã hết lượt sử dụng!' };
+    // Kiểm tra min_order_value
+    if (voucher.min_order_value) {
+      let orderTotal = 0;
+      if (Array.isArray(items)) {
+        orderTotal = items.reduce((sum, item) => sum + (item.unit_price || item.price || 0) * (item.quantity || 1), 0);
+      }
+      if (orderTotal < voucher.min_order_value) throw { statusCode: 400, message: `Đơn hàng phải tối thiểu ${voucher.min_order_value}đ để dùng voucher!` };
+    }
+    // Nếu là private, kiểm tra user sở hữu và chưa dùng
+    if (voucher.type === 'private') {
+      const userVoucher = await UserVoucher.findOne({ user_id, voucher_id: voucher._id });
+      if (!userVoucher) throw { statusCode: 400, message: 'Bạn không sở hữu voucher này!' };
+      if (userVoucher.status === 'used') throw { statusCode: 400, message: 'Voucher này đã được sử dụng!' };
+      if (userVoucher.status === 'expired') throw { statusCode: 400, message: 'Voucher này đã hết hạn!' };
+    }
+    return true;
+  }
 }

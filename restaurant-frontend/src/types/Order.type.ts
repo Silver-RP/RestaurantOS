@@ -140,6 +140,8 @@ export interface Order {
   updatedAt: string;
   order_items?: OrderItem[] | undefined;
   __v: number;
+  discount_amount?: number;
+  voucher_code?: string;
 }
 
 export interface OrdersResponse {
@@ -213,6 +215,7 @@ export interface PlaceOrderRequest {
     quantity: number;
     note?: string;
   }>;
+  discount_amount?: number;
 }
 
 export interface AllOrder {

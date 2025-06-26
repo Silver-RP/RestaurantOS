@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react';
 import ProductInfoSection from '@components/pages/checkout/ProductInfoSection';
 import ShippingAddressSection from '@components/pages/checkout/ShippingAddressSection';
 import { Address } from '@components/pages/checkout/ModalSelectAddress';
-import { Voucher } from '@components/pages/checkout/VoucherSelector';
 import { DeliveryTime } from '@components/pages/checkout/ModalSelectDeliveryTime';
 import { useGetCart } from '@hooks/useCart';
 import { useNavigate } from 'react-router-dom';
 import { useUserAddresses } from '@/hooks/useAddress';
 import { toast } from 'react-toastify';
 import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
+import { useUserVouchers } from '@/hooks/useVouchers';
+import { UserVoucherDisplay } from '@/types/Voucher.type';
 
 
 interface Product {
@@ -61,6 +62,8 @@ interface OrderData {
   vat_amount: number;
   total_price: number;
   total_quantity: number;
+  voucher_id?: string | null;
+  discount_amount?: number;
 }
 
 const CheckoutPage = () => {
@@ -71,7 +74,6 @@ const CheckoutPage = () => {
     'delivery',
   );
   const [shippingFee, setShippingFee] = useState<number>(25000);
-  const [vouchers, setVouchers] = useState<Voucher[]>([]);
   const [deliveryTime, setDeliveryTime] = useState<DeliveryTime>({
     type: 'now',
   });
@@ -82,6 +84,9 @@ const CheckoutPage = () => {
   const { data: cart } = useGetCart();
   const navigate = useNavigate();
   const { data: fetchedAddresses = [], refetch } = useUserAddresses();
+  const { data: userVouchers = [] } = useUserVouchers();
+  const [selectedVoucher, setSelectedVoucher] = useState<UserVoucherDisplay | null>(null);
+  const [discountAmount, setDiscountAmount] = useState<number>(0);
 
   useEffect(() => {
     const selectedItemsStr = localStorage.getItem('selectedCartItems');
@@ -126,33 +131,6 @@ const CheckoutPage = () => {
         fetchedAddresses[0]?._id ||
         null,
     );
-
-    setVouchers([
-      {
-        voucher_id: 'VOUCHER123',
-        code: 'DISCOUNT10',
-        discount_value: 10,
-        start_date: '2025-01-01T00:00:00Z',
-        end_date: '2025-12-31T23:59:59Z',
-        limit: 1,
-        description: 'Giảm 10% tổng giá trị đơn hàng',
-        min_total: 50000,
-        max_value: 20000,
-        type_discount: 'percent',
-      },
-      {
-        voucher_id: 'VOUCHER124',
-        code: 'FREESHIP',
-        discount_value: 25000,
-        start_date: '2025-01-01T00:00:00Z',
-        end_date: '2025-12-31T23:59:59Z',
-        limit: 1,
-        description: 'Miễn phí vận chuyển',
-        min_total: 40000,
-        max_value: 25000,
-        type_discount: 'amount',
-      },
-    ]);
   }, [fetchedAddresses]);
   const handleAddAddress = async (newAddr: Omit<Address, '_id'>) => {
     const newAddress: Address = {
@@ -212,6 +190,26 @@ const CheckoutPage = () => {
     }
   }, [deliveryMethod, deliveryTime.type]);
 
+  const handleVoucherChange = (voucher: UserVoucherDisplay | null) => {
+    setSelectedVoucher(voucher);
+    if (voucher && voucher.user_voucher_id) {
+      // Tính discountAmount giống logic ở ProductInfoSection
+      let discount = 0;
+      const items_price = products.reduce((sum, item) => sum + item.discountedPrice * item.quantity, 0);
+      if (voucher.discount_type === 'fixed') {
+        discount = voucher.discount_value;
+      } else if (voucher.discount_type === 'percent') {
+        discount = (items_price * voucher.discount_value) / 100;
+        if (voucher.max_discount_value) {
+          discount = Math.min(discount, voucher.max_discount_value);
+        }
+      }
+      setDiscountAmount(discount);
+    } else {
+      setDiscountAmount(0);
+    }
+  };
+
   const handleProceedToPayment = () => {
     if (!selectedAddress && deliveryMethod === 'delivery') {
       toast.error('Vui lòng chọn địa chỉ giao hàng');
@@ -241,7 +239,7 @@ const CheckoutPage = () => {
 
     const vat_amount = Math.round(items_price * 0.08);
 
-    const total_price = items_price + vat_amount + shippingFee;
+    const total_price = items_price + vat_amount + shippingFee - discountAmount;
 
     const total_quantity = products.reduce(
       (sum, item) => sum + item.quantity,
@@ -268,6 +266,8 @@ const CheckoutPage = () => {
       vat_amount,
       total_price,
       total_quantity,
+      voucher_id: selectedVoucher?._id || null,
+      discount_amount: discountAmount,
     };    if (deliveryMethod === 'delivery') {
       if (selectedAddress) {
         orderData.address_id = selectedAddress._id || selectedAddress.id,
@@ -326,11 +326,12 @@ const CheckoutPage = () => {
             note={orderNote}
             shippingFee={shippingFee}
             paymentMethod={paymentMethod}
-            onPaymentMethodChange={setPaymentMethod}
-            vouchers={vouchers}
+            onPaymentMethodChange={(method) => setPaymentMethod(method || '')}
+            vouchers={userVouchers as UserVoucherDisplay[]}
             onProceedToPayment={handleProceedToPayment}
             onNoteChange={handleOrderNoteChange}
             onProductNoteChange={handleProductNotes}
+            onVoucherChange={handleVoucherChange}
           />
         </div>
       </div>
