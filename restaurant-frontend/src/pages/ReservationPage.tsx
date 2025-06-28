@@ -5,6 +5,7 @@ import ShowcaseSection from '@components/common/ShowcaseSection';
 import Step2Seating from '@components/pages/reservation/Step2Seating';
 import Step3Menu from '@components/pages/reservation/Step3Menu';
 import Step4Review from '@/components/pages/reservation/Step4Review';
+import Step5Deposit from '@/components/pages/reservation/Step5Deposit';
 import { ReservationFormData } from '@/types/reservation.type';
 import ReservationSteps from '@/components/pages/reservation/ReservationSteps';
 import { confirmAlert } from 'react-confirm-alert';
@@ -15,15 +16,19 @@ import { RootState } from '@/redux/store';
 import { toastService } from '@/utils/toastService';
 import { AiOutlineCheckCircle } from 'react-icons/ai';
 import { motion } from 'framer-motion';
+
 const steps = [
   { label: 'Thông tin', step: 1 },
   { label: 'Vị trí ngồi', step: 2 },
   { label: 'Menu', step: 3 },
-  { label: 'Reiview', step: 4 },
+  { label: 'Review', step: 4 },
+  { label: 'Đặt cọc', step: 5 },
 ];
 
 const ReservationPage: React.FC = () => {
   const navigate = useNavigate();
+  const currentUser = useSelector((state: RootState) => state.user.user);
+
   const getInitialFormData = (): ReservationFormData => {
     const saved = localStorage.getItem('reservation-data');
     if (saved) {
@@ -45,7 +50,7 @@ const ReservationPage: React.FC = () => {
       selectedItems: [],
     };
   };
-  const currentUser = useSelector((state: RootState) => state.user.user);
+
   useEffect(() => {
     if (!currentUser?._id) {
       toastService.warning('Vui lòng đăng nhập để đặt bàn');
@@ -56,12 +61,12 @@ const ReservationPage: React.FC = () => {
   const [formData, setFormData] =
     useState<ReservationFormData>(getInitialFormData());
   const [step, setStep] = useState(1);
+
   useEffect(() => {
     const saved = localStorage.getItem('reservation-data');
     if (saved) {
       const parsed = JSON.parse(saved);
       const expired = Date.now() - parsed.timestamp > 60 * 1000;
-
       const hasInfo =
         parsed.formData?.full_name ||
         parsed.formData?.phone ||
@@ -72,11 +77,12 @@ const ReservationPage: React.FC = () => {
         confirmAlert({
           overlayClassName: 'custom-overlay',
           customUI: ({ onClose }) => (
-            <div className="custom-ui bg-headerBackground text-secondaryColor p-6 shadow-md max-w-md mx-auto text-center">
-              <h2 className="text-xl mb-4">Khôi phục dữ liệu?</h2>
+            <div className="custom-ui bg-headerBackground text-secondaryColor p-6 shadow-md max-w-lg mx-auto text-center">
+              <h2 className="text-xl mb-4">Khôi phục thông tin đặt bàn</h2>
               <p className="mb-6">
-                Bạn còn giữ thông tin đặt bàn trước đó. <br /> Bạn có muốn sử
-                dụng lại không?
+                Hệ thống phát hiện bạn có thông tin đặt bàn được lưu gần đây.{' '}
+                <br />
+                Bạn muốn tiếp tục với dữ liệu đã lưu hay bắt đầu đặt mới?
               </p>
               <div className="flex justify-center gap-4">
                 <ButtonComponents
@@ -101,7 +107,7 @@ const ReservationPage: React.FC = () => {
                   }}
                   className="px-6 py-2 rounded-none border-secondaryColor"
                 >
-                  Tạo mới
+                  Bắt đầu mới
                 </ButtonComponents>
 
                 <ButtonComponents
@@ -109,11 +115,16 @@ const ReservationPage: React.FC = () => {
                   size="small"
                   onClick={() => {
                     setFormData(parsed.formData);
+                    if (parsed.step && typeof parsed.step === 'number') {
+                      setStep(parsed.step);
+                    } else {
+                      setStep(1);
+                    }
                     onClose();
                   }}
                   className="px-6 py-2 rounded-none"
                 >
-                  Sử dụng lại
+                  Tiếp tục đặt bàn
                 </ButtonComponents>
               </div>
             </div>
@@ -122,19 +133,22 @@ const ReservationPage: React.FC = () => {
       }
     }
   }, []);
+
   useEffect(() => {
     const dataToSave = {
       formData,
+      step,
       timestamp: Date.now(),
     };
     localStorage.setItem('reservation-data', JSON.stringify(dataToSave));
-  }, [formData]);
+  }, [formData, step]);
   return (
     <>
       <BreadcrumbComponent />
       <div className="bg-bodyBackground text-white pt-16">
         <div className="max-w-[1200px] w-full mx-auto text-center pb-10">
           <ReservationSteps step={step} steps={steps} />
+
           {step === 1 && (
             <Step1BasicInfo
               formData={formData}
@@ -169,7 +183,17 @@ const ReservationPage: React.FC = () => {
               onBack={() => setStep(3)}
             />
           )}
+
           {step === 5 && (
+            <Step5Deposit
+              formData={formData}
+              setFormData={setFormData}
+              onSuccess={() => setStep(6)}
+              onBack={() => setStep(4)}
+            />
+          )}
+
+          {step === 6 && (
             <div className="text-center py-24 bg-bodyBackground">
               <motion.div
                 initial={{ scale: 0 }}
@@ -191,7 +215,7 @@ const ReservationPage: React.FC = () => {
 
               <div className="flex flex-wrap justify-center gap-4">
                 <ButtonComponents
-                  onClick={() => navigate('/menu')}
+                  onClick={() => navigate('/menu?sort=categoryAZ')}
                   className="bg-secondaryColor hover:bg-secondaryColor/90 text-black font-semibold px-6 py-2"
                 >
                   Tiếp tục đặt món

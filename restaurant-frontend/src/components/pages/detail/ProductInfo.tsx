@@ -36,7 +36,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
   const { addToFavorites } = useFavorites(); 
   const { mutate: addToCart } = useAddToCart();
   const favorites = useSelector((state: RootState) => state.favorite.items);
-  const isFavorited = favorites.some((item) => item.dishId._id === id);
+  const isFavorited = favorites.some((item) => item.dishId?._id === id);
   const { removeFromFavorites } = useFavorites();
 
 const handleToggleFavorite = () => {

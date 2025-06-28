@@ -8,6 +8,8 @@ import { openQuickView } from '../../redux/feature/quickView/quickViewSlice';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
+import { FoodDetail } from '@/types/Dish.types';
+
 
 const formatNumberShort = (num: number): string => {
   if (num >= 1_000_000)
@@ -26,7 +28,7 @@ const ProductCardList: React.FC<ProductCardProps> = ({
   cate,
   categories,
   discount,
-  isNew,
+  isDishNew,
   slug,
   description,
   views,
@@ -45,30 +47,35 @@ const ProductCardList: React.FC<ProductCardProps> = ({
     navigate(`/foods/${slug}`);
   };
 
+  const productDetail: FoodDetail = {
+    _id: id,
+    name: name,
+    slug: slug,
+    categories: categories || [],
+    status: 'available',
+    price: price,
+    discount_price: originalPrice ?? price,
+    description: description,
+    shortDescription: description,
+    ingredients: '',
+    views: views ?? 0,
+    ordered_count: ordered_count ?? 0,
+    favorites_count: 0,
+    average_rating: rating ?? 0,
+    rating_count: rating_count ?? 0,
+    rating: rating ?? 0,
+    countInStock: 10,
+    images: [imageUrl],
+    imagesPreview: [imageUrl],
+    createdAt: createdAt ?? new Date().toISOString(),
+    isDeleted: false, 
+    deletedAt: '', 
+  };
+
   const handleQuickView = (e: React.MouseEvent) => {
     e.stopPropagation();
     dispatch(
-      openQuickView({
-        _id: id,
-        name,
-        slug,
-        price,
-        discount_price: originalPrice ?? price,
-        description,
-        shortDescription: description,
-        ingredients: '',
-        status: 'available',
-        views: views ?? 0,
-        ordered_count: ordered_count ?? 0,
-        average_rating: rating ?? 4,
-        rating_count: rating_count ?? 0,
-        favorites_count: 0,
-        rating: rating ?? 4,
-        categories: categories || [],
-        countInStock: 10,
-        images: [imageUrl],
-        createdAt: createdAt ?? new Date().toISOString(),
-      }),
+      openQuickView(productDetail),
     );
   };
 
@@ -106,7 +113,7 @@ const ProductCardList: React.FC<ProductCardProps> = ({
               {discount}
             </span>
           )}
-          {isNew && (
+          {isDishNew && (
             <span className="bg-secondaryColor text-black text-[10px] sm:text-xs font-semibold px-2 py-1 rounded-sm">
               NEW
             </span>

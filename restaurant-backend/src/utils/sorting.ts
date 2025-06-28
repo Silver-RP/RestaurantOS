@@ -14,7 +14,7 @@ export function getSortQuery(sort: string) {
         case 'discountHigh':
             return { discount_price: -1 };
         case 'newest':
-            return { createdAt: -1 };
+            return { isDishNew: -1 };
         case 'relevance':
             return { _id: -1 };
         case 'highestRated':
@@ -31,6 +31,8 @@ export function getSortQuery(sort: string) {
             return { ordered_count: 1 };
         case 'mostFavorite':
             return { favorites_count: -1 };
+        case 'recommendDishes':
+            return { isRecommend: -1 };
         case 'stockLow':
             return { countInStock: -1 };
         case 'stockHigh':

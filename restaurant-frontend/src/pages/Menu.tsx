@@ -25,25 +25,31 @@ const MenuPage: React.FC = () => {
     setPagination,
   } = useFoods();
   const mappedFoods: ProductCardProps[] = Array.isArray(foods?.docs)
-    ? foods.docs.map((food) => ({
-        id: food._id,
-        name: food.name,
-        slug: food.slug,
-        views: food.views,
-        ordered_count: food.ordered_count,
-        rating: food.average_rating ?? 0,
-        rating_count: food.rating_count ?? 0, 
-        price: food.discount_price || food.price,
-        originalPrice: food.price,
-        discount: food.discount_price
-          ? `${Math.round((1 - food.discount_price / food.price) * 100)}% OFF`
-          : undefined,
-        imageUrl: food.images?.[0] || '',
-        hoverImage: food.images?.[1] || '',
-        description: food.description || '',
-        categories: food.categories || [],
-        cate: food.categories?.[0]?.Cate_name,
-        onAddToFavorite: () => addToFavorites(food._id),
+    ? foods.docs
+        .filter((food) => food.status !== 'hidden')
+        .map((food) => ({
+            id: food._id,
+            name: food.name,
+            slug: food.slug,
+            views: food.views,
+            ordered_count: food.ordered_count,
+            rating: food.average_rating ?? 0,
+            rating_count: food.rating_count ?? 0, 
+            price: food.discount_price || food.price,
+            originalPrice: food.price,
+            discount: food.discount_price
+              ? `${Math.round((1 - food.discount_price / food.price) * 100)}% OFF`
+              : undefined,
+            imageUrl: food.images?.[0] || '',
+            hoverImage: food.images?.[1] || '',
+            description: food.description || '',
+            categories: food.categories || [],
+            cate: food.categories?.[0]?.Cate_name,
+            isDishNew: food.isDishNew,
+            isRecommend: food.isRecommend,
+            favorites_count: food.favorites_count || 0,
+            onAddToFavorite: () => addToFavorites(food._id),
+            status: food.status,
       }))
     : [];
 
@@ -124,6 +130,7 @@ const MenuPage: React.FC = () => {
                   <option value="mostViewed">Lượt xem nhiều nhất</option>
                   <option value="mostOrdered">Đặt hàng nhiều nhất</option>
                   <option value="mostFavorite">Được yêu thích nhất</option>
+                  <option value="recommendDishes">Món ăn được đề xuất</option>
                 </select>
 
                 <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-secondaryColor">

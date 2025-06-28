@@ -27,6 +27,7 @@ export interface IOrder extends Document {
   items_price: number;
   total_price?: number;
   total_quantity: number;
+  discount_amount?: number;
   payment_status: 'UNPAID' | 'PAID' | 'FAILED' | 'REFUNDED';
   paid_at?: Date | null;
   note?: string;
@@ -39,6 +40,7 @@ export interface IOrder extends Document {
   order_type: 'DINE_IN' | 'ONLINE';
   delivery_time_type: 'ASAP' | 'SCHEDULED';
   scheduled_time?: Date | null;
+  voucher_id?: Types.ObjectId | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -85,6 +87,7 @@ const OrderSchema = new Schema<IOrder>(
     items_price: { type: Number, required: true, default: 0 },
     total_price: { type: Number, default: 0 },
     total_quantity: { type: Number, required: true, default: 0 },
+    discount_amount: { type: Number, default: 0 },
     payment_status: {
       type: String,
       enum: ['UNPAID', 'PAID', 'FAILED', 'REFUNDED'],
@@ -108,6 +111,7 @@ const OrderSchema = new Schema<IOrder>(
       type: Date,
       default: null,
     },
+    voucher_id: { type: Schema.Types.ObjectId, ref: 'Voucher', default: null },
   },
   { timestamps: true },
 );

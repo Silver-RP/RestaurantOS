@@ -3,6 +3,7 @@ import { MdRestaurant } from "react-icons/md";
 import { BiDrink } from "react-icons/bi";
 import { BsCupHot } from "react-icons/bs";
 import { useGetActiveBanners } from "../../../../hooks/useBanner";
+import { useNavigate } from "react-router-dom";
 
 const icons = [
   <MdRestaurant key="restaurant" />,
@@ -15,6 +16,7 @@ const Carousel = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const intervalRef = useRef<number | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchActiveBanners();
@@ -142,7 +144,9 @@ const Carousel = () => {
             <p className="text-xs sm:text-sm md:text-base lg:text-lg text-gray-300 max-w-xs sm:max-w-md md:max-w-lg lg:max-w-2xl mx-auto mb-8 animate-fade-down">
               {banner.description}
             </p>
-            <button className="px-5 py-2 sm:px-8 sm:py-3 md:px-10 md:py-4 bg-transparent border border-secondaryColor text-secondaryColor hover:bg-secondaryColor hover:text-headerBackground transition animate-fade-down">
+            <button className="px-5 py-2 sm:px-8 sm:py-3 md:px-10 md:py-4 bg-transparent border border-secondaryColor text-secondaryColor hover:bg-secondaryColor hover:text-headerBackground transition animate-fade-down"
+              onClick={()=> navigate('/menu?sort=categoryAZ')}
+            >
               KHÁM PHÁ MENU
             </button>
           </div>

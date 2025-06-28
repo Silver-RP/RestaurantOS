@@ -231,25 +231,54 @@ export const useFoods = () => {
 
       try {
         const params: FetchFoodsParams = {
-          page,
+          page: 1, // Load tất cả để lọc client
+          limit: 9999,
           sort: sortParam,
           priceMin: priceMin ? Number(priceMin) : undefined,
           priceMax: priceMax ? Number(priceMax) : undefined,
           category: category || undefined,
           search: search || undefined,
-          limit,
         };
 
         const data = await fetchAllFoods(params);
-        setFoods(data);
+
+        // 1️⃣ 
+        const visibleDocs = data.docs.filter(
+          (item) => item.status !== "hidden"
+        );
+
+        // 2️⃣ Tính tổng
+        const totalItems = visibleDocs.length;
+        const totalPages = Math.ceil(totalItems / limit);
+
+        // 3️⃣ Slice đúng trang
+        const startIdx = (page - 1) * limit;
+        const endIdx = startIdx + limit;
+        const pagedDocs = visibleDocs.slice(startIdx, endIdx);
+
+        // 4️⃣ Gán lại dữ liệu
+        setFoods({
+          ...data,
+          docs: pagedDocs,
+          totalDocs: totalItems,
+          page,
+          totalPages,
+          limit,
+          hasPrevPage: page > 1,
+          hasNextPage: page < totalPages,
+          prevPage: page > 1 ? page - 1 : null,
+          nextPage: page < totalPages ? page + 1 : null,
+        });
+
+        // 5️⃣ Update pagination state
         setPagination({
-          currentPage: data.page,
-          totalPages: data.totalPages,
-          limit: data.limit,
-          hasPrevPage: data.hasPrevPage,
-          hasNextPage: data.hasNextPage,
-          prevPage: data.prevPage ?? 1,
-          nextPage: data.nextPage ?? data.totalPages,
+          currentPage: page,
+          totalPages,
+          limit,
+          hasPrevPage: page > 1,
+          hasNextPage: page < totalPages,
+          prevPage: page > 1 ? page - 1 : 1,
+          nextPage: page < totalPages ? page + 1 : totalPages,
         });
       } catch (error) {
         const err = error as AxiosError<{ message?: string }>;

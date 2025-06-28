@@ -178,6 +178,9 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
       ? order?.address_id
       : null;
 
+  const discountAmount = (order as any).discount_amount || 0;
+  const voucherCode = (order as any).voucher_code || (order as any).voucher_id?.code || '';
+
   return (
     <div
       className={`fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50  ${!isOpen ? 'hidden' : ''}`}
@@ -626,6 +629,17 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                 <span>Thuế VAT:</span>{' '}
                 <span>{formatPrice(order.vat_amount)}</span>
               </div>
+              {/* Hiển thị giảm giá voucher nếu có */}
+              {discountAmount > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-white/80">
+                    Giảm giá{voucherCode ? ` (${voucherCode})` : ''}
+                  </span>
+                  <span className="text-green-400">
+                    -{discountAmount.toLocaleString()} VND
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between text-lg font-bold border-t pt-2 mt-2 text-secondaryColor">
                 <span>Tổng cộng:</span>{' '}
                 <span>{formatPrice(order.total_price)}</span>

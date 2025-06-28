@@ -4,6 +4,7 @@ import OrderService from '../services/OrderService';
 import { IUser } from '../models/UserModel';
 import { Types } from 'mongoose';
 import OrderValidate from '../validators/orderValidator';
+import VoucherService from '../services/VoucherService';
 
 class OrderController {
   async placeOrder(req: Request, res: Response): Promise<any> {
@@ -31,7 +32,18 @@ class OrderController {
         shipping_fee,
         receiver,
         receiver_phone,
+        voucher_id,
+        discount_amount,
       } = req.body;
+
+      if (voucher_id) {
+        await VoucherService.validateVoucherForOrder({
+          voucher_id,
+          user_id: userId.toString(),
+          items,
+          discount_amount,
+        });
+      }
 
       const order = await OrderService.placeOrder({
         userId,
@@ -47,7 +59,13 @@ class OrderController {
         shipping_fee,
         receiver,
         receiver_phone,
+        voucher_id,
+        discount_amount,
       });
+
+      if (voucher_id) {
+        await VoucherService.markVoucherUsed(userId.toString(), voucher_id);
+      }
 
       await OrderService.sendOrderConfirmationEmail(order._id);
 
