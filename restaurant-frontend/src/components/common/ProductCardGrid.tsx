@@ -51,9 +51,9 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
     views: rest.views ?? 0,
     ordered_count: rest.ordered_count ?? 0,
     favorites_count: 0,
-    average_rating: rest.rating ?? 4,
+    average_rating: rest.rating ?? 0,
     rating_count: rest.rating_count ?? 0,
-    rating: rest.rating ?? 4,
+    rating: rest.rating ?? 0,
     countInStock: 10,
     images: [rest.imageUrl],
     imagesPreview: [rest.imageUrl],
@@ -62,6 +62,8 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
     deletedAt: '',
     isRecommend: rest.isRecommend ?? false,
   };
+
+  console.log('Rating: ', rest.name, rest.rating, rest.rating_count);
 
   return (
     <div className="bg-primaryBackground rounded-lg overflow-hidden shadow-md w-full h-full group">
@@ -249,29 +251,30 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
         </h3>
 
         <div className="text-xs sm:text-sm text-secondaryColor mb-1 flex items-center gap-1">
-          {rest.rating ? (
-            <>
-              <span className="flex gap-[2px] text-secondaryColor">
-                {[...Array(5)].map((_, index) => {
-                  const value = Number(rest.rating ?? 0);
-                  const rounded = Math.round(value * 2) / 2;
-                  if (rounded >= index + 1) return <FilledStar key={index} />;
-                  else if (rounded >= index + 0.5)
-                    return <HalfStar key={index} />;
-                  else return <EmptyStar key={index} />;
-                })}
-              </span>
-              <span className="text-[10px] text-white">
-                ({rest.rating_count ?? 0})
-              </span>
-            </>
-          ) : (
-            <>
-              <span>★★★★☆</span>
-              <span className="text-[10px] text-white">(0)</span>
-            </>
-          )}
-        </div>
+  {rest.rating !== undefined && rest.rating !== null ? (
+    <>
+      <span className="flex gap-[2px] text-secondaryColor">
+        {[...Array(5)].map((_, index) => {
+          const value = Number(rest.rating ?? 0);
+          const rounded = Math.round(value * 2) / 2;
+          if (rounded >= index + 1) return <FilledStar key={index} />;
+          else if (rounded >= index + 0.5)
+            return <HalfStar key={index} />;
+          else return <EmptyStar key={index} />;
+        })}
+      </span>
+      <span className="text-[10px] text-white">
+        ({rest.rating_count ?? 0})
+      </span>
+    </>
+  ) : (
+    <>
+      <span>☆☆☆☆☆</span>
+      <span className="text-[10px] text-white">(0)</span>
+    </>
+  )}
+</div>
+
         <div className="h-[60px] flex flex-col items-center justify-end space-y-1">
           {rest.originalPrice && rest.originalPrice > rest.price ? (
             <div className="text-xs sm:text-sm font-light text-gray-400 line-through">

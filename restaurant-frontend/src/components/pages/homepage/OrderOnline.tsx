@@ -31,7 +31,7 @@ const OrderOnlineSection: React.FC = () => {
       cate: food.categories?.[0]?.Cate_name,
       ordered_count: food.ordered_count || 0,
       rating_count: food.rating_count || 0,
-      rating: food.average_rating || 4,
+      rating: food.average_rating || 0,
       favorites_count: food.favorites_count || 0,
       countInStock: food.countInStock || 10,
       onAddToFavorite: () => {},
