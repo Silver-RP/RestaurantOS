@@ -6,6 +6,9 @@ import { RootState } from 'redux/store';
 import { FilledStar, HalfStar, EmptyStar } from '../../common/StarIcons';
 import ButtonComponents from '../../common/ButtonComponents';
 import { useAddToCart } from '@hooks/useCart';
+import { FaHeart } from 'react-icons/fa';
+import { useFavorites } from '@/hooks/useFavorites';
+import { FiHeart } from 'react-icons/fi';
 
 const QuickViewModal = () => {
   const dispatch = useDispatch();
@@ -14,8 +17,14 @@ const QuickViewModal = () => {
   );
   const [quantity, setQuantity] = useState(1);
   const { mutate: addToCart } = useAddToCart();
+  const rating = Math.round((product?.average_rating ?? 0) * 2) / 2;
+  const { toggleFavorite } = useFavorites();
+  const favoriteItems = useSelector((state: RootState) => state.favorite.items);
+  const isFavorited = favoriteItems.some(
+    (fav) => fav.dishId && fav.dishId._id === product?._id,
+  );
+
   if (!product) return null;
-  const rating = Math.round((product.average_rating ?? 0) * 2) / 2;
 
  
   return (
@@ -98,9 +107,34 @@ const QuickViewModal = () => {
           </div>
 
           <div className="flex flex-wrap gap-4">
-            <button className="text-sm text-white underline hover:text-secondaryColor">
+            {/* <button className="text-sm text-white underline hover:text-secondaryColor">
               Yêu thích
+            </button> */}
+            <div className="relative group/tooltip">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleFavorite(product?._id);
+              }}
+              className={`p-1.5 sm:p-2 bg-white rounded-full shadow-md 
+                          hover:bg-secondaryColor hover:text-white hover:-translate-y-1 transition-all duration-300`}
+            >
+              {isFavorited ? (
+                <FaHeart size={18} className="text-red-500" />
+              ) : (
+                <FiHeart size={18} className="text-black" />
+              )}
             </button>
+            <div
+              className="absolute -top-8 left-1/2 -translate-x-1/2 
+                          bg-black text-white text-[10px] px-2 py-1 rounded 
+                          whitespace-nowrap opacity-0 group-hover/tooltip:opacity-100 
+                          transition-all duration-300 z-20 pointer-events-none"
+            >
+              {isFavorited ? 'Đã yêu thích' : 'Yêu thích'}
+              <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-black rotate-45"></div>
+            </div>
+          </div>
           </div>
 
           <div className="text-xs text-gray-400 mt-6 space-y-1">

@@ -106,9 +106,9 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
             </span>
             <div
               className="absolute left-0 -translate-x-full top-1/2 -translate-y-1/2 
-    bg-black text-white text-[10px] px-2 py-1 rounded 
-    whitespace-nowrap opacity-0 group-hover/tooltip:opacity-100 
-    transition-all duration-300 z-20 pointer-events-none"
+                          bg-black text-white text-[10px] px-2 py-1 rounded 
+                          whitespace-nowrap opacity-0 group-hover/tooltip:opacity-100 
+                          transition-all duration-300 z-20 pointer-events-none"
             >
               Lượt xem
               <div className="absolute left-full top-1/2 -translate-y-1/2 w-2 h-2 bg-black rotate-45"></div>
@@ -122,9 +122,9 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
             </span>
             <div
               className="absolute left-0 -translate-x-full top-1/2 -translate-y-1/2 
-    bg-black text-white text-[10px] px-2 py-1 rounded 
-    whitespace-nowrap opacity-0 group-hover/tooltip:opacity-100 
-    transition-all duration-300 z-20 pointer-events-none"
+                          bg-black text-white text-[10px] px-2 py-1 rounded 
+                          whitespace-nowrap opacity-0 group-hover/tooltip:opacity-100 
+                          transition-all duration-300 z-20 pointer-events-none"
             >
               Đã đặt hàng
               <div className="absolute left-full top-1/2 -translate-y-1/2 w-2 h-2 bg-black rotate-45"></div>
@@ -139,9 +139,9 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
               </span>
               <div
                 className="absolute left-0 -translate-x-full top-1/2 -translate-y-1/2 
-      bg-black text-white text-[10px] px-2 py-1 rounded 
-      whitespace-nowrap opacity-0 group-hover/tooltip:opacity-100 
-      transition-all duration-300 z-20 pointer-events-none"
+                            bg-black text-white text-[10px] px-2 py-1 rounded 
+                            whitespace-nowrap opacity-0 group-hover/tooltip:opacity-100 
+                            transition-all duration-300 z-20 pointer-events-none"
               >
                 Lượt yêu thích
                 <div className="absolute left-full top-1/2 -translate-y-1/2 w-2 h-2 bg-black rotate-45"></div>
@@ -212,7 +212,7 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
                 toggleFavorite(rest.id);
               }}
               className={`p-1.5 sm:p-2 bg-white rounded-full shadow-md 
-    hover:bg-secondaryColor hover:text-white hover:-translate-y-1 transition-all duration-300`}
+                          hover:bg-secondaryColor hover:text-white hover:-translate-y-1 transition-all duration-300`}
             >
               {isFavorited ? (
                 <FaHeart size={18} className="text-red-500" />
@@ -222,9 +222,9 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
             </button>
             <div
               className="absolute -top-8 left-1/2 -translate-x-1/2 
-          bg-black text-white text-[10px] px-2 py-1 rounded 
-          whitespace-nowrap opacity-0 group-hover/tooltip:opacity-100 
-          transition-all duration-300 z-20 pointer-events-none"
+                          bg-black text-white text-[10px] px-2 py-1 rounded 
+                          whitespace-nowrap opacity-0 group-hover/tooltip:opacity-100 
+                          transition-all duration-300 z-20 pointer-events-none"
             >
               {isFavorited ? 'Đã yêu thích' : 'Yêu thích'}
               <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-black rotate-45"></div>
