@@ -64,7 +64,7 @@ const FeatureSection: React.FC = () => {
       title: 'Thực đơn đề xuất',
       subtitle: 'Món ăn đề xuất',
       backgroundImage: '/assets/images/home/discover3.jpg',
-      link: '/menu?category=mon-khai-vi',
+      link: '/menu?sort=recommendDishes',
     },
   ];
 
