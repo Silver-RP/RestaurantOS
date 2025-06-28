@@ -4,6 +4,7 @@ import { IUser } from '../models/UserModel';
 import { IAddress } from '../models/AddressModel';
 import { IOrderDetail } from '../models/OrderDetailModel';
 import { IPayment } from '../models/PaymentModel';
+import { IVoucher } from '../models/VoucherModel';
 
 type MailTemplateParams = {
   to: string;
@@ -97,6 +98,26 @@ const MailerService = {
           minute: '2-digit',
         }),
         invoiceUrl: `${process.env.CLIENT_BASE_URL || '#'}/profile/orders?orderId=${order._id}`,
+      },
+    });
+  },
+
+  async sendVoucherNotification(params: { userEmail: string; voucher: IVoucher }) {
+    const { userEmail, voucher } = params;
+
+    await this.sendTemplateEmail({
+      to: userEmail,
+      subject: `Bạn đã nhận được một voucher mới từ BeefBeef Restaurant!`,
+      template: 'new-voucher-notification',
+      context: {
+        voucherCode: voucher.code,
+        voucherDescription: voucher.description,
+        discount:
+          voucher.discount_type === 'percent'
+            ? `${voucher.discount_value}%`
+            : `${voucher.discount_value.toLocaleString('vi-VN')}₫`,
+        expiryDate: new Date(voucher.end_date).toLocaleDateString('vi-VN'),
+        voucherWalletUrl: `${process.env.CLIENT_BASE_URL || '#'}/profile/vouchers`,
       },
     });
   },

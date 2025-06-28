@@ -19,6 +19,6 @@ export const breadcrumbConfig: Record<string, string> = {
     "/confirm": "Xác nhận đơn hàng",
     "/payment-success": "Thanh toán thành công",
     "/payment-failed": "Thanh toán thất bại",
-    
+    "/vouchers": "Chương trình khuyến mãi",    
   };
   

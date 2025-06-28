@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { FaUser, FaClipboardList, FaMapMarkerAlt, FaStar, FaQuestionCircle, FaSignOutAlt, FaRegClock } from 'react-icons/fa';
+import { FaUser, FaClipboardList, FaMapMarkerAlt, FaStar, FaQuestionCircle, FaSignOutAlt, FaRegClock, FaTicketAlt } from 'react-icons/fa';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LogoutUser } from '../../../redux/feature/auth/authActions';
 import { useAppDispatch } from '../../../redux/hook';
@@ -10,6 +10,7 @@ const sidebarItems = [
   { title: 'Lịch sử đơn hàng', icon: <FaClipboardList />, path: '/profile/orders' },
   { title: 'Lịch sử đặt bàn', icon: <FaRegClock />, path: '/profile/my-reservation' },
   { title: 'Sổ địa chỉ', icon: <FaMapMarkerAlt />, path: '/profile/address' },
+  { title: 'Voucher của tôi', icon: <FaTicketAlt/>, path: '/profile/user-vouchers' },
   { title: 'Đánh giá và phản hồi', icon: <FaStar />, path: '/profile/reviews' },
   { title: 'Chính sách và câu hỏi thường gặp', icon: <FaQuestionCircle />, path: '/profile/faqs' },
 ];

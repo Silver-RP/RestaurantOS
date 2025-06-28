@@ -5,7 +5,7 @@ import { Order, IOrder } from '../models/OrderModel';
 import { OrderDetail } from '../models/OrderDetailModel';
 import Cart from '../models/CartModel';
 import { Dish } from '../models/DishModel';
-import DishIngredient  from '../models/DishIngredientModel';
+import DishIngredient from '../models/DishIngredientModel';
 import { InventoryTransaction } from '../models/InventoryTransactionModel';
 import Payment from '../models/PaymentModel';
 import SearchService from './SearchService';
@@ -16,6 +16,7 @@ import { createPayPalOrder } from '../services/payments/PaypalService';
 import axios from 'axios';
 import MailerService from './MailerService';
 import User, { IUser } from '../models/UserModel';
+import Voucher from '../models/VoucherModel';
 
 enum Status {
   ORDER_PLACED = 'ORDER_PLACED',
@@ -116,10 +117,12 @@ class OrderService {
     receiver_phone: string | null,
     scheduled_time: Date | null,
     session: any,
+    voucher_id?: Types.ObjectId | null,
+    discount_amount?: number
   ) {
     const items_price = totalAmount;
     const vat_amount = items_price * 0.08;
-    const total_price = items_price + vat_amount + shipping_fee;
+    const total_price = items_price + vat_amount + shipping_fee - (discount_amount || 0);
 
     const newOrder = new Order({
       user_id: userId,
@@ -138,6 +141,8 @@ class OrderService {
       receiver,
       receiver_phone,
       scheduled_time,
+      voucher_id: voucher_id || null,
+      discount_amount: discount_amount || 0,
     });
 
     return await newOrder.save({ session });
@@ -394,6 +399,8 @@ class OrderService {
       shipping_fee,
       receiver,
       receiver_phone,
+      voucher_id,
+      discount_amount,
     } = input;
     const session = await mongoose.startSession();
     session.startTransaction();
@@ -415,6 +422,12 @@ class OrderService {
 
       const total_quantity = orderItems.reduce((sum, item) => sum + item.quantity, 0);
 
+      // Convert voucher_id to ObjectId if present
+      let voucherObjectId: Types.ObjectId | null = null;
+      if (voucher_id) {
+        voucherObjectId = new Types.ObjectId(voucher_id);
+      }
+
       const savedOrder = await this.createOrder(
         userId,
         finalAddressId,
@@ -430,6 +443,8 @@ class OrderService {
         receiver_phone,
         scheduled_time,
         session,
+        voucherObjectId,
+        discount_amount,
       );
 
       if (!savedOrder) {
@@ -674,6 +689,7 @@ class OrderService {
       // Get orders with pagination and sort
       const orders = await Order.find(query)
         .populate('address_id')
+        .populate('voucher_id', 'code')
         .sort({ createdAt: sortType === 'oldest' ? 1 : -1 })
         .skip(skip)
         .limit(limit)
@@ -751,7 +767,6 @@ class OrderService {
       }
 
       const orderItems = await OrderDetail.find({ order_id: orderId }).populate('dish_id').lean();
-
       const payments = await Payment.find({ orderId }).sort({ createdAt: -1 }).lean();
       const payment = payments[0];
 
@@ -771,10 +786,21 @@ class OrderService {
         };
       }
 
+      // Lấy voucher_code nếu có voucher_id
+      let voucher_code = '';
+      if (order.voucher_id) {
+        // Luôn truy vấn bảng Voucher để lấy code
+        const voucher = await Voucher.findById(order.voucher_id).lean();
+        if (voucher && voucher.code) {
+          voucher_code = voucher.code;
+        }
+      }
+
       return {
         ...order,
         order_items: orderItems,
         postPayment,
+        voucher_code,
       };
     } catch (error: any) {
       throw {

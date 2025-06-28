@@ -31,6 +31,11 @@ import ProtectedRoute from '@/utils/ProtectedRoute';
 import Post from '@/components/pages/admin/posts';
 import CreatePostPage from '@/components/pages/admin/posts/Create';
 import EditPostPage from '@/components/pages/admin/posts/Edit';
+import VoucherPage from '../components/pages/admin/voucher';
+import CreateVoucherPage from '../components/pages/admin/voucher/Create';
+import EditVoucherPage from '../components/pages/admin/voucher/Edit';
+import TrashVoucherPage from '../components/pages/admin/voucher/Trash';
+
 
 
 
@@ -67,8 +72,10 @@ const adminRoutes = [
       { path: "ingredients/create", element: <CreateIngredient /> },
       { path: "ingredients/edit/:slug", element: <EditIngredient /> },
       { path: "ingredients/trash", element: <TrashIngredient /> },
-      { path: "warehouse/transaction-view", element: <WarehouseTransactionViewPage /> },
-
+      { path: 'vouchers', element: <VoucherPage /> },
+      { path: 'vouchers/create', element: <CreateVoucherPage /> },
+      { path: 'vouchers/edit/:id', element: <EditVoucherPage /> },
+      { path: "vouchers/trash", element: <TrashVoucherPage /> },
       
 
 
