@@ -12,7 +12,8 @@ import 'swiper/css/navigation';
 const OrderOnlineSection: React.FC = () => {
   const { data: foods = [] } = useFoodNewest();
 
-  const products = foods.map((food) => ({
+  const products =
+    foods.map((food) => ({
       id: food._id,
       name: food.name,
       price: food.discount_price || food.price,
@@ -56,6 +57,41 @@ const OrderOnlineSection: React.FC = () => {
         </div>
 
         <div className="relative">
+          <div className="custom-swiper-prev absolute left-0 top-1/2 transform -translate-y-1/2 z-10 cursor-pointer">
+            <button className="p-2 rounded-full bg-white/20 hover:bg-white/40 transition">
+              <svg
+                className="w-4 h-4 text-white"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+            </button>
+          </div>
+          {/* Nút Next */}
+          <div className="custom-swiper-next absolute right-0 top-1/2 transform -translate-y-1/2 z-10 cursor-pointer">
+            <button className="p-2 rounded-full bg-white/20 hover:bg-white/40 transition">
+              <svg
+                className="w-4 h-4 text-white"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </button>
+          </div>
 
           <Swiper
             modules={[Navigation]}
