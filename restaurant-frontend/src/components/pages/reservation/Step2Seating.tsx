@@ -1,9 +1,9 @@
 import React from 'react';
 import ButtonComponents from '@components/common/ButtonComponents';
 import { ReservationFormData } from '../../../types/reservation.type';
-import { FilledStar, EmptyStar } from '../../common/StarIcons';
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
+import TableItem from './TableItem';
 
 interface Step2SeatingProps {
   formData: ReservationFormData;
@@ -12,59 +12,19 @@ interface Step2SeatingProps {
   onBack: () => void;
 }
 
-const seatingOptions = [
-  {
-    id: 'standard-hall',
-    name: 'Bàn tiêu chuẩn',
-    available: true,
-    guests: '2 - 4 khách',
-    view: 3,
-    privacy: 3,
-    photo: 4,
-    image: '/assets/images/reservation/thiet-ke-nha-hang-su-buffet0.jpg',
-  },
-  {
-    id: 'table-4-10',
-    name: 'Bàn dành cho nhóm',
-    available: true,
-    guests: '4 - 10 khách',
-    view: 3,
-    privacy: 2,
-    photo: 4,
-    image: '/assets/images/reservation/1.webp',
-  },
-  {
-    id: 'vip-room',
-    name: 'Phòng VIP',
-    available: true,
-    guests: '2 - 20 khách',
-    view: 5,
-    privacy: 4,
-    photo: 4,
-    image: '/assets/images/reservation/thumb.png',
-  },
-  {
-    id: 'random-table',
-    name: 'Bàn ngẫu nhiên',
-    available: true,
-    guests: '2 - 20 khách',
-    view: 3,
-    privacy: 2,
-    photo: 4,
-    image: '/assets/images/reservation/n-m-ngay-t-i-t-ng-1-khach.jpg',
-  },
+const mockTables = [
+  { id: 't1', name: 'Bàn 01', x: 2, y: 1, status: 'available' },
+  { id: 't2', name: 'Bàn 02', x: 4, y: 1, status: 'reserved' },
+  { id: 't3', name: 'Bàn 03', x: 6, y: 1, status: 'available' },
+  { id: 't4', name: 'Bàn 04', x: 2, y: 3, status: 'available' },
+  { id: 't5', name: 'Bàn 05', x: 4, y: 3, status: 'available' },
+  { id: 't6', name: 'Bàn 06', x: 6, y: 3, status: 'reserved' },
+  { id: 't7', name: 'Bàn 07', x: 2, y: 5, status: 'available' },
+  { id: 't8', name: 'Bàn 08', x: 4, y: 5, status: 'available' },
+  { id: 't9', name: 'Bàn 09', x: 6, y: 5, status: 'available' },
 ];
 
-const renderStars = (count: number) => {
-  return (
-    <div className="flex gap-[1px]">
-      {[...Array(5)].map((_, i) =>
-        i < count ? <FilledStar key={i} /> : <EmptyStar key={i} />,
-      )}
-    </div>
-  );
-};
-
+// 💡 Điều chỉnh màu sắc, font, border và hiệu ứng khi hover/active
 const Step2Seating: React.FC<Step2SeatingProps> = ({
   formData,
   setFormData,
@@ -74,19 +34,22 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({
   const handleSelect = (id: string, name: string) => {
     setFormData((prev) => ({ ...prev, table_type: id, seatingName: name }));
   };
+
   const handleNextClick = () => {
     if (!formData.table_type) {
       confirmAlert({
-        customUI: ({ onClose }) => {
-          return (
-            <div className="custom-ui text-secondaryColor bg-headerBackground">
-              <h2 className="text-xl mb-4">Thông báo</h2>
-              <p>Vui lòng chọn vị trí ngồi trước khi tiếp tục.</p>
-              <button onClick={onClose}>OK</button>
-            </div>
-          );
-        },
-        overlayClassName: 'custom-overlay',
+        customUI: ({ onClose }) => (
+          <div className="text-yellow-400 bg-[#112233] p-6 rounded-md shadow-xl text-center">
+            <h2 className="text-xl mb-4 font-semibold">Thông báo</h2>
+            <p>Vui lòng chọn vị trí ngồi trước khi tiếp tục.</p>
+            <button
+              className="mt-4 px-4 py-2 bg-yellow-400 text-black rounded"
+              onClick={onClose}
+            >
+              OK
+            </button>
+          </div>
+        ),
       });
     } else {
       onNext();
@@ -94,70 +57,44 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({
   };
 
   return (
-    <div className="max-w-[1200px] w-full mx-auto text-white py-8 px-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {seatingOptions.map((option) => (
-          <div
-            key={option.id}
-            className={`flex bg-white/5 overflow-hidden rounded-lg shadow-xl border 
-          ${formData.table_type === option.id ? 'border-secondaryColor' : 'border-transparent'}
-          transition-all duration-300 hover:scale-[1.01]`}
-          >
-            <div className="xl:w-[300px] lg:w-[240px] w-[120px] h-[250px] shrink-0">
-              <img
-                src={option.image}
-                alt={option.name}
-                className="w-full h-full object-cover"
-              />
-            </div>
+    <div className="max-w-6xl w-full mx-auto text-white py-8 px-4 font-serif">
+      <h2 className="text-3xl font-semibold mb-6 text-center text-[#f5d77c] tracking-wide">
+        Sơ đồ bàn
+      </h2>
 
-            <div className="flex flex-col justify-between p-4 flex-1">
-              <div className="text-left">
-                <h4 className="text-xl mb-3">{option.name}</h4>
-                <p className="text-sm text-gray-300 mb-1">
-                  Số khách: {option.guests}
-                </p>
-
-                <div className="text-sm text-gray-300 flex items-center gap-2 mb-1">
-                  View: {renderStars(option.view)}
-                </div>
-                <div className="text-sm text-gray-300 flex items-center gap-2 mb-1">
-                  Chụp ảnh: {renderStars(option.photo)}
-                </div>
-                <div className="text-sm text-gray-300 flex items-center gap-2 mb-1">
-                  Độ riêng tư: {renderStars(option.privacy)}
-                </div>
-                <p className="text-green-400 text-sm text-left font-semibold mt-3 mb-1">
-                  Còn bàn
-                </p>
-              </div>
-
-              <div className="mt-3">
-                <ButtonComponents
-                  variant={
-                    formData.table_type === option.id ? 'selected' : 'filled'
-                  }
-                  size="small"
-                  onClick={() => handleSelect(option.id, option.name)}
-                  className="w-full"
-                >
-                  {formData.table_type === option.id ? 'Đã chọn' : 'Chọn'}
-                </ButtonComponents>
-              </div>
-            </div>
-          </div>
+      <div
+        className="relative bg-[#0f2233] border border-[#334455] rounded-xl p-6"
+        style={{ width: '100%', height: 500 }}
+      >
+        {mockTables.map((table) => (
+          <TableItem
+            key={table.id}
+            id={table.id}
+            name={table.name}
+            x={table.x}
+            y={table.y}
+            status={
+              formData.table_type === table.id
+                ? 'selected'
+                : table.status === 'reserved'
+                  ? 'reserved'
+                  : 'available'
+            }
+            onSelect={() => handleSelect(table.id, table.name)}
+          />
         ))}
       </div>
-      <div className="flex justify-between mt-8">
+
+      <div className="flex justify-between mt-10">
         <ButtonComponents variant="outline" size="small" onClick={onBack}>
-          Quay lại
+          QUAY LẠI
         </ButtonComponents>
         <ButtonComponents
           variant="filled"
           size="small"
           onClick={handleNextClick}
         >
-          Tiếp tục
+          TIẾP TỤC
         </ButtonComponents>
       </div>
     </div>
