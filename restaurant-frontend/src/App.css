@@ -131,3 +131,30 @@ input:-webkit-autofill:focus {
 .custom-ui button:hover {
   background-color: #fdd38a;
 }
+
+/* Content responsiveness for dynamic HTML */
+.prose img,
+.prose video {
+  max-width: 100%;
+  height: auto;
+  display: block; /* Remove extra space below images */
+}
+
+.prose table {
+  max-width: 100%;
+  display: block; /* Allows overflow-x to work on tables */
+  overflow-x: auto;
+  word-break: normal; /* Override break-words for table cells if needed */
+}
+
+.prose pre {
+  max-width: 100%;
+  overflow-x: auto;
+  word-break: normal;
+}
+
+/* Force word breaking for all elements within .prose */
+.prose * {
+  word-break: break-all;
+  overflow-wrap: break-word;
+}

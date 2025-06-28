@@ -58,6 +58,26 @@ const PostsApi = {
   deletePost: async (id: string): Promise<{ success: boolean; message: string }> => {
     const response = await api.delete(`/posts/${id}`);
     return response.data;
+  },
+
+  incrementViews: async (id: string): Promise<{ success: boolean; data: PostType }> => {
+    const response = await api.put(`/posts/${id}/increment-views`);
+    return response.data;
+  },
+
+  toggleLike: async (id: string): Promise<{ success: boolean; liked: boolean; likesCount: number }> => {
+    const response = await api.post(`/posts/${id}/toggle-like`);
+    return response.data;
+  },
+
+  checkUserLiked: async (id: string): Promise<{ success: boolean; liked: boolean; likesCount: number }> => {
+    const response = await api.get(`/posts/${id}/check-liked`);
+    return response.data;
+  },
+
+  getPostsByTag: async (tag: string): Promise<PostsResponse> => {
+    const response = await api.get(`/posts/by-tag/${encodeURIComponent(tag)}`);
+    return response.data;
   }
 };
 

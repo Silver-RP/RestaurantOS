@@ -73,11 +73,62 @@ export const usePosts = () => {
 };
 
 export const usePostById = (id: string) => {
-  return useQuery({
+  const queryClient = useQueryClient();
+
+  const { data, isLoading, error } = useQuery({
     queryKey: ['post', id],
     queryFn: () => PostsApi.getPostById(id),
     enabled: !!id,
     retry: 1,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
+
+  const { data: likeStatus, isLoading: isCheckingLike } = useQuery({
+    queryKey: ['post-like', id],
+    queryFn: () => PostsApi.checkUserLiked(id),
+    enabled: !!id,
+    retry: 1,
+    staleTime: 60 * 1000, // 1 minute
+  });
+
+  const { mutate: incrementViews } = useMutation({
+    mutationFn: () => PostsApi.incrementViews(id),
+    onSuccess: (response) => {
+      // Cập nhật cache với dữ liệu mới
+      queryClient.setQueryData(['post', id], response.data);
+    },
+    onError: (error) => {
+      console.error('Lỗi khi tăng lượt xem:', error);
+    }
+  });
+
+  const { mutate: toggleLike, isPending: isTogglingLike } = useMutation({
+    mutationFn: () => PostsApi.toggleLike(id),
+    onSuccess: (response) => {
+      // Cập nhật cache với dữ liệu mới
+      queryClient.setQueryData(['post-like', id], response);
+      
+      // Cập nhật số lượt like trong bài viết
+      const currentPost = queryClient.getQueryData<PostType>(['post', id]);
+      if (currentPost) {
+        queryClient.setQueryData(['post', id], {
+          ...currentPost,
+          likes: response.likesCount
+        });
+      }
+    },
+    onError: (error) => {
+      console.error('Lỗi khi thích/bỏ thích bài viết:', error);
+    }
+  });
+
+  return {
+    data,
+    isLoading: isLoading || isCheckingLike || isTogglingLike,
+    error,
+    incrementViews,
+    toggleLike,
+    isLiked: likeStatus?.liked || false,
+    likesCount: likeStatus?.likesCount || data?.likes || 0
+  };
 };

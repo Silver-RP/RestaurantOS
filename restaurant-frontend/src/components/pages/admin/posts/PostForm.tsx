@@ -21,6 +21,15 @@ interface PostFormProps {
   isSubmitting?: boolean;
 }
 
+const TAG_OPTIONS = [
+  'Món chính',
+  'Món khác',
+  'Khai vị',
+  'Món phụ và ăn kèm',
+  'Nước uống',
+  'Món tráng miệng',
+  'Đồ uống có cồn'
+];
 
 const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: PostFormProps) => {
   const editorRef = useRef<Editor>(null);
@@ -31,6 +40,7 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
   const [desc, setDesc] = useState(initialData?.desc || '');
   const [status, setStatus] = useState(initialData?.status || 'draft');
   const [images, setImages] = useState<(File | string)[]>(initialData?.images || []);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   const onUploadImage = async (blob: Blob | File, callback: (url: string, altText: string) => void) => {
     try {
@@ -50,8 +60,18 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
     }
   };
 
+  const handleTagChange = (tag: string) => {
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+    );
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (selectedTags.length === 0) {
+      alert('Vui lòng chọn ít nhất một thẻ (tag) cho bài viết!');
+      return;
+    }
     console.log('Form submission started');
     const formData = new FormData();
     formData.append('title', title);
@@ -59,6 +79,7 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
     formData.append('categories_id', category);
     formData.append('desc', desc);
     formData.append('status', status);
+    formData.append('tags', JSON.stringify(selectedTags));
 
     // Xử lý hình ảnh mới (File objects)
     const newImages = images.filter(img => img instanceof File);
@@ -194,6 +215,26 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
                     <option value="published">Đã đăng</option>
                     <option value="draft">Nháp</option>
                   </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Thẻ bài viết (Tag) <span className="text-red-500">*</span>
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {TAG_OPTIONS.map((tag) => (
+                      <label key={tag} className="flex items-center gap-1 text-sm bg-gray-100 px-2 py-1 rounded cursor-pointer">
+                        <input
+                          type="checkbox"
+                          value={tag}
+                          checked={selectedTags.includes(tag)}
+                          onChange={() => handleTagChange(tag)}
+                          className="accent-blue-500"
+                        />
+                        {tag}
+                      </label>
+                    ))}
+                  </div>
                 </div>
 
                 <div>

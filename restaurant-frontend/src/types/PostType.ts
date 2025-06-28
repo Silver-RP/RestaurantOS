@@ -23,9 +23,12 @@ export interface PostType {
   categories_id: CategoryType;
   user_id: UserType;
   views?: number;
+  likes?: number;
+  likedBy?: string[];
   createdAt: string;
   updatedAt: string;
   status: 'draft' | 'published';
+  tags?: string[];
 }
 
 export interface PostFormData {

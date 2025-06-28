@@ -12,6 +12,7 @@ import ProfileRoutes from './routes/ProfileRoutes';
 import ReservationRoutes from './routes/ReservationRouter';
 import BannerRoutes from './routes/BannerRoutes';
 import PostsRoutes from './routes/PostsRoutes';
+import commentPostRoutes from './routes/CommentPostRoutes';
 
 import StaffRoutes from './routes/StaffRoutes';
 import FoodRoutes from './routes/FoodRoutes';
@@ -22,7 +23,7 @@ import CartRouter from './routes/CartRoutes';
 import FavoriteRoutes from './routes/FavoriteRoutes';
 import AddressRouter from './routes/AddressRoutes';
 import PaymentRoutes from './routes/PaymentRoutes';
-import IngredientsRouter from './routes/IngredientsRouter';
+import IngredientsRouter from './routes/ingredientsRouter';
 import InventoryRoutes from './routes/InventoryRoutes';
 import DashboardRoutes from './routes/DashboardRoutes';
 
@@ -125,6 +126,7 @@ app.use(
 
 app.use('/api/food', FoodRoutes);
 app.use('/api/posts', PostsRoutes);
+app.use('/api/posts', commentPostRoutes);
 app.use('/api/order', AuthMiddleWare.verifyToken, OrderRoutes);
 app.use('/api/cart', AuthMiddleWare.verifyToken, CartRouter);
 app.use('/api/dashboard', AuthMiddleWare.verifyToken, DashboardRoutes);

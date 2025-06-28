@@ -111,6 +111,93 @@ class PostsController {
       });
     }
   }
+
+  async incrementViews(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const post = await PostsService.incrementPostViews(id);
+      
+      res.status(200).json({
+        success: true,
+        data: post
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error instanceof Error ? error.message : 'Lỗi khi cập nhật lượt xem'
+      });
+    }
+  }
+
+  async toggleLike(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const userId = (req.user as any).id?.toString();
+
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          message: 'Bạn cần đăng nhập để thích bài viết'
+        });
+      }
+
+      const result = await PostsService.toggleLike(id, userId);
+      
+      res.status(200).json({
+        success: true,
+        ...result
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error instanceof Error ? error.message : 'Lỗi khi thích/bỏ thích bài viết'
+      });
+    }
+  }
+
+  async checkUserLiked(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const userId = (req.user as any).id?.toString();
+
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          message: 'Bạn cần đăng nhập để kiểm tra trạng thái thích'
+        });
+      }
+
+      const result = await PostsService.checkUserLiked(id, userId);
+      
+      res.status(200).json({
+        success: true,
+        ...result
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error instanceof Error ? error.message : 'Lỗi khi kiểm tra trạng thái thích'
+      });
+    }
+  }
+
+  async getPostsByTag(req: Request, res: Response) {
+    try {
+      const { tag } = req.params;
+      const page = Number(req.query.page) || 1;
+      const limit = Number(req.query.limit) || 10;
+      const posts = await PostsService.getPostsByTag(tag, page, limit);
+      res.status(200).json({
+        success: true,
+        ...posts
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error instanceof Error ? error.message : 'Lỗi server'
+      });
+    }
+  }
 }
 
 export default new PostsController();
