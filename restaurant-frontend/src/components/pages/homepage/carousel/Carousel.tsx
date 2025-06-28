@@ -145,7 +145,7 @@ const Carousel = () => {
               {banner.description}
             </p>
             <button className="px-5 py-2 sm:px-8 sm:py-3 md:px-10 md:py-4 bg-transparent border border-secondaryColor text-secondaryColor hover:bg-secondaryColor hover:text-headerBackground transition animate-fade-down"
-              onClick={()=> navigate('/menu')}
+              onClick={()=> navigate('/menu?sort=categoryAZ')}
             >
               KHÁM PHÁ MENU
             </button>

@@ -76,7 +76,7 @@ const BestOffersSection: React.FC = () => {
 
           <button
             className="mt-4 px-8 py-3 text-sm md:text-base text-secondaryColor border border-secondaryColor hover:bg-secondaryColor hover:text-black transition-all duration-300"
-            onClick={() => navigate('/menu')}
+            onClick={() => navigate('/menu?sort=categoryAZ')}
           >
             XEM THỰC ĐƠN
           </button>

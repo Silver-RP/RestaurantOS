@@ -25,29 +25,31 @@ const MenuPage: React.FC = () => {
     setPagination,
   } = useFoods();
   const mappedFoods: ProductCardProps[] = Array.isArray(foods?.docs)
-    ? foods.docs.map((food) => ({
-        id: food._id,
-        name: food.name,
-        slug: food.slug,
-        views: food.views,
-        ordered_count: food.ordered_count,
-        rating: food.average_rating ?? 0,
-        rating_count: food.rating_count ?? 0, 
-        price: food.discount_price || food.price,
-        originalPrice: food.price,
-        discount: food.discount_price
-          ? `${Math.round((1 - food.discount_price / food.price) * 100)}% OFF`
-          : undefined,
-        imageUrl: food.images?.[0] || '',
-        hoverImage: food.images?.[1] || '',
-        description: food.description || '',
-        categories: food.categories || [],
-        cate: food.categories?.[0]?.Cate_name,
-        isDishNew: food.isDishNew,
-        isRecommend: food.isRecommend,
-        favorites_count: food.favorites_count || 0,
-        onAddToFavorite: () => addToFavorites(food._id),
-        status: food.status,
+    ? foods.docs
+        .filter((food) => food.status !== 'hidden')
+        .map((food) => ({
+            id: food._id,
+            name: food.name,
+            slug: food.slug,
+            views: food.views,
+            ordered_count: food.ordered_count,
+            rating: food.average_rating ?? 0,
+            rating_count: food.rating_count ?? 0, 
+            price: food.discount_price || food.price,
+            originalPrice: food.price,
+            discount: food.discount_price
+              ? `${Math.round((1 - food.discount_price / food.price) * 100)}% OFF`
+              : undefined,
+            imageUrl: food.images?.[0] || '',
+            hoverImage: food.images?.[1] || '',
+            description: food.description || '',
+            categories: food.categories || [],
+            cate: food.categories?.[0]?.Cate_name,
+            isDishNew: food.isDishNew,
+            isRecommend: food.isRecommend,
+            favorites_count: food.favorites_count || 0,
+            onAddToFavorite: () => addToFavorites(food._id),
+            status: food.status,
       }))
     : [];
 

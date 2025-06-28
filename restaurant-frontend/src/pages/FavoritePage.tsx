@@ -145,7 +145,7 @@ const FavoritePage: React.FC = () => {
                 <ButtonComponents
                   variant="filled"
                   size="medium"
-                  onClick={() => navigate('/menu')}
+                  onClick={() => navigate('/menu?sort=categoryAZ')}
                   className="px-6 py-2"
                 >
                   Khám phá thực đơn
@@ -169,7 +169,7 @@ const FavoritePage: React.FC = () => {
                   <ButtonComponents
                     variant="filled"
                     size="medium"
-                    onClick={() => navigate('/menu')}
+                    onClick={() => navigate('/menu?sort=categoryAZ')}
                     className="px-4 py-2"
                   >
                     Tiếp tục mua hàng

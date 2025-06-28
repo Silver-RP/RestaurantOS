@@ -215,7 +215,7 @@ const ReservationPage: React.FC = () => {
 
               <div className="flex flex-wrap justify-center gap-4">
                 <ButtonComponents
-                  onClick={() => navigate('/menu')}
+                  onClick={() => navigate('/menu?sort=categoryAZ')}
                   className="bg-secondaryColor hover:bg-secondaryColor/90 text-black font-semibold px-6 py-2"
                 >
                   Tiếp tục đặt món
