@@ -54,7 +54,7 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
     if (!user) {
       toastService.warning('Vui lòng đăng nhập để đặt bàn');
       return;
-    }
+    } 
     navigate('/reservation');
   };
 

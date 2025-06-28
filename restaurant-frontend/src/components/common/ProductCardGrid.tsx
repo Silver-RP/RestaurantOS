@@ -1,6 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiShoppingCart, FiEye, FiCheckSquare, FiHeart, FiStar } from 'react-icons/fi';
+import {
+  FiShoppingCart,
+  FiEye,
+  FiCheckSquare,
+  FiHeart,
+  FiStar,
+} from 'react-icons/fi';
 import { FaHeart } from 'react-icons/fa';
 import { ProductCardProps } from '../../types/ProductCard.types';
 import { useAppDispatch } from '../../redux/hook';
@@ -36,7 +42,7 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
     name: rest.name,
     slug: rest.slug,
     categories: rest.categories || [],
-    status: 'available',
+    status: rest.status || 'available',
     price: rest.price,
     discount_price: rest.originalPrice ?? rest.price,
     description: rest.description,
@@ -52,14 +58,11 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
     images: [rest.imageUrl],
     imagesPreview: [rest.imageUrl],
     createdAt: rest.createdAt ?? new Date().toISOString(),
-    isDeleted: false, 
-    deletedAt: '', 
+    isDeleted: false,
+    deletedAt: '',
     isRecommend: rest.isRecommend ?? false,
   };
 
-  console.log('ProductCardGrid props:', rest);
-  
-  
   return (
     <div className="bg-primaryBackground rounded-lg overflow-hidden shadow-md w-full h-full group">
       <div className="relative w-full pb-[100%] overflow-hidden group">
@@ -89,35 +92,72 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
               NEW
             </span>
           )}
+          {rest.status === 'soldout' && (
+            <span className="bg-white text-red-700 text-[10px] font-semibold px-2 py-1 rounded-sm">
+              Sold Out
+            </span>
+          )}
         </div>
         <div className="absolute top-2 right-2 flex flex-col items-end gap-1 z-10">
-          <span className="min-w-[56px] justify-center bg-secondaryColor text-black text-[10px] font-semibold px-2 py-1 rounded-sm flex items-center gap-1">
-            <FiEye className="w-3 h-3" />
-            {formatNumberShort(rest.views ?? 0)}
-          </span>
-          <span className="min-w-[56px] justify-center bg-secondaryColor text-black text-[10px] font-semibold px-2 py-1 rounded-sm flex items-center gap-1">
-            <FiCheckSquare className="w-3 h-3" />
-            {formatNumberShort(rest.ordered_count ?? 0)}
-          </span>
-          { (rest.favorites_count ?? 0) > 0 && (
-          <span className="min-w-[56px] justify-center bg-secondaryColor text-black text-[10px] font-semibold px-2 py-1 rounded-sm flex items-center gap-1">
-            <FiHeart className="w-3 h-3" />
-            {formatNumberShort(rest.favorites_count ?? 0)}
-          </span>
-          )}
-          {rest.isRecommend && (
-             <span
-             className=" min-w-[24px] justify-center bg-secondaryColor text-black text-[10px] font-semibold px-2 py-1 rounded-sm flex items-center gap-1"
+          <div className="relative group/tooltip inline-flex">
+            <span className="min-w-[56px] justify-center bg-secondaryColor text-black text-[10px] font-semibold px-2 py-1 rounded-sm flex items-center gap-1">
+              <FiEye className="w-3 h-3" />
+              {formatNumberShort(rest.views ?? 0)}
+            </span>
+            <div
+              className="absolute left-0 -translate-x-full top-1/2 -translate-y-1/2 
+    bg-black text-white text-[10px] px-2 py-1 rounded 
+    whitespace-nowrap opacity-0 group-hover/tooltip:opacity-100 
+    transition-all duration-300 z-20 pointer-events-none"
+            >
+              Lượt xem
+              <div className="absolute left-full top-1/2 -translate-y-1/2 w-2 h-2 bg-black rotate-45"></div>
+            </div>
+          </div>
+
+          <div className="relative group/tooltip inline-flex">
+            <span className="min-w-[56px] justify-center bg-secondaryColor text-black text-[10px] font-semibold px-2 py-1 rounded-sm flex items-center gap-1">
+              <FiCheckSquare className="w-3 h-3" />
+              {formatNumberShort(rest.ordered_count ?? 0)}
+            </span>
+            <div
+              className="absolute left-0 -translate-x-full top-1/2 -translate-y-1/2 
+    bg-black text-white text-[10px] px-2 py-1 rounded 
+    whitespace-nowrap opacity-0 group-hover/tooltip:opacity-100 
+    transition-all duration-300 z-20 pointer-events-none"
+            >
+              Đã đặt hàng
+              <div className="absolute left-full top-1/2 -translate-y-1/2 w-2 h-2 bg-black rotate-45"></div>
+            </div>
+          </div>
+
+          {(rest.favorites_count ?? 0) > 0 && (
+            <div className="relative group/tooltip inline-flex">
+              <span className="min-w-[56px] justify-center bg-secondaryColor text-black text-[10px] font-semibold px-2 py-1 rounded-sm flex items-center gap-1">
+                <FiHeart className="w-3 h-3" />
+                {formatNumberShort(rest.favorites_count ?? 0)}
+              </span>
+              <div
+                className="absolute left-0 -translate-x-full top-1/2 -translate-y-1/2 
+      bg-black text-white text-[10px] px-2 py-1 rounded 
+      whitespace-nowrap opacity-0 group-hover/tooltip:opacity-100 
+      transition-all duration-300 z-20 pointer-events-none"
               >
-                <span className="group/icon flex items-center">
-                  <FiStar className="w-3 h-3" />
-                  <span
-                    className=" overflow-hidden max-w-0 opacity-0 group-hover/icon:max-w-[60px] group-hover/icon:opacity-100 transition-all duration-500 whitespace-nowrap ml-1"
-                  >
-                    Đề xuất
-                  </span>
+                Lượt yêu thích
+                <div className="absolute left-full top-1/2 -translate-y-1/2 w-2 h-2 bg-black rotate-45"></div>
+              </div>
+            </div>
+          )}
+
+          {rest.isRecommend && (
+            <span className=" min-w-[24px] justify-center bg-secondaryColor text-black text-[10px] font-semibold px-2 py-1 rounded-sm flex items-center gap-1">
+              <span className="group/icon flex items-center">
+                <FiStar className="w-3 h-3" />
+                <span className=" overflow-hidden max-w-0 opacity-0 group-hover/icon:max-w-[60px] group-hover/icon:opacity-100 transition-all duration-500 whitespace-nowrap ml-1">
+                  Đề xuất
                 </span>
               </span>
+            </span>
           )}
         </div>
 
@@ -148,11 +188,7 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
 
           <div className="relative group/tooltip">
             <button
-              onClick={() =>
-                dispatch(
-                  openQuickView(productDetail),
-                )
-              }
+              onClick={() => dispatch(openQuickView(productDetail))}
               className="p-1.5 sm:p-2 bg-white text-[#002B40] rounded-full shadow-md 
                  hover:bg-secondaryColor hover:text-white hover:-translate-y-1 transition-all duration-300"
             >

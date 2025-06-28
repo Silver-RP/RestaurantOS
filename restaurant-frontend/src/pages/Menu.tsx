@@ -47,6 +47,7 @@ const MenuPage: React.FC = () => {
         isRecommend: food.isRecommend,
         favorites_count: food.favorites_count || 0,
         onAddToFavorite: () => addToFavorites(food._id),
+        status: food.status,
       }))
     : [];
 

@@ -21,4 +21,5 @@ export interface ProductCardProps {
   createdAt?: string;
   categories?: Category[];
   onAddToFavorite: () => void; 
+  status?: 'hidden' | 'available' | 'soldout';
 }

@@ -101,9 +101,6 @@ const QuickViewModal = () => {
             <button className="text-sm text-white underline hover:text-secondaryColor">
               Yêu thích
             </button>
-            <button className="text-sm text-white underline hover:text-secondaryColor">
-              So sánh
-            </button>
           </div>
 
           <div className="text-xs text-gray-400 mt-6 space-y-1">
