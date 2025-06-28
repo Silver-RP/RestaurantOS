@@ -61,7 +61,7 @@ const FeatureSection: React.FC = () => {
       link: '/menu?category=mon-chinh',
     },
     {
-      title: 'Thực đơn trải nghiệm mới',
+      title: 'Thực đơn đề xuất',
       subtitle: 'Món ăn đề xuất',
       backgroundImage: '/assets/images/home/discover3.jpg',
       link: '/menu?category=mon-khai-vi',

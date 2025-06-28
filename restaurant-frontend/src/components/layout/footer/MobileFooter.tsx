@@ -37,7 +37,7 @@ const MobileFooter = () => {
             content: (
               <ul className="text-sm space-y-1">
                 <li>T2 - T6: 8:00 AM - 10:00 PM</li>
-                <li>T7 - CN: 9:00 AM - 11:00 PM</li>
+                <li>T7 - CN: 8:00 AM - 11:00 PM</li>
               </ul>
             ),
           },
@@ -57,7 +57,7 @@ const MobileFooter = () => {
             title: "Liên Hệ",
             content: (
               <div className="text-xs space-y-1">
-                <p><FaPhoneAlt className="inline mr-2" /> +84 - 05512345, +84 - 06666999</p>
+                <p><FaPhoneAlt className="inline mr-2" /> +84 - 05512345, +84 - 0239991256</p>
                 <p><FaEnvelope className="inline mr-2" /> beefbeef@gmail.com</p>
                 <p><FaMapMarkerAlt className="inline mr-2" /> 161 Quốc Hương, Thảo Điền, Quận 2</p>
               </div>
