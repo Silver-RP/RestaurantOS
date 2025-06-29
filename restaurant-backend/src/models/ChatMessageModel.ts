@@ -14,6 +14,13 @@ export interface IChatMessage extends Document {
   is_deleted?: boolean;
   edited?: boolean;
   edited_at?: Date;
+  attachments: string[];
+  status: 'sending' | 'sent' | 'failed';
+  reactions: {
+    user_id: mongoose.Types.ObjectId;
+    emoji: string;
+  }[];
+  is_system?: boolean;
 }
 
 const ChatMessageSchema: Schema = new Schema({
@@ -30,6 +37,15 @@ const ChatMessageSchema: Schema = new Schema({
   is_deleted: { type: Boolean, default: false },
   edited: { type: Boolean, default: false },
   edited_at: { type: Date },
+  is_system: { type: Boolean, default: false },
+  attachments: { type: [String], default: [] },
+  status: { type: String, enum: ['sending', 'sent', 'failed'], default: 'sent' },
+  reactions: [
+    {
+      user_id: { type: Schema.Types.ObjectId, ref: 'User' },
+      emoji: String,
+    },
+  ],
 });
 
 // Support full text search if needed

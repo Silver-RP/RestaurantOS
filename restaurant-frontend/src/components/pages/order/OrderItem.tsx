@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { Order, OrderItem, Status } from '@/types/Order.type';
-import { statusMapping } from './NavigationOrder';
 import { useCancelOrder, useRequestReturn } from '@/hooks/useOrder';
 import { toast } from 'react-toastify';
 import { useDispatch } from 'react-redux';
@@ -19,7 +19,7 @@ const statusColorMap: Record<Status, string> = {
   RETURN_APPROVED: 'text-orange-400 bg-orange-400/10',
   RETURN_REJECTED: 'text-red-400 bg-red-400/10',
   RETURNED: 'text-gray-400 bg-gray-400/10',
-  DELIVERY_FAILED: 'text-red-400 bg-red-400/10'
+  DELIVERY_FAILED: 'text-red-400 bg-red-400/10',
 };
 
 interface ReasonModalProps {
@@ -29,7 +29,12 @@ interface ReasonModalProps {
   title: string;
 }
 
-const ReasonModal: React.FC<ReasonModalProps> = ({ isOpen, onClose, onSubmit, title }) => {
+const ReasonModal: React.FC<ReasonModalProps> = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  title,
+}) => {
   const [reason, setReason] = useState('');
 
   if (!isOpen) return null;
@@ -83,13 +88,23 @@ interface OrderItemProps {
 }
 
 const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [showMore, setShowMore] = useState(false);
   const [showReasonModal, setShowReasonModal] = useState(false);
   const [modalType, setModalType] = useState<'cancel' | 'return'>('cancel');
-  const dispatch = useDispatch();
 
   const { mutate: cancelOrder } = useCancelOrder();
   const { mutate: requestReturn } = useRequestReturn();
+
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const orderId = searchParams.get('orderId');
+    if (orderId) {
+      dispatch(openOrderModal(orderId));
+    }
+  }, [searchParams]);
 
   const items = order.order_items || [];
 
@@ -119,24 +134,54 @@ const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
     }
   };
 
+  const handleNavigateToDetail = (slug: string) => {
+    navigate(`/foods/${slug}`);
+  };
+  const handleReorder = () => {
+    if (!order.order_items?.length) {
+      toast.error('Không có sản phẩm để đặt lại');
+      return;
+    }
+
+    const reorderItems = order.order_items.map((item) => ({
+      id: item.dish_id,
+      name: item.dish_name,
+      discountedPrice: item.unit_price,
+      price: item.unit_price,
+      quantity: item.quantity,
+      imageUrl: item.dish_images?.[0] || '/placeholder-image.jpg',
+      category: item.categories?.[0] || 'Không phân loại',
+    }));
+
+    localStorage.setItem('selectedCartItems', JSON.stringify(reorderItems));
+    navigate('/checkout');
+  };
+
   if (!items.length) {
-    return <div className="text-white">Không có sản phẩm trong đơn hàng này.</div>;
+    return (
+      <div className="text-white">Không có sản phẩm trong đơn hàng này.</div>
+    );
   }
 
-  const orderCode = (order._id?.slice(-6) || '000000').toUpperCase();  
+  const orderCode = (order._id?.slice(-6) || '000000').toUpperCase();
 
   const getStatusTabName = (status: string | null | undefined): string => {
-    for (const [tabName, config] of Object.entries(statusMapping)) {
-      const statusConfig = config.status;
-      if (statusConfig === null) continue;
+    const statusMap: Record<string, string> = {
+      ORDER_PLACED: 'Chờ xác nhận',
+      ORDER_CONFIRMED: 'Đã xác nhận',
+      PENDING_PICKUP: 'Chờ lấy hàng',
+      PICKED_UP: 'Đã lấy hàng',
+      IN_TRANSIT: 'Đang giao hàng',
+      DELIVERED: 'Đã giao hàng',
+      CANCELLED: 'Đã hủy',
+      RETURN_REQUESTED: 'Yêu cầu hoàn trả',
+      RETURN_APPROVED: 'Đã duyệt hoàn trả',
+      RETURN_REJECTED: 'Từ chối hoàn trả',
+      RETURNED: 'Đã hoàn trả',
+      DELIVERY_FAILED: 'Giao hàng thất bại',
+    };
 
-      if (Array.isArray(statusConfig)) {
-        if (status && statusConfig.includes(status)) return tabName;
-      } else {
-        if (status === statusConfig) return tabName;
-      }
-    }
-    return 'Tất cả đơn hàng';
+    return status ? statusMap[status] || 'Không xác định' : 'Không xác định';
   };
 
   const statusText = getStatusTabName(order.status);
@@ -149,8 +194,10 @@ const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
     quantity: item.quantity,
     price: item.unit_price,
     total: item.total_amount,
+    slug: item.dish_slug || '',
   });
 
+  console.log('items', items);
   const normalized = items.map(normalizeItem);
   const [firstItem, ...others] = normalized;
 
@@ -160,8 +207,12 @@ const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
     <div className="relative text-white p-4 md:p-6 border border-white/10 rounded-md">
       {/* Mã đơn + Trạng thái */}
       <div className="flex justify-between md:text-sm mb-2">
-        <span className="text-white/80 text-lg">Mã đơn: <span className="font-medium">{orderCode}</span></span>
-        <span className={`font-semibold px-3 py-1 rounded-full text-sm ${statusColorMap[order.status as Status]}`}>
+        <span className="text-white/80 text-lg">
+          Mã đơn: <span className="font-medium">{orderCode}</span>
+        </span>
+        <span
+          className={`font-semibold px-3 py-1 rounded-full text-sm ${statusColorMap[order.status as Status]}`}
+        >
           {statusText}
         </span>
       </div>
@@ -169,17 +220,23 @@ const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
       {/* Sản phẩm đầu tiên */}
       <div className="border-y border-white/20 py-4 flex items-center justify-between gap-4">
         <div className="flex items-center min-w-0 flex-grow">
-          <img 
-            src={firstItem.image} 
-            alt={firstItem.name} 
-            className="w-20 h-20 object-cover rounded-md"
+          <img
+            src={firstItem.image}
+            alt={firstItem.name}
+            className="w-20 h-20 object-cover rounded-md cursor-pointer"
+            onClick={() => handleNavigateToDetail(firstItem.slug)}
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               target.src = '/placeholder-image.jpg';
             }}
           />
           <div className="ml-4 min-w-0">
-            <h2 className="font-bold text-sm md:text-lg line-clamp-2">{firstItem.name}</h2>
+            <h2
+              className="font-bold text-sm md:text-lg line-clamp-2 cursor-pointer hover:text-secondaryColor"
+              onClick={() => handleNavigateToDetail(firstItem.slug)}
+            >
+              {firstItem.name}
+            </h2>
             <p className="text-xs mt-1">Phân loại: {firstItem.category}</p>
             <p className="text-xs mt-1">x{firstItem.quantity}</p>
           </div>
@@ -199,7 +256,11 @@ const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
             className="flex items-center text-xs text-white/70 hover:underline"
           >
             {showMore ? 'Thu gọn' : 'Xem thêm'}{' '}
-            {showMore ? <FaChevronUp className="ml-1" /> : <FaChevronDown className="ml-1" />}
+            {showMore ? (
+              <FaChevronUp className="ml-1" />
+            ) : (
+              <FaChevronDown className="ml-1" />
+            )}
           </button>
         </div>
       )}
@@ -207,19 +268,28 @@ const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
       {showMore && (
         <div className="mt-4 space-y-4">
           {others.map((item) => (
-            <div key={item._id} className="flex justify-between items-center border-b border-white/10 pb-2 gap-4">
+            <div
+              key={item._id}
+              className="flex justify-between items-center border-b border-white/10 pb-2 gap-4"
+            >
               <div className="flex items-center flex-grow min-w-0">
-                <img 
-                  src={item.image} 
-                  alt={item.name} 
-                  className="w-16 h-16 object-cover rounded-md"
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="w-16 h-16 object-cover rounded-md cursor-pointer"
+                  onClick={() => handleNavigateToDetail(item.slug)}
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.src = '/placeholder-image.jpg';
                   }}
                 />
                 <div className="ml-3 min-w-0">
-                  <h3 className="font-semibold text-xs line-clamp-2">{item.name}</h3>
+                  <h3
+                    className="font-semibold text-xs line-clamp-2 cursor-pointer hover:text-secondaryColor"
+                    onClick={() => handleNavigateToDetail(item.slug)}
+                  >
+                    {item.name}
+                  </h3>
                   <p className="text-[10px] mt-1">Phân loại: {item.category}</p>
                   <p className="text-[10px] mt-1">x{item.quantity}</p>
                 </div>
@@ -266,6 +336,15 @@ const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
           <span className="px-4 py-1.5 text-xs bg-transparent border border-secondaryColor text-secondaryColor font-normal font-sans">
             ĐÃ YÊU CẦU HOÀN TRẢ
           </span>
+        )}
+        {(order.status === 'DELIVERED' ||
+          order.status === 'RETURN_REJECTED') && (
+          <button
+            onClick={handleReorder}
+            className="px-4 py-1.5 text-xs bg-transparent border border-secondaryColor text-white font-normal font-sans hover:bg-secondaryColor hover:text-headerBackground focus:ring-bodyBackground active:bg-secondaryColor/90 active:text-headerBackground"
+          >
+            MUA LẠI
+          </button>
         )}
 
         <button

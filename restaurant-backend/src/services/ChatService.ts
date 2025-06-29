@@ -6,17 +6,39 @@ import UserModel from '../models/UserModel';
 import { logger } from '../utils/logger';
 import { sendPushNotification } from '../utils/fcmUtils'; // đường dẫn tuỳ bạn
 import FCMTokenModel from '../models/FCMTokenModel';
-
+// Use CommonJS require for compatibility with CommonJS output
+import { getUserSocketIds } from '../socket/socket'; // để gửi riêng bot cho user
+const delay = (ms: number) => new Promise((res) => setTimeout(res, ms)); // delay 2s
 class ChatService {
   async getOrCreateChat(userId: string): Promise<ChatSession> {
     let chat = await ChatBoxModel.findOne({
       user_id: userId,
-      status: { $in: ['open', 'pending'] },
+      status: { $in: ['pending', 'open'] },
     });
 
     if (!chat) {
+      // Step 1: Lấy toàn bộ user + role
+      const users = await UserModel.find().populate({
+        path: 'roles',
+        select: 'name',
+      });
+
+      // Step 2: Tìm user có role 'cashier'
+      const defaultCashier = users.find((user) =>
+        user.roles?.some((role: any) => role.name === 'cashier'),
+      );
+
+      if (!defaultCashier) {
+        console.warn('[⚠️ Không tìm thấy cashier]');
+        throw new Error('NO_CASHIER_AVAILABLE');
+      }
+
+      console.log('[✅ Tạo phiên mới + gán cashier]:', defaultCashier.username);
+
+      // Step 3: Tạo phiên
       chat = await ChatBoxModel.create({
         user_id: userId,
+        cashier_user_id: defaultCashier._id,
         status: 'pending',
       });
     }
@@ -24,7 +46,7 @@ class ChatService {
     return {
       ...chat.toObject(),
       _id: (chat._id as mongoose.Types.ObjectId | string).toString(),
-    } as ChatSession;
+    };
   }
 
   async getMessagesWithPagination(
@@ -53,10 +75,10 @@ class ChatService {
       receiver_id: msg.receiver_id?.toString(),
       reply_to: msg.reply_to
         ? {
-            ...msg.reply_to,
-            _id: msg.reply_to._id?.toString(),
-            sender_id: msg.reply_to.sender_id?.toString(),
-          }
+          ...msg.reply_to,
+          _id: msg.reply_to._id?.toString(),
+          sender_id: msg.reply_to.sender_id?.toString(),
+        }
         : null,
     })) as ChatMessage[];
   }
@@ -82,7 +104,7 @@ class ChatService {
     const skip = (page - 1) * limit;
 
     const chats = await ChatBoxModel.find(query)
-      .populate('user_id', 'username avatar')
+      .populate('user_id', 'username avatar phone gender isOnline')
       .sort({ updatedAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -165,6 +187,8 @@ class ChatService {
     if (!chat) {
       throw new Error('CHAT_NOT_FOUND');
     }
+
+    await chat.populate('user_id', 'username');
     return {
       ...chat.toObject(),
       _id: (chat._id as mongoose.Types.ObjectId | string).toString(),
@@ -243,17 +267,23 @@ class ChatService {
     await message.save();
   }
 
+
+
   async sendMessage(data: SendMessageDto): Promise<ChatMessage> {
     const chat = await ChatBoxModel.findById(data.chatId);
     if (!chat) throw new Error('CHAT_NOT_FOUND');
 
-    const senderRole =
-      typeof data.role === 'string' ? data.role : Array.isArray(data.role) ? data.role[0] : 'user';
+    const senderRole = data.role || 'user';
+    const receiverId =
+      senderRole === 'cashier' ? chat.user_id : chat.cashier_user_id;
 
-    const receiverId = senderRole === 'cashier' ? chat.user_id : chat.cashier_user_id;
+    if (!receiverId) throw new Error('RECEIVER_NOT_FOUND');
 
+    const isFirstMessage = !(await ChatMessageModel.exists({ chat_id: chat._id }));
+
+    // 👉 1. Ghi lại tin nhắn người dùng gửi
     const userMessage = await ChatMessageModel.create({
-      chat_id: new mongoose.Types.ObjectId(data.chatId),
+      chat_id: chat._id,
       sender_id: new mongoose.Types.ObjectId(data.senderId),
       receiver_id: new mongoose.Types.ObjectId(receiverId),
       sender_role: senderRole,
@@ -265,31 +295,58 @@ class ChatService {
       reply_to: data.replyTo ? new mongoose.Types.ObjectId(data.replyTo) : null,
     });
 
-    // Gửi qua socket realtime
+    if (isFirstMessage) {
+      chat.first_message_at = new Date();
+    }
+    chat.updated_at = new Date();
+    await chat.save();
+
+    // 📡 Emit socket cho tất cả
     globalThis.io?.to(data.chatId).emit('message', {
       ...userMessage.toObject(),
-      _id: (userMessage._id as mongoose.Types.ObjectId | string).toString(),
+      _id: String(userMessage._id),
+      sender_id: String(userMessage.sender_id),
+      receiver_id: String(userMessage.receiver_id),
+      sender_role: senderRole,
     });
 
-    // 👉 Gửi Push Notification FCM
-    if (receiverId) {
-      try {
-        const fcmTokens = await FCMTokenModel.find({ userId: receiverId }).lean();
-        const tokens = fcmTokens.map((t) => t.token);
-        if (tokens.length > 0) {
-          await sendPushNotification(tokens, 'Tin nhắn mới', data.content, {
-            chatId: data.chatId,
-            senderId: data.senderId,
-          });
-        }
-      } catch (err) {
-        logger.error?.('FCM Notification Error', err);
+    // 🔔 Push FCM
+    try {
+      const fcmTokens = await FCMTokenModel.find({ userId: receiverId }).lean();
+      const tokens = fcmTokens.map((t) => t.token);
+      if (tokens.length > 0) {
+        await sendPushNotification(tokens, 'Tin nhắn mới', data.content, {
+          chatId: data.chatId,
+          senderId: data.senderId,
+        });
       }
+    } catch (err) {
+      logger.error?.('FCM Notification Error', err);
     }
 
-    // 👉 Nếu là user & chưa có cashier thì tự động trả lời bằng bot
+    // 🤖 2. Nếu là user gửi và chưa có cashier, cho phép bot trả lời (chờ 2s kiểm tra)
     if (senderRole === 'user' && !chat.cashier_user_id) {
-      const { getBotReply } = await import('../utils/openaiBot');
+      await delay(2000);
+
+      const hasCashierReply = await ChatMessageModel.exists({
+        chat_id: chat._id,
+        sender_role: 'cashier',
+      });
+
+      if (hasCashierReply) {
+        console.log('[🤖 BOT BỊ HUỶ]: Đã có nhân viên phản hồi');
+        userMessage;
+        return {
+          ...userMessage.toObject(),
+          _id: String(userMessage._id),
+          sender_id: String(userMessage.sender_id),
+          receiver_id: String(userMessage.receiver_id),
+          sender_role: senderRole,
+        } as ChatMessage;
+
+      }
+
+      const { getBotReply } = require('../utils/openaiBot');
       const botReply = await getBotReply(data.content);
 
       const botMessage = await ChatMessageModel.create({
@@ -303,17 +360,29 @@ class ChatService {
         sent_at: new Date(),
       });
 
-      globalThis.io?.to(data.chatId).emit('message', {
-        ...botMessage.toObject(),
-        _id: (botMessage._id as mongoose.Types.ObjectId | string).toString(),
+      // ❗ Chỉ gửi cho user
+      const userSockets = getUserSocketIds(data.senderId);
+      userSockets.forEach(socketId => {
+        globalThis.io?.to(socketId).emit('message', {
+          ...botMessage.toObject(),
+          _id: String(botMessage._id),
+        });
       });
+
+      // cập nhật chat
+      chat.initiated_by = 'bot';
+      chat.status = 'open';
+      await chat.save();
+
+      console.log('[🤖 BOT REPLY]:', botReply);
     }
 
     return {
       ...userMessage.toObject(),
-      _id: (userMessage._id as mongoose.Types.ObjectId | string).toString(),
+      _id: String(userMessage._id),
     } as ChatMessage;
   }
+
 }
 
 export default new ChatService();

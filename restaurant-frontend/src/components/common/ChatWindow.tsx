@@ -1,12 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FiSend } from 'react-icons/fi';
+import { FiCornerDownLeft, FiMoreVertical, FiSend } from 'react-icons/fi';
 import EmojiPicker, { Theme } from 'emoji-picker-react';
+import { socket } from '@/utils/socket';
+import { EmojiButton } from '@joeattardi/emoji-button';
 
 type UnifiedMessage = {
-  sender?: 'user' | 'bot';
+  sender_id?: 'user' | 'bot';
   text?: string;
   sender_role?: string;
   content?: string;
+  sent_at?: string | number;
+  reactions?: { emoji: string; userId?: string }[];
 };
 
 interface ChatWindowProps {
@@ -34,11 +38,13 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   faqList,
   currentUserId,
 }) => {
-  console.log('[DEBUG] currentUserId:', currentUserId); // 👈 dòng này để kiểm tra
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const messageEndRef = useRef<HTMLDivElement | null>(null);
+  const emojiButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const pickerRef = useRef<EmojiButton | null>(null);
+  const currentMsgIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -58,6 +64,31 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     }
   };
 
+  const handleReactToMessage = (messageId: string, emoji: string) => {
+    if (!currentUserId) return;
+    socket.emit('reactMessage', {
+      messageId,
+      emoji,
+      userId: currentUserId,
+      // chatId: chatId, // Uncomment and provide chatId if needed
+    });
+  };
+  const showReactionPicker = (idx: number, messageId: string) => {
+    if (!pickerRef.current) {
+      pickerRef.current = new EmojiButton({ position: 'bottom-end', theme: 'dark' });
+      pickerRef.current.on('emoji', (selection) => {
+        if (currentMsgIdRef.current) {
+          handleReactToMessage(currentMsgIdRef.current, selection.emoji);
+        }
+      });
+    }
+
+    currentMsgIdRef.current = messageId;
+
+    if (emojiButtonRefs.current[idx]) {
+      pickerRef.current.togglePicker(emojiButtonRefs.current[idx]!);
+    }
+  };
   return (
     <div className="w-[420px] h-[620px] bg-[#0D1B2A] text-white border border-yellow-300 rounded-lg flex flex-col shadow-lg overflow-hidden relative">
       {/* Header */}
@@ -99,9 +130,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
           ))}
           <button
             onClick={onShowInput}
-            className="mt-4 text-sm underline hover:text-yellow-300"
+            className="mt-4 text-sm underline hover:text-yellow-300 flex items-center gap-2"
           >
-            ✏️ Gửi câu hỏi riêng
+            <span>🤖</span>
+            <span>Trợ lý bằng AI</span>
           </button>
         </div>
       ) : (
@@ -109,47 +141,97 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
           {/* Message display */}
           <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 text-sm scrollbar-thin scrollbar-thumb-yellow-400 scrollbar-track-transparent scrollbar-thumb-rounded-full hover:scrollbar-thumb-yellow-500">
             {messages.map((msg, idx) => {
-              const senderId = msg.sender || '';
               const text = msg.text || msg.content || '';
+              const senderId = msg.sender_id || '';
               const isMine = senderId === currentUserId;
 
-              console.log(`[DEBUG] msg[${idx}]:`, {
-                senderId,
-                currentUserId,
-                isMine,
-                text,
-              });
               return (
-                <div
-                  key={idx}
-                  className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}
-                >
+                <div key={idx} className={`flex items-start ${isMine ? 'justify-end' : 'justify-start'}`}>
+                  {/* Avatar trái */}
                   {!isMine && (
                     <img
                       src="/bot-avatar.png"
-                      className="w-7 h-7 rounded-full mr-3"
+                      alt="avatar"
+                      className="w-7 h-7 rounded-full mr-3 shrink-0"
                     />
                   )}
-                  <div
-                    className={`max-w-[75%] px-4 py-3 rounded-lg ${isMine ? 'bg-yellow-300 text-black' : 'bg-white text-black'}`}
-                  >
-                    <p>{text}</p>
-                    <p className="text-xs text-gray-500 mt-1 text-right">
-                      {new Date().toLocaleTimeString()}
-                    </p>
+
+                  {/* Bubble + Emoji */}
+                  <div className="relative group max-w-[75%]">
+                    {/* Tin nhắn */}
+                    <div
+                      className={`
+                          inline-block min-w-[80px] px-4 py-3 rounded-lg shadow
+                          whitespace-pre-wrap break-words
+                          ${isMine ? 'bg-yellow-300 text-black' : 'bg-white text-black'}
+                        `}
+                    >
+                      <p>{text}</p>
+                      <p className="text-xs text-gray-500 mt-1 text-right">
+                        {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
+
+                    {/* ✅ Emoji tách rời bên ngoài bubble */}
+                    {msg.reactions && msg.reactions.length > 0 && (
+                      <div
+                        className={`absolute text-xl ${isMine ? 'bottom-[-12px] left-[-6px]' : 'bottom-[-12px] right-[-6px]'
+                          }`}
+                      >
+                        {msg.reactions.map((r, i) => (
+                          <span key={i}>{r.emoji}</span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Hover actions */}
+                    <div
+                      className={`
+                        absolute top-1/2 -translate-y-1/2 z-10 hidden group-hover:flex gap-1
+                        ${isMine ? 'right-full mr-2' : 'left-full ml-2'}
+                      `}
+                    >
+                      <button
+                        onClick={() => alert('Reply')}
+                        className="action-btn w-8 h-8 rounded-full bg-white border border-gray-200 shadow flex items-center justify-center hover:scale-110 transition"
+                        title="Reply"
+                      >
+                        <FiCornerDownLeft className="text-gray-800" />
+                      </button>
+                      <button
+                        ref={(el) => (emojiButtonRefs.current[idx] = el)}
+                        onClick={() => showReactionPicker(idx, msg._id || '')}
+                        className="action-btn w-8 h-8 rounded-full bg-white border border-gray-200 shadow flex items-center justify-center hover:scale-110 transition"
+                        title="Emoji"
+                      >
+                        😊
+                      </button>
+                      <button
+                        onClick={() => alert('More')}
+                        className="action-btn w-8 h-8 rounded-full bg-white border border-gray-200 shadow flex items-center justify-center hover:scale-110 transition"
+                        title="More"
+                      >
+                        <FiMoreVertical className="text-gray-800" />
+                      </button>
+                    </div>
                   </div>
+
+                  {/* Avatar phải */}
                   {isMine && (
                     <img
                       src="/user-avatar.png"
-                      className="w-7 h-7 rounded-full ml-3"
+                      alt="avatar"
+                      className="w-7 h-7 rounded-full ml-3 shrink-0"
                     />
                   )}
                 </div>
               );
+
             })}
 
             <div ref={messageEndRef} />
           </div>
+
 
           {/* Input */}
           <div className="border-t border-yellow-300 p-2 bg-[#0D1B2A] flex items-center gap-2 relative">
@@ -186,20 +268,24 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                 🔗
               </button>
             </div>
+
             <input
               value={input}
               onChange={(e) => onInputChange(e.target.value)}
               className="flex-1 px-3 py-[6px] bg-[#0D1B2A] text-white text-sm outline-none border border-white/10 rounded min-w-0"
               placeholder="Nhập tin nhắn, emoji, đính kèm..."
             />
+
             <button
               onClick={handleSendClick}
               className="shrink-0 w-10 h-10 bg-yellow-300 text-black rounded flex items-center justify-center hover:bg-yellow-400 shadow"
             >
               <FiSend size={18} />
             </button>
+
+            {/* ✅ EmojiPicker: hiển thị ngay trên input */}
             {showEmojiPicker && (
-              <div className="absolute bottom-14 left-0 z-50">
+              <div className="absolute bottom-full left-0 mb-2 z-50">
                 <EmojiPicker
                   theme={Theme.DARK}
                   onEmojiClick={(e) => onInputChange(input + e.emoji)}
@@ -207,6 +293,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
               </div>
             )}
           </div>
+
         </>
       )}
     </div>

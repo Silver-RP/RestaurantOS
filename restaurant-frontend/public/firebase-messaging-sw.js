@@ -1,8 +1,10 @@
 // public/firebase-messaging-sw.js
-importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js');
-importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js');
+if (typeof self !== 'undefined' && typeof importScripts === 'function') {
+  importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js');
+  importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js');
+}
 
-firebase.initializeApp({
+self.firebase.initializeApp({
   apiKey: "AIzaSyCI8A6yY72Kcgdj60Tky4BRqkbx60OWTQM",
   authDomain: "beefbeef-5f8e7.firebaseapp.com",
   projectId: "beefbeef-5f8e7",
@@ -12,7 +14,7 @@ firebase.initializeApp({
   measurementId: "G-16XCV5JZCY"
 });
 
-const messaging = firebase.messaging();
+const messaging = self.firebase.messaging();
 
 messaging.onBackgroundMessage(function(payload) {
   console.log('[firebase-messaging-sw.js] Received background message ', payload);

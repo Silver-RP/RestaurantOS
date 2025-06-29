@@ -46,7 +46,7 @@ const PaymentInfo: React.FC<PaymentInfoProps> = ({
         {order.payment_status === 'PAID' ? 'Đã thanh toán' : 'Chưa thanh toán'}
       </p>
 
-      {order.payment_status !== 'PAID' && (
+      {(order.payment_status !== 'PAID' && order.status !== 'CANCELLED' ) && (
         <button
         className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md shadow hover:bg-blue-700 disabled:opacity-60 transition-all duration-200"
         onClick={handleConfirmPayment}

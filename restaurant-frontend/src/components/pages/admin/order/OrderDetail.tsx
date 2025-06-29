@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 import {
-  Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
@@ -9,6 +9,7 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Dialog,
 } from '@mui/material';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
@@ -16,8 +17,10 @@ import { useOrderDetail, useUpdateOrderStatus } from '@/hooks/useOrder';
 import { toast } from 'react-toastify';
 import PaymentInfo from './PaymentInfo';
 import { Order } from '@/types/Order.type';
-import { getStatusText, getStatusColor } from '@/components/pages/admin/order/OrderCommon';
-
+import {
+  getStatusText,
+  getStatusColor,
+} from '@/components/pages/admin/order/OrderCommon';
 
 const STATUS_TRANSITIONS: { [key: string]: string[] } = {
   ORDER_PLACED: ['ORDER_CONFIRMED'],
@@ -34,32 +37,31 @@ const STATUS_TRANSITIONS: { [key: string]: string[] } = {
   CANCELLED: [],
 };
 
-
 const DELIVERY_STATUS_LABELS: { [key: string]: string } = {
-  'ORDER_CONFIRMED': 'Xác nhận đơn hàng',
-  'PENDING_PICKUP': 'Chờ nhận hàng',
-  'PICKED_UP': 'Đã nhận hàng',
-  'IN_TRANSIT': 'Đang giao',
-  'DELIVERED': 'Giao hàng thành công',
-  'DELIVERY_FAILED': 'Giao hàng thất bại',
-  'RETURN_REQUESTED': 'Yêu cầu trả hàng',
-  'RETURN_APPROVED': 'Đã xác nhận trả hàng',
-  'RETURN_REJECTED': 'Trả hàng bị từ chối',
-  'RETURNED': 'Đã trả hàng',
-  'CANCELLED': 'Đã hủy',
+  ORDER_CONFIRMED: 'Xác nhận đơn hàng',
+  PENDING_PICKUP: 'Chờ nhận hàng',
+  PICKED_UP: 'Đã nhận hàng',
+  IN_TRANSIT: 'Đang giao',
+  DELIVERED: 'Giao hàng thành công',
+  DELIVERY_FAILED: 'Giao hàng thất bại',
+  RETURN_REQUESTED: 'Yêu cầu trả hàng',
+  RETURN_APPROVED: 'Xác nhận trả hàng',
+  RETURN_REJECTED: 'Từ chối trả hàng',
+  RETURNED: 'Trả hàng thành công',
+  CANCELLED: 'Đã hủy',
 };
 
 const PICKUP_STATUS_LABELS: { [key: string]: string } = {
-  'ORDER_CONFIRMED': 'Xác nhận đơn hàng',
-  'PENDING_PICKUP': 'Chuẩn bị đơn hàng',
-  'IN_TRANSIT': 'Đã chuẩn bị xong đơn hàng',
-  'DELIVERED': 'Người nhận đã lấy hàng',
-  'DELIVERY_FAILED': 'Người nhận không lấy hàng',
-  'RETURN_REQUESTED': 'Yêu cầu trả hàng',
-  'RETURN_APPROVED': 'Đã xác nhận trả hàng',
-  'RETURN_REJECTED': 'Trả hàng bị từ chối',
-  'RETURNED': 'Đã trả hàng',
-  'CANCELLED': 'Đã hủy',
+  ORDER_CONFIRMED: 'Xác nhận đơn hàng',
+  PENDING_PICKUP: 'Chuẩn bị đơn hàng',
+  IN_TRANSIT: 'Đã chuẩn bị xong đơn hàng',
+  DELIVERED: 'Người nhận đã lấy hàng',
+  DELIVERY_FAILED: 'Người nhận không lấy hàng',
+  RETURN_REQUESTED: 'Yêu cầu trả hàng',
+  RETURN_APPROVED: 'Xác nhận trả hàng',
+  RETURN_REJECTED: 'Từ chối trả hàng',
+  RETURNED: 'Trả hàng thành công',
+  CANCELLED: 'Đã hủy',
 };
 
 interface OrderDetailProps {
@@ -76,7 +78,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
   const { data: orderDetail, isLoading } = useOrderDetail(orderId);
   const updateStatusMutation = useUpdateOrderStatus();
   const [newStatus, setNewStatus] = useState('');
-  const [orderPayment, setOrderPayment] = useState<Order | null>(null);
+  const [, setOrderPayment] = useState<Order | null>(null);
 
   function handlePaymentConfirmed(updatedOrder: Order) {
     setOrderPayment(updatedOrder);
@@ -87,7 +89,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
       return format(new Date(dateString), 'HH:mm - dd/MM/yyyy', {
         locale: vi,
       });
-    } catch (error) {
+    } catch {
       return 'N/A';
     }
   };
@@ -95,8 +97,6 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
   const formatPrice = (price: number) => {
     return price.toLocaleString('vi-VN') + '₫';
   };
-
-
 
   const handleUpdateStatus = async () => {
     if (!newStatus) {
@@ -114,7 +114,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
           },
         },
       );
-    } catch (error) {
+    } catch {
       // Error toast is handled in useUpdateOrderStatus
     }
   };
@@ -148,8 +148,10 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
           <span
             className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}
           >
-            {getStatusText(order.status, order.delivery_type as 'DELIVERY' | 'PICKUP')}
-            
+            {getStatusText(
+              order.status,
+              order.delivery_type as 'DELIVERY' | 'PICKUP',
+            )}
           </span>
         </div>
         <div className="text-sm font-normal">{formatDate(order.createdAt)}</div>
@@ -307,6 +309,37 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
                       )}
                   </div>
                 )}
+              {order.delivery_type === 'PICKUP' && order.delivery_time_type && (
+                <div className="mt-2">
+                  {/* <p className="text-gray-600">Thời gian nhận hàng</p> */}
+
+                  {order.delivery_time_type === 'SCHEDULED' &&
+                    order.scheduled_time && (
+                      <p className="text-sm text-blue-600">
+                        Thời gian nhận: {formatDate(order.scheduled_time)}
+                      </p>
+                    )}
+                </div>
+              )}
+
+              {(order.status === 'RETURNED' ||
+                order.status === 'RETURN_APPROVED' ||
+                order.status === 'RETURN_REJECTED') && (
+                <div className="mt-2">
+                  <p className="text-gray-600">Lí do trả hàng:</p>
+                  <p className="text-base font-medium text-red-600">
+                    {order.cancelled_reason || 'Không có lí do'}
+                  </p>
+                </div>
+              )}
+              {order.status === 'CANCELLED' && (
+                <div className="mt-2">
+                  <p className="text-gray-600">Lí do hủy đơn:</p>
+                  <p className="text-base font-medium text-red-600">
+                    {order.cancelled_reason || 'Không có lí do'}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -336,10 +369,9 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
                 {STATUS_TRANSITIONS[order.status]?.length ? (
                   STATUS_TRANSITIONS[order.status].map((statusValue: any) => (
                     <MenuItem key={statusValue} value={statusValue}>
-                      {order.delivery_type === 'DELIVERY' 
+                      {order.delivery_type === 'DELIVERY'
                         ? DELIVERY_STATUS_LABELS[statusValue]
-                        : PICKUP_STATUS_LABELS[statusValue]
-                      }
+                        : PICKUP_STATUS_LABELS[statusValue]}
                     </MenuItem>
                   ))
                 ) : (

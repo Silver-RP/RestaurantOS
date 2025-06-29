@@ -1,6 +1,9 @@
 import { Server, Socket } from 'socket.io';
 import ChatService from '../services/ChatService';
 import ChatSessionManager from './ChatSessionManager';
+import UserModel from '../models/UserModel';
+import mongoose from 'mongoose'; // cần để dùng `isValidObjectId`
+import ChatMessageModel from '../models/ChatMessageModel';
 
 declare global {
   // eslint-disable-next-line no-var
@@ -27,6 +30,11 @@ export const initSocket = (io: Server) => {
       const existing = userSocketMap.get(userId) || [];
       userSocketMap.set(userId, [...new Set([...existing, socket.id])]);
 
+
+      // set trạng thái online cho user
+      if (existing.length === 0 && mongoose.Types.ObjectId.isValid(userId)) {
+        await UserModel.findByIdAndUpdate(userId, { isOnline: true }).exec();
+      }
       if (roles === 'user') {
         const session = ChatSessionManager.getSessionByUser(userId);
         if (!session) {
@@ -91,8 +99,9 @@ export const initSocket = (io: Server) => {
     });
 
     // DISCONNECT
-    socket.on('disconnect', () => {
+    socket.on('disconnect', async () => {
       console.log('Socket disconnected:', socket.id);
+
       for (const [userId, sockets] of userSocketMap.entries()) {
         const filtered = sockets.filter((id) => id !== socket.id);
         if (filtered.length > 0) {
@@ -100,8 +109,56 @@ export const initSocket = (io: Server) => {
         } else {
           userSocketMap.delete(userId);
           ChatSessionManager.removeSession(userId);
+
+
+          if (mongoose.Types.ObjectId.isValid(userId)) {
+            await UserModel.findByIdAndUpdate(userId, { isOnline: false }).exec();
+          }
         }
       }
     });
+    // MANUAL DISCONNECT
+    // Dùng khi cần ngắt kết nối thủ công từ phía client
+    // Ví dụ: khi người dùng đăng xuất hoặc đóng ứng dụng
+    socket.on('manualDisconnect', async ({ userId }) => {
+      userSocketMap.delete(userId);
+      ChatSessionManager.removeSession(userId);
+      if (mongoose.Types.ObjectId.isValid(userId)) {
+        await UserModel.findByIdAndUpdate(userId, { isOnline: false });
+      }
+      socket.disconnect(); // Đảm bảo socket tự đóng luôn
+    });
+
+    // show emoji picker
+    socket.on('reactMessage', async ({ messageId, emoji, userId, chatId }) => {
+      try {
+        const msg = await ChatMessageModel.findById(messageId);
+        if (!msg) return;
+
+        await ChatMessageModel.updateOne(
+          { _id: messageId },
+          { $pull: { reactions: { user_id: userId } } }
+        );
+        await ChatMessageModel.updateOne(
+          { _id: messageId },
+          { $push: { reactions: { user_id: userId, emoji } } }
+        );
+
+        const updatedMsg = await ChatMessageModel.findById(messageId).lean();
+        if (updatedMsg) {
+          updatedMsg._id = String(updatedMsg._id);
+        }
+
+        io.to(chatId).emit('messageReactionUpdated', {
+          messageId,
+          reactions: updatedMsg?.reactions || [],
+        });
+      } catch (err) {
+        console.error('❌ Error reacting to message:', err);
+      }
+    });
   });
+};
+export const getUserSocketIds = (userId: string): string[] => {
+  return userSocketMap.get(userId) || [];
 };

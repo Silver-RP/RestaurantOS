@@ -327,7 +327,3 @@ export const useFoodBest4 = (categoryId: string) => {
     refetchOnWindowFocus: false,
   });
 };
-
-// function useDebounce(search: any, arg1: number) {
-//   throw new Error('Function not implemented.');
-// }

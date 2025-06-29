@@ -5,6 +5,7 @@ import { LogoutUser } from '../../../redux/feature/auth/authActions';
 import { useAppDispatch } from '../../../redux/hook';
 import Cookies from 'js-cookie';
 import React from 'react';
+import { socket } from '../../../utils/socket'; 
 const sidebarItems = [
   { title: 'Thông tin tài khoản', icon: <FaUser />, path: '/profile' },
   { title: 'Lịch sử đơn hàng', icon: <FaClipboardList />, path: '/profile/orders' },
@@ -29,9 +30,13 @@ const ProfileSidebar = () => {
   };
 
   const handleLogout = async () => {
-
     const userInfo = JSON.parse(Cookies.get('userInfo') || '{}');
     const isGoogleLogin = userInfo?.isGoogleLogin;
+    const userId = userInfo?._id; // 👈 Đảm bảo bạn có userId
+    if (userId) {
+      socket.emit('manualDisconnect', { userId });
+      socket.disconnect();
+    }
 
     if (isGoogleLogin) {
       const email = userInfo?.email;
@@ -49,15 +54,14 @@ const ProfileSidebar = () => {
         localStorage.removeItem('token');
         clearAuthData();
         setTimeout(() => {
-          navigate('/'); 
+          navigate('/');
         }, 100);
       }
       return;
     }
-    
 
     try {
-      await dispatch(LogoutUser()).unwrap(); 
+      await dispatch(LogoutUser()).unwrap();
       console.log('LogoutUser called');
     } catch (err) {
       console.error('Logout failed:', err);
@@ -67,7 +71,8 @@ const ProfileSidebar = () => {
       }, 100);
     }
   };
-  
+
+
 
   return (
     <div className="flex flex-col gap-4 font-sans">

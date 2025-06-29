@@ -34,6 +34,8 @@ export interface SendMessageAPIRequest {
   chatId: string;
   content: string;
   replyTo?: string;
+  senderId?: string; 
+  role?: 'user' | 'cashier'; 
 }
 
 export interface GetMessagesResponse {
@@ -45,4 +47,7 @@ export interface ChatSessionResponse {
   chat: ChatSession;
   user_id: string;
   cashier_user_id?: string;
+  lastMessage?: ChatMessage | null;
+  unreadCount?: number;
+  lastMessageTime: string;
 }

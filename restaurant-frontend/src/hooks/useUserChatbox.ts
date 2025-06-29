@@ -1,17 +1,14 @@
-import { io, Socket } from 'socket.io-client';
+import { socket } from '@utils/socket';
 import { ChatMessage } from '@/types/Chatbox.type';
 import { useEffect, useRef, useState } from 'react';
 import { getChatSession, getMessages, sendMessage } from '@/api/ChatboxApi';
-
-const socket: Socket = io('http://localhost:4000', {
-  withCredentials: true,
-});
 
 export const useChatbox = () => {
   const [chatId, setChatId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [typingUserId, setTypingUserId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
 
   const isSending = useRef(false);
   const hasMore = useRef(true);
@@ -22,6 +19,9 @@ export const useChatbox = () => {
       try {
         const chat = await getChatSession();
         setChatId(chat._id);
+        setUserId(chat.user_id);
+
+        socket.connect();
 
         socket.emit('join', {
           userId: chat.user_id,
@@ -50,10 +50,18 @@ export const useChatbox = () => {
     socket.on('typing', ({ userId, typing }) => {
       setTypingUserId(typing ? userId : null);
     });
-
+    socket.on('messageReactionUpdated', ({ messageId, reactions }) => {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg._id === messageId ? { ...msg, reactions } : msg
+        )
+      );
+    });
     return () => {
       socket.off('message');
       socket.off('typing');
+      socket.off('messageReactionUpdated'); // Cleanup
+
     };
   }, []);
 
@@ -62,7 +70,13 @@ export const useChatbox = () => {
 
     isSending.current = true;
     try {
-      await sendMessage({ chatId, content, replyTo });
+      await sendMessage({
+        chatId,
+        content,
+        replyTo,
+        senderId: userId ?? undefined,
+        role: 'user',
+      });
     } catch (error) {
       console.error('Send message failed:', error);
     } finally {
@@ -88,6 +102,7 @@ export const useChatbox = () => {
 
   return {
     chatId,
+    userId,
     messages,
     loading,
     typingUserId,

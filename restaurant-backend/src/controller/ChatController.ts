@@ -44,24 +44,29 @@ const ChatController = {
   async sendMessage(req: Request, res: Response): Promise<void> {
     try {
       const { chatId } = req.params;
-      const userId = (req.user as any).id;
+      const user = req.user as any;
+
+      if (!user || !user.id) {
+         res.status(403).json({ message: 'Unauthorized' });
+         return;
+      }
+
+      const userId = user.id;
       const { content, replyTo } = req.body;
 
       if (!content?.trim()) {
         res.status(400).json({ message: 'Nội dung không được để trống' });
         return;
       }
-      const user = req.user as any;
-      let role: 'user' | 'cashier' = 'user';
-      if (Array.isArray(user.roles)) {
-        if (user.roles.some((r: any) => r === 'cashier' || r?.name === 'cashier')) {
-          role = 'cashier';
-        }
-      } else if (typeof user.roles === 'string') {
-        if (user.roles === 'cashier') role = 'cashier';
-      } else if (user.roles?.name === 'cashier') {
-        role = 'cashier';
-      }
+
+      const role: 'user' | 'cashier' = user.roles?.some?.(
+        (r: any) => r === 'cashier' || r?.name === 'cashier',
+      )
+        ? 'cashier'
+        : 'user';
+
+      console.log('[✅ ROLE DETECTED]', role);
+
       const message: SendMessageDto = {
         chatId,
         senderId: userId,

@@ -2,6 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import ButtonComponents from '@components/common/ButtonComponents';
+import { toast } from 'react-toastify';
 
 interface CartSummaryProps {
   originalTotal: number;
@@ -20,6 +21,7 @@ const CartSummary: React.FC<CartSummaryProps> = ({
 
   const handleCheckout = () => {
     localStorage.setItem('selectedCartItems', JSON.stringify(selectedItems));
+    selectedItems.length === 0 ? toast.error('Chọn sản phẩm trước khi đặt hàng') : '';
   };
 
   return (

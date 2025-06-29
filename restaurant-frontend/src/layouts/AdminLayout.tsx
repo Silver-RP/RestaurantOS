@@ -12,9 +12,8 @@ import {
   FaUser,
   FaCartPlus,
   FaImage,
-
 } from 'react-icons/fa';
-import { GiHotMeal } from 'react-icons/gi';
+import { GiHotMeal, GiWheat } from 'react-icons/gi';
 import classNames from 'classnames';
 import { useAdminSidebar } from '../contexts/AdminSidebarContext';
 import AdminHeader from '../components/layout/AdminHeader';
@@ -30,11 +29,12 @@ const AdminLayout: React.FC = () => {
     <div className="flex min-h-screen bg-adminbg text-admintext">
       {/* Sidebar */}
       <aside
-        className={classNames(
-          'bg-admincard flex flex-col justify-between transition-all duration-300 fixed top-0 left-0 z-50 h-full',
-          isSidebarOpen ? 'w-[200px] px-4' : 'w-16 items-center',
-        )}
-      >
+  className={classNames(
+    'bg-admincard flex flex-col justify-between transition-all duration-300 fixed top-0 left-0 z-50 h-full overflow-y-auto', // 👈 thêm overflow-y-auto
+    isSidebarOpen ? 'w-[200px] px-4' : 'w-16 items-center',
+  )}
+>
+
         <div className="flex max-w-[200px] flex-col items-center space-y-8 mt-6 flex-1">
           <button
             className={classNames(
@@ -91,6 +91,13 @@ const AdminLayout: React.FC = () => {
               href="/admin/users"
               icon={<FaUser />}
               label="Người dùng"
+              expanded={isSidebarOpen}
+            />
+
+            <NavItem
+              href="/admin/ingredients"
+              icon={<GiWheat />}
+              label="Nguyên liệu"
               expanded={isSidebarOpen}
             />
 

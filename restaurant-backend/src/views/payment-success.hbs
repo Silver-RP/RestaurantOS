@@ -2,55 +2,94 @@
 <html lang="vi">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Email Xác Nhận Đơn Hàng</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Xác nhận thanh toán</title>
 </head>
 
-<body class="bg-[#012B40] text-white">
-  <!-- Header chung -->
-  <div class="max-w-xl mx-auto mt-4">
-    <div class="flex justify-between items-center px-6 py-4 bg-[#021D2A] rounded-t-2xl">
-      <img src="https://via.placeholder.com/120x40?text=LOGO" alt="Logo" class="h-10">
-      <span class="text-sm text-gray-300">[Tên Nhà Hàng]</span>
-    </div>
-  </div>
+<body style="background-color: #012B40; color: white; font-family: sans-serif; margin: 0; padding: 0;">
+  <div style="max-width: 600px; margin: 20px auto;">
 
-  <!-- Payment Confirmation Email -->
-  <div class="max-w-xl mx-auto bg-white text-black rounded-2xl shadow-lg overflow-hidden my-8">
-    <div class="bg-[#021D2A] text-white p-6">
-      <h1 class="text-2xl font-semibold">Thanh toán thành công!</h1>
-      <p class="text-sm mt-1">Cảm ơn bạn đã sử dụng dịch vụ tại <strong>[Tên Nhà Hàng]</strong>.</p>
+    <!-- Header -->
+    <div
+      style="display: flex; justify-content: space-between; align-items: center; background-color: #021D2A; padding: 24px; padding-bottom: 0px; border-top-left-radius: 16px; border-top-right-radius: 16px;">
+      <table style="width: 100%;">
+        <tr>
+          <td style="text-align: left;">
+            <img src="https://res.cloudinary.com/dw8c7oz6q/image/upload/v1748798728/logo_tmawjo.png" alt="Logo"
+              style="height: 80px;" />
+          </td>
+          <td style="text-align: right; font-size: 16px; color: #D1D5DB;">
+            BeefBeef Restaurant
+          </td>
+        </tr>
+      </table>
     </div>
-    <div class="p-6">
-      <p class="mb-4">Chúng tôi xác nhận rằng bạn đã thanh toán thành công cho đơn hàng #123456.</p>
-      <h2 class="text-lg font-semibold mb-2">Chi tiết thanh toán:</h2>
-      <ul class="mb-4">
-        <li class="flex justify-between py-1 border-b"><span>Mã giao dịch</span><span>#PAY123456</span></li>
-        <li class="flex justify-between py-1 border-b"><span>Phương thức</span><span>MoMo</span></li>
-        <li class="flex justify-between py-1"><span>Ngày</span><span>01/06/2025</span></li>
-      </ul>
-      <div class="flex justify-between font-semibold text-lg border-t pt-4">
-        <span>Đã thanh toán:</span>
-        <span>165.000₫</span>
-      </div>
-      <div class="mt-6">
-        <a href="#" class="inline-block bg-[#FFDEA0] text-[#021D2A] font-semibold px-4 py-2 rounded-lg shadow-md">Xem hóa đơn</a>
-      </div>
-    </div>
-    <div class="bg-gray-100 text-sm text-center text-gray-600 py-4">
-      Mọi thông tin chi tiết đã được gửi kèm trong hóa đơn PDF.<br>
-      Nếu cần hỗ trợ, vui lòng liên hệ bộ phận chăm sóc khách hàng.
-    </div>
-  </div>
 
-  <!-- Footer chung -->
-  <div class="max-w-xl mx-auto text-center text-sm text-gray-400 py-6">
-    <p>&copy; 2025 [Tên Nhà Hàng]. All rights reserved.</p>
-    <p class="mt-2">\      <a href="#" class="text-gray-300 hover:text-white">Chính sách bảo mật</a> · 
-      <a href="#" class="text-gray-300 hover:text-white">Liên hệ</a>
-    </p>
+    <!-- Body -->
+    <div
+      style="background-color: white; color: black; border-bottom-left-radius: 16px; border-bottom-right-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+
+      <div style="background-color: #021D2A; color: white; padding: 24px;">
+        <h1 style="font-size: 22px; font-weight: 600; margin: 0 0 8px;">Thanh toán thành công!</h1>
+        <p style="font-size: 16px; margin: 0 0 16px;">Cảm ơn bạn đã sử dụng dịch vụ tại <strong>BeefBeef
+            Restaurant</strong>.</p>
+        <p style="font-size: 16px; margin: 0;">Mã đơn hàng: <strong>#{{orderId}}</strong></p>
+      </div>
+
+      <div style="padding: 24px;">
+
+        <!-- Payment Info -->
+        <h2 style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Chi tiết thanh toán</h2>
+        <table style="width: 100%; font-size: 16px; border-collapse: collapse;">
+          <tr>
+            <td style="padding: 6px 0;">Mã xác nhận giao dịch:</td>
+            <td style="text-align: right;">{{transactionCode}}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0;">Phương thức thanh toán:</td>
+            <td style="text-align: right;">{{paymentMethod}}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0;">Ngày thanh toán:</td>
+            <td style="text-align: right;">{{date}}</td>
+          </tr>
+        </table>
+
+        <!-- Amount -->
+         <table
+          style="width: 100%; border-top: 1px solid #D1D5DB; margin-top: 16px; padding-top: 8px; font-size: 18px; font-weight: bold;">
+          <tr>
+            <td style="padding-top: 8px;">Đã thanh toán:</td>
+            <td style="text-align: right; color: #021D2A;">{{amount}}</td>
+          </tr>
+        </table>
+
+
+        <!-- Invoice Button -->
+        <div style="text-align: center; margin-top: 24px;">
+          <a href="{{invoiceUrl}}"
+            style="display: inline-block; background-color: #FFDEA0; color: #021D2A; font-weight: 600; font-size: 16px; padding: 10px 18px; border-radius: 8px; text-decoration: none;">
+            Xem chi tiết đơn hàng đã thanh toán
+          </a>
+        </div>
+      </div>
+
+      <!-- Support Note -->
+      <div style="background-color: #F3F4F6; font-size: 16px; color: #4B5563; text-align: center; padding: 16px;">
+        Nếu bạn cần hỗ trợ, vui lòng liên hệ qua hotline hoặc email.<br />
+        BeefBeef, 161 Quốc Hương, Thảo Điền, Quận 2 | 055123456 | beefbeef@gmail.com
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="text-align: center; font-size: 16px; color: #9CA3AF; padding: 24px;">
+      <p style="margin: 0;">&copy; 2025 BeefBeef. All rights reserved.</p>
+      <p style="margin-top: 8px;">
+        <a href="#" style="color: #D1D5DB; text-decoration: none;">Chính sách bảo mật</a> ·
+        <a href="#" style="color: #D1D5DB; text-decoration: none;">Liên hệ</a>
+      </p>
+    </div>
   </div>
 </body>
 

@@ -64,6 +64,7 @@ export interface OrderItem {
   unit_price: number;
   quantity: number;
   total_amount: number;
+  dish_slug: string;
   note?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -246,7 +247,7 @@ export interface AllOrder {
   } | null; // Cho phép null
   cashier_order_id: string | null;
   payment_method: string;
-  delivery_type: string ;
+  delivery_type: string;
   delivery_status: string;
   status: string;
   shipping_fee: number;

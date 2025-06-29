@@ -22,6 +22,8 @@ import AddressRouter from './routes/AddressRoutes';
 import FaqRoutes from './routes/FaqRoutes';
 import PaymentRoutes from './routes/PaymentRoutes';
 import ChatRoutes from './routes/ChatRoutes';
+import ingredientsRouter from './routes/ingredientsRouter';
+
 import dotenv from 'dotenv';
 import connectDB from './config/db';
 import cookieParser from 'cookie-parser';
@@ -89,18 +91,13 @@ const swaggerDefinition = {
     },
   },
 };
-
 const allRoutes = getSwaggerRoutes();
-
 const swaggerSpec = generateSwaggerSpec(allRoutes, swaggerDefinition);
-
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
 app.use(passport.initialize());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-
 app.get('/', (req, res) => {
   res.send('API is running...');
 });
@@ -127,7 +124,6 @@ app.use(
   StaffRoutes,
 );
 app.set('io', io);
-// Khởi động Socket.IO
 initSocket(io);
 app.use('/api/food', FoodRoutes);
 app.use('/api/order', AuthMiddleWare.verifyToken, OrderRoutes);
@@ -137,10 +133,12 @@ app.use('/api/address', AuthMiddleWare.verifyToken, AddressRouter);
 app.use('/api/payment', PaymentRoutes);
 app.use('/api/faq', AuthMiddleWare.verifyToken, FaqRoutes);
 app.use('/api/chat', AuthMiddleWare.verifyToken, ChatRoutes);
+app.use('/api/payment', PaymentRoutes);
+app.use('/api/ingredients', AuthMiddleWare.verifyToken, ingredientsRouter);
+
 server.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
   console.log('Mongo URI:', process.env.MONGO_URI);
   console.log(`Swagger UI available at http://localhost:${port}/api-docs`);
-  console.log(`Server is running on http://localhost:${port}`);
   console.log('Socket.IO ready at /socket.io/');
 });

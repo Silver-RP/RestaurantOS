@@ -5,8 +5,7 @@ import { Order, IOrder } from '../models/OrderModel';
 import { OrderDetail } from '../models/OrderDetailModel';
 import Cart from '../models/CartModel';
 import { Dish } from '../models/DishModel';
-import Payment  from '../models/PaymentModel';
-import UserModel, { IUser } from '../models/UserModel';
+import Payment from '../models/PaymentModel';
 import SearchService from './SearchService';
 import { createVNPayPaymentUrl } from '../services/payments/VnPayService';
 import { createMomoPaymentUrl } from '../services/payments/MomoService';
@@ -14,6 +13,7 @@ import { createPayPalOrder } from '../services/payments/PaypalService';
 
 import axios from 'axios';
 import MailerService from './MailerService';
+import User, { IUser } from '../models/UserModel';
 
 enum Status {
   ORDER_PLACED = 'ORDER_PLACED',
@@ -172,6 +172,28 @@ class OrderService {
     );
   }
 
+  private generateTransactionCode(
+    paymentMethod: string,
+    paymentId: string | number,
+    date: Date = new Date(),
+  ): string {
+    const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '');
+    const shortId = paymentId.toString().slice(-6);
+
+    const prefixMap: Record<string, string> = {
+      banking: 'BANKING',
+      momo: 'MOMO',
+      momo_atm: 'MOMO_ATM',
+      vnpay: 'VNPAY',
+      credit_card: 'PAYPAL',
+      cash: 'CASH',
+    };
+
+    const prefix = prefixMap[paymentMethod.toLowerCase()] || 'PAY';
+
+    return `${prefix}-${dateStr}-${shortId}`;
+  }
+
   async handlePostPaymentLogic(order: IOrder, clientIp: string) {
     const payment_method = order.payment_method;
     let redirectUrl: string | null = null;
@@ -189,6 +211,11 @@ class OrderService {
     });
 
     const paymentTransactionId = newPayment._id.toString();
+    const transactionCode = this.generateTransactionCode(payment_method, paymentTransactionId);
+
+    await Payment.findByIdAndUpdate(paymentTransactionId, {
+      transaction_code: transactionCode,
+    });
 
     if (payment_method === 'BANKING') {
       const bank_name = 'Vietcombank';
@@ -262,7 +289,6 @@ class OrderService {
 
     payment.payment_status = 'PAID';
     payment.payment_date = new Date();
-    payment.transaction_code = transactionCode;
     payment.amount = paidAmount;
 
     if (userId) {
@@ -270,6 +296,7 @@ class OrderService {
     }
 
     await payment.save();
+    if (!payment.orderId) throw new Error('Payment is not associated with any order');
 
     const order = await Order.findById(payment.orderId);
     if (!order) throw new Error('Order not found');
@@ -279,6 +306,8 @@ class OrderService {
       order.paid_at = new Date();
       await order.save();
     }
+
+    await this.sendOrderPaymentSuccessEmail(payment._id);
 
     return { order, payment };
   }
@@ -570,7 +599,7 @@ class OrderService {
       })
         .populate({
           path: 'dish_id',
-          select: 'name images categories',
+          select: 'name images categories slug',
           populate: {
             path: 'categories',
             model: 'categories',
@@ -600,6 +629,7 @@ class OrderService {
             dish_id: dish?._id,
             dish_name: dish?.name,
             dish_images: dish?.images || [],
+            dish_slug: dish?.slug || '',
             categories: categoryNames,
           };
         });
@@ -643,6 +673,12 @@ class OrderService {
           paymentId: payment._id,
           bankingInfo: payment.bankingInfo,
           type: payment.payment_method,
+          orderTotal: order.total_price,
+        };
+      } else {
+        postPayment = {
+          paymentId: payment?._id,
+          type: payment?.payment_method,
           orderTotal: order.total_price,
         };
       }
@@ -700,7 +736,7 @@ class OrderService {
         [Status.DELIVERY_FAILED]: [Status.PENDING_PICKUP, Status.CANCELLED],
         [Status.RETURN_REQUESTED]: [Status.RETURN_APPROVED, Status.RETURN_REJECTED],
         [Status.RETURN_APPROVED]: [Status.RETURNED],
-        [Status.RETURN_REJECTED]: [], 
+        [Status.RETURN_REJECTED]: [],
         [Status.RETURNED]: [],
         [Status.CANCELLED]: [],
       };
@@ -726,12 +762,13 @@ class OrderService {
         | 'RETURN_APPROVED'
         | 'RETURN_REJECTED'
         | 'RETURNED'
-        | 'CANCELLED';      
+        | 'CANCELLED';
       if (status === Status.DELIVERED) {
         if (order.payment_status !== 'PAID') {
           throw {
             statusCode: 400,
-            message: 'Không thể chuyển sang trạng thái " ĐÃ GIAO HÀNG " khi đơn hàng chưa thanh toán',
+            message:
+              'Không thể chuyển sang trạng thái " ĐÃ GIAO HÀNG " khi đơn hàng chưa thanh toán',
           };
         }
         order.delivered_at = new Date();
@@ -813,7 +850,7 @@ class OrderService {
         };
       }
 
-      order.status = 'CANCELLED'; 
+      order.status = 'CANCELLED';
       order.cancelled_at = new Date();
       order.cancelled_reason = reason;
 
@@ -908,24 +945,39 @@ class OrderService {
       .populate('user_id', 'email name')
       .populate('address_id')
       .lean();
-  
+
     if (!order) throw new Error('Order not found');
-  
+
     const items = await OrderDetail.find({ order_id: orderId }).lean();
-  
+
     const user = order.user_id as unknown as IUser;
     const receiver = order.address_id as unknown as IAddress;
-  
+
     await MailerService.sendOrderConfirmation({
       ...(order as any),
       user,
       receiverInfo: receiver,
       items: items as any,
     });
-    
   }
-  
-  
+
+  async sendOrderPaymentSuccessEmail(paymentId: Types.ObjectId) {
+    const payment = await Payment.findById(paymentId).populate('orderId').lean();
+    if (!payment) throw new Error('Payment not found');
+    if (!payment.orderId) throw new Error('Order not found in payment');
+
+    const order = await Order.findById(payment.orderId).lean();
+    if (!order || !order.user_id) throw new Error('Order or user not found');
+
+    const user = await User.findById(order.user_id).lean();
+    if (!user || !user.email) throw new Error('User or email not found');
+
+    await MailerService.sendOrderPaymentSuccess({
+      payment,
+      order,
+      userEmail: user.email,
+    });
+  }
 }
 
 export default new OrderService();

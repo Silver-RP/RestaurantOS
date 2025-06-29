@@ -8,6 +8,8 @@ export interface IChat extends Document {
   updated_at: Date;
   initiated_by: 'user' | 'cashier' | 'bot';
   closed_at?: Date;
+  first_message_at?: Date;
+  last_message_at?: Date;
 }
 
 const ChatSchema: Schema = new Schema(
@@ -17,6 +19,8 @@ const ChatSchema: Schema = new Schema(
     status: { type: String, enum: ['open', 'pending', 'closed'], default: 'pending' },
     initiated_by: { type: String, enum: ['user', 'cashier', 'bot'], default: 'user' },
     closed_at: { type: Date },
+    first_message_at: { type: Date },
+    last_message_at: { type: Date },
   },
   {
     timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },

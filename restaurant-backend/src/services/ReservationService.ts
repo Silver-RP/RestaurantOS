@@ -2,6 +2,7 @@ import { Reservation } from '../models/ReservationModel';
 import { ReservationDetail } from '../models/ReservationDetailModel';
 import { Types } from 'mongoose';
 import { Dish } from '../models/DishModel';
+import MailerService from './MailerService';
 
 class ReservationService {
   async createReservation(data: any, userId: Types.ObjectId) {
@@ -15,6 +16,7 @@ class ReservationService {
         number_of_people,
         note,
         is_choose_later,
+        email,
         selectedItems = [],
       } = data;
 
@@ -48,8 +50,43 @@ class ReservationService {
         await ReservationDetail.insertMany(detailDocs);
       }
 
+      if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        console.log('📧 Starting email sending process for reservation:', savedReservation._id);
+
+        const reservationItems = await ReservationDetail.find({
+          reservation_id: savedReservation._id,
+        }).lean();
+        console.log('📦 Found reservation items:', reservationItems);
+
+        const emailData = {
+          _id: savedReservation._id.toString(),
+          user: { email } as IUser,
+          full_name,
+          phone,
+          email,
+          time,
+          date,
+          seating_type: table_type,
+          table_count: 1,
+          note,
+          items: reservationItems.map((item) => ({
+            name: item.dish_name,
+            quantity: item.quantity,
+            price: item.unit_price,
+          })),
+        };
+        console.log('📨 Email data prepared:', emailData);
+
+        try {
+          await MailerService.sendReservationConfirmation(emailData);
+          console.log('✅ Email sent successfully');
+        } catch (emailError) {
+          console.error('❌ Error sending email:', emailError);
+          // Don't throw error here to not block reservation creation
+        }
+      }
       return savedReservation;
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Error in createReservation:', error);
       throw new Error('Không thể tạo đơn đặt bàn');
     }
@@ -63,8 +100,6 @@ class ReservationService {
     }
 
     const skip = (page - 1) * limit;
-    console.log('[Service] query:', query);
-    console.log('[Service] skip:', skip, '| limit:', limit);
     const [reservations, totalItems] = await Promise.all([
       Reservation.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
       Reservation.countDocuments(query),
@@ -84,18 +119,15 @@ class ReservationService {
 
     const details = await ReservationDetail.find({ reservation_id: id }).lean();
 
-    // Gắn thêm ảnh đại diện cho mỗi món ăn
     const detailsWithImages = await Promise.all(
       details.map(async (item) => {
         let image: string | null = null;
-
         try {
           const dish = await Dish.findById(item.dish_id, 'images').lean();
           image = dish?.images?.[0] || null;
-        } catch {
-          console.warn('Không tìm thấy ảnh cho món:', item.dish_id);
+        } catch (err: any) {
+          console.warn('Không tìm thấy ảnh cho món:', item.dish_id, '| Lỗi:', err?.message);
         }
-
         return { ...item, image };
       }),
     );

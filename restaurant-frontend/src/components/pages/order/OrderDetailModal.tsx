@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from 'react';
 import { formatDate } from '@/utils/formatDate';
+import { useNavigate } from 'react-router-dom';
 import {
   useOrderDetail,
   useHandleRetryPayment,
@@ -29,6 +31,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
     data: changeMethodResult,
     isPending: changingMethod,
   } = useHandleChangePaymentMethod();
+  const navigate = useNavigate();
 
   const [showSelector, setShowSelector] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
@@ -141,6 +144,11 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
     return 'Chưa xác định thời gian giao hàng';
   }
 
+  const handleNavigateToDetail = (slug: string) => {
+    onClose();
+    navigate(`/foods/${slug}`);
+  };
+
   if (isLoading || retrying || changingMethod)
     return (
       <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-[120]">
@@ -175,7 +183,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
       className={`fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50  ${!isOpen ? 'hidden' : ''}`}
     >
       <div
-        className="bg-bodyBackground rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-0 relative border border-white/10 custom-scroll"
+        className="bg-bodyBackground rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-0 border border-white/10 custom-scroll"
         style={{ scrollbarColor: '#FFDA95 #0a2233', scrollbarWidth: 'thin' }}
       >
         <style>{`
@@ -193,12 +201,12 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
         `}</style>
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-white hover:text-secondaryColor font-bold text-2xl z-10"
+          className="sticky top-2 left-[96.5%] text-white hover:text-secondaryColor font-bold text-2xl z-10"
           aria-label="Đóng"
         >
           &times;
         </button>
-        <div className="p-8 pb-4">
+        <div className="pl-8 pr-8 pb-8">
           <div className="text-2xl font-bold mb-6 text-secondaryColor flex items-center gap-2">
             <span>Đơn #{order._id.slice(-6).toUpperCase()}</span>
             <span className="text-sm text-white/60 font-normal">
@@ -339,8 +347,15 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                   </div>
                 )}
                 {order.payment_status !== 'PAID' &&
-                  order.status !== 'CANCELLED' && (
+                  ['ORDER_PLACED', 'ORDER_CONFIRMED'].includes(order.status) && (
+                    
                     <div className="pt-2">
+                      {order.payment_method !== 'CASH' && (
+                        <div className="bg-yellow-100 text-yellow-800 text-xs rounded-md px-3 py-2 mb-3 max-w-md text-justify leading-relaxed">
+                          Đơn hàng sẽ tự động <strong>hủy sau 30 phút</strong> nếu không được thanh toán thành công.
+                          Vui lòng hoàn tất thanh toán càng sớm càng tốt để tránh bị hủy.
+                        </div>
+                      )}
                       {!showSelector ? (
                         <div className="flex gap-2">
                           {order.payment_method !== 'CASH' && (
@@ -536,11 +551,10 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                   >
                     <div className="flex-shrink-0 flex justify-center items-center">
                       <img
-                        src={
-                          item.dish_id?.images?.[0] || '/placeholder-image.jpg'
-                        }
+                        src={item.dish_id?.images?.[0] || '/placeholder-image.jpg'}
                         alt={item.dish_name}
-                        className="w-24 h-24 md:w-28 md:h-28 object-cover rounded-lg border-2 border-secondaryColor bg-white/10"
+                        className="w-24 h-24 md:w-28 md:h-28 object-cover rounded-lg border-2 border-secondaryColor bg-white/10 cursor-pointer hover:opacity-90 transition-opacity"
+                        onClick={() => handleNavigateToDetail(item.dish_id?.slug || '')}
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.src = '/placeholder-image.jpg';
@@ -549,7 +563,10 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                     </div>
                     <div className="flex-grow flex flex-col justify-between">
                       <div>
-                        <p className="font-bold text-lg text-secondaryColor mb-1 ">
+                        <p 
+                          className="font-bold text-lg text-secondaryColor mb-1 cursor-pointer hover:text-secondaryColor/80 transition-colors"
+                          onClick={() => handleNavigateToDetail(item.dish_id?.slug || '')}
+                        >
                           {item.dish_name}
                         </p>
                         {item.dish_id?.shortDescription && (

@@ -3,7 +3,7 @@ import ChatToggleButton from './ChatToggleButton';
 import ChatWindow from './ChatWindow';
 import { useFaq } from '@/hooks/useFaq';
 import { getAnswerByQuestion } from '@/api/FaqApi';
-import { useChatbox } from '@/hooks/useChatbox';
+import { useChatbox } from '@/hooks/useUserChatbox';
 
 interface Message {
   sender: 'user' | 'bot';
@@ -15,6 +15,7 @@ const Chatbox: React.FC = () => {
     messages: realMessages,
     handleSend: sendRealMessage,
     chatId,
+    userId,
   } = useChatbox();
 
   const { faqs } = useFaq();
@@ -64,7 +65,8 @@ const Chatbox: React.FC = () => {
           { sender: 'user', text: messageToSend },
           {
             sender: 'bot',
-            text: matched?.answer || 'Xin lỗi, tôi chưa có câu trả lời phù hợp.',
+            text:
+              matched?.answer || 'Xin lỗi, tôi chưa có câu trả lời phù hợp.',
           },
         ]);
       }
@@ -90,7 +92,7 @@ const Chatbox: React.FC = () => {
           onShowInput={toggleShowInput}
           onFAQClick={handleFAQClick}
           faqList={faqs.map((f) => f.question)}
-          currentUserId={chatId ?? undefined} 
+          currentUserId={userId ?? undefined}
         />
       ) : (
         <ChatToggleButton unreadCount={unreadCount} onClick={toggleChat} />

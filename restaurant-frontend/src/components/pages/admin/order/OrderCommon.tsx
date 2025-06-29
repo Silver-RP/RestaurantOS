@@ -77,7 +77,7 @@ export const getStatusColor = (status: string) => {
       case 'RETURN_REQUESTED':
         return 'Yêu cầu trả hàng';
       case 'RETURN_APPROVED':
-        return 'Xác nhận trả hàng';
+        return 'Đã xác nhận trả hàng';
       case 'RETURN_REJECTED':
         return 'Trả hàng bị từ chối';
       case 'RETURNED':
