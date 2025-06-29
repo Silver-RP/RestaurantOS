@@ -61,9 +61,8 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
     isDeleted: false,
     deletedAt: '',
     isRecommend: rest.isRecommend ?? false,
+    isDishNew: rest.isDishNew ?? false,
   };
-
-  console.log('Rating: ', rest.name, rest.rating, rest.rating_count);
 
   return (
     <div className="bg-primaryBackground rounded-lg overflow-hidden shadow-md w-full h-full group">
@@ -83,7 +82,13 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
             className="w-full h-full object-cover absolute top-0 left-0 opacity-0 transition-opacity duration-700 group-hover:opacity-100"
           />
         </div>
+        
         <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
+        {rest.status === 'soldout' && (
+            <span className="bg-white text-red-700 text-[10px] font-bold px-2 py-1 rounded-sm">
+              Sold Out
+            </span>
+          )}
           {rest.discount && (
             <span className="bg-secondaryColor text-black text-[10px] font-semibold px-2 py-1 rounded-sm">
               {rest.discount}
@@ -92,11 +97,6 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
           {rest.isDishNew && (
             <span className="bg-secondaryColor text-black text-[10px] font-semibold px-2 py-1 rounded-sm">
               NEW
-            </span>
-          )}
-          {rest.status === 'soldout' && (
-            <span className="bg-white text-red-700 text-[10px] font-semibold px-2 py-1 rounded-sm">
-              Sold Out
             </span>
           )}
         </div>
