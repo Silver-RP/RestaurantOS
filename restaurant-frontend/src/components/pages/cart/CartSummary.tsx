@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import ButtonComponents from '@components/common/ButtonComponents';
 import { toast } from 'react-toastify';
+import {  } from 'react-router-dom';
+
 
 interface CartSummaryProps {
   originalTotal: number;
@@ -17,11 +19,18 @@ const CartSummary: React.FC<CartSummaryProps> = ({
 }) => {
   const savings = originalTotal - discountedTotal;
   const vat = discountedTotal * 0.08;
+  const preGrandTotal = discountedTotal + vat;
+  const shippingFee = preGrandTotal > 1000000 || preGrandTotal === 0  ? 0 : 50000; 
   const grandTotal = discountedTotal + vat;
+  const navigate = useNavigate();
 
   const handleCheckout = () => {
+    if (selectedItems.length === 0) {
+      toast.error('Chọn sản phẩm trước khi đặt hàng');
+      return;
+    }
     localStorage.setItem('selectedCartItems', JSON.stringify(selectedItems));
-    selectedItems.length === 0 ? toast.error('Chọn sản phẩm trước khi đặt hàng') : '';
+    navigate('/checkout');
   };
 
   return (
@@ -48,16 +57,19 @@ const CartSummary: React.FC<CartSummaryProps> = ({
         <span className="text-white/70">{vat.toLocaleString()} VND</span>
       </div>
 
+      <div className="flex justify-between text-xs sm:text-sm py-2 border-t border-[#26455E]">
+        <span className="text-white/70">Phí vận chuyển </span>
+        <span className="text-white/70">{shippingFee.toLocaleString()} VND</span>
+      </div>
+
       <div className="flex justify-between text-sm sm:text-base font-semibold py-4 sm:py-6 border-t border-[#26455E]">
         <span className="text-white font-light">Tổng cộng</span>
         <span className="text-secondaryColor font-light text-base sm:text-lg">{grandTotal.toLocaleString()} VND</span>
       </div>
 
-      <Link to="/checkout" onClick={handleCheckout}>
-        <ButtonComponents variant="filled" size="small" className="w-full mt-4 py-2 sm:py-3">
+        <ButtonComponents  onClick={handleCheckout} variant="filled" size="small" className="w-full mt-4 py-2 sm:py-3">
           TIẾN HÀNH ĐẶT HÀNG
         </ButtonComponents>
-      </Link>
     </div>
   );
 };

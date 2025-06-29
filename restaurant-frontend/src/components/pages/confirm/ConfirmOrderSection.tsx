@@ -376,14 +376,14 @@ const OrderConfirmation = () => {
               ''
             )}
             {orderData.delivery_time_type !== 'SCHEDULED' &&
-            orderData.delivery_type === 'DELIVERY' ? (
-              <InfoItem
-                label="Thời gian giao hàng"
-                value="Trong 45-90 phút tính từ lúc đặt hàng."
-              />
-            ) : (
-              ''
-            )}
+              orderData.delivery_type === 'DELIVERY' ? (
+                <InfoItem
+                  label="Thời gian giao hàng"
+                  value="Trong 45-90 phút tính từ lúc đặt hàng."
+                />
+              ) : (
+                ''
+              )}
             {orderData.note && (
               <InfoItem label="Ghi chú" value={orderData.note} />
             )}

@@ -318,9 +318,11 @@ const ShippingAddressSection = ({
         <>
           <h3 className="font-semibold text-white mb-2">Địa chỉ nhận hàng</h3>
           <div className="text-white text-sm">
-            Nhà Hàng BeefBeef – 161 Quốc Hương, Thảo Điền, Quận 2 (055 1234
-            5678)
+            Nhà Hàng BeefBeef – 161 Quốc Hương, Thảo Điền, Quận 2
+            <br />
+            <span className="font-semibold">SĐT: 023 999 1255</span>
           </div>
+
           <div className="mt-4">
             <label className="block mb-1 text-sm text-white/70">
               Tên người nhận hàng <span className="text-red-500">*</span>

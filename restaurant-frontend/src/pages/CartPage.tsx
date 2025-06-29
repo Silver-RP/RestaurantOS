@@ -65,7 +65,7 @@ const CartPage = () => {
   );
 
   const handleClick = () => {
-    window.location.href = '/menu';
+    window.location.href = '/menu?sort=categoryAZ';
   };
 
   return (
