@@ -38,7 +38,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
       >
         {discount > 0 && (
           <span className="absolute top-4 left-4 bg-secondaryColor text-black text-xs px-2 py-1">
-            -{discount}%
+            {discount}% OFF
           </span>
         )}
         {isNew && (

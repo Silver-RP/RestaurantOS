@@ -23,11 +23,11 @@ import CartRouter from './routes/CartRoutes';
 import FavoriteRoutes from './routes/FavoriteRoutes';
 import AddressRouter from './routes/AddressRoutes';
 import PaymentRoutes from './routes/PaymentRoutes';
-import IngredientsRouter from './routes/ingredientsRouter';
 import InventoryRoutes from './routes/InventoryRoutes';
 import DashboardRoutes from './routes/DashboardRoutes';
-import ingredientsRouter from './routes/IngredientsRouter';
+import IngredientsRouter from './routes/IngredientsRouter';
 import VoucherRoutes from './routes/VoucherRoutes';
+import ReviewRoutes from './routes/ReviewRoutes';
 
 import dotenv from 'dotenv';
 import connectDB from './config/db';
@@ -135,6 +135,7 @@ app.use('/api/dashboard', AuthMiddleWare.verifyToken, DashboardRoutes);
 app.use('/api/favorite', AuthMiddleWare.verifyToken, FavoriteRoutes);
 app.use('/api/address', AuthMiddleWare.verifyToken, AddressRouter);
 app.use('/api/payment', PaymentRoutes);
+app.use('/api/review',  ReviewRoutes);
 
 app.use('/api/ingredients', AuthMiddleWare.verifyToken, IngredientsRouter);
 app.use('/api/inventory', AuthMiddleWare.verifyToken, InventoryRoutes);

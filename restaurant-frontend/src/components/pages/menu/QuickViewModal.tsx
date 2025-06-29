@@ -26,7 +26,6 @@ const QuickViewModal = () => {
 
   if (!product) return null;
 
- console.log('Rendering QuickViewModal for product:', product);
   return (
     <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[100] p-4">
       <div className="bg-headerBackground rounded-lg overflow-hidden max-w-4xl md:max-w-5xl w-full relative flex flex-col md:flex-row shadow-lg">
