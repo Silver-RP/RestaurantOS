@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, Outlet } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import {
   FaHome,
   FaUtensils,
@@ -15,24 +15,24 @@ import {
   FaTicketAlt,
 } from 'react-icons/fa';
 import { GiHotMeal, GiWheat } from 'react-icons/gi';
-import { FaCalendarAlt } from "react-icons/fa";
+import { FaCalendarAlt } from 'react-icons/fa';
 import classNames from 'classnames';
 import { useAdminSidebar } from '../contexts/AdminSidebarContext';
 import AdminHeader from '../components/layout/AdminHeader';
 
 const AdminLayout: React.FC = () => {
   const { isSidebarOpen, toggleSidebarExtend } = useAdminSidebar();
+  const location = useLocation();
 
   return (
     <div className="flex min-h-screen bg-adminbg text-admintext">
       {/* Sidebar */}
       <aside
-  className={classNames(
-    'bg-admincard flex flex-col justify-between transition-all duration-300 fixed top-0 left-0 z-50 h-full overflow-y-auto', // 👈 thêm overflow-y-auto
-    isSidebarOpen ? 'w-[200px] px-4' : 'w-16 items-center',
-  )}
->
-
+        className={classNames(
+          'bg-admincard flex flex-col justify-between transition-all duration-300 fixed top-0 left-0 z-50 h-full overflow-y-auto', // 👈 thêm overflow-y-auto
+          isSidebarOpen ? 'w-[200px] px-4' : 'w-16 items-center',
+        )}
+      >
         <div className="flex max-w-[200px] flex-col items-center space-y-8 mt-6 flex-1">
           <button
             className={classNames(
@@ -54,42 +54,49 @@ const AdminLayout: React.FC = () => {
               icon={<FaHome />}
               label="Trang chủ"
               expanded={isSidebarOpen}
+              currentPath={location.pathname}
             />
             <NavItem
               href="/admin/foods"
               icon={<FaUtensils />}
               label="Món ăn"
               expanded={isSidebarOpen}
+              currentPath={location.pathname}
             />
             <NavItem
               href="/admin/categories"
               icon={<GiHotMeal />}
               label="Danh mục"
               expanded={isSidebarOpen}
+              currentPath={location.pathname}
             />
             <NavItem
               href="/admin/orders"
               icon={<FaCartPlus />}
               label="Đơn hàng"
               expanded={isSidebarOpen}
+              currentPath={location.pathname}
             />
             <NavItem
               href="/admin/reservations"
               icon={<FaCalendarAlt />}
               label="Đặt bàn"
               expanded={isSidebarOpen}
+              currentPath={location.pathname}
             />
             <NavItem
               href="/admin/posts"
               icon={<FaFileAlt />}
               label="Bài viết"
               expanded={isSidebarOpen}
+              currentPath={location.pathname}
             />
             <NavItem
               href="/admin/users"
               icon={<FaUser />}
               label="Người dùng"
               expanded={isSidebarOpen}
+              currentPath={location.pathname}
             />
 
             <NavItem
@@ -97,6 +104,7 @@ const AdminLayout: React.FC = () => {
               icon={<GiWheat />}
               label="Nguyên liệu"
               expanded={isSidebarOpen}
+              currentPath={location.pathname}
             />
 
             <NavItem
@@ -104,6 +112,7 @@ const AdminLayout: React.FC = () => {
               icon={<FaImage />}
               label="Banner"
               expanded={isSidebarOpen}
+              currentPath={location.pathname}
             />
 
             <NavItem
@@ -111,12 +120,14 @@ const AdminLayout: React.FC = () => {
               icon={<FaTicketAlt />}
               label="Voucher"
               expanded={isSidebarOpen}
+              currentPath={location.pathname}
             />
             <NavItem
               href="/admin/about"
               icon={<FaInfoCircle />}
               label="Giới thiệu"
               expanded={isSidebarOpen}
+              currentPath={location.pathname}
             />
 
             <NavItem
@@ -124,6 +135,7 @@ const AdminLayout: React.FC = () => {
               icon={<FaEnvelope />}
               label="Liên hệ"
               expanded={isSidebarOpen}
+              currentPath={location.pathname}
             />
           </nav>
         </div>
@@ -135,6 +147,7 @@ const AdminLayout: React.FC = () => {
             label="Đăng xuất"
             expanded={isSidebarOpen}
             className="text-red-400"
+            currentPath={location.pathname}
           />
         </div>
       </aside>
@@ -166,6 +179,7 @@ interface NavItemProps {
   label: string;
   expanded: boolean;
   className?: string;
+  currentPath?: string;
 }
 
 const NavItem: React.FC<NavItemProps> = ({
@@ -174,13 +188,18 @@ const NavItem: React.FC<NavItemProps> = ({
   label,
   expanded,
   className,
+  currentPath = '',
 }) => {
+  const isActive = currentPath === href;
   return (
     <Link
       to={href}
       className={classNames(
-        'flex items-center px-4 py-2 rounded-lg hover:bg-adminhover transition-colors w-full',
+        'flex items-center px-4 py-2 rounded-lg transition-colors w-full',
         expanded ? 'justify-start gap-3' : 'justify-center',
+        isActive
+          ? 'bg-bodyBackground text-white '
+          : 'hover:bg-adminhover',
         className,
       )}
     >
