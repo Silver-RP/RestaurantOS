@@ -19,10 +19,52 @@ import { FaCalendarAlt } from 'react-icons/fa';
 import classNames from 'classnames';
 import { useAdminSidebar } from '../contexts/AdminSidebarContext';
 import AdminHeader from '../components/layout/AdminHeader';
+import { LogoutUser } from '../redux/feature/auth/authActions';
+import Cookies from 'js-cookie';
+import { useNavigate } from 'react-router-dom';
+import { useAppDispatch } from '@/redux/hook';
 
 const AdminLayout: React.FC = () => {
   const { isSidebarOpen, toggleSidebarExtend } = useAdminSidebar();
   const location = useLocation();
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+
+  const clearAuthData = () => {
+    Cookies.remove('userInfo');
+    Cookies.remove('refreshToken');
+    Cookies.remove('accessToken');
+    localStorage.removeItem('token');
+    console.log('Auth data cleared');
+  };
+
+  const handleLogout = async () => {
+
+    const userInfo = JSON.parse(Cookies.get('userInfo') || '{}');
+
+    if (userInfo) {
+        (window as any).google?.accounts.id.disableAutoSelect?.();
+        Cookies.remove('userInfo');
+        localStorage.removeItem('token');
+        clearAuthData();
+        setTimeout(() => {
+          navigate('/admin/login'); 
+        }, 1000);
+      return;
+    }
+    
+
+    try {
+      await dispatch(LogoutUser()).unwrap(); 
+      console.log('LogoutUser called');
+    } catch (err) {
+      console.error('Logout failed:', err);
+    } finally {
+      setTimeout(() => {
+        navigate('/admin/login');
+      }, 100);
+    }
+  };
 
   return (
     <div className="flex min-h-screen bg-adminbg text-admintext">
@@ -142,13 +184,12 @@ const AdminLayout: React.FC = () => {
 
         <div className="my-5 flex justify-center">
           <NavItem
-            href="/logout"
+            onClick={handleLogout}
             icon={<FaSignOutAlt />}
             label="Đăng xuất"
             expanded={isSidebarOpen}
             className="text-red-400"
-            currentPath={location.pathname}
-          />
+            currentPath={location.pathname} href={''}          />
         </div>
       </aside>
 
@@ -174,6 +215,7 @@ const AdminLayout: React.FC = () => {
 };
 
 interface NavItemProps {
+  onClick?: () => void;
   href: string;
   icon: React.ReactNode;
   label: string;
@@ -189,24 +231,39 @@ const NavItem: React.FC<NavItemProps> = ({
   expanded,
   className,
   currentPath = '',
+  onClick,
 }) => {
   const isActive = currentPath === href;
+
+  const classes = classNames(
+    'flex items-center px-4 py-2 rounded-lg transition-colors w-full',
+    expanded ? 'justify-start gap-3' : 'justify-center',
+    isActive
+      ? 'bg-bodyBackground text-white '
+      : 'hover:bg-adminhover',
+    className,
+  );
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className={classes}
+      >
+        <span className="text-lg">{icon}</span>
+        {expanded && <span className="text-left w-full">{label}</span>}
+      </button>
+    );
+  }
+
   return (
-    <Link
-      to={href}
-      className={classNames(
-        'flex items-center px-4 py-2 rounded-lg transition-colors w-full',
-        expanded ? 'justify-start gap-3' : 'justify-center',
-        isActive
-          ? 'bg-bodyBackground text-white '
-          : 'hover:bg-adminhover',
-        className,
-      )}
-    >
+    <Link to={href} className={classes}>
       <span className="text-lg">{icon}</span>
       {expanded && <span className="text-left w-full">{label}</span>}
     </Link>
   );
 };
+
 
 export default AdminLayout;
