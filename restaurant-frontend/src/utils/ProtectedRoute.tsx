@@ -1,22 +1,49 @@
-// src/components/ProtectedRoute.tsx
-import React from 'react';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/redux/store';
-import { Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import UnauthorizedPage from '@/components/pages/admin/login/UnauthorizedPage';
+import Cookies from 'js-cookie';
 
-const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
-  const { user } = useSelector((state: RootState) => state.user);
-  const roles = user?.roles || [];
+interface ProtectedRouteProps {
+  children: JSX.Element;
+  allowedRoles?: string[];
+}
 
-  if (
-    !roles.some(
-      (role: { _id: string; name: string }) => role.name === 'superadmin',
-    ) &&
-    !roles.some(
-      (role: { _id: string; name: string }) => role.name === 'manager',
-    )
-  ) {
-    return <Navigate to="/admin" />;
+const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
+  const location = useLocation();
+
+  const userInfoString = Cookies.get('userInfo');
+  const userInfo = userInfoString ? JSON.parse(userInfoString) : null;
+
+  if (!userInfo) {
+    return (
+      <Navigate
+        to="/admin/login"
+        replace
+        state={{ from: location }}
+      />
+    );
+  }
+
+  const userRoles = userInfo.roles?.map((r: { name: string }) => r.name) || [];
+
+  if (userRoles.includes('user')) {
+    return <UnauthorizedPage />;
+  }
+
+  const hasPermission =
+    !allowedRoles || allowedRoles.length === 0
+      ? true
+      : userRoles.some((role: string) => allowedRoles.includes(role));
+
+  useEffect(() => {
+    if (!hasPermission) {
+      toast.error('Bạn không có quyền truy cập trang này.');
+    }
+  }, [hasPermission]);
+
+  if (!hasPermission) {
+    return null;
   }
 
   return children;

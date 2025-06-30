@@ -35,17 +35,22 @@ import VoucherPage from '../components/pages/admin/voucher';
 import CreateVoucherPage from '../components/pages/admin/voucher/Create';
 import EditVoucherPage from '../components/pages/admin/voucher/Edit';
 import TrashVoucherPage from '../components/pages/admin/voucher/Trash';
-
-
+import AdminLoginPage from '@/components/pages/admin/login/Index';
 
 
 const adminRoutes = [
   {
+    path: '/admin/login',
+    element: <AdminLoginPage />,
+  },
+  {
     path: '/admin',
     element: (
-      <AdminSidebarProvider>
-        <AdminLayout />
-      </AdminSidebarProvider>
+      <ProtectedRoute>
+        <AdminSidebarProvider>
+          <AdminLayout />
+        </AdminSidebarProvider>
+      </ProtectedRoute>
     ),
     children: [
       { index: true, element: <DashboardPage /> },
@@ -59,7 +64,7 @@ const adminRoutes = [
       { path: 'reservations', element: <OrderTable /> },
       { path: "categories/create", element: <CreateCategoryPage /> },
       { path: "categories/edit/:id", element: <EditCategoryPage /> },
-      { path: "users", element: <ProtectedRoute><UserIndexPage /></ProtectedRoute> },
+      { path: "users", element: <ProtectedRoute allowedRoles={["superadmin"]}><UserIndexPage /></ProtectedRoute> },
       { path: "users/create", element: <CreateUserPage /> },
       { path: "users/edit/:id", element: <EditUserPage /> },
       { path: "banners", element: <BannerPage /> },
