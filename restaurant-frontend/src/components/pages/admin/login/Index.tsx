@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import InputComponent from '@/components/pages/login/InputComponents';
 import ButtonComponent from '@/components/pages/login/ButtonComponents';
 
-import {  useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../../../../redux/hook';
 import { LoginUser } from '../../../../redux/feature/auth/authActions';
 import { toast } from 'react-toastify';
@@ -37,7 +37,8 @@ const AdminLoginPage = () => {
   };
 
   const isPasswordValid = (password: string): boolean => {
-    const passwordRegex =/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
     return passwordRegex.test(password);
   };
 
@@ -50,7 +51,7 @@ const AdminLoginPage = () => {
     if (isSubmitting) return;
 
     const { email, password } = formData;
-    const rememberMe = false; 
+    const rememberMe = false;
 
     if (!isEmailValid(email)) {
       setFormError('Email không hợp lệ');
@@ -69,9 +70,8 @@ const AdminLoginPage = () => {
       await dispatch(LoginUser({ email, password, rememberMe }))
         .unwrap()
         .then((result) => {
-         
           const userId = result.user._id;
-          dispatch(fetchCurrentUser({ userId })); 
+          dispatch(fetchCurrentUser({ userId }));
           navigate('/admin');
         });
     } catch (error) {
@@ -105,7 +105,9 @@ const AdminLoginPage = () => {
             name="email"
             onChange={handleChange}
             ref={emailRef}
-            onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => handleKeyDown(e, passwordRef)}
+            onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) =>
+              handleKeyDown(e, passwordRef)
+            }
           />
           <InputComponent
             type="password"
@@ -114,7 +116,9 @@ const AdminLoginPage = () => {
             name="password"
             onChange={handleChange}
             ref={passwordRef}
-            onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => handleKeyDown(e, null)}
+            onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) =>
+              handleKeyDown(e, null)
+            }
           />
 
           {formError && (
@@ -126,7 +130,11 @@ const AdminLoginPage = () => {
           <div className="flex justify-between items-center mt-4 mb-3">
             <button
               type="button"
-              onClick={() => navigate('/forgot-password')}
+              onClick={() =>
+                navigate('/forgot-password', {
+                  state: { loginPath: '/admin/login' },
+                })
+              }
               className="text-sm text-white hover:text-secondaryColor hover:underline"
             >
               Quên mật khẩu?
@@ -139,7 +147,6 @@ const AdminLoginPage = () => {
             disabled={isSubmitting || !isFormValid()}
           />
         </form>
-
       </div>
     </div>
   );

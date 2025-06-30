@@ -3,7 +3,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import InputComponent from '../components/pages/Login/InputComponents';
 import ButtonComponent from '../components/pages/Login/ButtonComponents';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { SlActionUndo } from 'react-icons/sl';
 import { toast } from 'react-toastify';
 import { useSendOtpEmail } from '../hooks/useAuth';
@@ -44,18 +44,25 @@ const ForgotPassword = () => {
     }
   }, [error]);
 
+
+  const location = useLocation();
+  const loginPath = location.state?.loginPath || '/login';
+
   const onSubmit = async (data: ForgotPasswordSchema) => {
 
     try {
       const res = await sendOtpEmail(data.email);
       if (res && res.message === 'OTP sent successfully') {
         toast.success('Đã gửi OTP đến email của bạn!');
-        navigate('/verify-otp', { state: { email: data.email } }); 
+        navigate('/verify-otp', { state: { email: data.email, loginPath } }); 
       } 
     } catch (err: any) {
       console.log('API error:', err?.response?.data);
     }
   };
+
+  console.log('ForgotPassword component rendered: ', loginPath);
+
 
   return (
     <div className="flex justify-center items-center bg-[url('/assets/images/register/background.jpg')] bg-cover bg-center w-full h-screen">
@@ -98,7 +105,7 @@ const ForgotPassword = () => {
         <div className="mt-6 text-sm text-white">
           <p className="flex items-center justify-start mt-6">
             <Link
-              to="/login"
+              to={loginPath}
               className="flex items-center text-white hover:text-secondaryColor"
             >
               <SlActionUndo className="mr-1 text-lg" />

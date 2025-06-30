@@ -16,6 +16,7 @@ const ResetPassword = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const email = location.state?.email;
+  const loginPath = location.state?.loginPath || '/login';
 
   const {
     control,
@@ -59,7 +60,7 @@ const ResetPassword = () => {
       );
       if (res && res.message === 'Password changed successfully') {
         toast.success('Mật khẩu đã được thay đổi thành công!');
-        navigate('/login');
+        navigate(loginPath);
       } else if (res && res.message === 'Invalid password format') {
         toast.error('Mật khẩu không hợp lệ!');
       } else if (res && res.message === 'Passwords do not match') {
@@ -125,7 +126,7 @@ const ResetPassword = () => {
         <div className="mt-6 text-sm text-white">
           <p className="flex items-center justify-start mt-6">
             <Link
-              to="/login"
+              to={loginPath}
               className="flex items-center text-white hover:text-secondaryColor"
             >
               <SlActionUndo className="mr-1 text-lg" />
