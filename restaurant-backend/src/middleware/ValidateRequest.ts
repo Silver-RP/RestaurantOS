@@ -9,10 +9,10 @@ export const validateRequest = (schema: ZodSchema<any>) => {
       res.status(400).json({
         message: result.error.errors[0].message,
       });
-      return; 
+      return;
     }
 
     req.body = result.data;
-    next(); 
+    next();
   };
 };

@@ -20,10 +20,8 @@ class RoleService {
     GetAllRole() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const roles = yield RoleModel_1.default.find()
-                    .populate("permissions")
-                    .populate({
-                    path: "users",
+                const roles = yield RoleModel_1.default.find().populate('permissions').populate({
+                    path: 'users',
                     model: UserModel_1.default,
                 });
                 return roles.length > 0 ? roles : null;
@@ -38,18 +36,24 @@ class RoleService {
             try {
                 const existingRole = yield RoleModel_1.default.findOne({ name });
                 if (existingRole) {
-                    throw new Error("Role already exists!");
+                    throw new Error('Role already exists!');
                 }
                 // Chuyển các permission id từ chuỗi thành ObjectId hợp lệ
-                const permissionIds = permission.map(id => new mongoose_1.default.Types.ObjectId(id));
-                console.log("permiss", permissionIds);
+                const permissionIds = permission.map((id) => new mongoose_1.default.Types.ObjectId(id));
+                console.log('permiss', permissionIds);
                 // Kiểm tra xem các permission đã tồn tại chưa
-                const permissions = yield PermissionModel_1.default.find({ _id: { $in: permissionIds } });
+                const permissions = yield PermissionModel_1.default.find({
+                    _id: { $in: permissionIds },
+                });
                 if (permissions.length !== permission.length) {
-                    throw new Error("Invalid permission id");
+                    throw new Error('Invalid permission id');
                 }
                 // Tạo mới role với mảng permissionIds thay vì chuỗi
-                const newRole = new RoleModel_1.default({ name, description, permissions: permissionIds });
+                const newRole = new RoleModel_1.default({
+                    name,
+                    description,
+                    permissions: permissionIds,
+                });
                 yield newRole.save();
                 return newRole;
             }
@@ -62,9 +66,9 @@ class RoleService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const role = yield RoleModel_1.default.findById(id)
-                    .populate({ path: "permissions", model: PermissionModel_1.default })
+                    .populate({ path: 'permissions', model: PermissionModel_1.default })
                     .populate({
-                    path: "users",
+                    path: 'users',
                     model: UserModel_1.default,
                 });
                 return role;
@@ -79,13 +83,18 @@ class RoleService {
             try {
                 // Nếu có thay đổi quyền, kiểm tra lại
                 if (data.permission && Array.isArray(data.permission)) {
-                    const permissions = yield PermissionModel_1.default.find({ '_id': { $in: data.permission } });
+                    const permissions = yield PermissionModel_1.default.find({
+                        _id: { $in: data.permission },
+                    });
                     if (permissions.length !== data.permission.length) {
-                        throw new Error("Some permissions do not exist!");
+                        throw new Error('Some permissions do not exist!');
                     }
                 }
                 // Cập nhật role với các thay đổi
-                const updatedRole = yield RoleModel_1.default.findByIdAndUpdate(id, data, { new: true, runValidators: true });
+                const updatedRole = yield RoleModel_1.default.findByIdAndUpdate(id, data, {
+                    new: true,
+                    runValidators: true,
+                });
                 return updatedRole;
             }
             catch (error) {

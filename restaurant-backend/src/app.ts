@@ -1,8 +1,7 @@
 import express from 'express';
 import swaggerUi from 'swagger-ui-express';
-// import swaggerJsdoc from 'swagger-jsdoc';
+import { engine } from 'express-handlebars';
 import { generateSwaggerSpec, getSwaggerRoutes } from './utils/swaggerOptions';
-import HealthCheckRoutes from './routes/HealthChecks';
 import AuthRoutes from './routes/AuthRoutes';
 import UserRoutes from './routes/UserRoutes';
 import RoleRoutes from './routes/RoleRouter';
@@ -10,29 +9,58 @@ import CateRoutes from './routes/CategoryRoutes';
 import ReservationContactRoutes from './routes/ReservationContactRoutes';
 import ReservationDetailContactRoutes from './routes/ReservationDetailContactRoutes';
 import ProfileRoutes from './routes/ProfileRoutes';
-import SearchRoutes from './routes/SearchRoutes';
+import ReservationRoutes from './routes/ReservationRouter';
+import BannerRoutes from './routes/BannerRoutes';
+import PostsRoutes from './routes/PostsRoutes';
+import commentPostRoutes from './routes/CommentPostRoutes';
+
 import StaffRoutes from './routes/StaffRoutes';
 import FoodRoutes from './routes/FoodRoutes';
 import PermissionRoutes from './routes/PermissionRoutes';
+import OrderRoutes from './routes/OrderRoutes';
+import AuthMiddleWare from './middleware/AuthMiddleWare';
+import CartRouter from './routes/CartRoutes';
+import FavoriteRoutes from './routes/FavoriteRoutes';
+import AddressRouter from './routes/AddressRoutes';
+import PaymentRoutes from './routes/PaymentRoutes';
+import InventoryRoutes from './routes/InventoryRoutes';
+import DashboardRoutes from './routes/DashboardRoutes';
+import IngredientsRouter from './routes/IngredientsRouter';
+import VoucherRoutes from './routes/VoucherRoutes';
+import ReviewRoutes from './routes/ReviewRoutes';
+
 import dotenv from 'dotenv';
 import connectDB from './config/db';
 import cookieParser from 'cookie-parser';
 import passport from 'passport';
 import cors from 'cors';
+import path from 'path';
 
 const app = express();
 
 // Import file authSwagger để đăng ký metadata
 import './swaggers/AuthSwagger';
+import './swaggers/OrderSwagger';
+import './swaggers/FoodSwagger';
+import './swaggers/CartSwagger';
+import './swaggers/StaffSwagger';
+import './swaggers/UserSwagger';
+import './swaggers/CategorySwagger';
+
 
 dotenv.config();
 connectDB();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors({
-  origin: 'http://localhost:5173',
-  credentials: true 
-}));
+app.use(
+  cors({
+    origin: 'http://localhost:5173',
+    credentials: true,
+  }),
+);
+app.engine('.hbs', engine({ extname: '.hbs', defaultLayout: false }));
+app.set('view engine', '.hbs');
+app.set('views', path.join(__dirname, 'views'));
 
 const port = process.env.PORT || 4000;
 
@@ -63,10 +91,8 @@ const swaggerDefinition = {
 
 const allRoutes = getSwaggerRoutes();
 
-// Tạo Swagger specification
 const swaggerSpec = generateSwaggerSpec(allRoutes, swaggerDefinition);
 
-// Thiết lập Swagger UI
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use(passport.initialize());
@@ -78,26 +104,44 @@ app.get('/', (req, res) => {
   res.send('API is running...');
 });
 
-// Định nghĩa routes
 app.use('/api/auth', AuthRoutes);
 app.use('/api/user', UserRoutes);
-app.use('/api/profile', ProfileRoutes);
-app.use('/api/role', RoleRoutes);
+app.use('/api/profile', AuthMiddleWare.verifyToken, ProfileRoutes);
+app.use(
+  '/api/role',
+  AuthMiddleWare.verifyToken,
+  AuthMiddleWare.verifyRole(['superadmin', 'manager']),
+  RoleRoutes,
+);
 app.use('/api/permission', PermissionRoutes);
 app.use('/api/category', CateRoutes);
+app.use('/api/reservation', AuthMiddleWare.verifyToken, ReservationRoutes);
+app.use('/api/banner', BannerRoutes);
 app.use('/api/reservationcontact', ReservationContactRoutes);
 app.use('/api/reservationdetailcontact', ReservationDetailContactRoutes);
-app.use('/api/search', SearchRoutes);
-app.use('/api/staff', StaffRoutes);
-app.use('/api/food', FoodRoutes);
-app.use('/api', HealthCheckRoutes);
+app.use(
+  '/api/staff',
+  AuthMiddleWare.verifyToken,
+  AuthMiddleWare.verifyRole(['superadmin', 'manager']),
+  StaffRoutes,
+);
 
+app.use('/api/food', FoodRoutes);
+app.use('/api/posts', PostsRoutes);
+app.use('/api/posts', commentPostRoutes);
+app.use('/api/order', AuthMiddleWare.verifyToken, OrderRoutes);
+app.use('/api/cart', AuthMiddleWare.verifyToken, CartRouter);
+app.use('/api/dashboard', AuthMiddleWare.verifyToken, DashboardRoutes);
+app.use('/api/favorite', AuthMiddleWare.verifyToken, FavoriteRoutes);
+app.use('/api/address', AuthMiddleWare.verifyToken, AddressRouter);
+app.use('/api/payment', PaymentRoutes);
+app.use('/api/review',  ReviewRoutes);
+
+app.use('/api/ingredients', AuthMiddleWare.verifyToken, IngredientsRouter);
+app.use('/api/inventory', AuthMiddleWare.verifyToken, InventoryRoutes);
+app.use('/api/voucher', VoucherRoutes);
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
   console.log('Mongo URI:', process.env.MONGO_URI);
   console.log(`Swagger UI available at http://localhost:${port}/api-docs`);
 });
-// function cors(arg0: { origin: string; credentials: boolean; }): any {
-//   throw new Error('Function not implemented.');
-// }
-

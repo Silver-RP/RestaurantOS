@@ -48,5 +48,24 @@ function generateSwaggerSpec(routes, swaggerConfig) {
     return Object.assign(Object.assign({}, swaggerConfig), { info: swaggerConfig.info || {
             title: 'API Documentation',
             version: '1.0.0',
-        }, paths });
+        }, components: {
+            securitySchemes: {
+                bearerAuth: {
+                    type: 'http',
+                    scheme: 'bearer',
+                    bearerFormat: 'JWT',
+                },
+            },
+        }, security: [{ bearerAuth: [] }], tags: [
+            {
+                name: 'Auth',
+                description: 'Authentication APIs',
+                'x-order': 1,
+            },
+            {
+                name: 'Cart',
+                description: 'Cart APIs',
+                'x-order': 2,
+            },
+        ], paths });
 }

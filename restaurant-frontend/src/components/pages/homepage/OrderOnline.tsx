@@ -1,159 +1,45 @@
-import ProductCardGrid from '../../common/ProductCardGrid';
-import React, { useState, useEffect } from 'react';
-import { BsArrowLeftCircle, BsArrowRightCircle } from 'react-icons/bs';
+import React from 'react';
 import { FaDiamond } from 'react-icons/fa6';
+import { useFoodNewest } from '@hooks/useFoods';
+import Container from '@/components/common/Container';
+import ProductCardGrid from '../../common/ProductCardGrid';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation } from 'swiper/modules';
 
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  originalPrice?: number;
-  imageUrl: string;
-  hoverImage?: string;
-  isNew: boolean;
-  discount?: string;
-  cate?: string;
-}
-
-const products: Product[] = [
-  {
-    id: 1,
-    name: 'Olivas Rellenas',
-    price: 120000,
-    imageUrl: '/assets/images/products/SP1.jpg',
-    hoverImage: '/assets/images/products/SP1.1.jpg',
-    isNew: true,
-    discount: '10% OFF',
-    cate: 'Appetizer',
-  },
-  {
-    id: 2,
-    name: 'Fish Salad Asian',
-    price: 110000,
-    imageUrl: '/assets/images/products/SP2.jpg',
-    hoverImage: '/assets/images/products/SP2.1.jpg',
-    isNew: true,
-    cate: 'Salad',
-  },
-  {
-    id: 3,
-    name: 'Greek Salad',
-    price: 305000,
-    originalPrice: 350000,
-    imageUrl: '/assets/images/products/SP3.jpg',
-    hoverImage: '/assets/images/products/SP3.1.jpg',
-    isNew: true,
-    cate: 'Salad',
-  },
-  {
-    id: 4,
-    name: 'Mixed Vegetable',
-    price: 211000,
-    imageUrl: '/assets/images/products/SP4.jpg',
-    hoverImage: '/assets/images/products/SP4.1.jpg',
-    isNew: true,
-    cate: 'Vegetable',
-  },
-  {
-    id: 5,
-    name: 'Tomato Soup',
-    price: 80000,
-    imageUrl: '/assets/images/products/SP5.jpg',
-    hoverImage: '/assets/images/products/SP5.1.jpg',
-    isNew: true,
-    cate: 'Soup',
-  },
-  {
-    id: 6,
-    name: 'Caesar Salad',
-    price: 130000,
-    imageUrl: '/assets/images/products/SP6.jpg',
-    hoverImage: '/assets/images/products/SP6.1.jpg',
-    isNew: true,
-    cate: 'Salad',
-  },
-  {
-    id: 7,
-    name: 'Vegetable Soup',
-    price: 95000,
-    imageUrl: '/assets/images/products/SP7.jpg',
-    hoverImage: '/assets/images/products/SP7.1.jpg',
-    isNew: true,
-    cate: 'Soup',
-  },
-  {
-    id: 8,
-    name: 'Chicken Soup',
-    price: 150000,
-    imageUrl: '/assets/images/products/SP8.jpg',
-    hoverImage: '/assets/images/products/SP8.1.jpg',
-    isNew: false,
-    cate: 'Soup',
-  },
-  {
-    id: 9,
-    name: 'Grilled Fish',
-    price: 250000,
-    imageUrl: '/assets/images/products/SP9.jpg',
-    hoverImage: '/assets/images/products/SP9.1.jpg',
-    isNew: false,
-    cate: 'Main Course',
-  },
-  {
-    id: 10,
-    name: 'Vegetable Stir Fry',
-    price: 180000,
-    imageUrl: '/assets/images/products/SP10.jpg',
-    hoverImage: '/assets/images/products/SP10.1.jpg',
-    isNew: false,
-    cate: 'Vegetable',
-  },
-  {
-    id: 11,
-    name: 'Seafood Salad',
-    price: 220000,
-    imageUrl: '/assets/images/products/SP10.jpg',
-    hoverImage: '/assets/images/products/SP10.1.jpg',
-    isNew: false,
-    cate: 'Salad',
-  },
-];
+import 'swiper/css';
+import 'swiper/css/navigation';
 
 const OrderOnlineSection: React.FC = () => {
-  const [currentIndex, setCurrentIndex] = useState<number>(0);
-  const [productsPerPage, setProductsPerPage] = useState<number>(4);
+  const { data: foods = [] } = useFoodNewest();
 
-  useEffect(() => {
-    const updateProductsPerPage = () => {
-      if (window.innerWidth < 640) {
-        setProductsPerPage(1);
-      } else if (window.innerWidth < 768) {
-        setProductsPerPage(2);
-      } else if (window.innerWidth < 1024) {
-        setProductsPerPage(3);
-      } else {
-        setProductsPerPage(4);
-      }
-    };
-
-    updateProductsPerPage();
-    window.addEventListener('resize', updateProductsPerPage);
-    return () => window.removeEventListener('resize', updateProductsPerPage);
-  }, []);
-
-  const handleNavigation = (direction: 'prev' | 'next') => {
-    const maxIndex = Math.ceil(products.length / productsPerPage) - 1;
-    if (direction === 'prev' && currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
-    }
-    if (direction === 'next' && currentIndex < maxIndex) {
-      setCurrentIndex(currentIndex + 1);
-    }
-  };
+  const products =
+    foods.map((food) => ({
+      id: food._id,
+      name: food.name,
+      price: food.discount_price || food.price,
+      originalPrice: food.discount_price ? food.price : undefined,
+      imageUrl: food.images?.[0] || '',
+      hoverImage: food.images?.[1] || '',
+      isNew: true,
+      discount: food.discount_price
+        ? `${Math.round(((food.price - food.discount_price) / food.price) * 100)}% OFF`
+        : undefined,
+      slug: food.slug,
+      description: food.description || '',
+      views: food.views || 0,
+      categories: food.categories || [],
+      cate: food.categories?.[0]?.Cate_name,
+      ordered_count: food.ordered_count || 0,
+      rating_count: food.rating_count || 0,
+      rating: food.average_rating || 0,
+      favorites_count: food.favorites_count || 0,
+      countInStock: food.countInStock || 10,
+      onAddToFavorite: () => {},
+    })) || [];
 
   return (
     <section className="bg-bodyBackground w-full text-white py-16">
-      <div className="w-mainContainer mx-auto">
+      <Container>
         <img
           src="/assets/images/home/IconOnline.svg"
           alt="Icon"
@@ -170,51 +56,67 @@ const OrderOnlineSection: React.FC = () => {
           </h2>
         </div>
 
-        <div className="overflow-hidden relative">
-          <div
-            className="flex gap-8 transition-transform duration-700 ease-in-out"
-            style={{
-              width: `calc(${(products.length * 100) / productsPerPage}% + ${(products.length * 32) / productsPerPage}px)`,
-              transform: `translateX(calc(-${currentIndex * (100 / productsPerPage)}% - ${(currentIndex * (32 * productsPerPage)) / productsPerPage}px))`,
-            }}
-          >
-            {products.map((product) => (
-              <div
-                key={product.id}
-                style={{ width: `calc((100% - 96px) / 4)` }}
+        <div className="relative">
+          <div className="custom-swiper-prev absolute left-0 top-1/2 transform -translate-y-1/2 z-10 cursor-pointer">
+            <button className="p-2 rounded-full bg-white/20 hover:bg-white/40 transition">
+              <svg
+                className="w-4 h-4 text-white"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
               >
-                <ProductCardGrid
-                  name={product.name}
-                  imageUrl={product.imageUrl}
-                  hoverImage={product.hoverImage}
-                  price={product.price}
-                  originalPrice={product.originalPrice}
-                  discount={product.discount}
-                  isNew={product.isNew}
-                  cate={product.cate} description={''}                />
-              </div>
-            ))}
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+            </button>
+          </div>
+          {/* Nút Next */}
+          <div className="custom-swiper-next absolute right-0 top-1/2 transform -translate-y-1/2 z-10 cursor-pointer">
+            <button className="p-2 rounded-full bg-white/20 hover:bg-white/40 transition">
+              <svg
+                className="w-4 h-4 text-white"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </button>
           </div>
 
-          <button
-            onClick={() => handleNavigation('prev')}
-            className="absolute left-0 top-1/2 transform -translate-y-1/2 text-secondaryColor p-2 z-10"
-            disabled={currentIndex === 0}
+          <Swiper
+            modules={[Navigation]}
+            navigation={{
+              prevEl: '.custom-swiper-prev',
+              nextEl: '.custom-swiper-next',
+            }}
+            spaceBetween={24}
+            slidesPerView={1}
+            breakpoints={{
+              640: { slidesPerView: 1 },
+              768: { slidesPerView: 2 },
+              1024: { slidesPerView: 3 },
+              1280: { slidesPerView: 4 },
+            }}
+            className="!px-4"
           >
-            <BsArrowLeftCircle size={30} />
-          </button>
-
-          <button
-            onClick={() => handleNavigation('next')}
-            className="absolute right-0 top-1/2 transform -translate-y-1/2 text-secondaryColor p-2 z-10"
-            disabled={
-              currentIndex >= Math.ceil(products.length / productsPerPage) - 1
-            }
-          >
-            <BsArrowRightCircle size={30} />
-          </button>
+            {products.map((product) => (
+              <SwiperSlide key={product.id}>
+                <ProductCardGrid {...product} />
+              </SwiperSlide>
+            ))}
+          </Swiper>
         </div>
-      </div>
+      </Container>
     </section>
   );
 };

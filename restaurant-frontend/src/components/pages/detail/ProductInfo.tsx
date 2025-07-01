@@ -1,8 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { FaHeart, FaRegHeart, FaStar, FaStarHalfAlt } from 'react-icons/fa';
+import { FaHeart } from 'react-icons/fa';
 import ButtonComponents from '../../common/ButtonComponents';
-
+import { useAddToCart } from '@hooks/useCart';
+import { useFavorites } from '@/hooks/useFavorites';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/redux/store';
+import { FilledStar, HalfStar, EmptyStar } from '../../common/StarIcons';
 interface ProductInfoProps {
+  id: string;
   name: string;
   price: number;
   originalPrice: number;
@@ -16,6 +21,7 @@ interface ProductInfoProps {
 }
 
 const ProductInfo: React.FC<ProductInfoProps> = ({
+  id,
   name,
   price,
   originalPrice,
@@ -23,14 +29,25 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
   rating,
   reviews,
   description,
-  // brand,
   categories,
-  // sku,
 }) => {
   const [quantity, setQuantity] = useState(1);
-  const [wishlisted, setWishlisted] = useState(false);
   const [screenWidth, setScreenWidth] = useState(0);
+  const { addToFavorites } = useFavorites();
+  const { mutate: addToCart } = useAddToCart();
+  const favorites = useSelector((state: RootState) => state.favorite.items);
+  const isFavorited = favorites.some((item) => item.dishId?._id === id);
+  const { removeFromFavorites } = useFavorites();
 
+  const handleToggleFavorite = () => {
+    const favoriteItem = favorites.find((item) => item.dishId._id === id);
+
+    if (favoriteItem) {
+      removeFromFavorites(favoriteItem._id);
+    } else {
+      addToFavorites(id);
+    }
+  };
   useEffect(() => {
     const handleResize = () => {
       setScreenWidth(window.innerWidth);
@@ -49,55 +66,61 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
   const renderStars = () => {
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating - fullStars >= 0.5;
+    const totalStars = 5;
 
     return (
       <>
         {[...Array(fullStars)].map((_, i) => (
-          <FaStar key={i} />
+          <FilledStar key={`full-${i}`} />
         ))}
-        {hasHalfStar && <FaStarHalfAlt />}
+        {hasHalfStar && <HalfStar key="half" />}
+        {[...Array(totalStars - fullStars - (hasHalfStar ? 1 : 0))].map(
+          (_, i) => (
+            <EmptyStar key={`empty-${i}`} />
+          ),
+        )}
       </>
     );
   };
 
   return (
     <div className="w-full">
-      <h2 className="text-2xl md:text-3xl font-bold font-restora mb-4 md:mb-6">
-        {name}
-      </h2>
+      <h2 className="text-2xl md:text-3xl font-restora mb-4 md:mb-6">{name}</h2>
 
       <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-4">
-        <span className="text-gray-400 line-through text-xs sm:text-sm">
-          {originalPrice.toLocaleString('vi-VN')} VND
-        </span>
-        <span className="text-2xl font-bold text-secondaryColor">
-          {price.toLocaleString('vi-VN')} VND
-        </span>
-        {discount > 0 && (
-          <span className="bg-secondaryColor text-black font-bold text-xs px-3 py-1 rounded-lg">
-            GIẢM {discount}%
+        {originalPrice === price ? (
+          <span className="text-2xl text-secondaryColor">
+            {price.toLocaleString('vi-VN')} VND
           </span>
+        ) : (
+          <>
+            <span className="text-gray-400 line-through text-xs sm:text-sm">
+              {originalPrice.toLocaleString('vi-VN')} VND
+            </span>
+            <span className="text-2xl text-secondaryColor">
+              {price.toLocaleString('vi-VN')} VND
+            </span>
+            {discount > 0 && (
+              <span className="bg-secondaryColor text-black text-xs px-3 py-1">
+                GIẢM {discount}%
+              </span>
+            )}
+          </>
         )}
       </div>
 
       <div className="flex items-center gap-2 mb-2">
         <div className="flex text-secondaryColor text-sm">{renderStars()}</div>
+        <span className="text-sm text-secondaryColor">{rating}</span>
+        <span className="text-sm text-gray-400">|</span>
         <span className="text-sm text-gray-400">({reviews} đánh giá)</span>
       </div>
 
       <div className="text-sm my-4 space-y-2 ">
-        {/* <p>
-          <span className="text-gray-400">Thương hiệu:</span>{' '}
-          <span className="text-white">{brand}</span>
-        </p> */}
         <p>
           <span className="text-gray-400"> Danh mục:</span>{' '}
           <span className="text-white">{categories.join(', ')}</span>
         </p>
-        {/* <p>
-          <span className="text-gray-400">SKU:</span>{' '}
-          <span className="text-white">{sku}</span>
-        </p> */}
       </div>
 
       <p className="text-sm text-gray-400 mb-4">{description}</p>
@@ -120,30 +143,30 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
             +
           </button>
         </div>
-       
       </div>
-      <div className='flex'>
-      <ButtonComponents
+      <div className="flex">
+        <ButtonComponents
           variant="filled"
           size={getButtonSize()}
-          onClick={() => console.log(`Thêm ${quantity} sản phẩm vào giỏ hàng`)}
+          onClick={() =>
+            addToCart({
+              dishId: id,
+              quantity,
+            })
+          }
         >
           THÊM GIỎ HÀNG
         </ButtonComponents>
-      <button
-          className={`flex items-center justify-center gap-2 px-4 py-2 hover:text-secondaryColor rounded transition duration-300 text-sm ${
-            wishlisted ? 'text-secondaryColor' : 'text-white'
+        <button
+          className={`flex items-center justify-center gap-2 px-4 py-2 rounded transition duration-300 text-sm ${
+            isFavorited ? 'text-red-500' : 'text-white hover:text-red-400'
           }`}
-          onClick={() => setWishlisted(!wishlisted)}
+          onClick={handleToggleFavorite}
         >
-          {wishlisted ? <FaHeart /> : <FaRegHeart />}
-          {wishlisted ? 'Đã yêu thích' : 'Yêu thích'}
+          <FaHeart className={`w-5 h-5 ${isFavorited ? 'text-red-500' : ''}`} />
         </button>
-
       </div>
       <hr className="my-6 bg-hr h-[1px] border-0" />
-
-      
     </div>
   );
 };

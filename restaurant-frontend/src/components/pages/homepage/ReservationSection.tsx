@@ -1,7 +1,22 @@
 import React from "react";
 import { FaDiamond } from "react-icons/fa6";
+import ButtonComponents from '../../common/ButtonComponents';
+import { toastService } from '@/utils/toastService';
+import { useNavigate } from 'react-router-dom';
+import Cookies from 'js-cookie';
 
 const ReservationSection: React.FC = () => {
+  const navigate = useNavigate();
+  const userInfo = Cookies.get('userInfo');
+  const user = userInfo ? JSON.parse(userInfo) : null;
+
+  const handleReservationClick = () => {
+    if (!user) {
+      toastService.warning('Vui lòng đăng nhập để đặt bàn');
+      return;
+    } 
+    navigate('/reservation');
+  };
   return (
     <div
       className="relative mx-auto bg-cover bg-center h-[250px] sm:h-[300px] md:h-[460px]"
@@ -28,6 +43,16 @@ const ReservationSection: React.FC = () => {
           <p className="text-[10px] sm:text-xs md:text-sm max-w-sm sm:max-w-xl mx-auto leading-relaxed">
           Hãy trải nghiệm tinh hoa ẩm thực Pháp, nơi hương vị nguyên bản của các nguyên liệu được tôn vinh và mở ra những hành trình khám phá ẩm thực đầy cảm hứng.
           </p>
+          <div className="mx-auto w-full mt-10 "  aria-label="Book a Table">
+              <ButtonComponents
+                variant="filled"
+                size="large"
+                onClick={handleReservationClick}
+                className="max-width-[200px] text-xs sm:text-sm md:text-base uppercase font-normal"
+              >
+                Đặt Bàn Ngay
+              </ButtonComponents>
+          </div>
         </div>
       </div>
     </div>

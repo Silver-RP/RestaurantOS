@@ -18,19 +18,18 @@ class StaffService {
     getAllStaff(page, pageSize) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const userRole = yield RoleModel_1.default.findOne({ name: "user" });
+                const userRole = yield RoleModel_1.default.findOne({ name: 'user' });
                 if (!userRole) {
                     return {
-                        status: "Error",
-                        message: "Role 'user' not found"
+                        status: 'Error',
+                        message: "Role 'user' not found",
                     };
                 }
                 const query = { roles: { $ne: userRole._id } };
-                console.log("query", query);
                 const options = {
                     page,
                     limit: pageSize,
-                    select: "-password -otp -otpExpiry -googleId -facebookId -roles -default_address_id -isEmailVerifided -exprireAt -isVerified",
+                    select: '-password -otp -otpExpiry -googleId -facebookId -roles -default_address_id -isEmailVerifided -exprireAt -isVerified',
                     sort: { createdAt: -1 },
                     populate: {
                         path: 'roles',
@@ -38,16 +37,16 @@ class StaffService {
                     },
                 };
                 const allStaff = yield UserModel_1.default.paginate(query, options);
-                console.log("allStaff", allStaff);
+                console.log('allStaff', allStaff);
                 return {
-                    status: "SUCCESS",
+                    status: 'SUCCESS',
                     data: allStaff.docs,
                     metadata: {
                         total: allStaff.totalDocs,
                         page: allStaff.page,
                         pageSize: allStaff.limit,
-                        totalPages: allStaff.totalPages
-                    }
+                        totalPages: allStaff.totalPages,
+                    },
                 };
             }
             catch (error) {
@@ -62,12 +61,12 @@ class StaffService {
                 if (data.roles && Array.isArray(data.roles) && data.roles.length > 0) {
                     const validRoles = yield RoleModel_1.default.find({ name: { $in: data.roles } });
                     if (validRoles.length === 0) {
-                        throw new Error("Invalid roles provided");
+                        throw new Error('Invalid roles provided');
                     }
                     roleIds = validRoles.map((role) => role._id);
                 }
                 else {
-                    const defaultRole = yield RoleModel_1.default.findOne({ name: "staff" });
+                    const defaultRole = yield RoleModel_1.default.findOne({ name: 'staff' });
                     if (!defaultRole) {
                         throw new Error("Default role 'Staff' not found");
                     }
@@ -95,14 +94,14 @@ class StaffService {
                 });
                 yield newStaff.save();
                 return {
-                    status: "SUCCESS",
-                    message: "Staff created successfully",
+                    status: 'SUCCESS',
+                    message: 'Staff created successfully',
                     data: newStaff,
                 };
             }
             catch (error) {
                 return {
-                    status: "ERROR",
+                    status: 'ERROR',
                     message: `Error creating staff: ${error.message}`,
                 };
             }
@@ -113,12 +112,12 @@ class StaffService {
             try {
                 const existingStaff = yield UserModel_1.default.findById(staffId);
                 if (!existingStaff) {
-                    throw new Error("Staff not found");
+                    throw new Error('Staff not found');
                 }
                 if (data.roles && Array.isArray(data.roles) && data.roles.length > 0) {
                     const validRoles = yield RoleModel_1.default.find({ name: { $in: data.roles } });
                     if (validRoles.length === 0) {
-                        throw new Error("Invalid roles provided");
+                        throw new Error('Invalid roles provided');
                     }
                     data.roles = validRoles.map((role) => role._id);
                 }
@@ -131,14 +130,14 @@ class StaffService {
                 // Lưu thay đổi
                 yield existingStaff.save();
                 return {
-                    status: "SUCCESS",
-                    message: "Staff updated successfully",
+                    status: 'SUCCESS',
+                    message: 'Staff updated successfully',
                     data: existingStaff,
                 };
             }
             catch (error) {
                 return {
-                    status: "ERROR",
+                    status: 'ERROR',
                     message: `Error updating staff: ${error.message}`,
                 };
             }
@@ -149,17 +148,17 @@ class StaffService {
             try {
                 const existingStaff = yield UserModel_1.default.findById(staffId);
                 if (!existingStaff) {
-                    throw new Error("Staff not found");
+                    throw new Error('Staff not found');
                 }
                 yield existingStaff.deleteOne();
                 return {
-                    status: "SUCCESS",
-                    message: "Staff deleted successfully",
+                    status: 'SUCCESS',
+                    message: 'Staff deleted successfully',
                 };
             }
             catch (error) {
                 return {
-                    status: "ERROR",
+                    status: 'ERROR',
                     message: `Error deleting staff: ${error.message}`,
                 };
             }
@@ -169,7 +168,7 @@ class StaffService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const query = {};
-                const userRole = yield RoleModel_1.default.findOne({ name: "user" });
+                const userRole = yield RoleModel_1.default.findOne({ name: 'user' });
                 if (!userRole) {
                     throw new Error("Role 'user' not found");
                 }
@@ -189,7 +188,7 @@ class StaffService {
                         query.exprireAt.$lte = options.endDate;
                     }
                 }
-                let sort = {};
+                const sort = {};
                 if (options.nameSort) {
                     sort.userName = options.nameSort === 'A->Z' ? 1 : -1;
                 }
@@ -200,15 +199,11 @@ class StaffService {
                 const limit = options.pageSize || 10;
                 const skip = (page - 1) * limit;
                 const [staff, totalDocuments] = yield Promise.all([
-                    UserModel_1.default.find(query)
-                        .select('-password')
-                        .sort(sort)
-                        .skip(skip)
-                        .limit(limit),
+                    UserModel_1.default.find(query).select('-password').sort(sort).skip(skip).limit(limit),
                     UserModel_1.default.countDocuments(query),
                 ]);
                 return {
-                    status: "SUCCESS",
+                    status: 'SUCCESS',
                     data: {
                         staff,
                         metadata: {

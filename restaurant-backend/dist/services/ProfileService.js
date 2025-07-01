@@ -15,7 +15,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const UserModel_1 = __importDefault(require("../models/UserModel"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 class ProfileService {
-    // Get user profile 
     getUserProfile(userId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -41,13 +40,13 @@ class ProfileService {
     changePasswordProfile(userId, data) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const user = yield UserModel_1.default.findById(userId).select("+password");
+                const user = yield UserModel_1.default.findById(userId).select('+password');
                 if (!user) {
-                    throw new Error("User not found");
+                    throw new Error('User not found');
                 }
-                const isPasswordValid = yield bcrypt_1.default.compare(data.oldPassword, user.password || "");
+                const isPasswordValid = yield bcrypt_1.default.compare(data.oldPassword, user.password || '');
                 if (!isPasswordValid) {
-                    throw new Error("Old password is incorrect");
+                    throw new Error('Old password is incorrect');
                 }
                 user.password = data.newPassword;
                 yield user.save();

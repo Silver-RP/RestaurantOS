@@ -16,16 +16,19 @@ const express_1 = require("express");
 const UserController_1 = __importDefault(require("../controller/UserController"));
 const AuthMiddleWare_1 = __importDefault(require("../middleware/AuthMiddleWare"));
 const router = (0, express_1.Router)();
-router.get("/getAllUser", AuthMiddleWare_1.default.verifyToken, UserController_1.default.getAllUser);
-router.get("/getAllUserByUserRole", UserController_1.default.getAllUserByUserRole);
-router.get("/getUserById/:userId", UserController_1.default.getUserById);
-router.post("/blockUser/:userId", UserController_1.default.blockUser);
-router.get("/filterUser", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/getAllUser', AuthMiddleWare_1.default.verifyToken, UserController_1.default.getAllUser);
+router.get('/getAllUserByUserRole', UserController_1.default.getAllUserByUserRole);
+router.get('/getUserById/:userId', UserController_1.default.getUserById);
+router.post('/blockUser/:userId', UserController_1.default.blockUser);
+router.put('/updateUser/:userId', AuthMiddleWare_1.default.verifyToken, UserController_1.default.updateUser);
+router.post('/changePassword/:userId', AuthMiddleWare_1.default.verifyToken, UserController_1.default.changeUserPassword);
+router.get('/filterUser', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield UserController_1.default.filterUser(req, res);
     }
-    catch (error) {
-        res.status(500).json({ message: "Error filtering users" });
+    catch (_a) {
+        res.status(500).json({ message: 'Error filtering users' });
     }
 }));
+router.post('/addUser', AuthMiddleWare_1.default.verifyToken, AuthMiddleWare_1.default.verifyRole(['superadmin']), UserController_1.default.addUser);
 exports.default = router;

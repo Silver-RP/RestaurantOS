@@ -23,11 +23,11 @@ const reservationcontactSchema = new mongoose_1.default.Schema({
     },
     users: {
         type: mongoose_1.default.Schema.Types.ObjectId,
-        ref: "User",
+        ref: 'User',
         required: true,
-    }
+    },
 }, {
-    timestamps: true
+    timestamps: true,
 });
-const ReservationContactModel = mongoose_1.default.model("ReservationContact", reservationcontactSchema);
+const ReservationContactModel = mongoose_1.default.model('ReservationContact', reservationcontactSchema);
 exports.default = ReservationContactModel;

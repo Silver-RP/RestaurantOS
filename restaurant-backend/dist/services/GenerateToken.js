@@ -35,7 +35,7 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.refreshToken = exports.accessToken = void 0;
 const jwt = __importStar(require("jsonwebtoken"));
-const accessToken = (payload, secretKey, expires = 2 * 60 * 60) => {
+const accessToken = (payload, secretKey, expires) => {
     try {
         return jwt.sign(payload, secretKey, { expiresIn: expires });
     }

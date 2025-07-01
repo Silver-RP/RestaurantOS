@@ -114,7 +114,7 @@ export default function FaqPage() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-bodyBackground">
       <div
         className="bg-cover bg-center h-60 flex items-center justify-center"
         style={{ backgroundImage: "url('/images/banner/FAQs-banner-1.jpg')" }}
@@ -122,7 +122,7 @@ export default function FaqPage() {
         <div className="text-center">
           <h1 className="text-white text-4xl font-bold mb-2">FAQs</h1>
           <p className="text-white text-lg opacity-80">
-            Frequently Asked Questions
+            Những câu hỏi thường gặp
           </p>
         </div>
       </div>

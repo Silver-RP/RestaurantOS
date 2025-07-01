@@ -1,16 +1,44 @@
-
-import ProductCardGrid from '../../common/ProductCardGrid';
 import React, { useEffect, useState } from 'react';
+import ProductCardGrid from '../../common/ProductCardGrid';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
-import { ProductCardProps } from '../../../types/ProductCard.types';
-
+import { useFoodBest4 } from '@hooks/useFoods';
+import { ProductCardProps } from '@/types/ProductCard.types';
 interface RelatedProductListProps {
-  products: ProductCardProps[];
+  categories: string[];
 }
 
-const RelatedProductList: React.FC<RelatedProductListProps> = ({ products }) => {
+const RelatedProductList: React.FC<RelatedProductListProps> = ({ categories }) => {
+  const categoryId = categories?.[0];
+
+  if (!categoryId) return null;
+
+  const { data: foods = [] } = useFoodBest4(categoryId);
   const [slideIndex, setSlideIndex] = useState(0);
   const [itemsPerSlide, setItemsPerSlide] = useState(1);
+
+  const products: ProductCardProps[] = foods.map((food) => ({ 
+  id: food._id,
+  name: food.name,
+  price: food.discount_price || food.price,
+  originalPrice: food.discount_price ? food.price : undefined,
+  imageUrl: food.images?.[0] || '',
+  hoverImage: food.images?.[1] || '',
+  isNew: true,
+  discount: food.discount_price
+    ? `${Math.round(((food.price - food.discount_price) / food.price) * 100)}% OFF`
+    : undefined,
+  slug: food.slug,
+  description: food.description || '',
+  views: food.views || 0,
+  categories: food.categories || [],
+  cate: food.categories?.[0]?.Cate_name,
+  ordered_count: food.ordered_count || 0,
+  rating_count: food.rating_count || 0,
+  rating: food.average_rating || 4,
+  favorites_count: food.favorites_count || 0,
+  countInStock: food.countInStock || 10,
+  onAddToFavorite: () => {},
+}));
 
   useEffect(() => {
     const updateItemsPerSlide = () => {
@@ -27,18 +55,9 @@ const RelatedProductList: React.FC<RelatedProductListProps> = ({ products }) => 
 
   const maxSlideIndex = Math.ceil(products.length / itemsPerSlide) - 1;
 
-  const handlePrev = () => {
-    setSlideIndex((prev) => Math.max(prev - 1, 0));
-  };
-
-  const handleNext = () => {
+  const handlePrev = () => setSlideIndex((prev) => Math.max(prev - 1, 0));
+  const handleNext = () =>
     setSlideIndex((prev) => Math.min(prev + 1, maxSlideIndex));
-  };
-
-  const visibleProducts = products.slice(
-    slideIndex * itemsPerSlide,
-    slideIndex * itemsPerSlide + itemsPerSlide
-  );
 
   return (
     <div className="py-10 relative">
@@ -60,9 +79,14 @@ const RelatedProductList: React.FC<RelatedProductListProps> = ({ products }) => 
         {/* Product List */}
         <div className="w-full">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 transition-all duration-300">
-            {visibleProducts.map((product) => (
-              <ProductCardGrid key={product.id} {...product} />
-            ))}
+            {products
+              .slice(
+                slideIndex * itemsPerSlide,
+                slideIndex * itemsPerSlide + itemsPerSlide,
+              )
+              .map((product) => (
+                <ProductCardGrid key={product.id} {...product} />
+              ))}
           </div>
         </div>
 

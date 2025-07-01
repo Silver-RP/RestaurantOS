@@ -16,7 +16,7 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const connectDB = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         if (!process.env.MONGO_URI) {
-            console.error("Mongo URI is not set in environment variables.");
+            console.error('Mongo URI is not set in environment variables.');
             process.exit(1);
         }
         const conn = yield mongoose_1.default.connect(process.env.MONGO_URI || '');

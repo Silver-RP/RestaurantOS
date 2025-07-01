@@ -30,14 +30,13 @@ class PermissionService {
             try {
                 const existingPermission = yield PermissionModel_1.default.findOne({ name });
                 if (existingPermission) {
-                    throw new Error("Permission already exists!");
+                    throw new Error('Permission already exists!');
                 }
                 const newPermission = new PermissionModel_1.default({ name, description });
                 yield newPermission.save();
                 return newPermission;
             }
-            catch (error) {
-            }
+            catch (error) { }
         });
     }
     GetPermissionById(id) {
@@ -56,7 +55,7 @@ class PermissionService {
             try {
                 const permission = yield PermissionModel_1.default.findById(id);
                 if (!permission) {
-                    throw new Error("Permission not found!");
+                    throw new Error('Permission not found!');
                 }
                 if (data.name) {
                     permission.name = data.name;

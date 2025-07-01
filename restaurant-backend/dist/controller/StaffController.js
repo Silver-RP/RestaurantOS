@@ -24,8 +24,8 @@ class StaffController {
             }
             catch (error) {
                 return res.status(500).json({
-                    status: "Error",
-                    message: error.message
+                    status: 'Error',
+                    message: error.message,
                 });
             }
         });
@@ -38,8 +38,8 @@ class StaffController {
             }
             catch (error) {
                 return res.status(500).json({
-                    status: "Error",
-                    message: error.message
+                    status: 'Error',
+                    message: error.message,
                 });
             }
         });
@@ -50,7 +50,7 @@ class StaffController {
                 const { staffId } = req.params;
                 const data = req.body;
                 const result = yield StaffService_1.default.updateStaff(staffId, data);
-                if (result.status === "SUCCESS") {
+                if (result.status === 'SUCCESS') {
                     return res.status(200).json({
                         status: result.status,
                         message: result.message,
@@ -66,7 +66,7 @@ class StaffController {
             }
             catch (error) {
                 return res.status(500).json({
-                    status: "ERROR",
+                    status: 'ERROR',
                     message: `Server error: ${error.message}`,
                 });
             }
@@ -77,7 +77,7 @@ class StaffController {
             try {
                 const { staffId } = req.params;
                 const result = yield StaffService_1.default.deleteStaff(staffId);
-                if (result.status === "SUCCESS") {
+                if (result.status === 'SUCCESS') {
                     return res.status(200).json({
                         status: result.status,
                         message: result.message,
@@ -92,7 +92,7 @@ class StaffController {
             }
             catch (error) {
                 return res.status(500).json({
-                    status: "ERROR",
+                    status: 'ERROR',
                     message: `Server error: ${error.message}`,
                 });
             }
@@ -109,15 +109,15 @@ class StaffController {
                     startDate: req.query.startDate ? new Date(req.query.startDate) : undefined,
                     endDate: req.query.endDate ? new Date(req.query.endDate) : undefined,
                     page: req.query.page ? parseInt(req.query.page) : 1,
-                    pageSize: req.query.pageSize ? parseInt(req.query.pageSize) : 10
+                    pageSize: req.query.pageSize ? parseInt(req.query.pageSize) : 10,
                 };
                 const result = yield StaffService_1.default.filterStaff(filterOptions);
                 return res.status(200).json(result);
             }
             catch (error) {
                 return res.status(500).json({
-                    status: "ERROR",
-                    message: error.message
+                    status: 'ERROR',
+                    message: error.message,
                 });
             }
         });

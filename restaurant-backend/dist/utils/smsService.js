@@ -20,7 +20,7 @@ const authToken = process.env.TWILIO_AUTH_TOKEN;
 const fromPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
 // Kiểm tra biến môi trường
 if (!accountSid || !authToken || !fromPhoneNumber) {
-    throw new Error("Missing required environment variables (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER)");
+    throw new Error('Missing required environment variables (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER)');
 }
 const client = (0, twilio_1.default)(accountSid, authToken);
 class SmsService {
@@ -32,10 +32,10 @@ class SmsService {
                     to: to,
                     body: `Your OTP is: ${otp}`,
                 });
-                console.log("Message sent successfully:", message.sid); // Log thành công
+                console.log('Message sent successfully:', message.sid); // Log thành công
             }
             catch (error) {
-                console.error("Error sending OTP:", error.message); // Log chi tiết lỗi
+                console.error('Error sending OTP:', error.message); // Log chi tiết lỗi
             }
         });
     }

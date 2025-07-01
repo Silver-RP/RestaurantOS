@@ -14,15 +14,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const FoodService_1 = __importDefault(require("../services/FoodService"));
 const UploadImage_1 = __importDefault(require("../services/UploadImage"));
-const DishModel_1 = require("../models/DishModel");
-const SearchService_1 = __importDefault(require("../services/SearchService"));
 const mongoose_1 = __importDefault(require("mongoose"));
+const queryParser_1 = require("../utils/queryParser");
 class FoodController {
     createFood(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { name, price, description, categories, countInStock, rating, favorites } = req.body;
-                if (!name || !price || !description || !categories || !countInStock || !rating || !favorites) {
+                if (!name ||
+                    !price ||
+                    !description ||
+                    !categories ||
+                    !countInStock ||
+                    !rating ||
+                    !favorites) {
                     return res.status(400).json({ message: 'All fields are required' });
                 }
                 const categoryId = categories.trim();
@@ -62,29 +67,66 @@ class FoodController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const foodFavoriteTop = yield FoodService_1.default.getTopFavoriteFood();
-                return res.status(200).json({
+                res.status(200).json({
                     success: true,
-                    data: foodFavoriteTop
+                    data: foodFavoriteTop,
                 });
+                return;
             }
             catch (error) {
                 console.error('Error fetching top favorite foods:', error);
-                return res.status(500).json({
+                res.status(500).json({
                     success: false,
                     message: 'Failed to retrieve top favorite foods',
-                    error: error instanceof Error ? error.message : 'Unknown error'
+                    error: error instanceof Error ? error.message : 'Unknown error',
                 });
+                return;
             }
         });
     }
     getAllFood(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const food = yield FoodService_1.default.getAllFood();
-                res.status(200).json({ message: 'All food retrieved successfully', data: food });
+                const params = (0, queryParser_1.parseFoodQueryParams)(req.query);
+                const foods = yield FoodService_1.default.getAllFood(params);
+                return res.status(200).json({
+                    success: true,
+                    message: 'All food retrieved successfully',
+                    data: foods,
+                });
             }
             catch (error) {
-                throw new Error('Error getting all food');
+                console.error('Error in getAllFood:', error);
+                return res.status(500).json({
+                    success: false,
+                    message: 'Error getting all food',
+                    error: error.message,
+                });
+            }
+        });
+    }
+    getFoodBySlug(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { slug } = req.params;
+                const food = yield FoodService_1.default.getFoodBySlug(slug);
+                if (!food) {
+                    return res.status(404).json({
+                        success: false,
+                        message: 'Món ăn không tồn tại!',
+                    });
+                }
+                return res.status(200).json({
+                    success: true,
+                    data: food,
+                });
+            }
+            catch (error) {
+                console.error('Error getting food by slug:', error);
+                return res.status(500).json({
+                    success: false,
+                    message: 'Lỗi khi lấy món ăn',
+                });
             }
         });
     }
@@ -95,8 +137,27 @@ class FoodController {
                 const food = yield FoodService_1.default.getFoodById(foodId);
                 res.status(200).json(food);
             }
-            catch (error) {
+            catch (_a) {
                 throw new Error('Error getting food by id');
+            }
+        });
+    }
+    getFoodByNewest(_, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const food = yield FoodService_1.default.getFoodByNewest();
+                return res.status(200).json({
+                    success: true,
+                    message: 'Food retrieved successfully',
+                    data: food,
+                });
+            }
+            catch (error) {
+                console.error('Error getting food by newest:', error);
+                return res.status(500).json({
+                    success: false,
+                    message: 'Error getting food by newest',
+                });
             }
         });
     }
@@ -107,7 +168,7 @@ class FoodController {
                 const updatedFood = yield FoodService_1.default.updateFood(id, req.body);
                 res.status(200).json(updatedFood);
             }
-            catch (error) {
+            catch (_a) {
                 throw new Error('Error updating food');
             }
         });
@@ -119,32 +180,21 @@ class FoodController {
                 const deletedFood = yield FoodService_1.default.deleteFood(id);
                 res.status(200).json(deletedFood);
             }
-            catch (error) {
+            catch (_a) {
                 throw new Error('Error deleting food');
-            }
-        });
-    }
-    getFoodWithPagination(req, res) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const { page, limit } = req.query;
-                const food = yield FoodService_1.default.getFoodWithPagination(Number(page), Number(limit));
-                res.status(200).json(food);
-            }
-            catch (error) {
-                throw new Error('Error getting food with pagination');
             }
         });
     }
     getFoodByCategory(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const { id } = req.query;
-                const food = yield FoodService_1.default.getFoodByCategory(String(id));
+                const { Cate_type } = req.query;
+                const food = yield FoodService_1.default.getFoodByCategoryType(String(Cate_type));
                 res.status(200).json(food);
             }
             catch (error) {
-                throw new Error('Error getting food by category');
+                console.error(error);
+                res.status(500).json({ message: 'Error getting food by category type' });
             }
         });
     }
@@ -155,7 +205,7 @@ class FoodController {
                 const food = yield FoodService_1.default.getFoodBySearch(String(search));
                 res.status(200).json(food);
             }
-            catch (error) {
+            catch (_a) {
                 throw new Error('Error getting food by search');
             }
         });
@@ -167,7 +217,7 @@ class FoodController {
                 const food = yield FoodService_1.default.getFoodByPrice(Number(min), Number(max));
                 res.status(200).json(food);
             }
-            catch (error) {
+            catch (_a) {
                 throw new Error('Error getting food by price');
             }
         });
@@ -179,7 +229,7 @@ class FoodController {
                 const food = yield FoodService_1.default.getFoodByRating(Number(rating));
                 res.status(200).json(food);
             }
-            catch (error) {
+            catch (_a) {
                 throw new Error('Error getting food by rating');
             }
         });
@@ -187,23 +237,122 @@ class FoodController {
     getFoodByFavorites(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const { favorites } = req.query;
-                const food = yield FoodService_1.default.getFoodByFavorites(Number(favorites));
-                res.status(200).json(food);
+                const { favorites, type } = req.query;
+                if (!type || typeof type !== 'string') {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Missing or invalid type parameter',
+                    });
+                }
+                let dishes;
+                if (favorites) {
+                    const favoritesNumber = Number(favorites);
+                    if (isNaN(favoritesNumber)) {
+                        return res.status(400).json({ success: false, message: 'Favorites must be a number' });
+                    }
+                    dishes = yield FoodService_1.default.getFoodByFavorites(favoritesNumber, type);
+                }
+                else {
+                    dishes = yield FoodService_1.default.getTopFavoriteFoods(type);
+                }
+                if (!dishes || dishes.length === 0) {
+                    return res.status(404).json({
+                        success: false,
+                        message: 'No food found matching the criteria',
+                        data: [],
+                    });
+                }
+                return res.status(200).json({
+                    success: true,
+                    message: 'Food retrieved successfully',
+                    data: dishes,
+                });
             }
             catch (error) {
-                throw new Error('Error getting food by favorites');
+                console.error('Error in getFoodByFavorites:', error);
+                return res.status(500).json({ success: false, message: 'Internal server error' });
             }
         });
     }
-    SearchFood(req, res) {
+    getFoodBest4(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const result = yield SearchService_1.default.search(DishModel_1.Dish, req.query, ['name']);
-                return res.status(200).json(result);
+                const { category } = req.query;
+                if (!category || typeof category !== 'string') {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Missing or invalid category parameter',
+                    });
+                }
+                const dishes = yield FoodService_1.default.getFoodBest4(category);
+                return res.status(200).json({
+                    success: true,
+                    message: 'Food retrieved successfully',
+                    data: dishes,
+                });
             }
             catch (error) {
-                return res.status(500).json({ message: 'An error occurred', error });
+                console.error('Error in getFoodBest4:', error);
+                return res.status(500).json({ success: false, message: 'Internal server error' });
+            }
+        });
+    }
+    toggleFavorite(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!req.user) {
+                    return res.status(401).json({ message: 'Unauthorized' });
+                }
+                const userId = req.user.id;
+                const { dishId } = req.body;
+                console.log('User ID:', userId);
+                console.log('Dish ID:', dishId);
+                if (!dishId) {
+                    return res.status(400).json({ message: 'Dish ID is required' });
+                }
+                const updatedFood = yield FoodService_1.default.toggleFavorite(dishId, userId);
+                return res.status(200).json({ data: updatedFood });
+            }
+            catch (error) {
+                console.error('Error toggling favorite:', error);
+                return res.status(500).json({ message: 'Internal server error' });
+            }
+        });
+    }
+    getFavoriteFoods(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!req.user) {
+                    return res.status(401).json({ message: 'Unauthorized' });
+                }
+                const userId = req.user.id;
+                const favoriteFoods = yield FoodService_1.default.getFavoriteFoods(userId);
+                if (!favoriteFoods || (Array.isArray(favoriteFoods) && favoriteFoods.length === 0)) {
+                    return res.status(200).json({
+                        message: 'Favorite foods retrieved successfully',
+                        data: favoriteFoods !== null && favoriteFoods !== void 0 ? favoriteFoods : [],
+                    });
+                }
+                return res
+                    .status(200)
+                    .json({ message: 'Favorite foods retrieved successfully', data: favoriteFoods });
+            }
+            catch (error) {
+                console.error('Error getting favorite foods:', error);
+                return res.status(500).json({ message: 'Internal server error' });
+            }
+        });
+    }
+    countFoodView(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const foodId = req.params.foodId;
+                const updatedFood = yield FoodService_1.default.countFoodView(foodId);
+                return res.status(200).json({ data: updatedFood });
+            }
+            catch (error) {
+                console.error('Error counting food view:', error);
+                return res.status(500).json({ message: 'Internal server error' });
             }
         });
     }

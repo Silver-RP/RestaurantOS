@@ -1,10 +1,11 @@
+import Container from "@/components/common/Container";
 import React from "react";
 import { FaDiamond } from "react-icons/fa6";
 
 const AboutSection = () => {
   return (
     <section className="bg-bodyBackground w-full text-white py-16">
-      <div className="w-mainContainer mx-auto">
+      <Container>
       <img src="/assets/images/home/IconOnline.svg" alt="Icon" className="mx-auto mb-8" />
         <div className="text-center mb-12">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-restora font-thin mb-4">
@@ -65,7 +66,7 @@ const AboutSection = () => {
             </div>
           </div>
         </div>
-      </div>
+      </Container>
     </section>
   );
 };

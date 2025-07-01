@@ -1,11 +1,10 @@
 import React from 'react';
-import { Button } from 'antd';
 
 type Props = {
-  htmlType?: 'button' | 'submit' | 'reset'; 
-  text?: string; 
-  onClick?: () => void; 
-  disabled?: boolean; 
+  htmlType?: 'button' | 'submit' | 'reset';
+  text?: string;
+  onClick?: () => void;
+  disabled?: boolean;
 };
 
 const ButtonComponent: React.FC<Props> = ({
@@ -15,14 +14,18 @@ const ButtonComponent: React.FC<Props> = ({
   disabled = false,
 }) => {
   return (
-    <Button
-      htmlType={htmlType}
+    <button
+      type={htmlType}
       onClick={onClick}
       disabled={disabled}
-        className="mt-6 px-4 py-6 w-full text-lg font-medium bg-secondaryColor text-bodyBackground border border-secondaryColor hover:bg-bodyBackground hover:text-secondaryColor hover:border-secondaryColor"
+      className={`mt-6 px-4 py-2 w-full text-lg font-medium border 
+        ${disabled
+          ? 'bg-gray-300 text-gray-500 cursor-not-allowed border-gray-300'
+          : 'bg-secondaryColor text-bodyBackground border-secondaryColor hover:bg-bodyBackground hover:text-secondaryColor hover:border-secondaryColor'
+        }`}
     >
       {text}
-    </Button>
+    </button>
   );
 };
 

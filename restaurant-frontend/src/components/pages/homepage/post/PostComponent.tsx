@@ -1,4 +1,5 @@
-import React from "react";
+import React from 'react';
+import ButtonComponents from '../../../common/ButtonComponents';
 
 interface ArticleCardProps {
   article: {
@@ -24,22 +25,22 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
         </div>
       </div>
       <div className="py-4 flex-grow flex flex-col mt-4 h-[277px]">
-        <h3 className="text-lg font-bold mb-2 text-left text-16">{article.title}</h3>
-        <p className="text-sm text-[#FFDEA0] mb-4 text-left text-[10px]">{article.category}</p>
-        <p className="text-sm mb-4 flex-grow text-left text-[10px]">{article.description}</p>
+        <h3 className="text-lg font-bold mb-2 text-left text-16">
+          {article.title}
+        </h3>
+        <p className="text-sm text-[#FFDEA0] mb-4 text-left text-[10px]">
+          {article.category}
+        </p>
+        <p className="text-sm mb-4 flex-grow text-left text-[10px]">
+          {article.description}
+        </p>
         <div className="mt-auto">
-          <button
-            className="text-white flex items-center justify-center px-4 py-2 hover:bg-[#FFDEA0] hover:border-[#FFDEA0] hover:text-black"
-            style={{
-              backgroundColor: '#012B40',
-              border: '1px solid #FFDEA0',
-              width: '108px',
-              height: '34px',
-              borderRadius: '0px',
-            }}
-          >
-            Đọc thêm
-          </button>
+          <ButtonComponents  variant="filled" size="small">
+            ĐỌC THÊM
+          </ButtonComponents>
+
+        {/* <button className="mt-4 border border-secondaryColor text-bodyBackground bg-secondaryColor px-4 py-2 hover:bg-bodyBackground hover:text-white transition">ĐỌC THÊM</button> */}
+
         </div>
       </div>
     </div>

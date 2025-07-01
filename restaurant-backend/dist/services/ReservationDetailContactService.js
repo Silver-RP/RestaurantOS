@@ -24,24 +24,26 @@ class ReservationDetailContactService {
     getAllReservationDetailContact() {
         return __awaiter(this, void 0, void 0, function* () {
             const reservationDetailContact = yield ReservationDetailContactModel_1.default.find({})
-                .populate("reservation", "tableType")
-                .populate("users", "userName phone")
-                .populate("foods", "name price countInStock");
+                .populate('reservation', 'tableType')
+                .populate('users', 'userName phone')
+                .populate('foods', 'name price countInStock');
             return reservationDetailContact;
         });
     }
     getReservationDetailContactById(id) {
         return __awaiter(this, void 0, void 0, function* () {
             const reservationDetailContact = yield ReservationDetailContactModel_1.default.findById(id)
-                .populate("reservation", "tableType")
-                .populate("users", "userName phone")
-                .populate("foods", "name price countInStock");
+                .populate('reservation', 'tableType')
+                .populate('users', 'userName phone')
+                .populate('foods', 'name price countInStock');
             return reservationDetailContact;
         });
     }
     updateReservationDetailContact(id, input) {
         return __awaiter(this, void 0, void 0, function* () {
-            const reservationDetailContact = yield ReservationDetailContactModel_1.default.findByIdAndUpdate(id, input, { new: true });
+            const reservationDetailContact = yield ReservationDetailContactModel_1.default.findByIdAndUpdate(id, input, {
+                new: true,
+            });
             return reservationDetailContact;
         });
     }
@@ -49,12 +51,16 @@ class ReservationDetailContactService {
         return __awaiter(this, void 0, void 0, function* () {
             const reservationDetailContact = yield ReservationDetailContactModel_1.default.findById(id);
             // Kiểm tra xem đơn hàng có món ăn đã chọn hay không nếu lớn 0 thì không thể xóa
-            if (reservationDetailContact && reservationDetailContact.foods && reservationDetailContact.foods.length > 0) {
-                throw new Error("Cannot delete reservation with selected foods.");
+            if (reservationDetailContact &&
+                reservationDetailContact.foods &&
+                reservationDetailContact.foods.length > 0) {
+                throw new Error('Cannot delete reservation with selected foods.');
             }
             // kiểm trạng thái của đơn hàng nếu đã duyệt thì không thể xóa
-            if (reservationDetailContact && reservationDetailContact.status && reservationDetailContact.status === "approved") {
-                throw new Error("Cannot delete approved reservation.");
+            if (reservationDetailContact &&
+                reservationDetailContact.status &&
+                reservationDetailContact.status === 'approved') {
+                throw new Error('Cannot delete approved reservation.');
             }
             // Nếu không có vấn đề gì, thực hiện xóa
             const deletedReservationDetailContact = yield ReservationDetailContactModel_1.default.findByIdAndDelete(id);

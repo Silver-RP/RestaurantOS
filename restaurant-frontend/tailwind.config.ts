@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 import defaultTheme from 'tailwindcss/defaultTheme';
+import lineClamp from '@tailwindcss/line-clamp';
 
 export default {
   important: true,
@@ -20,8 +21,17 @@ export default {
         secondaryColor: '#FFDEA0',
         hr: '#03486B',
         grayText: '#BBBBBB',
+        adminbg: '#F9FAFB',
+        admincard: '#FFFFFF',
+        admintext: '#1F2937',
+        adminprimary: '#3B82F6',
+        adminborder: '#E5E7EB',
+        adminhover: '#F3F4F6',
+        adminsubtle: '#6B7280',
+        admingreen: '#10B981',
+        adminyellow: '#F59E0B',
+        adminred: '#EF4444',
       },
-      
       width: {
         mainContainer: '80%',
         container95: '95%',
@@ -31,21 +41,31 @@ export default {
         restora: ['Restora', ...defaultTheme.fontFamily.serif],
         roboto: ['Roboto', ...defaultTheme.fontFamily.sans],
         poppins: ['Poppins', ...defaultTheme.fontFamily.sans],
-        heading: ['Restora', ...defaultTheme.fontFamily.serif], 
+        heading: ['Restora', ...defaultTheme.fontFamily.serif],
         button: ['Poppins', ...defaultTheme.fontFamily.sans],
         body: ['Roboto', ...defaultTheme.fontFamily.sans],
-        cormorant: ["'Cormorant Garamond'", "serif"],
+        cormorant: ["'Cormorant Garamond'", 'serif'],
       },
       animation: {
+        'bounce-slow': 'bounce 2.5s infinite',
         'fade-down': 'fadeDown 1s ease-out',
+        fadeIn: 'fadeIn 0.3s ease-out forwards',
       },
       keyframes: {
+        wiggle: {
+          '0%, 100%': { transform: 'rotate(-1deg)' },
+          '50%': { transform: 'rotate(1deg)' },
+        },
         fadeDown: {
           '0%': { opacity: 0, transform: 'translateY(-20px)' },
           '100%': { opacity: 1, transform: 'translateY(0)' },
         },
+        fadeIn: {
+          '0%': { opacity: 0, transform: 'scale(0.95)' },
+          '100%': { opacity: 1, transform: 'scale(1)' },
+        },
       },
     },
   },
-  plugins: [],
-}
+  plugins: [lineClamp],
+};

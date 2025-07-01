@@ -1,22 +1,10 @@
-import mongoose from "mongoose";
-import Category from "../models/CategoryModel";
-import { Request, Response } from "express";
-import { Model } from "mongoose";
-
+import Category from '../models/CategoryModel';
+import { Request, Response } from 'express';
+import { Model } from 'mongoose';
+import { Dish } from '../models/DishModel';
+import { v2 as cloudinary } from 'cloudinary';
+import streamifier from 'streamifier';
 class CategoryService {
-  // async GetAllCategory(req: Request, res: Response): Promise<any> {
-  //   try {
-  //     const categories = await Category.find();
-  //     if (categories.length === 0) {
-  //       return res.status(404).json({ message: "No categories found!" });
-  //     }
-
-  //     return res.status(200).json(categories);
-  //   } catch (error) {
-  //     return res.status(500).json(error);
-  //   }
-  // }
-
   async GetAllCategory(req: Request, res: Response): Promise<any> {
     try {
       const { page = 1, limit = 10 } = req.query;
@@ -34,33 +22,78 @@ class CategoryService {
         return res.status(404).json({ message: 'No categories found!' });
       }
 
+      const categoriesWithCount = await Promise.all(
+        categories.map(async (category) => {
+          const foodCount = await Dish.countDocuments({
+            categories: category._id,
+          });
+          return {
+            ...category.toObject(),
+            foodCount,
+          };
+        }),
+      );
+
       return res.status(200).json({
         total: totalCategories,
         page: pageNumber,
         limit: limitNumber,
         totalPages: Math.ceil(totalCategories / limitNumber),
-        data: categories,
+        data: categoriesWithCount, // dùng data mới
       });
     } catch (error) {
+      console.error(error);
       return res.status(500).json({ message: 'An error occurred', error });
     }
   }
 
-  async AddCategory(req: Request, res: Response): Promise<any> {
-    try {
-      const { name, image, classify, sub } = req.body;
+  async AddCategory(req: Request): Promise<{ message: string }> {
+    const { Cate_name, Cate_slug, Cate_type, parentCate } = req.body;
+    const type = Cate_type?.trim().toLowerCase();
 
-      const existingCategory = await Category.findOne({ name });
-      if (existingCategory) {
-        return res.status(400).json({ message: 'Category already exiting!' });
-      }
-
-      const newCategory = new Category({ name, image, classify, sub });
-      await newCategory.save();
-      return res.status(201).json({ message: 'Created successfully!' });
-    } catch (error) {
-      res.status(500).json(error);
+    if (!['dish', 'drink'].includes(type)) {
+      throw new Error('Cate_type không hợp lệ!');
     }
+    const existingCategory = await Category.findOne({ Cate_name });
+    if (existingCategory) {
+      throw new Error('Tên danh mục đã tồn tại!');
+    }
+
+    let imageUrl = '';
+    if (req.file) {
+      const streamUpload = () => {
+        return new Promise<string>((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            {
+              folder: 'categories',
+              resource_type: 'image',
+            },
+            (error, result) => {
+              if (result) resolve(result.secure_url);
+              else reject(error);
+            },
+          );
+          if (req.file) {
+            streamifier.createReadStream(req.file.buffer).pipe(stream);
+          } else {
+            reject(new Error('Tệp không xác định'));
+          }
+        });
+      };
+
+      imageUrl = await streamUpload();
+    }
+
+    const newCategory = new Category({
+      Cate_name,
+      Cate_slug,
+      Cate_type: type,
+      Cate_img: imageUrl,
+      parentCate,
+    });
+
+    await newCategory.save();
+    return { message: 'Tạo thành công!' };
   }
 
   async GetCategoryById(req: Request, res: Response): Promise<any> {
@@ -76,58 +109,97 @@ class CategoryService {
       res.status(500).json({ message: 'Internal server error', error });
     }
   }
+  async UpdateCategory(req: Request): Promise<{ message: string }> {
+    const { id } = req.params;
+    const { Cate_name, Cate_slug, Cate_type, parentCate } = req.body;
 
-  async UpdateCategory(req: Request, res: Response): Promise<any> {
-    try {
-      const { id } = req.params;
-      const { name, image, classify, sub } = req.body;
-
-      const category = await Category.findByIdAndUpdate(
-        id,
-        { name, image, classify, sub },
-        { new: true, runValidators: true },
-      );
-      if (!category) {
-        return res.status(404).json({ message: 'Category not found!' });
-      }
-
-      return res.status(200).json({ message: 'Updated successfully!' });
-    } catch (error) {
-      return res.status(500).json({ message: 'An error occurred', error });
+    const type = Cate_type?.trim().toLowerCase();
+    if (!['dish', 'drink'].includes(type)) {
+      throw new Error('Cate_type không hợp lệ!');
     }
+
+    let imageUrl = '';
+    if (req.file) {
+      const streamUpload = () => {
+        return new Promise<string>((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            {
+              folder: 'categories',
+              resource_type: 'image',
+            },
+            (error, result) => {
+              if (result) resolve(result.secure_url);
+              else reject(error);
+            },
+          );
+          if (req.file) {
+            streamifier.createReadStream(req.file.buffer).pipe(stream);
+          } else {
+            reject(new Error('File is undefined'));
+          }
+        });
+      };
+      imageUrl = await streamUpload();
+    }
+
+    const updatedData: any = {
+      Cate_name,
+      Cate_slug,
+      Cate_type: type,
+      parentCate,
+    };
+
+    if (imageUrl) {
+      updatedData.Cate_img = imageUrl;
+    }
+
+    const updatedCategory = await Category.findByIdAndUpdate(id, updatedData, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updatedCategory) {
+      throw new Error('Không tìm thấy danh mục để cập nhật');
+    }
+
+    return { message: 'Cập nhật danh mục thành công!' };
   }
 
   async DeleteCategory(req: Request, res: Response): Promise<any> {
     try {
       const { id } = req.params;
 
-      const hasSub = await Category.findOne({ sub: id });
+      const hasSub = await Category.findOne({ parentCate: id });
       if (hasSub) {
-        return res
-          .status(400)
-          .json({ message: 'Cannot delete category with subcategories!' });
+        return res.status(400).json({ message: 'Không thể xoá danh mục đang có danh mục con!' });
       }
 
-      const DeleteCategory = await Category.findByIdAndDelete(id);
-      if (!DeleteCategory) {
-        return res.status(404).json({ message: 'Category not found!' });
+      const hasFood = await Dish.findOne({ categories: id });
+      if (hasFood) {
+        return res.status(400).json({ message: 'Không thể xoá danh mục đang có món ăn!' });
       }
-      return res.status(200).json({ message: 'Deleted successfully!' });
+
+      const deleted = await Category.findByIdAndDelete(id);
+      if (!deleted) {
+        return res.status(404).json({ message: 'Danh mục không tồn tại!' });
+      }
+
+      return res.status(200).json({ message: 'Đã xoá danh mục thành công!' });
     } catch (error) {
-      return res.status(500).json(error);
+      return res.status(500).json({ message: 'Lỗi khi xoá danh mục', error });
     }
   }
 
   async sortData(
-  model: Model<any>,
-  fieldName: string,
-  order: 'asc' | 'desc' = 'asc',
-): Promise<any> {
-  const sortOrder = order === 'asc' ? 1 : -1; 
-  const data = await model.find().sort({ [fieldName]: sortOrder });
+    model: Model<any>,
+    fieldName: string,
+    order: 'asc' | 'desc' = 'asc',
+  ): Promise<any> {
+    const sortOrder = order === 'asc' ? 1 : -1;
+    const data = await model.find().sort({ [fieldName]: sortOrder });
 
-  return data;
-}
+    return data;
+  }
 }
 
 export default new CategoryService();

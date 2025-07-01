@@ -1,6 +1,7 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction, Slice } from '@reduxjs/toolkit';
 import { AuthState, User } from './authTypes';
-import { RegisterUser, LoginUser, LogoutUser } from './authActions';
+import { RegisterUser, LoginUser, LogoutUser, LoginWithGoogle } from './authActions';
+import Cookies from 'js-cookie';
 
 const initialState: AuthState = {
   userInfo: null,
@@ -12,7 +13,7 @@ const initialState: AuthState = {
   token: null,
 };
 
-const authSlice = createSlice({
+const authSlice: Slice<AuthState> = createSlice({
   name: 'auth',
   initialState,
   reducers: {
@@ -42,10 +43,24 @@ const authSlice = createSlice({
       state.success = null;
       state.message = null;
     },
+    setUserInfo: (state, action: PayloadAction<User>) => {
+      state.userInfo = {
+        _id: action.payload._id || '', // Provide a default or actual value
+        username: action.payload.email,
+        email: action.payload.email,
+        roles: action.payload.roles || [],
+        isActive: true, 
+        isEmailVerified: false, 
+        avatar: action.payload.avatar || '', // Provide a default or actual value
+        createdAt: action.payload.createdAt || '', // Provide a default or actual value
+        updatedAt: action.payload.updatedAt || '', // Provide a default or actual value
+      };
+      state.isAuthenticated = true;
+    }
   },
   extraReducers: (builder) => {
     builder
-      // Login
+      // 🟦 Normal Login
       .addCase(LoginUser.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -54,11 +69,10 @@ const authSlice = createSlice({
         LoginUser.fulfilled,
         (state, action: PayloadAction<{ user: User; token: string; message: string }>) => {
           const { user, token, message } = action.payload;
-
           state.loading = false;
           state.userInfo = user;
           state.token = token;
-          state.isAuthenticated = Boolean(token); // If token is null, set isAuthenticated to false
+          state.isAuthenticated = Boolean(token);
           state.message = message;
         }
       )
@@ -68,7 +82,29 @@ const authSlice = createSlice({
         state.isAuthenticated = false;
       })
 
-      // Register
+      // 🟩 Google Login
+      .addCase(LoginWithGoogle.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        LoginWithGoogle.fulfilled,
+        (state, action: PayloadAction<{ user: User; token: string; message: string }>) => {
+          const { user, token, message } = action.payload;
+          state.loading = false;
+          state.userInfo = user;
+          state.token = token;
+          state.isAuthenticated = Boolean(token);
+          state.message = message;
+        }
+      )
+      .addCase(LoginWithGoogle.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+        state.isAuthenticated = false;
+      })
+
+      // 🟨 Register
       .addCase(RegisterUser.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -83,18 +119,17 @@ const authSlice = createSlice({
         state.error = action.payload as string;
       })
 
-      // Logout
+      // 🟥 Logout
       .addCase(LogoutUser.fulfilled, (state) => {
         state.userInfo = null;
         state.token = null;
         state.isAuthenticated = false;
-        localStorage.removeItem('userInfo');
-        localStorage.removeItem('accessToken');
-        sessionStorage.removeItem('userInfo');
-        sessionStorage.removeItem('accessToken');
+        Cookies.remove('accessToken');
+        Cookies.remove('refreshToken');
+        Cookies.remove('userInfo');
       });
   },
 });
 
-export const { logout, loadUserFromStorage, clearStatus } = authSlice.actions;
+export const { logout, loadUserFromStorage, clearStatus, setUserInfo } = authSlice.actions;
 export default authSlice.reducer;

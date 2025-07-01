@@ -1,84 +1,145 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { RegisterPayload, LoginPayload } from './authTypes';
-import Cookies from 'js-cookie'; 
+import Cookies from 'js-cookie';
+import {
+  setAccessToken,
+  setRefreshToken,
+  clearAuthCookies,
+} from '../../../utils/tokenHelpers';
 
+const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
-const BASE_URL_REGISTER = import.meta.env.VITE_BACKEND_URL;
-const BASE_URL_LOGIN = import.meta.env.VITE_BACKEND_URL;
+const apiRequest = async (
+  url: string,
+  payload: object,
+  method: 'POST' | 'GET',
+) => {
+  try {
+    const response = await axios({
+      method,
+      url,
+      data: payload,
+      headers: { 'Content-Type': 'application/json' },
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      const msg = error.response?.data?.message || 'An error occurred';
+      throw new Error(msg);
+    }
+    throw new Error('An unexpected error occurred');
+  }
+};
 
-// Register
 export const RegisterUser = createAsyncThunk(
   'auth/register',
   async (payload: RegisterPayload, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`${BASE_URL_REGISTER}/auth/register`, payload, {
-        headers: { 'Content-Type': 'application/json' },
-      });
-      return response.data;
+      const data = await apiRequest(
+        `${BASE_URL}/auth/register`,
+        payload,
+        'POST',
+      );
+      return data;
     } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        const msg = error.response?.data?.message || 'Đăng ký thất bại';
-        return rejectWithValue(msg);
-      }
-      return rejectWithValue('Đã xảy ra lỗi không xác định');
+      return rejectWithValue(
+        (error as { message: string })?.message ||
+          'An unexpected error occurred',
+      );
     }
-  }
+  },
 );
 
-// Login
 export const LoginUser = createAsyncThunk(
   'auth/login',
   async (payload: LoginPayload, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`${BASE_URL_LOGIN}/auth/login`, payload, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      const data = await apiRequest(`${BASE_URL}/auth/login`, payload, 'POST');
+      const { accessToken, refreshToken, user, message } = data;
+
+      if (!accessToken) {
+        console.warn('⚠️ accessToken is missing in API response');
+      }
+
+      setAccessToken(accessToken);
+      setRefreshToken(refreshToken, payload.rememberMe); // Only test
+      Cookies.set('userInfo', JSON.stringify(user), {
+        expires: payload.rememberMe ? 21 : 2,
+        sameSite: import.meta.env.PROD ? 'None' : 'Lax',
+        secure: import.meta.env.PROD,
       });
 
-      console.log('RESPONSE FROM LOGIN API:', response.data);
-
-      const { accessToken: token, refreshToken, user, message } = response.data;
-
-      if (!token) {
-        console.warn('Token is missing in API response:', response.data);
-      }
-
-      if (payload.rememberMe) {
-        Cookies.set('accessToken', token, { expires: 7 }); 
-        Cookies.set('refreshToken', refreshToken, { expires: 7 });
-      } else {
-        Cookies.set('accessToken', token);
-        Cookies.set('refreshToken', refreshToken);
-      }
-
-      return { token, refreshToken, user, message };
+      return { token: accessToken, user, message };
     } catch (error: unknown) {
-      if (axios.isAxiosError(error) && error.response) {
-        return rejectWithValue(error.response.data.message);
-      }
-      return rejectWithValue('Đã xảy ra lỗi không xác định');
+      return rejectWithValue(
+        (error as { message: string })?.message ||
+          'An unexpected error occurred',
+      );
     }
-  }
+  },
 );
 
-// Logout
 export const LogoutUser = createAsyncThunk(
   'auth/logout',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`${BASE_URL_LOGIN}/logout`, {}, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      return response.data;
+      console.log('LogoutUser called action');
+      const data = await apiRequest(`${BASE_URL}/auth/logout`, {}, 'POST');
+      clearAuthCookies();
+      return data;
     } catch (error: unknown) {
-      if (axios.isAxiosError(error) && error.response) {
-        return rejectWithValue(error.response.data.message);
+      if (axios.isAxiosError(error)) {
+        return rejectWithValue(
+          error.response?.data?.message || 'An error occurred',
+        );
       }
       return rejectWithValue('An unexpected error occurred');
     }
-  }
+  },
+);
+
+export const LoginWithGoogle = createAsyncThunk(
+  'auth/loginGoogle',
+  async (
+    { credential, rememberMe }: { credential: string; rememberMe: boolean },
+    { rejectWithValue },
+  ) => {
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/auth/google-login`,
+        { token: credential, rememberMe },
+        { withCredentials: true },
+      );
+
+      const { accessToken, refreshToken, user } = response.data;
+
+      setAccessToken(accessToken);
+      setRefreshToken(refreshToken, rememberMe); // Only test
+
+      const userInfoWithGoogleFlag = { ...user, isGoogleLogin: true };
+      Cookies.set('userInfo', JSON.stringify(userInfoWithGoogleFlag), {
+        path: '/',
+        sameSite: 'Lax',
+      });
+
+      console.log('Saved userInfoWithGoogleFlag: ', userInfoWithGoogleFlag);
+      const userInfo = JSON.parse(Cookies.get('userInfo') || '{}');
+      console.log('Saved userInfo: ', userInfo);
+
+      return {
+        token: accessToken,
+        user,
+        message: 'Đăng nhập Google thành công',
+      };
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        return rejectWithValue(
+          error.response?.data?.message || 'Lỗi khi đăng nhập Google',
+        );
+      }
+      return rejectWithValue('Lỗi khi đăng nhập Google');
+    }
+  },
 );

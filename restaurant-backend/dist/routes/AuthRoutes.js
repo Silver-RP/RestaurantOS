@@ -6,18 +6,21 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const AuthController_1 = __importDefault(require("../controller/AuthController"));
 const GoogleAuthMiddleWare_1 = __importDefault(require("../middleware/GoogleAuthMiddleWare"));
+const auth_schema_1 = require("../schemas/auth.schema");
+const ValidateRequest_1 = require("../middleware/ValidateRequest");
+const AuthMiddleWare_1 = __importDefault(require("../middleware/AuthMiddleWare"));
+const changePwProfileValidator_1 = require("../validators/changePwProfileValidator");
 const router = (0, express_1.Router)();
-router.post("/register", AuthController_1.default.register); // ok 
-router.post("/login", AuthController_1.default.login); // ok 
-router.post("/refresh-token", AuthController_1.default.refreshAccessToken); // ok 
-router.get("/google/callback", AuthController_1.default.googleCallback); // ok 
-router.post("/google-login", GoogleAuthMiddleWare_1.default.verifyGoogleToken, AuthController_1.default.googleLogin); // ok 
-router.post("/logout", AuthController_1.default.Logout); // => ok 
-// router.post("/send-otp", AuthController.sendOtpController); // ok  
-router.post("/verify-otp", AuthController_1.default.verifyOtpController); // ok 
-router.post("/forgot-password", AuthController_1.default.forgotPasswordHandler); // ok
-router.post("/reset-password", AuthController_1.default.resetPassword); // ok
-router.post("/send-otpEmail", AuthController_1.default.sendOtpEmail); // ok
-router.post("/verify-otpEmail", AuthController_1.default.verifyOtpEmail); // ok
+router.post('/register', (0, ValidateRequest_1.validateRequest)(auth_schema_1.registerSchema), AuthController_1.default.register);
+router.post('/login', (0, ValidateRequest_1.validateRequest)(auth_schema_1.loginSchema), AuthController_1.default.login);
+router.post('/refresh-token', AuthMiddleWare_1.default.verifyRefreshToken, AuthController_1.default.refreshAccessToken);
+router.get('/google/callback', AuthController_1.default.googleCallback);
+router.post('/google-login', GoogleAuthMiddleWare_1.default.verifyGoogleToken, AuthController_1.default.googleLogin);
+router.post('/logout', AuthController_1.default.Logout);
+router.post('/verify-otpEmail', AuthController_1.default.verifyOtpEmail);
+router.post('/forgot-password', AuthController_1.default.forgotPasswordHandler);
+router.post('/change-password', AuthController_1.default.changePassword);
 router.post('/resend-verification', AuthController_1.default.resendVerificationEmail);
+router.post('/verify-resend-otpEmail', AuthController_1.default.verifyResendOtpEmail);
+router.put('/change-password-profile', (0, ValidateRequest_1.validateRequest)(changePwProfileValidator_1.changePasswordSchema), AuthMiddleWare_1.default.verifyToken, AuthController_1.default.changePasswordProfile);
 exports.default = router;

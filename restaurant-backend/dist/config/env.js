@@ -7,6 +7,6 @@ exports.config = void 0;
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 exports.config = {
-    ACCESS_TOKEN: process.env.ACCESS_TOKEN || "",
-    REFRESH_TOKEN: process.env.REFRESH_TOKEN || "",
+    ACCESS_TOKEN: process.env.ACCESS_TOKEN || '',
+    REFRESH_TOKEN: process.env.REFRESH_TOKEN || '',
 };

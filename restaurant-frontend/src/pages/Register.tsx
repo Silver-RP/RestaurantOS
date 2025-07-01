@@ -1,7 +1,4 @@
 import React, { useRef, useState } from 'react';
-
-import { FaFacebook } from 'react-icons/fa';
-import { FcGoogle } from 'react-icons/fc';
 import { Link } from 'react-router-dom';
 import { SlActionUndo } from 'react-icons/sl';
 import { useEffect } from 'react';
@@ -10,9 +7,8 @@ import { toast } from 'react-toastify';
 import { RegisterUser } from '../redux/feature/auth/authActions';
 import { clearStatus } from '../redux/feature/auth/authSlice';
 import { useAppDispatch, useAppSelector } from '../redux/hook';
-
 import ButtonComponent from '../components/pages/login/ButtonComponents';
-import InputComponent from '../components/pages/login/InputComponents';
+import InputComponent from '../components/pages/login/InputComponents'; 
 const Register = () => {
   const usernameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
@@ -96,12 +92,12 @@ const Register = () => {
   };
   useEffect(() => {
     if (success) {
-      toast.success('Đăng ký thành công!');
-      navigate('/login');
+      toast.success('Đăng ký thành công! Vui lòng xác minh email của bạn.');
+      navigate('/verify-otp-email', { state: { email: formData.email } });
       dispatch(clearStatus());
     }
     if (error) {
-      toast.error(error);
+      // toast.error(error);
       dispatch(clearStatus());
     }
   }, [success, error, navigate, dispatch]);
@@ -218,17 +214,8 @@ const Register = () => {
           {errors.confirmPassword && <p className="text-red-400 text-sm text-left mt-1">{errors.confirmPassword}</p>}
           <ButtonComponent disabled={isSubmitting || !isFormValid()} htmlType="submit" text="Đăng ký" />
         </form>
-        <div className="flex items-center my-8">
-          <div className="flex-grow border-t border-gray-400"></div>
-          <span className="px-4 text-sm text-gray-300">
-            Hoặc đăng nhập bằng
-          </span>
-          <div className="flex-grow border-t border-gray-400"></div>
-        </div>
-        <div className="flex justify-center gap-8 mt-4">
-          <FaFacebook className="text-facebook text-3xl cursor-pointer" />
-          <FcGoogle className="text-3xl cursor-pointer" />
-        </div>
+       
+       
         <div className="mt-6 text-sm text-white">
           <p>
             Bạn đã có tài khoản?{' '}

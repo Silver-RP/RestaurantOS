@@ -14,12 +14,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const ProfileService_1 = __importDefault(require("../services/ProfileService"));
 class ProfileController {
-    // Get user profile
     getUserProfile(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const userId = req.params._id;
-                const user = yield ProfileService_1.default.getUserProfile(userId);
+                if (!req.user) {
+                    return res.status(401).json({ message: 'Unauthorized' });
+                }
+                const userId = req.user.id;
+                const user = yield ProfileService_1.default.getUserProfile(userId.toString());
                 res.status(200).json(user);
             }
             catch (error) {
@@ -30,8 +32,11 @@ class ProfileController {
     updateUserProfile(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const userId = req.params._id;
-                const user = yield ProfileService_1.default.updateUserProfile(userId, req.body);
+                if (!req.user) {
+                    return res.status(401).json({ message: 'Unauthorized' });
+                }
+                const userId = req.user.id;
+                const user = yield ProfileService_1.default.updateUserProfile(userId.toString(), req.body);
                 res.status(200).json(user);
             }
             catch (error) {
@@ -42,8 +47,11 @@ class ProfileController {
     changePasswordProfile(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const userId = req.params._id;
-                const user = yield ProfileService_1.default.changePasswordProfile(userId, req.body);
+                if (!req.user) {
+                    return res.status(401).json({ message: 'Unauthorized' });
+                }
+                const userId = req.user.id;
+                const user = yield ProfileService_1.default.changePasswordProfile(userId.toString(), req.body);
                 res.status(200).json(user);
             }
             catch (error) {

@@ -35,14 +35,16 @@ class ReservationContact {
     }
     updateReservationContact(id, input) {
         return __awaiter(this, void 0, void 0, function* () {
-            const reservationcontact = yield ReservationContactModel_1.default.findByIdAndUpdate(id, input, { new: true });
+            const reservationcontact = yield ReservationContactModel_1.default.findByIdAndUpdate(id, input, {
+                new: true,
+            });
             return reservationcontact;
         });
     }
     deleteReservationCotact(id) {
         return __awaiter(this, void 0, void 0, function* () {
             const reservationcontact = yield ReservationContactModel_1.default.findByIdAndDelete(id);
-            return { message: "Delete success" };
+            return { message: 'Delete success' };
         });
     }
 }

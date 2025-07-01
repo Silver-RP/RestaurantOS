@@ -14,40 +14,58 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const RoleModel_1 = __importDefault(require("../models/RoleModel"));
+const RefreshToken_1 = __importDefault(require("../models/RefreshToken"));
 class AuthMiddleWare {
     verifyToken(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const authHeader = req.headers['authorization'];
-                const token = authHeader && authHeader.split(' ')[1];
-                if (token == null)
-                    return res.sendStatus(401);
-                jsonwebtoken_1.default.verify(token, process.env.ACCESS_TOKEN, (err, user) => {
-                    if (err)
-                        return res.sendStatus(403);
-                    req.user = user;
-                    next();
-                });
+                const token = authHeader && typeof authHeader === 'string' ? authHeader.split(' ')[1] : null;
+                if (!token) {
+                    res.status(401).json({ message: 'Access token not provided' });
+                    return;
+                }
+                const user = jsonwebtoken_1.default.verify(token, process.env.ACCESS_TOKEN);
+                req.user = user;
+                next();
             }
-            catch (error) {
-                throw new Error(error);
+            catch (err) {
+                console.error('Token verification failed:', err.message);
+                res.status(403).json({ message: 'Invalid or expired token' });
+                return;
             }
         });
     }
     verifyRefreshToken(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const refreshToken = req.body.token;
-                if (refreshToken == null)
-                    return res.sendStatus(401);
-                jsonwebtoken_1.default.verify(refreshToken, process.env.REFRESH_TOKEN, (err, user) => {
-                    if (err)
-                        return res.sendStatus(403);
-                    next();
-                });
+                const token = req.cookies.refreshToken;
+                if (!token) {
+                    return res.status(401).json({ message: 'Refresh token not found' });
+                }
+                const decoded = jsonwebtoken_1.default.verify(token, process.env.REFRESH_TOKEN);
+                const storedToken = yield RefreshToken_1.default.findOne({ token });
+                if (!storedToken) {
+                    return res.status(403).json({ message: 'Refresh token not found in database' });
+                }
+                if (storedToken.isRevoked) {
+                    return res.status(403).json({ message: 'Refresh token has been revoked' });
+                }
+                const requestIP = req.ip;
+                const requestUA = req.get('User-Agent');
+                if (storedToken.ipAddress !== requestIP || storedToken.userAgent !== requestUA) {
+                    return res.status(403).json({ message: 'New device detected. Verification required.' });
+                }
+                req.user = {
+                    _id: decoded.id,
+                    roles: decoded.roles,
+                };
+                req.refreshToken = storedToken;
+                next();
             }
-            catch (error) {
-                throw new Error(error);
+            catch (err) {
+                console.error('Error in verifyRefreshToken:', err);
+                return res.status(403).json({ message: 'Invalid or expired refresh token' });
             }
         });
     }
@@ -55,36 +73,26 @@ class AuthMiddleWare {
         return (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             try {
                 if (!req.user) {
-                    res.status(401).json({ message: "User not authenticated" });
+                    res.status(401).json({ message: 'User not authenticated' });
                     return;
                 }
                 const user = req.user;
                 if (!user.roles || user.roles.length === 0) {
-                    res.status(401).json({ message: "User role not found" });
+                    res.status(401).json({ message: 'User role not found' });
                     return;
                 }
-                // Kiểm tra các vai trò của người dùng có tồn tại trong database hay không
-                const userRoles = yield RoleModel_1.default.find({
-                    _id: { $in: user.roles }
-                }).lean(); // Sử dụng lean() để nhận dữ liệu dưới dạng JSON thuần
-                if (!userRoles || userRoles.length === 0) {
-                    res.status(401).json({ message: "No valid roles found" });
-                    return;
-                }
-                // Kiểm tra xem người dùng có quyền hợp lệ không
-                const roleNames = userRoles.map((role) => role.name); // Lấy tên của các vai trò
-                const hasRole = roles.some(role => roleNames.includes(role)); // Kiểm tra vai trò
+                const userRoles = yield RoleModel_1.default.find({ _id: { $in: user.roles } }).lean();
+                const roleNames = userRoles.map((role) => role.name);
+                const hasRole = roles.some((role) => roleNames.includes(role));
                 if (hasRole) {
-                    return next();
+                    next();
                 }
                 else {
-                    res.status(403).json({ message: "Permission denied: Insufficient role" });
-                    return;
+                    res.status(403).json({ message: 'Permission denied: Insufficient role' });
                 }
             }
-            catch (error) {
-                res.status(500).json({ message: "Internal server error", error: error.message });
-                return;
+            catch (err) {
+                res.status(500).json({ message: 'Internal server error', error: err.message });
             }
         });
     }

@@ -1,19 +1,24 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { verifyOtpSchema, VerifyOtpSchema } from '../schemas/auth.schema';
+
 import InputComponent from '../components/pages/login/InputComponents';
 import ButtonComponent from '../components/pages/login/ButtonComponents';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { SlActionUndo } from 'react-icons/sl';
 import { toast } from 'react-toastify';
-import { useVerifyOtp } from '../api/AuthApi';
+import { useVerifyOtp } from '../hooks/useAuth';
+import { verifyOtpSchema, VerifyOtpSchema } from '../types/Auth.type';
+import authApi from '@/api/authApi'; // dùng để gọi resend OTP
 
 const EnterOTP = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const email = location.state?.email || '';
+
+  const [countdown, setCountdown] = useState(60); // ⏳ 60 giây đếm ngược
+  const [resendLoading, setResendLoading] = useState(false);
+  const loginPath = location.state?.loginPath || '/login';
 
   const {
     control,
@@ -30,49 +35,71 @@ const EnterOTP = () => {
   const { verifyOtp, loading, error } = useVerifyOtp();
   const otpValue = watch('otp');
 
+  // Tự động quay lại nếu không có email
   useEffect(() => {
     if (!email) {
       navigate('/forgot-password');
     }
   }, [email, navigate]);
 
+  // Xử lý lỗi xác minh
   useEffect(() => {
     if (error) {
-      console.log('Error state updated:', error);
       if (error === 'Invalid OTP') {
         toast.error('Mã OTP không hợp lệ!');
-      } else if( error === 'OTP expired') {
+      } else if (error === 'OTP expired') {
         toast.error('Mã OTP đã hết hạn! Vui lòng yêu cầu mã mới.');
-        navigate('/forgot-password'); 
-      } else if(error === 'Email has already been verified') {
+        navigate('/forgot-password');
+      } else if (error === 'Email has already been verified') {
         toast.warning('Email đã được xác minh trước đó!');
-        navigate('/login'); 
+        navigate('/login');
       }
     }
   }, [error]);
 
+  // Đếm ngược thời gian
+  useEffect(() => {
+    if (countdown === 0) return;
+    const timer = setInterval(() => {
+      setCountdown((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [countdown]);
+
+  // Gửi lại OTP
+  const handleResendOtp = async () => {
+    if (!email) return;
+    try {
+      setResendLoading(true);
+      await authApi.sendOtpEmail(email);
+      toast.success('Đã gửi lại mã OTP!');
+      setCountdown(60); // Reset lại 60 giây
+    } catch (err: any) {
+      toast.error('Gửi lại OTP thất bại!');
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
   const onSubmit = async (data: VerifyOtpSchema) => {
-    console.log('Submitting OTP:', { email, otp: data.otp });
     try {
       const res = await verifyOtp(email, data.otp);
       if (res && res.message.includes('OTP verified')) {
         toast.success('Xác minh OTP thành công!');
-        navigate('/reset-password', { state: { email } });
+        navigate('/reset-password', { state: { email,  loginPath } });
       }
     } catch (err: any) {
-      console.log('API error:', err?.response?.data);
-
+      // Xử lý lỗi phía server đã được xử lý qua useEffect(error)
     }
   };
+
+  console.log('OTP component rendered: ', loginPath);
+
 
   return (
     <div className="flex justify-center items-center bg-[url('/assets/images/register/background.jpg')] bg-cover bg-center w-full h-screen">
       <div className="px-10 py-8 text-center bg-black bg-opacity-70 rounded-lg shadow-lg w-full sm:w-9/12 md:w-8/12 lg:w-6/12 xl:w-4/12 h-auto max-w-lg">
         <h1 className="text-white font-bold text-3xl mb-6">Xác Thực OTP</h1>
-        <p className="text-gray-300 text-sm mb-6">
-          Vui lòng nhập mã OTP được gửi đến {email || 'email của bạn'}.
-        </p>
-
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
             <Controller
@@ -103,16 +130,34 @@ const EnterOTP = () => {
           />
         </form>
 
-        <div className="mt-6 text-sm text-white">
-          <p className="flex items-center justify-start mt-6">
-            <Link
-              to="/login"
-              className="flex items-center text-white hover:text-secondaryColor"
-            >
-              <SlActionUndo className="mr-1 text-lg" />
-              Quay lại đăng nhập
-            </Link>
+        <div className="mt-6 text-sm text-white space-y-2">
+          <p className="text-gray-300">
+            {countdown > 0 ? (
+              <>Mã OTP sẽ hết hạn sau: <strong>{countdown}s</strong></>
+            ) : (
+              <span className="text-red-400">Mã OTP đã hết hạn.</span>
+            )}
           </p>
+
+          {countdown === 0 && (
+            <button
+              onClick={handleResendOtp}
+              disabled={resendLoading}
+              className="text-secondaryColor underline"
+            >
+              {resendLoading ? 'Đang gửi lại...' : 'Gửi lại mã OTP'}
+            </button>
+          )}
+        </div>
+
+        <div className="mt-6 text-sm text-white">
+          <Link
+            to={loginPath}
+            className="flex items-center justify-center text-white hover:text-secondaryColor"
+          >
+            <SlActionUndo className="mr-1 text-lg" />
+            Quay lại đăng nhập
+          </Link>
         </div>
       </div>
     </div>

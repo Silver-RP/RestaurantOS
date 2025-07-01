@@ -8,6 +8,17 @@ export const breadcrumbConfig: Record<string, string> = {
     "/profile": "Thông tin tài khoản",
     "/productdetail": "Chi tiết sản phẩm",    
     "/menu": "Thực đơn",
-    "/profile/address": "Sổ địa chỉ"
+    "/profile/address": "Sổ địa chỉ",
+    "/posts": "Bài viết",
+    "/profile/orders": "Đơn hàng của tôi",
+    "/cart": "Giỏ hàng",
+    "/contact": "Liên hệ",
+    "/reservation" : "Đặt bàn",
+    "/favorites" : "Danh sách yêu thích",
+    "/checkout": "Thanh toán",
+    "/confirm": "Xác nhận đơn hàng",
+    "/payment-success": "Thanh toán thành công",
+    "/payment-failed": "Thanh toán thất bại",
+    "/vouchers": "Chương trình khuyến mãi",    
   };
   

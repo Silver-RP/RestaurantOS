@@ -13,18 +13,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const CategoryModel_1 = __importDefault(require("../models/CategoryModel"));
+const DishModel_1 = require("../models/DishModel");
+const cloudinary_1 = require("cloudinary");
+const streamifier_1 = __importDefault(require("streamifier"));
 class CategoryService {
-    // async GetAllCategory(req: Request, res: Response): Promise<any> {
-    //   try {
-    //     const categories = await Category.find();
-    //     if (categories.length === 0) {
-    //       return res.status(404).json({ message: "No categories found!" });
-    //     }
-    //     return res.status(200).json(categories);
-    //   } catch (error) {
-    //     return res.status(500).json(error);
-    //   }
-    // }
     GetAllCategory(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -37,34 +29,69 @@ class CategoryService {
                 if (categories.length === 0) {
                     return res.status(404).json({ message: 'No categories found!' });
                 }
+                const categoriesWithCount = yield Promise.all(categories.map((category) => __awaiter(this, void 0, void 0, function* () {
+                    const foodCount = yield DishModel_1.Dish.countDocuments({
+                        categories: category._id,
+                    });
+                    return Object.assign(Object.assign({}, category.toObject()), { foodCount });
+                })));
                 return res.status(200).json({
                     total: totalCategories,
                     page: pageNumber,
                     limit: limitNumber,
                     totalPages: Math.ceil(totalCategories / limitNumber),
-                    data: categories,
+                    data: categoriesWithCount, // dùng data mới
                 });
             }
             catch (error) {
+                console.error(error);
                 return res.status(500).json({ message: 'An error occurred', error });
             }
         });
     }
-    AddCategory(req, res) {
+    AddCategory(req) {
         return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const { name, image, classify, sub } = req.body;
-                const existingCategory = yield CategoryModel_1.default.findOne({ name });
-                if (existingCategory) {
-                    return res.status(400).json({ message: 'Category already exiting!' });
-                }
-                const newCategory = new CategoryModel_1.default({ name, image, classify, sub });
-                yield newCategory.save();
-                return res.status(201).json({ message: 'Created successfully!' });
+            const { Cate_name, Cate_slug, Cate_type, parentCate } = req.body;
+            const type = Cate_type === null || Cate_type === void 0 ? void 0 : Cate_type.trim().toLowerCase();
+            if (!['dish', 'drink'].includes(type)) {
+                throw new Error('Cate_type không hợp lệ!');
             }
-            catch (error) {
-                res.status(500).json(error);
+            const existingCategory = yield CategoryModel_1.default.findOne({ Cate_name });
+            if (existingCategory) {
+                throw new Error('Tên danh mục đã tồn tại!');
             }
+            let imageUrl = '';
+            if (req.file) {
+                const streamUpload = () => {
+                    return new Promise((resolve, reject) => {
+                        const stream = cloudinary_1.v2.uploader.upload_stream({
+                            folder: 'categories',
+                            resource_type: 'image',
+                        }, (error, result) => {
+                            if (result)
+                                resolve(result.secure_url);
+                            else
+                                reject(error);
+                        });
+                        if (req.file) {
+                            streamifier_1.default.createReadStream(req.file.buffer).pipe(stream);
+                        }
+                        else {
+                            reject(new Error('Tệp không xác định'));
+                        }
+                    });
+                };
+                imageUrl = yield streamUpload();
+            }
+            const newCategory = new CategoryModel_1.default({
+                Cate_name,
+                Cate_slug,
+                Cate_type: type,
+                Cate_img: imageUrl,
+                parentCate,
+            });
+            yield newCategory.save();
+            return { message: 'Tạo thành công!' };
         });
     }
     GetCategoryById(req, res) {
@@ -82,40 +109,76 @@ class CategoryService {
             }
         });
     }
-    UpdateCategory(req, res) {
+    UpdateCategory(req) {
         return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const { id } = req.params;
-                const { name, image, classify, sub } = req.body;
-                const category = yield CategoryModel_1.default.findByIdAndUpdate(id, { name, image, classify, sub }, { new: true, runValidators: true });
-                if (!category) {
-                    return res.status(404).json({ message: 'Category not found!' });
-                }
-                return res.status(200).json({ message: 'Updated successfully!' });
+            const { id } = req.params;
+            const { Cate_name, Cate_slug, Cate_type, parentCate } = req.body;
+            const type = Cate_type === null || Cate_type === void 0 ? void 0 : Cate_type.trim().toLowerCase();
+            if (!['dish', 'drink'].includes(type)) {
+                throw new Error('Cate_type không hợp lệ!');
             }
-            catch (error) {
-                return res.status(500).json({ message: 'An error occurred', error });
+            let imageUrl = '';
+            if (req.file) {
+                const streamUpload = () => {
+                    return new Promise((resolve, reject) => {
+                        const stream = cloudinary_1.v2.uploader.upload_stream({
+                            folder: 'categories',
+                            resource_type: 'image',
+                        }, (error, result) => {
+                            if (result)
+                                resolve(result.secure_url);
+                            else
+                                reject(error);
+                        });
+                        if (req.file) {
+                            streamifier_1.default.createReadStream(req.file.buffer).pipe(stream);
+                        }
+                        else {
+                            reject(new Error('File is undefined'));
+                        }
+                    });
+                };
+                imageUrl = yield streamUpload();
             }
+            const updatedData = {
+                Cate_name,
+                Cate_slug,
+                Cate_type: type,
+                parentCate,
+            };
+            if (imageUrl) {
+                updatedData.Cate_img = imageUrl;
+            }
+            const updatedCategory = yield CategoryModel_1.default.findByIdAndUpdate(id, updatedData, {
+                new: true,
+                runValidators: true,
+            });
+            if (!updatedCategory) {
+                throw new Error('Không tìm thấy danh mục để cập nhật');
+            }
+            return { message: 'Cập nhật danh mục thành công!' };
         });
     }
     DeleteCategory(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { id } = req.params;
-                const hasSub = yield CategoryModel_1.default.findOne({ sub: id });
+                const hasSub = yield CategoryModel_1.default.findOne({ parentCate: id });
                 if (hasSub) {
-                    return res
-                        .status(400)
-                        .json({ message: 'Cannot delete category with subcategories!' });
+                    return res.status(400).json({ message: 'Không thể xoá danh mục đang có danh mục con!' });
                 }
-                const DeleteCategory = yield CategoryModel_1.default.findByIdAndDelete(id);
-                if (!DeleteCategory) {
-                    return res.status(404).json({ message: 'Category not found!' });
+                const hasFood = yield DishModel_1.Dish.findOne({ categories: id });
+                if (hasFood) {
+                    return res.status(400).json({ message: 'Không thể xoá danh mục đang có món ăn!' });
                 }
-                return res.status(200).json({ message: 'Deleted successfully!' });
+                const deleted = yield CategoryModel_1.default.findByIdAndDelete(id);
+                if (!deleted) {
+                    return res.status(404).json({ message: 'Danh mục không tồn tại!' });
+                }
+                return res.status(200).json({ message: 'Đã xoá danh mục thành công!' });
             }
             catch (error) {
-                return res.status(500).json(error);
+                return res.status(500).json({ message: 'Lỗi khi xoá danh mục', error });
             }
         });
     }

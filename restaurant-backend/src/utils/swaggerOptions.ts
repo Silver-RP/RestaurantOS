@@ -97,12 +97,34 @@ export function generateSwaggerSpec(
     };
   });
 
-   return {
-     ...swaggerConfig,
-     info: swaggerConfig.info || {
-       title: 'API Documentation',
-       version: '1.0.0',
-     },
-     paths,
-   };
+  return {
+    ...swaggerConfig,
+    info: swaggerConfig.info || {
+      title: 'API Documentation',
+      version: '1.0.0',
+    },
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },
+    },
+    security: [{ bearerAuth: [] }],
+    tags: [
+      {
+        name: 'Auth',
+        description: 'Authentication APIs',
+        'x-order': 1,
+      },
+      {
+        name: 'Cart',
+        description: 'Cart APIs',
+        'x-order': 2,
+      },
+    ],
+    paths,
+  };
 }

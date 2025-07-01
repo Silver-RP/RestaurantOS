@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Dish = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
+const mongoose_paginate_v2_1 = __importDefault(require("mongoose-paginate-v2"));
 const dishSchema = new mongoose_1.default.Schema({
     name: { type: String, required: true },
     slug: { type: String, required: true, unique: true },
@@ -16,7 +17,7 @@ const dishSchema = new mongoose_1.default.Schema({
     status: {
         type: String,
         enum: ['hidden', 'available', 'soldout'],
-        default: 'available'
+        default: 'available',
     },
     views: { type: Number, default: 0 },
     ordered_count: { type: Number, default: 0 },
@@ -24,15 +25,25 @@ const dishSchema = new mongoose_1.default.Schema({
     rating: { type: Number, default: 0 },
     average_rating: { type: Number, default: 0 },
     favorites_count: { type: Number, default: 0 },
-    categories: [{
+    categories: [
+        {
             type: mongoose_1.default.Schema.Types.ObjectId,
             ref: 'categories',
-            required: true
-        }],
+            required: true,
+        },
+    ],
     countInStock: { type: Number, default: 0, min: 0 },
+    isDishNew: { type: Boolean, default: false },
+    newUntil: { type: Date },
+    totalSoldQuantity: { type: Number, default: 0 },
+    discountUntil: { type: Date },
+    alcohol_type: { type: String },
+    origin: { type: String },
+    alcohol_content: { type: Number, min: 0 },
+    volume: { type: Number, min: 0 }, // Thể tích (ml)
 }, {
-    timestamps: true
+    timestamps: true,
 });
 dishSchema.index({ name: 'text' });
-dishSchema.index({ slug: 1 });
-exports.Dish = mongoose_1.default.model("Dish", dishSchema);
+dishSchema.plugin(mongoose_paginate_v2_1.default);
+exports.Dish = mongoose_1.default.model('Dish', dishSchema);

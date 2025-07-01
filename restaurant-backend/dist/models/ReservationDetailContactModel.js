@@ -7,7 +7,7 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const reservationDetailContactSchema = new mongoose_1.default.Schema({
     reservation: {
         type: mongoose_1.default.Schema.Types.ObjectId,
-        ref: "ReservationContact",
+        ref: 'ReservationContact',
         required: true,
     },
     reservationDate: {
@@ -24,7 +24,7 @@ const reservationDetailContactSchema = new mongoose_1.default.Schema({
     },
     status: {
         type: String,
-        enum: ["pending", "approved", "rejected"],
+        enum: ['pending', 'approved', 'rejected'],
         required: true,
     },
     notes: {
@@ -33,14 +33,14 @@ const reservationDetailContactSchema = new mongoose_1.default.Schema({
     },
     users: {
         type: mongoose_1.default.Schema.Types.ObjectId,
-        ref: "User",
+        ref: 'User',
         required: true,
     },
     foods: {
         type: mongoose_1.default.Schema.Types.ObjectId,
-        ref: "Food",
+        ref: 'Food',
         required: true,
-    }
+    },
 });
-const ReservationDetailContact = mongoose_1.default.model("ReservationDetailContact", reservationDetailContactSchema);
+const ReservationDetailContact = mongoose_1.default.model('ReservationDetailContact', reservationDetailContactSchema);
 exports.default = ReservationDetailContact;

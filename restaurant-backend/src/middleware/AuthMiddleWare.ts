@@ -1,97 +1,96 @@
-import { accessToken, refreshToken } from "../services/GenerateToken";
-import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
-import { User } from "../@types/express";
-import { IUser } from "../models/UserModel"; 
-import Roles from "../models/RoleModel"; 
-import mongoose from "mongoose";
+import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import { IUser } from '../models/UserModel';
+import Roles from '../models/RoleModel';
+import RefreshToken from '../models/RefreshToken';
 
 class AuthMiddleWare {
-  async verifyToken(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<any> {
+  async verifyToken(req: Request, res: Response, next: NextFunction) {
     try {
       const authHeader = req.headers['authorization'];
-      const token = authHeader && authHeader.split(' ')[1];
-      if (token == null) return res.sendStatus(401);
-      jwt.verify(
-        token,
-        process.env.ACCESS_TOKEN as string,
-        (err: any, user: any) => {
-          if (err) return res.sendStatus(403);
-          req.user = user;
-          next();
-        },
-      );
-    } catch (error: any) {
-      throw new Error(error);
+      const token = authHeader && typeof authHeader === 'string' ? authHeader.split(' ')[1] : null;
+      if (!token) {
+        res.status(401).json({ message: 'Access token not provided' });
+        return;
+      }
+
+      const user = jwt.verify(token, process.env.ACCESS_TOKEN as string) as IUser;
+      req.user = user;
+      next();
+    } catch (err: any) {
+      console.error('Token verification failed:', err.message);
+      res.status(403).json({ message: 'Invalid or expired token' });
+      return;
     }
   }
 
-  async verifyRefreshToken(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<any> {
+  async verifyRefreshToken(req: Request, res: Response, next: NextFunction): Promise<any> {
     try {
-      const refreshToken = req.body.token;
-      if (refreshToken == null) return res.sendStatus(401);
-      jwt.verify(
-        refreshToken,
-        process.env.REFRESH_TOKEN as string,
-        (err: any, user: any) => {
-          if (err) return res.sendStatus(403);
-          next();
-        },
-      );
-    } catch (error: any) {
-      throw new Error(error);
+      const token = req.cookies.refreshToken;
+      if (!token) {
+        return res.status(401).json({ message: 'Refresh token not found' });
+      }
+
+      const decoded = jwt.verify(token, process.env.REFRESH_TOKEN as string) as any;
+
+      const storedToken = await RefreshToken.findOne({ token });
+      if (!storedToken) {
+        return res.status(403).json({ message: 'Refresh token not found in database' });
+      }
+
+      if (storedToken.isRevoked) {
+        return res.status(403).json({ message: 'Refresh token has been revoked' });
+      }
+
+      const requestIP = req.ip;
+      const requestUA = req.get('User-Agent');
+
+      if (storedToken.ipAddress !== requestIP || storedToken.userAgent !== requestUA) {
+        return res.status(403).json({ message: 'New device detected. Verification required.' });
+      }
+
+      req.user = {
+        _id: decoded.id,
+        roles: decoded.roles,
+      } as IUser;
+
+      (req as any).refreshToken = storedToken;
+
+      next();
+    } catch (err: any) {
+      console.error('Error in verifyRefreshToken:', err);
+      return res.status(403).json({ message: 'Invalid or expired refresh token' });
     }
-    }
-    
-  
-   verifyRole(roles: string[]) {
-    return async (req: Request, res: Response, next: NextFunction) => {
+  }
+
+  verifyRole(roles: string[]) {
+    return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
       try {
         if (!req.user) {
-          res.status(401).json({ message: "User not authenticated" });
+          res.status(401).json({ message: 'User not authenticated' });
           return;
         }
 
         const user = req.user as IUser;
         if (!user.roles || user.roles.length === 0) {
-          res.status(401).json({ message: "User role not found" });
+          res.status(401).json({ message: 'User role not found' });
           return;
         }
 
-        // Kiểm tra các vai trò của người dùng có tồn tại trong database hay không
-        const userRoles = await Roles.find({
-          _id: { $in: user.roles }
-        }).lean(); // Sử dụng lean() để nhận dữ liệu dưới dạng JSON thuần
-
-        if (!userRoles || userRoles.length === 0) {
-          res.status(401).json({ message: "No valid roles found" });
-          return;
-        }
-
-        // Kiểm tra xem người dùng có quyền hợp lệ không
-        const roleNames = userRoles.map((role: any) => role.name); // Lấy tên của các vai trò
-        const hasRole = roles.some(role => roleNames.includes(role)); // Kiểm tra vai trò
+        const userRoles = await Roles.find({ _id: { $in: user.roles } }).lean();
+        const roleNames = userRoles.map((role: any) => role.name);
+        const hasRole = roles.some((role) => roleNames.includes(role));
 
         if (hasRole) {
-          return next(); 
+          next();
         } else {
-          res.status(403).json({ message: "Permission denied: Insufficient role" });
-          return;
+          res.status(403).json({ message: 'Permission denied: Insufficient role' });
         }
-      } catch (error: any) {
-        res.status(500).json({ message: "Internal server error", error: error.message });
-        return;
+      } catch (err: any) {
+        res.status(500).json({ message: 'Internal server error', error: err.message });
       }
     };
   }
-  
-  }
-export default new AuthMiddleWare(); 
+}
+
+export default new AuthMiddleWare();
