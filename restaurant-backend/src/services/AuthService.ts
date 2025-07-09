@@ -190,7 +190,7 @@ class AuthService {
     }
   }
 
-  async googleLogin(googleUser: GoogleUser & { rememberMe: boolean }) {
+  async googleLogin(googleUser: GoogleUser & { rememberMe: boolean }, req: any) {
     try {
       const { email, googleId, username, avatar, rememberMe } = googleUser;
   
@@ -224,6 +224,14 @@ class AuthService {
   
       const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN || '', {
         expiresIn: refreshTokenExpiresIn,
+      });
+
+      await RefreshToken.create({
+        token: refreshToken,
+        userId: user._id,
+        expiresAt: new Date(Date.now() + refreshTokenExpiresIn * 1000),
+        userAgent: req.get('User-Agent'),
+        ipAddress: req.ip,
       });
   
       return {
