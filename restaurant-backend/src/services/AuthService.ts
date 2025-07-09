@@ -10,6 +10,8 @@ import User from '../models/UserModel';
 import Roles from '../models/RoleModel';
 import RefreshToken from '../models/RefreshToken';
 import { GoogleUser } from '../types/auth.types';
+import Role from '../models/RoleModel';
+import { ObjectId } from 'mongoose';
 
 dotenv.config();
 
@@ -191,29 +193,39 @@ class AuthService {
   async googleLogin(googleUser: GoogleUser & { rememberMe: boolean }) {
     try {
       const { email, googleId, username, avatar, rememberMe } = googleUser;
-
+  
       let user = await User.findOne({ email });
+  
+      const userRole = await Role.findOne({ name: 'user' });
+      if (!userRole) {
+        throw new Error('Role "user" không tồn tại trong hệ thống.');
+      }
+  
       if (!user) {
         user = new User({
           email,
           username: username || '',
           avatar: avatar || '',
           googleId,
+          roles: [userRole._id], 
         });
         await user.save();
+      } else if (!user.roles || user.roles.length === 0) {
+        user.roles = [userRole._id as ObjectId]; 
+        await user.save();
       }
-
+  
       const accessTokenExpiresIn = rememberMe ? 60 * 60 * 2 : 60 * 60;
       const refreshTokenExpiresIn = rememberMe ? 21 * 24 * 60 * 60 : 2 * 24 * 60 * 60;
-
+  
       const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN || '', {
         expiresIn: accessTokenExpiresIn,
       });
-
+  
       const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN || '', {
         expiresIn: refreshTokenExpiresIn,
       });
-
+  
       return {
         user,
         accessToken,

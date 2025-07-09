@@ -27,7 +27,12 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
 
   const userRoles = userInfo.roles?.map((r: { name: string }) => r.name) || [];
 
-  if (userRoles.includes('user')) {
+  if (!userRoles.length) {
+    return <UnauthorizedPage />;
+  }
+
+
+  if (userRoles.includes('user') || userRoles.includes('')) {
     return <UnauthorizedPage />;
   }
 
