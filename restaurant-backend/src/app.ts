@@ -10,6 +10,8 @@ import ReservationContactRoutes from './routes/ReservationContactRoutes';
 import ReservationDetailContactRoutes from './routes/ReservationDetailContactRoutes';
 import ProfileRoutes from './routes/ProfileRoutes';
 import ReservationRoutes from './routes/ReservationRouter';
+import TableReservationRouter from './routes/TableReservationRouter';
+import TableRoutes from './routes/TableRouters';
 import BannerRoutes from './routes/BannerRoutes';
 import PostsRoutes from './routes/PostsRoutes';
 
@@ -25,7 +27,7 @@ import PaymentRoutes from './routes/PaymentRoutes';
 import IngredientsRouter from './routes/IngredientsRouter';
 import InventoryRoutes from './routes/InventoryRoutes';
 import DashboardRoutes from './routes/DashboardRoutes';
-import ingredientsRouter from './routes/IngredientsRouter';
+// import ingredientsRouter from './routes/IngredientsRouter';
 import VoucherRoutes from './routes/VoucherRoutes';
 
 import dotenv from 'dotenv';
@@ -45,7 +47,6 @@ import './swaggers/CartSwagger';
 import './swaggers/StaffSwagger';
 import './swaggers/UserSwagger';
 import './swaggers/CategorySwagger';
-
 
 dotenv.config();
 connectDB();
@@ -115,6 +116,8 @@ app.use(
 app.use('/api/permission', PermissionRoutes);
 app.use('/api/category', CateRoutes);
 app.use('/api/reservation', AuthMiddleWare.verifyToken, ReservationRoutes);
+app.use('/api/tables', TableRoutes);
+app.use('/api/table-reservations', TableReservationRouter);
 app.use('/api/banner', BannerRoutes);
 app.use('/api/reservationcontact', ReservationContactRoutes);
 app.use('/api/reservationdetailcontact', ReservationDetailContactRoutes);

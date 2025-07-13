@@ -2,11 +2,45 @@
 import { useState } from 'react';
 import authApi from '../api/AuthApi';
 import { changePasswordProfile as changePasswordApi } from '@/api/AuthApi';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/redux/store';
+import Cookies from 'js-cookie';
+
 interface ChangePasswordPayload {
   oldPassword: string;
   newPassword: string;
   confirmPassword: string;
 }
+
+export const checkIsLoggedIn = (): boolean => {
+  const userInfo = Cookies.get('userInfo');
+  const accessToken = Cookies.get('accessToken');
+  return !!(userInfo && accessToken);
+};
+
+export const useAuth = () => {
+  const { userInfo, isAuthenticated, token } = useSelector(
+    (state: RootState) => state.auth,
+  );
+  const currentUser = useSelector((state: RootState) => state.user.user);
+
+  // Kiểm tra authentication từ cả Redux state và cookies
+  const isAuthenticatedFromCookies = checkIsLoggedIn();
+  const isAuthenticatedFromRedux = isAuthenticated && !!userInfo;
+
+  // Trả về true nếu có authentication từ bất kỳ nguồn nào
+  const isLoggedIn = isAuthenticatedFromCookies || isAuthenticatedFromRedux;
+
+  return {
+    userInfo,
+    currentUser,
+    isAuthenticated: isLoggedIn,
+    token,
+    isAuthenticatedFromCookies,
+    isAuthenticatedFromRedux,
+  };
+};
+
 export const useSendOtpEmail = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -116,7 +150,7 @@ export const useChangePassword = () => {
         newPassword,
         confirmPassword,
       );
-    
+
       return response;
     } catch (err: any) {
       const message = err?.response?.data?.message || 'Lỗi khi đổi mật khẩu';
@@ -135,7 +169,10 @@ export const useChangePasswordProfile = () => {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const changePasswordProfile = async (data: ChangePasswordPayload, onSuccess?: () => void) => {
+  const changePasswordProfile = async (
+    data: ChangePasswordPayload,
+    onSuccess?: () => void,
+  ) => {
     setLoading(true);
     setError(null);
     setSuccessMessage(null);
@@ -145,8 +182,10 @@ export const useChangePasswordProfile = () => {
       setSuccessMessage(res.message);
       onSuccess?.();
     } catch (err: any) {
-      setError(err?.response?.data?.message || 'Đã xảy ra lỗi khi đổi mật khẩu');
-      throw err; 
+      setError(
+        err?.response?.data?.message || 'Đã xảy ra lỗi khi đổi mật khẩu',
+      );
+      throw err;
     } finally {
       setLoading(false);
     }

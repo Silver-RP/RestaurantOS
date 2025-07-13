@@ -11,8 +11,7 @@ import ReservationSteps from '@/components/pages/reservation/ReservationSteps';
 import { confirmAlert } from 'react-confirm-alert';
 import ButtonComponents from '@/components/common/ButtonComponents';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/redux/store';
+import { useAuth } from '@/hooks/useAuth';
 import { toastService } from '@/utils/toastService';
 import { AiOutlineCheckCircle } from 'react-icons/ai';
 import { motion } from 'framer-motion';
@@ -27,7 +26,7 @@ const steps = [
 
 const ReservationPage: React.FC = () => {
   const navigate = useNavigate();
-  const currentUser = useSelector((state: RootState) => state.user.user);
+  const { currentUser, isAuthenticated } = useAuth();
 
   const getInitialFormData = (): ReservationFormData => {
     const saved = localStorage.getItem('reservation-data');
@@ -52,11 +51,11 @@ const ReservationPage: React.FC = () => {
   };
 
   useEffect(() => {
-    if (!currentUser?._id) {
+    if (!isAuthenticated || !currentUser?._id) {
       toastService.warning('Vui lòng đăng nhập để đặt bàn');
       navigate('/');
     }
-  }, [currentUser, navigate]);
+  }, [isAuthenticated, currentUser, navigate]);
 
   const [formData, setFormData] =
     useState<ReservationFormData>(getInitialFormData());
@@ -187,7 +186,6 @@ const ReservationPage: React.FC = () => {
           {step === 5 && (
             <Step5Deposit
               formData={formData}
-              setFormData={setFormData}
               onSuccess={() => setStep(6)}
               onBack={() => setStep(4)}
             />
@@ -209,8 +207,8 @@ const ReservationPage: React.FC = () => {
               </h2>
               <p className="text-gray-400 text-base max-w-md mx-auto mb-6">
                 Cảm ơn bạn đã đặt bàn. Chúng tôi sẽ liên hệ để xác nhận lại
-                trong thời gian sớm nhất. Vui lòng kiểm tra email hoặc lịch sử
-                đặt bàn để theo dõi trạng thái.
+                trạng thái. Vui lòng kiểm tra email hoặc lịch sử đặt bàn để theo
+                dõi trạng thái.
               </p>
 
               <div className="flex flex-wrap justify-center gap-4">

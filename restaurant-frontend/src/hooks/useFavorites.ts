@@ -13,18 +13,20 @@ import {
 } from '@/redux/feature/favorite/favoriteSlice';
 
 import { useFetchFavorites } from './useFetchFavorites'; // 👈
+import { useAuth } from './useAuth';
 
 export const useFavorites = () => {
   const dispatch = useDispatch();
   const favorites = useSelector((state: RootState) => state.favorite.items);
   const { fetchFavorites } = useFetchFavorites(); // 👈
-  const currentUser = useSelector((state: RootState) => state.user.user);
+  const { currentUser, isAuthenticated } = useAuth();
+
   const addToFavorites = async (dishId: string) => {
-    if (!currentUser?._id) {
+    if (!isAuthenticated || !currentUser?._id) {
       toastService.warning('Vui lòng đăng nhập để thêm vào yêu thích');
       return;
     }
-  
+
     try {
       const response = await addFavoriteApi(dishId);
       dispatch(addFavorite(response.data));

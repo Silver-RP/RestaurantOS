@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, Outlet } from 'react-router-dom';
 import {
   FaHome,
@@ -13,26 +13,31 @@ import {
   FaCartPlus,
   FaImage,
   FaTicketAlt,
+  FaChevronDown,
 } from 'react-icons/fa';
 import { GiHotMeal, GiWheat } from 'react-icons/gi';
-import { FaCalendarAlt } from "react-icons/fa";
+import { FaCalendarAlt } from 'react-icons/fa';
 import classNames from 'classnames';
 import { useAdminSidebar } from '../contexts/AdminSidebarContext';
 import AdminHeader from '../components/layout/AdminHeader';
 
 const AdminLayout: React.FC = () => {
   const { isSidebarOpen, toggleSidebarExtend } = useAdminSidebar();
+  const [isReservationOpen, setIsReservationOpen] = useState(false);
+
+  const toggleReservation = () => {
+    setIsReservationOpen(!isReservationOpen);
+  };
 
   return (
     <div className="flex min-h-screen bg-adminbg text-admintext">
       {/* Sidebar */}
       <aside
-  className={classNames(
-    'bg-admincard flex flex-col justify-between transition-all duration-300 fixed top-0 left-0 z-50 h-full overflow-y-auto', // 👈 thêm overflow-y-auto
-    isSidebarOpen ? 'w-[200px] px-4' : 'w-16 items-center',
-  )}
->
-
+        className={classNames(
+          'bg-admincard flex flex-col justify-between transition-all duration-300 fixed top-0 left-0 z-50 h-full overflow-y-auto', // 👈 thêm overflow-y-auto
+          isSidebarOpen ? 'w-[200px] px-4' : 'w-16 items-center',
+        )}
+      >
         <div className="flex max-w-[200px] flex-col items-center space-y-8 mt-6 flex-1">
           <button
             className={classNames(
@@ -73,12 +78,54 @@ const AdminLayout: React.FC = () => {
               label="Đơn hàng"
               expanded={isSidebarOpen}
             />
-            <NavItem
-              href="/admin/reservations"
-              icon={<FaCalendarAlt />}
-              label="Đặt bàn"
-              expanded={isSidebarOpen}
-            />
+
+            {/* Reservation Dropdown */}
+            <div className="w-full">
+              <button
+                onClick={toggleReservation}
+                className={classNames(
+                  'flex items-center px-4 py-2 rounded-lg hover:bg-adminhover transition-colors w-full',
+                  isSidebarOpen ? 'justify-between' : 'justify-center',
+                )}
+              >
+                <div
+                  className={classNames(
+                    'flex items-center',
+                    isSidebarOpen ? 'gap-3' : 'justify-center',
+                  )}
+                >
+                  <span className="text-lg">
+                    <FaCalendarAlt />
+                  </span>
+                  {isSidebarOpen && <span className="text-left">Đặt bàn</span>}
+                </div>
+                {isSidebarOpen && (
+                  <span
+                    className={classNames(
+                      'text-sm transition-transform duration-300',
+                      isReservationOpen ? 'rotate-180' : 'rotate-0',
+                    )}
+                  >
+                    <FaChevronDown />
+                  </span>
+                )}
+              </button>
+
+              <div
+                className={classNames(
+                  'overflow-hidden transition-all duration-300 ease-in-out',
+                  isSidebarOpen && isReservationOpen
+                    ? 'max-h-32 opacity-100'
+                    : 'max-h-0 opacity-0',
+                )}
+              >
+                <div className="ml-6 mt-2 space-y-2 transform transition-transform duration-300">
+                  <SubNavItem href="/admin/reservations" label="Đặt bàn" />
+                  <SubNavItem href="/admin/tables" label="Quản lý bàn" />
+                </div>
+              </div>
+            </div>
+
             <NavItem
               href="/admin/posts"
               icon={<FaFileAlt />}
@@ -186,6 +233,22 @@ const NavItem: React.FC<NavItemProps> = ({
     >
       <span className="text-lg">{icon}</span>
       {expanded && <span className="text-left w-full">{label}</span>}
+    </Link>
+  );
+};
+
+interface SubNavItemProps {
+  href: string;
+  label: string;
+}
+
+const SubNavItem: React.FC<SubNavItemProps> = ({ href, label }) => {
+  return (
+    <Link
+      to={href}
+      className="flex items-center px-3 py-2 rounded-lg hover:bg-adminhover transition-colors text-sm text-admintext/80 hover:text-admintext"
+    >
+      <span className="text-left w-full">{label}</span>
     </Link>
   );
 };

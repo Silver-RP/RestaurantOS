@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useGetCart, checkIsLoggedIn } from '@hooks/useCart';
+import { Link, useNavigate } from 'react-router-dom';
+import { useGetCart } from '@/hooks/useCart';
+import { useAuth } from '@/hooks/useAuth';
+import { toastService } from '@/utils/toastService';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '@/redux/store';
+import Cookies from 'js-cookie';
 import {
   FiUser,
   FiShoppingCart,
@@ -15,16 +21,10 @@ import {
   FaInstagram,
 } from 'react-icons/fa';
 import { BsPersonCheck } from 'react-icons/bs';
-import { Link } from 'react-router-dom';
 import ButtonComponents from '../../common/ButtonComponents';
 import NavExtend from './NavExtend';
-import { useDispatch } from 'react-redux';
 import { openSearchModal } from '../../../redux/feature/modal/searchModalSlice';
-import Cookies from 'js-cookie';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/redux/store';
-import { useNavigate } from 'react-router-dom';
-import { toastService } from '@/utils/toastService';
+
 interface SidebarProps {
   isOpen: boolean;
   toggleSidebar: () => void;
@@ -33,7 +33,7 @@ interface SidebarProps {
 const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
   const { data: cart } = useGetCart();
-  const isLoggedIn = checkIsLoggedIn();
+  const { isAuthenticated } = useAuth();
   const countCart = cart?.items?.length || 0;
   const favoriteCount = useSelector(
     (state: RootState) => state.favorite.items.length,
@@ -51,7 +51,7 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
   const navigate = useNavigate();
 
   const handleReservationClick = () => {
-    if (!user) {
+    if (!isAuthenticated) {
       toastService.warning('Vui lòng đăng nhập để đặt bàn');
       return;
     }
@@ -132,7 +132,7 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
                   />
                 </Link>
                 <span className="absolute -top-1 -right-2 bg-secondaryColor text-black text-xs rounded-full px-1">
-                  {isLoggedIn ? countCart : 0}
+                  {isAuthenticated ? countCart : 0}
                 </span>
               </div>
               <FiSearch

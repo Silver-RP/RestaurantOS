@@ -11,6 +11,8 @@ export interface IReservation extends mongoose.Document {
   note?: string;
   is_choose_later: boolean;
   status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'DONE';
+  deposit?: number;
+  room_type?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
