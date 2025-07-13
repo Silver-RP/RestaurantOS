@@ -14,6 +14,7 @@ import TableReservationRouter from './routes/TableReservationRouter';
 import TableRoutes from './routes/TableRouters';
 import BannerRoutes from './routes/BannerRoutes';
 import PostsRoutes from './routes/PostsRoutes';
+import commentPostRoutes from './routes/CommentPostRoutes';
 
 import StaffRoutes from './routes/StaffRoutes';
 import FoodRoutes from './routes/FoodRoutes';
@@ -24,11 +25,11 @@ import CartRouter from './routes/CartRoutes';
 import FavoriteRoutes from './routes/FavoriteRoutes';
 import AddressRouter from './routes/AddressRoutes';
 import PaymentRoutes from './routes/PaymentRoutes';
-import IngredientsRouter from './routes/IngredientsRouter';
 import InventoryRoutes from './routes/InventoryRoutes';
 import DashboardRoutes from './routes/DashboardRoutes';
-// import ingredientsRouter from './routes/IngredientsRouter';
+import IngredientsRouter from './routes/IngredientsRouter';
 import VoucherRoutes from './routes/VoucherRoutes';
+import ReviewRoutes from './routes/ReviewRoutes';
 
 import dotenv from 'dotenv';
 import connectDB from './config/db';
@@ -130,12 +131,14 @@ app.use(
 
 app.use('/api/food', FoodRoutes);
 app.use('/api/posts', PostsRoutes);
+app.use('/api/posts', commentPostRoutes);
 app.use('/api/order', AuthMiddleWare.verifyToken, OrderRoutes);
 app.use('/api/cart', AuthMiddleWare.verifyToken, CartRouter);
 app.use('/api/dashboard', AuthMiddleWare.verifyToken, DashboardRoutes);
 app.use('/api/favorite', AuthMiddleWare.verifyToken, FavoriteRoutes);
 app.use('/api/address', AuthMiddleWare.verifyToken, AddressRouter);
 app.use('/api/payment', PaymentRoutes);
+app.use('/api/review', ReviewRoutes);
 
 app.use('/api/ingredients', AuthMiddleWare.verifyToken, IngredientsRouter);
 app.use('/api/inventory', AuthMiddleWare.verifyToken, InventoryRoutes);

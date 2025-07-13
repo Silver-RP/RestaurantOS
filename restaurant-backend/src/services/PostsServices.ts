@@ -89,7 +89,7 @@ class PostsService {
   }
   async createPost(req: Request, userId: string) {
     try {
-      const { title, desc, content, categories_id, status = 'draft', images: imageUrls } = req.body;
+      const { title, desc, content, categories_id, status = 'draft', images: imageUrls, tags } = req.body;
       
       let images: string[] = [];
 
@@ -167,7 +167,8 @@ class PostsService {
         images,
         categories_id: new Types.ObjectId(categories_id),
         user_id: userId,
-        status
+        status,
+        tags: Array.isArray(tags) ? tags : (typeof tags === 'string' ? JSON.parse(tags) : []),
       });
 
       return post;
@@ -301,6 +302,125 @@ class PostsService {
     }
 
     return result;
+  }
+
+  async incrementPostViews(id: string) {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new Error('ID không hợp lệ');
+      }
+
+      const post = await Post.findByIdAndUpdate(
+        id,
+        { $inc: { views: 1 } },
+        { new: true }
+      );
+
+      if (!post) {
+        throw new Error('Không tìm thấy bài viết');
+      }
+
+      return post;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async toggleLike(postId: string, userId: string) {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(postId)) {
+        throw new Error('ID bài viết không hợp lệ');
+      }
+
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+        throw new Error('ID người dùng không hợp lệ');
+      }
+
+      // Kiểm tra xem bài viết có tồn tại không
+      const post = await Post.findById(postId);
+      if (!post) {
+        throw new Error('Không tìm thấy bài viết');
+      }
+
+      // Kiểm tra xem người dùng đã like bài viết chưa
+      const userIdObj = new mongoose.Types.ObjectId(userId);
+      const userLikedIndex = post.likedBy.findIndex(id => id.equals(userIdObj));
+      
+      let liked = false;
+      
+      if (userLikedIndex !== -1) {
+        // Nếu đã like, thì bỏ like
+        post.likedBy.splice(userLikedIndex, 1);
+        post.likes = Math.max(0, post.likes - 1); // Đảm bảo không âm
+      } else {
+        // Nếu chưa like, thì thêm like
+        post.likedBy.push(userIdObj);
+        post.likes += 1;
+        liked = true;
+      }
+
+      await post.save();
+
+      return {
+        liked,
+        likesCount: post.likes
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async checkUserLiked(postId: string, userId: string) {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(postId)) {
+        throw new Error('ID bài viết không hợp lệ');
+      }
+
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+        throw new Error('ID người dùng không hợp lệ');
+      }
+
+      const post = await Post.findById(postId);
+      if (!post) {
+        throw new Error('Không tìm thấy bài viết');
+      }
+
+      const userIdObj = new mongoose.Types.ObjectId(userId);
+      const liked = post.likedBy.some(id => id.equals(userIdObj));
+
+      return {
+        liked,
+        likesCount: post.likes
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getPostsByTag(tag: string, page = 1, limit = 10) {
+    const query = { tags: { $in: [tag] } };
+    const skip = (page - 1) * limit;
+    const totalDocs = await Post.countDocuments(query);
+    const totalPages = Math.ceil(totalDocs / limit);
+
+    const posts = await Post.find(query)
+      .populate({ path: 'categories_id', model: 'categories', select: 'Cate_name Cate_slug Cate_img Cate_type' })
+      .populate({ path: 'user_id', model: 'User', select: 'username email avatar' })
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    return {
+      docs: posts,
+      totalDocs,
+      totalPages,
+      page,
+      limit,
+      hasPrevPage: page > 1,
+      hasNextPage: page < totalPages,
+      prevPage: page > 1 ? page - 1 : null,
+      nextPage: page < totalPages ? page + 1 : null
+    };
   }
 }
 

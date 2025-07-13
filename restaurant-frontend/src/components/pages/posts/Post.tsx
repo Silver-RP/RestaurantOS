@@ -20,7 +20,7 @@ const Post: React.FC<PostProps> = ({ post }) => {
       <img
         src={post.images?.[0] || '/assets/images/default-post.jpg'}
         alt={post.title}
-        className="w-[366px] h-[446px] object-cover"
+        className="w-full h-auto max-h-80 object-cover"
       />
       <p className="bg-secondaryColor text-black inline-block px-3 py-1 text-sm mt-4 absolute top-4 left-4">
         {new Date(post.createdAt).toLocaleDateString('en-US', {
@@ -44,8 +44,8 @@ const Post: React.FC<PostProps> = ({ post }) => {
           <FaTwitter /> Twitter
         </button>
       </div>
-      <h3 className="text-xl font-bold mt-3">{post.title}</h3>
-      <p className="text-sm mt-2">{post.desc.substring(0, 200)}...</p>
+      <h3 className="text-xl font-bold mt-3 break-words">{post.title}</h3>
+      <p className="text-sm mt-2 break-words">{post.desc}</p>
       <ButtonComponents variant="filled" size="small" onClick={handlePostClick}>
         Đọc thêm
       </ButtonComponents>

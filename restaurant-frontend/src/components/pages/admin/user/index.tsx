@@ -52,9 +52,10 @@ const UserIndexPage: React.FC = () => {
     const isEditingSelf = currentUser && targetUser._id === currentUser._id;
 
     if (isEditingSelf) {
-      return toast.error('Không được chỉnh sửa chính mình');
+      toast.error('Không được chỉnh sửa chính mình');
+      return;
     }
-
+    
     if (isSuperadmin && targetRoles.includes('user')) {
       return toast.error(
         'Superadmin không được chỉnh sửa người dùng role user',
@@ -257,7 +258,7 @@ const UserIndexPage: React.FC = () => {
       )}
       <div className="text-sm text-gray-700 mb-2">
         Hiển thị <strong>{users.length}</strong> trên tổng{' '}
-        <strong>{totalDocs}</strong> người dùng
+        <strong>{totalDocs}</strong> tài khoản
       </div>
 
       {loading ? (

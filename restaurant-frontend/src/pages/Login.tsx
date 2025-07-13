@@ -46,7 +46,7 @@ const Login = () => {
     }
     if (error) {
       toast.error(error);
-      dispatch(clearStatus());
+      dispatch(clearStatus(''));
     }
   }, [success, error, navigate, dispatch]);
 

@@ -99,6 +99,8 @@ export const useVoucherById = (id: string) => {
     queryKey: ['voucher', id],
     queryFn: () => getVoucherById(id),
     enabled: !!id,
+    refetchOnMount: true,
+    staleTime: 0,
   });
 };
 

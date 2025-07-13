@@ -27,6 +27,7 @@ import FavoritePage from '@/pages/FavoritePage';
 import MyReservationsPage from '@/pages/MyReservationsPage';
 import PaymentSuccess from '@/pages/PaymentSuccess';
 import PaymentFailed from '@/pages/PaymentFailed';
+import PostsByTagPage from '../pages/PostsByTagPage';
 import VoucherPage from '../pages/VoucherPage';
 import UserVoucherList from '@/components/pages/voucher/UserVoucherList';
 
@@ -53,6 +54,7 @@ const PublicRoutes = [
       { path: 'contact', element: <ContactUsPage /> },
       { path: 'profile/faqs', element: <FAQsCompoent /> },
       { path: 'posts', element: <PostPage /> },
+      { path: 'posts/tag/:tag', element: <PostsByTagPage /> },
       { path: 'profile/orders', element: <OrderPage /> },
       { path: 'cart', element: <CartPage /> },
       { path: 'checkout', element: <CheckoutPage /> },

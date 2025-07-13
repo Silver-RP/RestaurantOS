@@ -36,14 +36,21 @@ import VoucherPage from '../components/pages/admin/voucher';
 import CreateVoucherPage from '../components/pages/admin/voucher/Create';
 import EditVoucherPage from '../components/pages/admin/voucher/Edit';
 import TrashVoucherPage from '../components/pages/admin/voucher/Trash';
+import AdminLoginPage from '@/components/pages/admin/login/Index';
 
 const adminRoutes = [
   {
+    path: '/admin/login',
+    element: <AdminLoginPage />,
+  },
+  {
     path: '/admin',
     element: (
-      <AdminSidebarProvider>
-        <AdminLayout />
-      </AdminSidebarProvider>
+      <ProtectedRoute>
+        <AdminSidebarProvider>
+          <AdminLayout />
+        </AdminSidebarProvider>
+      </ProtectedRoute>
     ),
     children: [
       { index: true, element: <DashboardPage /> },
@@ -83,6 +90,39 @@ const adminRoutes = [
       { path: 'vouchers/create', element: <CreateVoucherPage /> },
       { path: 'vouchers/edit/:id', element: <EditVoucherPage /> },
       { path: 'vouchers/trash', element: <TrashVoucherPage /> },
+
+      { path: '*', element: <Navigate to="/admin" /> },
+      { path: 'categories/create', element: <CreateCategoryPage /> },
+      { path: 'categories/edit/:id', element: <EditCategoryPage /> },
+      {
+        path: 'users',
+        element: (
+          <ProtectedRoute allowedRoles={['superadmin']}>
+            <UserIndexPage />
+          </ProtectedRoute>
+        ),
+      },
+      { path: 'users/create', element: <CreateUserPage /> },
+      { path: 'users/edit/:id', element: <EditUserPage /> },
+      { path: 'banners', element: <BannerPage /> },
+      { path: 'banners/create', element: <CreateBannerPage /> },
+      { path: 'banners/edit/:id', element: <EditBannerPage /> },
+      { path: '*', element: <Navigate to="/admin" /> },
+      { path: 'posts', element: <Post /> },
+      { path: 'posts/create', element: <CreatePostPage /> },
+      { path: 'posts/edit/:id', element: <EditPostPage /> },
+      { path: 'ingredients', element: <IngredientsList /> },
+      { path: 'ingredients/create', element: <CreateIngredient /> },
+      { path: 'ingredients/edit/:slug', element: <EditIngredient /> },
+      { path: 'ingredients/trash', element: <TrashIngredient /> },
+      { path: 'vouchers', element: <VoucherPage /> },
+      { path: 'vouchers/create', element: <CreateVoucherPage /> },
+      { path: 'vouchers/edit/:id', element: <EditVoucherPage /> },
+      { path: 'vouchers/trash', element: <TrashVoucherPage /> },
+      {
+        path: 'warehouse/transaction-view',
+        element: <WarehouseTransactionViewPage />,
+      },
 
       { path: '*', element: <Navigate to="/admin" /> },
     ],

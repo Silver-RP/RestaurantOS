@@ -25,7 +25,7 @@ export const createReviewApi = async (data: ReviewPayload): Promise<IReview> => 
       const res = await api.post<{ data: IReview }>('/review', data);
       return res.data.data;
     } catch (error: any) {
-      const message = error?.response?.data?.message || 'Lỗi khi tạo đánh giá';
+      const message = error?.response?.data?.message || 'Lỗi khi thêm đánh giá';
       throw new Error(message);
     }
   };

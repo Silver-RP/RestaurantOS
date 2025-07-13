@@ -69,7 +69,6 @@ const ProductInfoSection = ({
   );
 
   const vatAmount = Math.round(totalPrice * 0.08);
-
   const finalAmount = totalPrice + shippingFee + vatAmount - discountAmount;
 
   const handleVoucherApply = (voucher: UserVoucherDisplay, discount: number) => {

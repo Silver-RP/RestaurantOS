@@ -55,7 +55,7 @@ const NavigationOrder: React.FC<NavigationOrderProps> = ({
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       onSearch(value);
-    }, 400);
+    }, 1000);
   };
 
   return (

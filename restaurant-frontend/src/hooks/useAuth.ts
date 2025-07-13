@@ -3,8 +3,7 @@ import { useState } from 'react';
 import authApi from '../api/AuthApi';
 import { changePasswordProfile as changePasswordApi } from '@/api/AuthApi';
 import { useSelector } from 'react-redux';
-import { RootState } from '@/redux/store';
-import Cookies from 'js-cookie';
+import { RootState } from '../redux/store';
 
 interface ChangePasswordPayload {
   oldPassword: string;
@@ -12,32 +11,14 @@ interface ChangePasswordPayload {
   confirmPassword: string;
 }
 
-export const checkIsLoggedIn = (): boolean => {
-  const userInfo = Cookies.get('userInfo');
-  const accessToken = Cookies.get('accessToken');
-  return !!(userInfo && accessToken);
-};
-
 export const useAuth = () => {
-  const { userInfo, isAuthenticated, token } = useSelector(
+  const { isAuthenticated, user } = useSelector(
     (state: RootState) => state.auth,
   );
-  const currentUser = useSelector((state: RootState) => state.user.user);
-
-  // Kiểm tra authentication từ cả Redux state và cookies
-  const isAuthenticatedFromCookies = checkIsLoggedIn();
-  const isAuthenticatedFromRedux = isAuthenticated && !!userInfo;
-
-  // Trả về true nếu có authentication từ bất kỳ nguồn nào
-  const isLoggedIn = isAuthenticatedFromCookies || isAuthenticatedFromRedux;
 
   return {
-    userInfo,
-    currentUser,
-    isAuthenticated: isLoggedIn,
-    token,
-    isAuthenticatedFromCookies,
-    isAuthenticatedFromRedux,
+    isAuthenticated,
+    user,
   };
 };
 

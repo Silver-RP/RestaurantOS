@@ -73,7 +73,7 @@ const CheckoutPage = () => {
   const [deliveryMethod, setDeliveryMethod] = useState<'delivery' | 'pickup'>(
     'delivery',
   );
-  const [shippingFee, setShippingFee] = useState<number>(25000);
+  const [shippingFee, setShippingFee] = useState<number>(0);
   const [deliveryTime, setDeliveryTime] = useState<DeliveryTime>({
     type: 'now',
   });
@@ -157,9 +157,9 @@ const CheckoutPage = () => {
     // Only update shipping fee if not in pickup mode
     if (deliveryMethod !== 'pickup') {
       if (time.type === 'scheduled') {
-        setShippingFee(35000);
+        setShippingFee(50000);
       } else {
-        setShippingFee(25000);
+        setShippingFee(30000);
       }
     }
   };
@@ -177,18 +177,6 @@ const CheckoutPage = () => {
     setProducts(updatedProducts);
   };
   const selectedAddress = addresses.find((addr) => addr._id === selectedId || addr.id === selectedId);
-
-  useEffect(() => {
-    if (deliveryMethod === 'pickup') {
-      setShippingFee(0);
-    } else {
-      if (deliveryTime.type === 'scheduled') {
-        setShippingFee(35000);
-      } else {
-        setShippingFee(25000);
-      }
-    }
-  }, [deliveryMethod, deliveryTime.type]);
 
   const handleVoucherChange = (voucher: UserVoucherDisplay | null) => {
     setSelectedVoucher(voucher);

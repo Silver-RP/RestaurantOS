@@ -17,10 +17,9 @@ const discountTypes = [
   { value: 'fixed', label: 'Số tiền cố định' },
 ];
 
-const VoucherForm: React.FC<VoucherFormProps & { onAddUsers?: (userIds: string[]) => void }> = ({
+const VoucherForm: React.FC<VoucherFormProps> = ({
   initialData,
   onSubmit,
-  onAddUsers,
 }) => {
   const navigate = useNavigate();
   const [code, setCode] = useState(initialData?.code || '');
@@ -46,10 +45,10 @@ const VoucherForm: React.FC<VoucherFormProps & { onAddUsers?: (userIds: string[]
     initialData?.end_date ? new Date(initialData.end_date).toISOString().split('T')[0] : '',
   );
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [userOptions, setUserOptions] = useState<User[]>([]);
   const [addUsers, setAddUsers] = useState<string[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (type === 'private') {
@@ -67,7 +66,7 @@ const VoucherForm: React.FC<VoucherFormProps & { onAddUsers?: (userIds: string[]
     }
   }, [initialData]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!code && !initialData) {
@@ -98,7 +97,7 @@ const VoucherForm: React.FC<VoucherFormProps & { onAddUsers?: (userIds: string[]
 
     const dataToSend: Partial<Voucher> = {
       code,
-      description: description || undefined,
+      description: description,
       type,
       discount_type: discountType,
       discount_value: discountValue,
@@ -110,7 +109,12 @@ const VoucherForm: React.FC<VoucherFormProps & { onAddUsers?: (userIds: string[]
       ...(type === 'private' ? { userIds: allUserIds } : {}),
     };
 
-    onSubmit(dataToSend);
+    setIsSubmitting(true);
+    try {
+      await onSubmit(dataToSend);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Tạo danh sách user chưa sở hữu voucher
@@ -311,6 +315,7 @@ const VoucherForm: React.FC<VoucherFormProps & { onAddUsers?: (userIds: string[]
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
               className="border rounded px-4 py-2 w-full"
+              min={new Date().toISOString().split('T')[0]}
             />
           </div>
 
@@ -323,6 +328,7 @@ const VoucherForm: React.FC<VoucherFormProps & { onAddUsers?: (userIds: string[]
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
               className="border rounded px-4 py-2 w-full"
+              min={startDate || new Date().toISOString().split('T')[0]}
             />
           </div>
         </div>
@@ -338,8 +344,9 @@ const VoucherForm: React.FC<VoucherFormProps & { onAddUsers?: (userIds: string[]
           <button
             type="submit"
             className="px-4 py-2 bg-adminprimary text-white rounded hover:bg-blue-700"
+            disabled={isSubmitting}
           >
-            {initialData ? 'Cập nhật Voucher' : 'Lưu Voucher'}
+            {isSubmitting ? 'Đang lưu...' : (initialData ? 'Cập nhật Voucher' : 'Lưu Voucher')}
           </button>
         </div>
       </form>

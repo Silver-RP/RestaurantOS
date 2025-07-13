@@ -65,6 +65,7 @@ export interface FavoriteItem {
   userId: string;
   dishId: {
     _id: string;
+    slug: string;
     name: string;
     price: number;
     discount_price?: number;

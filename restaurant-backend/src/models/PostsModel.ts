@@ -9,8 +9,12 @@ export interface IPost extends mongoose.Document {
   status: 'draft' | 'published';
   categories_id: mongoose.Types.ObjectId;  
   user_id: mongoose.Types.ObjectId;        
+  views: number;
+  likes: number;
+  likedBy: mongoose.Types.ObjectId[];        
   createdAt: Date;
   updatedAt: Date;
+  tags: string[];
 }
 
 const postSchema = new mongoose.Schema<IPost>({
@@ -34,8 +38,15 @@ const postSchema = new mongoose.Schema<IPost>({
     ref: 'User',
     required: true,
   },
+  views: { type: Number, default: 0 },
+  likes: { type: Number, default: 0 },
+  likedBy: [{ 
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
+  tags: [{ type: String }],
 });
 
 export const Post = mongoose.model<IPost>('Post', postSchema);

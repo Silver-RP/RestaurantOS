@@ -84,7 +84,7 @@ class FoodService {
   }
 
   async getAllFood(filters: FoodFilter, userId?: string | null, roleNames: string[] = []) {
-    const { page = 1, limit = 10, sort = 'newest' } = filters;
+    const { page = 1, limit = 10, sort = '' } = filters;
 
     const query = await buildQuery(filters);
 

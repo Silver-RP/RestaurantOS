@@ -74,7 +74,7 @@ const PaymentSuccess = () => {
 </p>
 
         <div className="flex flex-wrap gap-4 justify-center">
-          <ButtonComponents onClick={() => navigate('/menu')}>
+          <ButtonComponents onClick={() => navigate('/menu?sort=categoryAZ')}>
             Tiếp tục mua sắm
           </ButtonComponents>
           <ButtonComponents

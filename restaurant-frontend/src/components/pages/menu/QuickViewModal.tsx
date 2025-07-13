@@ -6,6 +6,9 @@ import { RootState } from 'redux/store';
 import { FilledStar, HalfStar, EmptyStar } from '../../common/StarIcons';
 import ButtonComponents from '../../common/ButtonComponents';
 import { useAddToCart } from '@hooks/useCart';
+import { FaHeart } from 'react-icons/fa';
+import { useFavorites } from '@/hooks/useFavorites';
+import { FiHeart, FiStar } from 'react-icons/fi';
 
 const QuickViewModal = () => {
   const dispatch = useDispatch();
@@ -14,10 +17,15 @@ const QuickViewModal = () => {
   );
   const [quantity, setQuantity] = useState(1);
   const { mutate: addToCart } = useAddToCart();
-  if (!product) return null;
-  const rating = Math.round((product.average_rating ?? 0) * 2) / 2;
+  const rating = Math.round((product?.average_rating ?? 0) * 2) / 2;
+  const { toggleFavorite } = useFavorites();
+  const favoriteItems = useSelector((state: RootState) => state.favorite.items);
+  const isFavorited = favoriteItems.some(
+    (fav) => fav.dishId && fav.dishId._id === product?._id,
+  );
 
- 
+  if (!product) return null;
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[100] p-4">
       <div className="bg-headerBackground rounded-lg overflow-hidden max-w-4xl md:max-w-5xl w-full relative flex flex-col md:flex-row shadow-lg">
@@ -35,6 +43,20 @@ const QuickViewModal = () => {
             className="object-cover w-full h-full"
           />
         </div>
+        <div className="absolute top-2 left-2 flex flex-col gap-1">
+          {product.isRecommend && (
+            <span className="min-w-[24px] justify-center bg-secondaryColor text-black text-[12px] font-semibold px-2 py-1 rounded-sm flex items-center gap-1">
+              <FiStar className="w-3 h-3" />
+              <span className="ml-1">Đề xuất</span>
+            </span>
+          )}
+           {product.isDishNew && (
+            <span className="max-w-[36px] bg-secondaryColor text-black text-[10px] font-semibold px-1 py-1 rounded-sm">
+              NEW
+            </span>
+          )}
+        </div>
+
 
         <div className="w-full md:w-1/2 p-8 flex flex-col justify-center space-y-4 text-white font-light">
           <h2 className="text-2xl sm:text-3xl text-white mb-2">
@@ -98,12 +120,31 @@ const QuickViewModal = () => {
           </div>
 
           <div className="flex flex-wrap gap-4">
-            <button className="text-sm text-white underline hover:text-secondaryColor">
-              Yêu thích
+            <div className="relative group/tooltip">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleFavorite(product?._id);
+              }}
+              className={`p-1.5 sm:p-2 bg-white rounded-full shadow-md 
+                          hover:bg-secondaryColor hover:text-white hover:-translate-y-1 transition-all duration-300`}
+            >
+              {isFavorited ? (
+                <FaHeart size={18} className="text-red-500" />
+              ) : (
+                <FiHeart size={18} className="text-black" />
+              )}
             </button>
-            <button className="text-sm text-white underline hover:text-secondaryColor">
-              So sánh
-            </button>
+            <div
+              className="absolute -top-8 left-1/2 -translate-x-1/2 
+                          bg-black text-white text-[10px] px-2 py-1 rounded 
+                          whitespace-nowrap opacity-0 group-hover/tooltip:opacity-100 
+                          transition-all duration-300 z-20 pointer-events-none"
+            >
+              {isFavorited ? 'Đã yêu thích' : 'Yêu thích'}
+              <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-black rotate-45"></div>
+            </div>
+          </div>
           </div>
 
           <div className="text-xs text-gray-400 mt-6 space-y-1">
@@ -117,6 +158,9 @@ const QuickViewModal = () => {
             </div>
             <div>
               <strong>Lượt mua:</strong> {product.ordered_count ?? 0}
+            </div>
+            <div>
+              <strong>Lượt yêu thích:</strong> {product.favorites_count ?? 0}
             </div>
           </div>
         </div>
