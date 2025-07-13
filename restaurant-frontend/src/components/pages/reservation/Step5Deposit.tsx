@@ -6,17 +6,16 @@ import { toastService } from '@/utils/toastService';
 import { MdChair } from 'react-icons/md';
 import { FaUsers } from 'react-icons/fa';
 import { GiKnifeFork } from 'react-icons/gi';
+import { useReservations } from '@/hooks/useReservations';
 
 type Step5DepositProps = {
   formData: ReservationFormData;
-  setFormData: React.Dispatch<React.SetStateAction<ReservationFormData>>;
   onSuccess: () => void;
   onBack: () => void;
 };
 
 const Step5Deposit: React.FC<Step5DepositProps> = ({
   formData,
-  setFormData,
   onSuccess,
   onBack,
 }) => {
@@ -26,6 +25,8 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
   const [tableDeposit, setTableDeposit] = useState(0);
   const [guestDeposit, setGuestDeposit] = useState(0);
   const [foodDeposit, setFoodDeposit] = useState(0);
+
+  const { createReservation } = useReservations();
 
   useEffect(() => {
     const { table_type, number_of_people, selectedItems } = formData;
@@ -65,14 +66,39 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
     setDepositAmount(amount + foodDeposit);
   }, [formData]);
 
-  const handleMockPayment = () => {
+  const handlePayment = async () => {
     setIsPaying(true);
 
-    setTimeout(() => {
-      toastService.success('Thanh toán thành công!');
+    try {
+      // Chuẩn bị dữ liệu để gửi API
+      const reservationData = {
+        full_name: formData.full_name,
+        phone: formData.phone,
+        email: formData.email,
+        date: formData.date,
+        time: formData.time,
+        table_type: formData.table_type,
+        table_code: formData.seatingName, // Thêm table_code từ seatingName
+        number_of_people: formData.number_of_people,
+        note: formData.note,
+        is_choose_later: formData.selectedItems.length === 0,
+        selectedItems: formData.selectedItems,
+      };
+
+      // Gọi API tạo reservation
+      const result = await createReservation(reservationData);
+
+      if (result) {
+        // Xóa dữ liệu đã lưu trong localStorage
+        localStorage.removeItem('reservation-data');
+        onSuccess();
+      }
+    } catch (error) {
+      console.error('❌ Lỗi khi đặt bàn:', error);
+      toastService.error('Có lỗi xảy ra khi đặt bàn. Vui lòng thử lại.');
+    } finally {
       setIsPaying(false);
-      onSuccess();
-    }, 2000);
+    }
   };
 
   return (
@@ -116,8 +142,8 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
           <ButtonComponents
             variant="filled"
             size="medium"
-            onClick={handleMockPayment}
-            loading={isPaying}
+            onClick={handlePayment}
+            disabled={isPaying}
             className="px-8 py-3 text-sm sm:text-base shadow-lg transition"
           >
             {isPaying ? 'Đang xử lý...' : 'Thanh toán'}

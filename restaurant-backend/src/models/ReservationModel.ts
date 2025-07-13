@@ -17,6 +17,8 @@ const reservationSchema = new mongoose.Schema<IReservation>(
       enum: ['PENDING', 'CONFIRMED', 'CANCELLED', 'DONE'],
       default: 'PENDING',
     },
+    deposit: { type: Number, default: 0 },
+    room_type: { type: String, default: '' },
   },
   { timestamps: true },
 );

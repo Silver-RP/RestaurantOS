@@ -40,18 +40,19 @@ const MenuTable: React.FC = () => {
     return <FaSort />;
   };
 
-  const [selectedDishId, setSelectedDishId] = React.useState<string | null>(null);
+  const [selectedDishId, setSelectedDishId] = React.useState<string | null>(
+    null,
+  );
 
   const handleCloseFoodIngredientsModal = () => {
     setSelectedDishId(null);
   };
-  
+
   const handleViewDishIngredient = (dishId: string) => {
     if (selectedDishId !== dishId) {
       setSelectedDishId(dishId);
     }
   };
-
 
   return (
     <div>
@@ -277,7 +278,7 @@ const MenuTable: React.FC = () => {
                     </button>
                     <button
                       className="relative group text-blue-500 hover:underline"
-                      onClick={()=> handleViewDishIngredient(item._id)}
+                      onClick={() => handleViewDishIngredient(item._id)}
                     >
                       <GiWheat size={18} />
                       <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 normal-case">

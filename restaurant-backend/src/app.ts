@@ -10,6 +10,8 @@ import ReservationContactRoutes from './routes/ReservationContactRoutes';
 import ReservationDetailContactRoutes from './routes/ReservationDetailContactRoutes';
 import ProfileRoutes from './routes/ProfileRoutes';
 import ReservationRoutes from './routes/ReservationRouter';
+import TableReservationRouter from './routes/TableReservationRouter';
+import TableRoutes from './routes/TableRouters';
 import BannerRoutes from './routes/BannerRoutes';
 import PostsRoutes from './routes/PostsRoutes';
 import commentPostRoutes from './routes/CommentPostRoutes';
@@ -46,7 +48,6 @@ import './swaggers/CartSwagger';
 import './swaggers/StaffSwagger';
 import './swaggers/UserSwagger';
 import './swaggers/CategorySwagger';
-
 
 dotenv.config();
 connectDB();
@@ -116,6 +117,8 @@ app.use(
 app.use('/api/permission', PermissionRoutes);
 app.use('/api/category', CateRoutes);
 app.use('/api/reservation', AuthMiddleWare.verifyToken, ReservationRoutes);
+app.use('/api/tables', TableRoutes);
+app.use('/api/table-reservations', TableReservationRouter);
 app.use('/api/banner', BannerRoutes);
 app.use('/api/reservationcontact', ReservationContactRoutes);
 app.use('/api/reservationdetailcontact', ReservationDetailContactRoutes);
@@ -135,7 +138,7 @@ app.use('/api/dashboard', AuthMiddleWare.verifyToken, DashboardRoutes);
 app.use('/api/favorite', AuthMiddleWare.verifyToken, FavoriteRoutes);
 app.use('/api/address', AuthMiddleWare.verifyToken, AddressRouter);
 app.use('/api/payment', PaymentRoutes);
-app.use('/api/review',  ReviewRoutes);
+app.use('/api/review', ReviewRoutes);
 
 app.use('/api/ingredients', AuthMiddleWare.verifyToken, IngredientsRouter);
 app.use('/api/inventory', AuthMiddleWare.verifyToken, InventoryRoutes);

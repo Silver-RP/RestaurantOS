@@ -22,6 +22,9 @@ export const ReservationController = {
         is_choose_later,
         email,
         selectedItems,
+        table_code,
+        deposit,
+        room_type,
       } = req.body;
 
       const data = {
@@ -35,6 +38,9 @@ export const ReservationController = {
         is_choose_later,
         email,
         selectedItems,
+        table_code,
+        deposit,
+        room_type,
       };
 
       const reservation = await ReservationService.createReservation(data, user.id);

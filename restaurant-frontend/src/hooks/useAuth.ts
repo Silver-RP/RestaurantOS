@@ -12,11 +12,13 @@ interface ChangePasswordPayload {
 }
 
 export const useAuth = () => {
-  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
-  
+  const { isAuthenticated, user } = useSelector(
+    (state: RootState) => state.auth,
+  );
+
   return {
     isAuthenticated,
-    user
+    user,
   };
 };
 
@@ -129,7 +131,7 @@ export const useChangePassword = () => {
         newPassword,
         confirmPassword,
       );
-    
+
       return response;
     } catch (err: any) {
       const message = err?.response?.data?.message || 'Lỗi khi đổi mật khẩu';
@@ -148,7 +150,10 @@ export const useChangePasswordProfile = () => {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const changePasswordProfile = async (data: ChangePasswordPayload, onSuccess?: () => void) => {
+  const changePasswordProfile = async (
+    data: ChangePasswordPayload,
+    onSuccess?: () => void,
+  ) => {
     setLoading(true);
     setError(null);
     setSuccessMessage(null);
@@ -158,8 +163,10 @@ export const useChangePasswordProfile = () => {
       setSuccessMessage(res.message);
       onSuccess?.();
     } catch (err: any) {
-      setError(err?.response?.data?.message || 'Đã xảy ra lỗi khi đổi mật khẩu');
-      throw err; 
+      setError(
+        err?.response?.data?.message || 'Đã xảy ra lỗi khi đổi mật khẩu',
+      );
+      throw err;
     } finally {
       setLoading(false);
     }
