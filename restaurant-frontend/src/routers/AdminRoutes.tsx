@@ -119,10 +119,10 @@ const adminRoutes = [
       { path: 'vouchers/create', element: <CreateVoucherPage /> },
       { path: 'vouchers/edit/:id', element: <EditVoucherPage /> },
       { path: 'vouchers/trash', element: <TrashVoucherPage /> },
-      {
-        path: 'warehouse/transaction-view',
-        element: <WarehouseTransactionViewPage />,
-      },
+      // {
+      //   path: 'warehouse/transaction-view',
+      //   element: <WarehouseTransactionViewPage />,
+      // },
 
       { path: '*', element: <Navigate to="/admin" /> },
     ],

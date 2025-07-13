@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import {
@@ -25,292 +26,289 @@ import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@/redux/hook';
 
-const AdminLayout: React.FC = () => {
+const AdminLayout = () => {
   const { isSidebarOpen, toggleSidebarExtend } = useAdminSidebar();
   const [isReservationOpen, setIsReservationOpen] = useState(false);
 
   const toggleReservation = () => {
     setIsReservationOpen(!isReservationOpen);
-  const location = useLocation();
-  const navigate = useNavigate();
-  const dispatch = useAppDispatch();
+    const location = useLocation();
+    const navigate = useNavigate();
+    const dispatch = useAppDispatch();
 
-  const clearAuthData = () => {
-    Cookies.remove('userInfo');
-    Cookies.remove('refreshToken');
-    Cookies.remove('accessToken');
-    localStorage.removeItem('token');
-    console.log('Auth data cleared');
-  };
+    const clearAuthData = () => {
+      Cookies.remove('userInfo');
+      Cookies.remove('refreshToken');
+      Cookies.remove('accessToken');
+      localStorage.removeItem('token');
+      console.log('Auth data cleared');
+    };
 
-  const handleLogout = async () => {
+    const handleLogout = async () => {
+      const userInfo = JSON.parse(Cookies.get('userInfo') || '{}');
 
-    const userInfo = JSON.parse(Cookies.get('userInfo') || '{}');
-
-    if (userInfo) {
+      if (userInfo) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (window as any).google?.accounts.id.disableAutoSelect?.();
         Cookies.remove('userInfo');
         localStorage.removeItem('token');
         clearAuthData();
         setTimeout(() => {
-          navigate('/admin/login'); 
+          navigate('/admin/login');
         }, 1000);
-      return;
-    }
-    
+        return;
+      }
 
-    try {
-      await dispatch(LogoutUser()).unwrap(); 
-      console.log('LogoutUser called');
-    } catch (err) {
-      console.error('Logout failed:', err);
-    } finally {
-      setTimeout(() => {
-        navigate('/admin/login');
-      }, 100);
-    }
-  };
+      try {
+        await dispatch(LogoutUser()).unwrap();
+        console.log('LogoutUser called');
+      } catch (err) {
+        console.error('Logout failed:', err);
+      } finally {
+        setTimeout(() => {
+          navigate('/admin/login');
+        }, 100);
+      }
+    };
 
-  return (
-    <div className="flex min-h-screen bg-adminbg text-admintext">
-      {/* Sidebar */}
-      <aside
-        className={classNames(
-          'bg-admincard flex flex-col justify-between transition-all duration-300 fixed top-0 left-0 z-50 h-full overflow-y-auto', // 👈 thêm overflow-y-auto
-          isSidebarOpen ? 'w-[200px] px-4' : 'w-16 items-center',
-        )}
-      >
-        <div className="flex max-w-[200px] flex-col items-center space-y-8 mt-6 flex-1">
-          <button
-            className={classNames(
-              'text-adminprimary focus:outline-none transition-all',
-              isSidebarOpen ? 'self-end mr-2' : 'self-center',
-            )}
-            onClick={toggleSidebarExtend}
-          >
-            {isSidebarOpen ? (
-              <FaAngleLeft className="w-5 h-5" />
-            ) : (
-              <FaAngleRight className="w-5 h-5" />
-            )}
-          </button>
+    return (
+      <div className="flex min-h-screen bg-adminbg text-admintext">
+        {/* Sidebar */}
+        <aside
+          className={classNames(
+            'bg-admincard flex flex-col justify-between transition-all duration-300 fixed top-0 left-0 z-50 h-full overflow-y-auto', // 👈 thêm overflow-y-auto
+            isSidebarOpen ? 'w-[200px] px-4' : 'w-16 items-center',
+          )}
+        >
+          <div className="flex max-w-[200px] flex-col items-center space-y-8 mt-6 flex-1">
+            <button
+              className={classNames(
+                'text-adminprimary focus:outline-none transition-all',
+                isSidebarOpen ? 'self-end mr-2' : 'self-center',
+              )}
+              onClick={toggleSidebarExtend}
+            >
+              {isSidebarOpen ? (
+                <FaAngleLeft className="w-5 h-5" />
+              ) : (
+                <FaAngleRight className="w-5 h-5" />
+              )}
+            </button>
 
-          <nav className="flex flex-col gap-6 w-full max-w-[200px items-center">
-            <NavItem
-              href="/admin"
-              icon={<FaHome />}
-              label="Trang chủ"
-              expanded={isSidebarOpen}
-              currentPath={location.pathname}
-            />
-            <NavItem
-              href="/admin/foods"
-              icon={<FaUtensils />}
-              label="Món ăn"
-              expanded={isSidebarOpen}
-              currentPath={location.pathname}
-            />
-            <NavItem
-              href="/admin/categories"
-              icon={<GiHotMeal />}
-              label="Danh mục"
-              expanded={isSidebarOpen}
-              currentPath={location.pathname}
-            />
-            <NavItem
-              href="/admin/orders"
-              icon={<FaCartPlus />}
-              label="Đơn hàng"
-              expanded={isSidebarOpen}
-              currentPath={location.pathname}
-            />
+            <nav className="flex flex-col gap-6 w-full max-w-[200px items-center">
+              <NavItem
+                href="/admin"
+                icon={<FaHome />}
+                label="Trang chủ"
+                expanded={isSidebarOpen}
+                currentPath={location.pathname}
+              />
+              <NavItem
+                href="/admin/foods"
+                icon={<FaUtensils />}
+                label="Món ăn"
+                expanded={isSidebarOpen}
+                currentPath={location.pathname}
+              />
+              <NavItem
+                href="/admin/categories"
+                icon={<GiHotMeal />}
+                label="Danh mục"
+                expanded={isSidebarOpen}
+                currentPath={location.pathname}
+              />
+              <NavItem
+                href="/admin/orders"
+                icon={<FaCartPlus />}
+                label="Đơn hàng"
+                expanded={isSidebarOpen}
+                currentPath={location.pathname}
+              />
 
-            {/* Reservation Dropdown */}
-            <div className="w-full">
-              <button
-                onClick={toggleReservation}
-                className={classNames(
-                  'flex items-center px-4 py-2 rounded-lg hover:bg-adminhover transition-colors w-full',
-                  isSidebarOpen ? 'justify-between' : 'justify-center',
-                )}
-              >
-                <div
+              {/* Reservation Dropdown */}
+              <div className="w-full">
+                <button
+                  onClick={toggleReservation}
                   className={classNames(
-                    'flex items-center',
-                    isSidebarOpen ? 'gap-3' : 'justify-center',
+                    'flex items-center px-4 py-2 rounded-lg hover:bg-adminhover transition-colors w-full',
+                    isSidebarOpen ? 'justify-between' : 'justify-center',
                   )}
                 >
-                  <span className="text-lg">
-                    <FaCalendarAlt />
-                  </span>
-                  {isSidebarOpen && <span className="text-left">Đặt bàn</span>}
-                </div>
-                {isSidebarOpen && (
-                  <span
+                  <div
                     className={classNames(
-                      'text-sm transition-transform duration-300',
-                      isReservationOpen ? 'rotate-180' : 'rotate-0',
+                      'flex items-center',
+                      isSidebarOpen ? 'gap-3' : 'justify-center',
                     )}
                   >
-                    <FaChevronDown />
-                  </span>
-                )}
-              </button>
+                    <span className="text-lg">
+                      <FaCalendarAlt />
+                    </span>
+                    {isSidebarOpen && (
+                      <span className="text-left">Đặt bàn</span>
+                    )}
+                  </div>
+                  {isSidebarOpen && (
+                    <span
+                      className={classNames(
+                        'text-sm transition-transform duration-300',
+                        isReservationOpen ? 'rotate-180' : 'rotate-0',
+                      )}
+                    >
+                      <FaChevronDown />
+                    </span>
+                  )}
+                </button>
 
-              <div
-                className={classNames(
-                  'overflow-hidden transition-all duration-300 ease-in-out',
-                  isSidebarOpen && isReservationOpen
-                    ? 'max-h-32 opacity-100'
-                    : 'max-h-0 opacity-0',
-                )}
-              >
-                <div className="ml-6 mt-2 space-y-2 transform transition-transform duration-300">
-                  <SubNavItem href="/admin/reservations" label="Đặt bàn" />
-                  <SubNavItem href="/admin/tables" label="Quản lý bàn" />
+                <div
+                  className={classNames(
+                    'overflow-hidden transition-all duration-300 ease-in-out',
+                    isSidebarOpen && isReservationOpen
+                      ? 'max-h-32 opacity-100'
+                      : 'max-h-0 opacity-0',
+                  )}
+                >
+                  <div className="ml-6 mt-2 space-y-2 transform transition-transform duration-300">
+                    <SubNavItem href="/admin/reservations" label="Đặt bàn" />
+                    <SubNavItem href="/admin/tables" label="Quản lý bàn" />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <NavItem
-              href="/admin/posts"
-              icon={<FaFileAlt />}
-              label="Bài viết"
-              expanded={isSidebarOpen}
-              currentPath={location.pathname}
-            />
-            <NavItem
-              href="/admin/users"
-              icon={<FaUser />}
-              label="Người dùng"
-              expanded={isSidebarOpen}
-              currentPath={location.pathname}
-            />
+              <NavItem
+                href="/admin/posts"
+                icon={<FaFileAlt />}
+                label="Bài viết"
+                expanded={isSidebarOpen}
+                currentPath={location.pathname}
+              />
+              <NavItem
+                href="/admin/users"
+                icon={<FaUser />}
+                label="Người dùng"
+                expanded={isSidebarOpen}
+                currentPath={location.pathname}
+              />
 
-            <NavItem
-              href="/admin/ingredients"
-              icon={<GiWheat />}
-              label="Nguyên liệu"
-              expanded={isSidebarOpen}
-              currentPath={location.pathname}
-            />
+              <NavItem
+                href="/admin/ingredients"
+                icon={<GiWheat />}
+                label="Nguyên liệu"
+                expanded={isSidebarOpen}
+                currentPath={location.pathname}
+              />
 
-            <NavItem
-              href="/admin/banners"
-              icon={<FaImage />}
-              label="Banner"
-              expanded={isSidebarOpen}
-              currentPath={location.pathname}
-            />
+              <NavItem
+                href="/admin/banners"
+                icon={<FaImage />}
+                label="Banner"
+                expanded={isSidebarOpen}
+                currentPath={location.pathname}
+              />
 
-            <NavItem
-              href="/admin/vouchers"
-              icon={<FaTicketAlt />}
-              label="Voucher"
-              expanded={isSidebarOpen}
-              currentPath={location.pathname}
-            />
-            <NavItem
-              href="/admin/about"
-              icon={<FaInfoCircle />}
-              label="Giới thiệu"
-              expanded={isSidebarOpen}
-              currentPath={location.pathname}
-            />
+              <NavItem
+                href="/admin/vouchers"
+                icon={<FaTicketAlt />}
+                label="Voucher"
+                expanded={isSidebarOpen}
+                currentPath={location.pathname}
+              />
+              <NavItem
+                href="/admin/about"
+                icon={<FaInfoCircle />}
+                label="Giới thiệu"
+                expanded={isSidebarOpen}
+                currentPath={location.pathname}
+              />
 
-            <NavItem
-              href="/admin/contact"
-              icon={<FaEnvelope />}
-              label="Liên hệ"
-              expanded={isSidebarOpen}
-              currentPath={location.pathname}
-            />
-          </nav>
-        </div>
-
-        <div className="my-5 flex justify-center">
-          <NavItem
-            onClick={handleLogout}
-            icon={<FaSignOutAlt />}
-            label="Đăng xuất"
-            expanded={isSidebarOpen}
-            className="text-red-400"
-            currentPath={location.pathname} href={''}          />
-        </div>
-      </aside>
-
-      {/* Main Content Area */}
-      <div
-        className={classNames(
-          'flex-1 flex flex-col transition-all duration-300 bg-white',
-          isSidebarOpen ? 'ml-[200px]' : 'ml-16',
-        )}
-      >
-        {/* Header */}
-        <AdminHeader />
-
-        {/* Page content */}
-        <main className="flex-1 w-full bg-white p-6 transition-all duration-300">
-          <div className="w-full h-full overflow-auto">
-            <Outlet />
+              <NavItem
+                href="/admin/contact"
+                icon={<FaEnvelope />}
+                label="Liên hệ"
+                expanded={isSidebarOpen}
+                currentPath={location.pathname}
+              />
+            </nav>
           </div>
-        </main>
+
+          <div className="my-5 flex justify-center">
+            <NavItem
+              onClick={handleLogout}
+              icon={<FaSignOutAlt />}
+              label="Đăng xuất"
+              expanded={isSidebarOpen}
+              className="text-red-400"
+              currentPath={location.pathname}
+              href={''}
+            />
+          </div>
+        </aside>
+
+        {/* Main Content Area */}
+        <div
+          className={classNames(
+            'flex-1 flex flex-col transition-all duration-300 bg-white',
+            isSidebarOpen ? 'ml-[200px]' : 'ml-16',
+          )}
+        >
+          {/* Header */}
+          <AdminHeader />
+
+          {/* Page content */}
+          <main className="flex-1 w-full bg-white p-6 transition-all duration-300">
+            <div className="w-full h-full overflow-auto">
+              <Outlet />
+            </div>
+          </main>
+        </div>
       </div>
-    </div>
-  );
-};
-
-interface NavItemProps {
-  onClick?: () => void;
-  href: string;
-  icon: React.ReactNode;
-  label: string;
-  expanded: boolean;
-  className?: string;
-  currentPath?: string;
-}
-
-const NavItem: React.FC<NavItemProps> = ({
-  href,
-  icon,
-  label,
-  expanded,
-  className,
-  currentPath = '',
-  onClick,
-}) => {
-  const isActive = currentPath === href;
-
-  const classes = classNames(
-    'flex items-center px-4 py-2 rounded-lg transition-colors w-full',
-    expanded ? 'justify-start gap-3' : 'justify-center',
-    isActive
-      ? 'bg-bodyBackground text-white '
-      : 'hover:bg-adminhover',
-    className,
-  );
-
-  if (onClick) {
-    return (
-      <button
-        type="button"
-        onClick={onClick}
-        className={classes}
-      >
-        <span className="text-lg">{icon}</span>
-        {expanded && <span className="text-left w-full">{label}</span>}
-      </button>
     );
+  };
+
+  interface NavItemProps {
+    onClick?: () => void;
+    href: string;
+    icon: React.ReactNode;
+    label: string;
+    expanded: boolean;
+    className?: string;
+    currentPath?: string;
   }
 
-  return (
-    <Link to={href} className={classes}>
-      <span className="text-lg">{icon}</span>
-      {expanded && <span className="text-left w-full">{label}</span>}
-    </Link>
-  );
-};
+  const NavItem: React.FC<NavItemProps> = ({
+    href,
+    icon,
+    label,
+    expanded,
+    className,
+    currentPath = '',
+    onClick,
+  }) => {
+    const isActive = currentPath === href;
 
+    const classes = classNames(
+      'flex items-center px-4 py-2 rounded-lg transition-colors w-full',
+      expanded ? 'justify-start gap-3' : 'justify-center',
+      isActive ? 'bg-bodyBackground text-white ' : 'hover:bg-adminhover',
+      className,
+    );
+
+    if (onClick) {
+      return (
+        <button type="button" onClick={onClick} className={classes}>
+          <span className="text-lg">{icon}</span>
+          {expanded && <span className="text-left w-full">{label}</span>}
+        </button>
+      );
+    }
+
+    return (
+      <Link to={href} className={classes}>
+        <span className="text-lg">{icon}</span>
+        {expanded && <span className="text-left w-full">{label}</span>}
+      </Link>
+    );
+  };
+};
 interface SubNavItemProps {
   href: string;
   label: string;
