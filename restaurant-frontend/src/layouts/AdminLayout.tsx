@@ -211,21 +211,7 @@ const AdminLayout = () => {
               expanded={isSidebarOpen}
               currentPath={location.pathname}
             />
-            <NavItem
-              href="/admin/about"
-              icon={<FaInfoCircle />}
-              label="Giới thiệu"
-              expanded={isSidebarOpen}
-              currentPath={location.pathname}
-            />
-
-            <NavItem
-              href="/admin/contact"
-              icon={<FaEnvelope />}
-              label="Liên hệ"
-              expanded={isSidebarOpen}
-              currentPath={location.pathname}
-            />
+            
           </nav>
         </div>
 

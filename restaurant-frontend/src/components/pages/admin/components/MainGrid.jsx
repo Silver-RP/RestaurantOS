@@ -102,26 +102,26 @@ export default function MainGrid() {
             </Grid>
           </Grid>
 
-          <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
+          {/* <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
             Details
-          </Typography>
+          </Typography> */}
           <Grid container spacing={2} columns={12}>
             <Grid size={{ xs: 12, lg: 9 }}>
-              <CustomizedDataGrid />
+              {/* <CustomizedDataGrid /> */}
             </Grid>
             <Grid size={{ xs: 12, lg: 3 }}>
               <Stack
                 gap={2}
                 direction={{ xs: 'column', sm: 'row', lg: 'column' }}
               >
-                <CustomizedTreeView />
-                <ChartUserByCountry />
+                {/* <CustomizedTreeView /> */}
+                {/* <ChartUserByCountry /> */}
               </Stack>
             </Grid>
           </Grid>
         </>
       ) : null}
-      <Copyright sx={{ my: 4 }} />
+      {/* <Copyright sx={{ my: 4 }} /> */}
     </Box>
   );
 }
