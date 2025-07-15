@@ -4,7 +4,7 @@ import User, { IUser } from '../models/UserModel';
 import bcrypt from 'bcryptjs';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-
+import LoyaltyService from './LoyaltyService';
 
 dayjs.extend(customParseFormat);
 interface FilterUserOptions {
@@ -91,8 +91,19 @@ class UserService {
       User.countDocuments(matchStage),
     ]);
 
+    // Lấy loyalty info cho từng user
+    const usersWithLoyalty = await Promise.all(users.map(async (user: any) => {
+      const loyalty = await LoyaltyService.getAccountInfo(user._id.toString());
+      return {
+        ...user,
+        loyalty_tier: loyalty.current_tier,
+        loyalty_total_spent: loyalty.total_spent,
+        loyalty_total_points: loyalty.total_points,
+      };
+    }));
+
     return {
-      docs: users,
+      docs: usersWithLoyalty,
       totalDocs,
       totalPages: Math.ceil(totalDocs / limit),
       page,
@@ -115,14 +126,21 @@ class UserService {
 
       const result = await User.paginate({}, options);
 
-      // const filteredUsers = allUserByUserRole.filter(
-      //   (user) => user.roles && user.roles.length > 0,
-      // );
+      // Lấy loyalty info cho từng user
+      const usersWithLoyalty = await Promise.all((result.docs as any[]).map(async (user) => {
+        const loyalty = await LoyaltyService.getAccountInfo(user._id.toString());
+        return {
+          ...user.toObject(),
+          loyalty_tier: loyalty.current_tier,
+          loyalty_total_spent: loyalty.total_spent,
+          loyalty_total_points: loyalty.total_points,
+        };
+      }));
 
       return {
         status: 'OK',
         message: 'getAllUserByUserRole success',
-        data: result.docs,
+        data: usersWithLoyalty,
         pagination: {
           total: result.totalDocs,
           page: result.page,
@@ -161,10 +179,18 @@ class UserService {
         };
       }
 
+      // Lấy loyalty info
+      const loyalty = await LoyaltyService.getAccountInfo(user._id.toString());
+
       return {
         status: 'OK',
         message: 'User details retrieved successfully',
-        data: user,
+        data: {
+          ...user.toObject(),
+          loyalty_tier: loyalty.current_tier,
+          loyalty_total_spent: loyalty.total_spent,
+          loyalty_total_points: loyalty.total_points,
+        },
       };
     } catch (error: any) {
       console.error('Error fetching user details:', error);
@@ -261,10 +287,22 @@ class UserService {
           .limit(limit),
         User.countDocuments(query),
       ]);
+
+      // Lấy loyalty info cho từng user
+      const usersWithLoyalty = await Promise.all(users.map(async (user: any) => {
+        const loyalty = await LoyaltyService.getAccountInfo(user._id.toString());
+        return {
+          ...user.toObject(),
+          loyalty_tier: loyalty.current_tier,
+          loyalty_total_spent: loyalty.total_spent,
+          loyalty_total_points: loyalty.total_points,
+        };
+      }));
+
       return {
         status: 'SUCCESS',
         data: {
-          users,
+          users: usersWithLoyalty,
           metadata: {
             total: totalDocuments,
             page,

@@ -108,6 +108,15 @@ export default class VoucherService {
       sort: sortOption,
     });
 
+    // Tính lại status cho từng voucher
+    await Promise.all(result.docs.map(async (voucher) => {
+      const newStatus = this.calcVoucherStatus(voucher.toObject());
+      if (voucher.status !== newStatus) {
+        voucher.status = newStatus;
+        await voucher.save();
+      }
+    }));
+
     return result;
   }
 
@@ -185,6 +194,15 @@ export default class VoucherService {
       sort: sortOption,
     });
 
+    // Tính lại status cho từng voucher
+    await Promise.all(result.docs.map(async (voucher) => {
+      const newStatus = this.calcVoucherStatus(voucher.toObject());
+      if (voucher.status !== newStatus) {
+        voucher.status = newStatus;
+        await voucher.save();
+      }
+    }));
+
     return result;
   }
 
@@ -192,6 +210,13 @@ export default class VoucherService {
     if (!Types.ObjectId.isValid(id)) throw new Error('Invalid voucher id');
     const voucher = await Voucher.findById(id);
     if (!voucher) return null;
+
+    // Tính lại status
+    const newStatus = this.calcVoucherStatus(voucher.toObject());
+    if (voucher.status !== newStatus) {
+      voucher.status = newStatus;
+      await voucher.save();
+    }
 
     const voucherObject: VoucherWithUsers = voucher.toObject();
 
@@ -268,7 +293,9 @@ export default class VoucherService {
     }
   }
 
-  static calcVoucherStatus(data: Partial<IVoucher>): 'active' | 'inactive' | 'expired' | 'out_of_stock' {
+  // Hàm tính toán status theo model
+  static calcVoucherStatus(data: Partial<IVoucher>): 'active' | 'inactive' | 'expired' | 'out_of_stock' | 'deleted' {
+    if (data.status === 'deleted') return 'deleted';
     const now = new Date();
     if (
       typeof data.quantity === 'number' &&
@@ -288,9 +315,40 @@ export default class VoucherService {
   }
 
   static async getPublicActiveVouchers(page = 1, limit = 12) {
-    const query = { type: 'public', status: { $in: ['active', 'out_of_stock'] } };
+    const now = new Date();
+    const query: any = {
+      type: 'public',
+      status: { $in: ['active', 'out_of_stock'] },
+      $and: [
+        {
+          $or: [
+            { start_date: { $exists: false } },
+            { start_date: { $lte: now } },
+            { start_date: null },
+          ],
+        },
+        {
+          $or: [
+            { end_date: { $exists: false } },
+            { end_date: { $gte: now } },
+            { end_date: null },
+          ],
+        },
+      ],
+    };
     const sortOption = { createdAt: -1 };
-    return await (Voucher as mongoose.PaginateModel<IVoucherDocument>).paginate(query, { page, limit, sort: sortOption });
+    const result = await (Voucher as mongoose.PaginateModel<IVoucherDocument>).paginate(query, { page, limit, sort: sortOption });
+
+    // Tính lại status cho từng voucher
+    await Promise.all(result.docs.map(async (voucher) => {
+      const newStatus = this.calcVoucherStatus(voucher.toObject());
+      if (voucher.status !== newStatus) {
+        voucher.status = newStatus;
+        await voucher.save();
+      }
+    }));
+
+    return result;
   }
 
   static async saveVoucherForUser(userId: string, voucherId: string): Promise<IUserVoucher> {
@@ -314,16 +372,26 @@ export default class VoucherService {
 
   static async getUserVouchers(userId: string) {
     if (!Types.ObjectId.isValid(userId)) throw new Error('Invalid user id');
-    
     const userVouchers = await UserVoucher.find({ user_id: userId })
-                                          .populate<{ voucher_id: IVoucherDocument }>('voucher_id')
-                                          .lean(); // Use lean for better performance
+      .populate<{ voucher_id: IVoucherDocument }>('voucher_id')
+      .lean(); // Use lean for better performance
+
+    // Tính lại status cho từng voucher
+    await Promise.all(userVouchers.map(async (uv) => {
+      if (uv.voucher_id) {
+        const newStatus = this.calcVoucherStatus(uv.voucher_id);
+        if (uv.voucher_id.status !== newStatus) {
+          await Voucher.findByIdAndUpdate(uv.voucher_id._id, { status: newStatus });
+          uv.voucher_id.status = newStatus;
+        }
+      }
+    }));
 
     return userVouchers
       .filter((uv) => uv.voucher_id)
       .map((uv) => {
-        // Since we used .lean(), uv is a plain object, not a Mongoose document
-        const { voucher_id, ...uvData } = uv;
+        const { voucher_id, ...uvDataRaw } = uv;
+        const uvData = uvDataRaw as { createdAt?: Date; updatedAt?: Date; status: string; _id: any };
         return {
           ...voucher_id,
           user_voucher_status: uvData.status,
@@ -337,7 +405,7 @@ export default class VoucherService {
   static async assignVoucherToUsers(voucher: IVoucherDocument, userIds: string[]) {
     if (!voucher || !Array.isArray(userIds) || userIds.length === 0) return;
 
-    await this.createUserVouchersForVoucher(voucher._id.toString(), userIds);
+    await this.createUserVouchersForVoucher((voucher._id as any).toString(), userIds);
 
     const users = await User.find({ _id: { $in: userIds } }).select('email').lean();
     if (!users || users.length === 0) return;

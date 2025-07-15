@@ -30,6 +30,7 @@ import DashboardRoutes from './routes/DashboardRoutes';
 import IngredientsRouter from './routes/IngredientsRouter';
 import VoucherRoutes from './routes/VoucherRoutes';
 import ReviewRoutes from './routes/ReviewRoutes';
+import LoyaltyRoutes from './routes/LoyaltyRoutes';
 
 import dotenv from 'dotenv';
 import connectDB from './config/db';
@@ -139,6 +140,7 @@ app.use('/api/favorite', AuthMiddleWare.verifyToken, FavoriteRoutes);
 app.use('/api/address', AuthMiddleWare.verifyToken, AddressRouter);
 app.use('/api/payment', PaymentRoutes);
 app.use('/api/review', ReviewRoutes);
+app.use('/api/loyalty', LoyaltyRoutes);
 
 app.use('/api/ingredients', AuthMiddleWare.verifyToken, IngredientsRouter);
 app.use('/api/inventory', AuthMiddleWare.verifyToken, InventoryRoutes);
