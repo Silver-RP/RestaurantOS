@@ -8,23 +8,27 @@ import { FaUsers } from 'react-icons/fa';
 import { GiKnifeFork } from 'react-icons/gi';
 import { useReservations } from '@/hooks/useReservations';
 import { holdTableApi } from '@/api/TableReservationApi';
+import PaymentMethodSelector,  { paymentMethods } from '../checkout/PaymentMethodSelector';
 
 type Step5DepositProps = {
   formData: ReservationFormData;
   onSuccess: () => void;
   onBack: () => void;
+  onPaymentMethodChange: (method: string | null) => void;
 };
 
 const Step5Deposit: React.FC<Step5DepositProps> = ({
   formData,
   onSuccess,
   onBack,
+  onPaymentMethodChange,
 }) => {
   const [depositAmount, setDepositAmount] = useState<number>(0);
   const [isPaying, setIsPaying] = useState(false);
   const [tableDeposit, setTableDeposit] = useState(0);
   const [guestDeposit, setGuestDeposit] = useState(0);
   const [foodDeposit, setFoodDeposit] = useState(0);
+  const [paymentMethod, setPaymentMethod] = useState<string>('');
 
   const { createReservation, confirmReservation } = useReservations();
 
@@ -113,6 +117,8 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
     }
   };
 
+  const filteredMethods = paymentMethods.filter(m => m.value !== 'CASH');
+
   return (
     <div className="bg-bodyBackground text-white py-8 px-2 flex items-center justify-center">
       <div className="max-w-2xl w-full mx-auto">
@@ -188,6 +194,20 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
           <span className="text-3xl font-bold text-secondaryColor drop-shadow-lg">
             {fCurrency(depositAmount)} ₫
           </span>
+        </div>
+
+        <div className="mt-4 mb-12 md:mt-6 flex flex-col md:flex-row md:gap-4">
+          {/* Phương thức thanh toán */}
+          <div className="flex-1 text-left ">
+            <PaymentMethodSelector
+              selectedMethod={paymentMethod}
+              onChange={(method) => {
+                setPaymentMethod(method || '');
+                onPaymentMethodChange(method);
+              }}
+              methods={filteredMethods}
+            />
+          </div>
         </div>
 
         {/* Nút điều hướng */}

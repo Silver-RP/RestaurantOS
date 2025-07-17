@@ -8,7 +8,7 @@ import {
   useHandleChangePaymentMethod,
 } from '@/hooks/useOrder';
 import { Order, OrderItem } from '@/types/Order.type';
-import PaymentMethodSelector from '../checkout/PaymentMethodSelector';
+import PaymentMethodSelector, { paymentMethods } from '../checkout/PaymentMethodSelector';
 import { FiDownload } from 'react-icons/fi';
 
 interface OrderDetailModalProps {
@@ -386,6 +386,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                             selectedMethod={selectedMethod}
                             onChange={setSelectedMethod}
                             size="sm"
+                            methods={paymentMethods}
                           />
                           <div className="flex gap-2 mt-2">
                             <button
