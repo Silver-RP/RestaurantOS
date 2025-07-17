@@ -12,13 +12,13 @@ const TableReservationService = {
     date: string,
     time: string,
   ) => {
-    const startTime = new Date(`${date}T${time}`);
-    const expireAt = new Date(startTime.getTime() + 2.5 * 60 * 60 * 1000); // +2.5 hours
+    const expireAt = new Date(Date.now() + 15 * 60 * 1000);
 
-    // Check for any existing hold/booking that overlaps
     const overlapping = await TableReservationStatus.findOne({
       table_code,
-      expireAt: { $gt: startTime },
+      date: date,
+      time: time,
+      expireAt: { $gt: new Date() },
     });
 
     if (overlapping) {
@@ -26,7 +26,6 @@ const TableReservationService = {
         table_code,
         date,
         time,
-        startTime,
         expireAt,
         overlapping,
       });
@@ -59,6 +58,50 @@ const TableReservationService = {
       status: 'holding',
     });
     return result;
+  },
+
+  bookTable: async (
+    table_code: string,
+    userId: Types.ObjectId | string,
+    reservation_id: Types.ObjectId,
+    date: string,
+    time: string,
+  ) => {
+    const bookingTime = new Date(`${date}T${time}`);
+    const expireAt = new Date(bookingTime.getTime() + 3 * 60 * 60 * 1000);
+
+    const result = await TableReservationStatus.findOneAndUpdate(
+      {
+        table_code,
+        heldBy: userId,
+        status: 'holding',
+        date: date,
+        time: time,
+      },
+      {
+        status: 'booked',
+        reservation_id: reservation_id,
+        expireAt: expireAt,
+      },
+      { new: true },
+    );
+
+    if (!result) {
+      throw new Error('Không tìm thấy trạng thái holding để chuyển thành booked');
+    }
+
+    console.log('[TableReservationService] Đã chuyển bàn từ holding thành booked:', result);
+    return result;
+  },
+
+  getTableStatus: async (table_code: string, date: string, time: string) => {
+    const status = await TableReservationStatus.findOne({
+      table_code,
+      date,
+      time,
+      expireAt: { $gt: new Date() },
+    }).lean();
+    return status;
   },
 };
 

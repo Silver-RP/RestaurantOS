@@ -2,6 +2,7 @@
 import { Router } from 'express';
 import {
   getAllTables,
+  getTablesByDateTime,
   getTableByCode,
   createTable,
   updateTable,
@@ -12,6 +13,7 @@ import {
 const router = Router();
 
 router.get('/', getAllTables);
+router.get('/by-datetime', getTablesByDateTime);
 router.get('/:code', getTableByCode);
 router.post('/', createTable);
 router.patch('/:code', updateTable);

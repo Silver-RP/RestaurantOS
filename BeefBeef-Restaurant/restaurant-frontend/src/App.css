@@ -1,0 +1,160 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  @apply font-sans text-white;
+  background-color: #012b40;
+}
+
+h1, h2, h3, h4, h5, h6 th {
+  @apply font-restora;
+  font-weight: 400
+}
+
+button {
+  @apply font-poppins uppercase tracking-wide;
+}
+
+p {
+  @apply font-roboto text-base leading-relaxed;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-custom {
+  scrollbar-width: thin;
+  scrollbar-color: #FFDEA0 transparent;
+}
+
+.scrollbar-custom::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background-color: #FFDEA0;
+  border-radius: 8px;
+  width: 1px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+  background-color: #F5B955;
+  width: 1px;
+}
+
+.force-line-clamp {
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 2 !important;
+  overflow: hidden !important;
+}
+
+/* Ẩn mũi tên trên input type number - Chrome, Safari, Edge */
+input.no-spinner::-webkit-outer-spin-button,
+input.no-spinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input.no-spinner[type='number'] {
+  -moz-appearance: textfield;
+}
+
+/* Fix autofill styles */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  box-shadow: 0 0 0px 1000px #002B40 inset !important;
+  -webkit-text-fill-color: white !important;
+}
+
+.custom-overlay {
+  background: rgba(0, 0, 0, 0.75) !important;
+  z-index: 9999 !important;
+}
+
+/* Hộp thông báo chính */
+.custom-ui {
+  background-color: #012B40;
+  color: white;
+  padding: 30px 24px;
+  border-radius: 12px;
+  max-width: 400px;
+  margin: auto;
+  text-align: center;
+  border: 1px solid #FFDEA0;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  font-family: 'Inter', sans-serif;
+}
+
+/* Tiêu đề */
+.custom-ui h1 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+/* Nội dung */
+.custom-ui p {
+  font-size: 15px;
+  margin-bottom: 20px;
+}
+
+/* Nút */
+.custom-ui button {
+  background-color: #FFDEA0; /* secondaryColor */
+  color: #0F1C2E; /* headerBackground */
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.custom-ui button:hover {
+  background-color: #fdd38a;
+}
+
+/* Content responsiveness for dynamic HTML */
+.prose img,
+.prose video {
+  max-width: 100%;
+  height: auto;
+  display: block; /* Remove extra space below images */
+}
+
+.prose table {
+  max-width: 100%;
+  display: block; /* Allows overflow-x to work on tables */
+  overflow-x: auto;
+  word-break: normal; /* Override break-words for table cells if needed */
+}
+
+.prose pre {
+  max-width: 100%;
+  overflow-x: auto;
+  word-break: normal;
+}
+
+/* Force word breaking for all elements within .prose */
+.prose * {
+  word-break: break-all;
+  overflow-wrap: break-word;
+}

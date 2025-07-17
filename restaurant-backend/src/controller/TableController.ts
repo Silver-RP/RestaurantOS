@@ -2,7 +2,7 @@
 import { Request, Response } from 'express';
 import TableService from '../services/TableService';
 
-export const getAllTables = async (_req: Request, res: Response) => {
+export const getAllTables = async (_req: Request, res: Response): Promise<void> => {
   try {
     const tables = await TableService.getAllTables();
     res.json({ success: true, data: tables });
@@ -12,11 +12,31 @@ export const getAllTables = async (_req: Request, res: Response) => {
   }
 };
 
-export const getTableByCode = async (req: Request, res: Response) => {
+export const getTablesByDateTime = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { date, time } = req.query;
+
+    if (!date || !time) {
+      res.status(400).json({
+        message: 'Date and time parameters are required',
+      });
+      return;
+    }
+
+    const tables = await TableService.getTablesByDateTime(date as string, time as string);
+    res.json({ success: true, data: tables });
+  } catch (error) {
+    console.error('Get tables by date time error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const getTableByCode = async (req: Request, res: Response): Promise<void> => {
   try {
     const table = await TableService.getTableByCode(req.params.code);
     if (!table) {
-      return res.status(404).json({ message: 'Table not found' });
+      res.status(404).json({ message: 'Table not found' });
+      return;
     }
     res.json({ success: true, data: table });
   } catch (error) {
@@ -25,7 +45,7 @@ export const getTableByCode = async (req: Request, res: Response) => {
   }
 };
 
-export const createTable = async (req: Request, res: Response) => {
+export const createTable = async (req: Request, res: Response): Promise<void> => {
   try {
     const table = await TableService.createTable(req.body);
     res.status(201).json({ success: true, data: table });
@@ -35,7 +55,7 @@ export const createTable = async (req: Request, res: Response) => {
   }
 };
 
-export const updateTable = async (req: Request, res: Response) => {
+export const updateTable = async (req: Request, res: Response): Promise<void> => {
   try {
     const updated = await TableService.updateTable(req.params.code, req.body);
     res.json({ success: true, data: updated });
@@ -45,7 +65,7 @@ export const updateTable = async (req: Request, res: Response) => {
   }
 };
 
-export const toggleTableAvailability = async (req: Request, res: Response) => {
+export const toggleTableAvailability = async (req: Request, res: Response): Promise<void> => {
   try {
     const result = await TableService.toggleTableAvailability(req.params.code);
     res.json({ success: true, data: result });
@@ -55,7 +75,7 @@ export const toggleTableAvailability = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteTable = async (req: Request, res: Response) => {
+export const deleteTable = async (req: Request, res: Response): Promise<void> => {
   try {
     const deleted = await TableService.deleteTable(req.params.code);
     res.json({ success: true, data: deleted });

@@ -5,9 +5,10 @@ import { Dish } from '../models/DishModel';
 import MailerService from './MailerService';
 import TableReservationService from './TableReservationService';
 import { IUser } from '../models/UserModel';
+import { Table } from '../models/TableModel';
 
 class ReservationService {
-  async createReservation(data: any, userId: Types.ObjectId) {
+  async createReservation(data: any, userId: Types.ObjectId | null) {
     try {
       const {
         full_name,
@@ -28,7 +29,7 @@ class ReservationService {
       console.log('[ReservationService] Bắt đầu tạo reservation với data:', data);
 
       const newReservation = new Reservation({
-        user_id: userId,
+        user_id: userId, // Có thể là null cho khách không đăng nhập
         full_name,
         phone,
         date,
@@ -51,17 +52,25 @@ class ReservationService {
         throw err;
       }
 
-      // giữ bàn nếu có table_code
-      if (table_code) {
-        try {
-          await TableReservationService.holdTable(table_code, userId, date, time);
-          console.log('[ReservationService] Đã giữ bàn thành công:', table_code);
-        } catch (holdErr) {
-          console.error('[ReservationService] Lỗi khi giữ bàn:', holdErr);
-          await Reservation.findByIdAndDelete(savedReservation._id); // rollback
-          throw new Error('Không thể giữ bàn');
-        }
-      }
+      // giữ bàn nếu có table_code (bàn đã được hold từ Step2Seating)
+      // if (table_code) {
+      //   try {
+      //     // Sử dụng userId hoặc một ID tạm thời cho khách không đăng nhập
+      //     const holdUserId =
+      //       userId || `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      //     await TableReservationService.holdTable(table_code, holdUserId, date, time);
+      //     console.log('[ReservationService] Đã giữ bàn thành công:', table_code);
+      //   } catch (holdErr) {
+      //     console.error('[ReservationService] Lỗi khi giữ bàn:', holdErr);
+      //     if (savedReservation && savedReservation._id) {
+      //       const reservationId = typeof savedReservation._id === 'string'
+      //         ? savedReservation._id
+      //         : (savedReservation._id as Types.ObjectId).toString();
+      //       await Reservation.findByIdAndDelete(reservationId); // rollback
+      //     }
+      //     throw new Error('Không thể giữ bàn');
+      //   }
+      // }
 
       if (Array.isArray(selectedItems) && selectedItems.length > 0) {
         try {
@@ -90,6 +99,32 @@ class ReservationService {
             reservation_id: savedReservation._id,
           }).lean();
 
+          // Lấy tên loại bàn hiển thị
+          let seatingTypeDisplay = table_type;
+          if (table_code) {
+            const table = await Table.findOne({ code: table_code }).lean();
+            if (table) {
+              let typeName = '';
+              switch (table.type) {
+                case 'standard':
+                  typeName = 'Bàn thường';
+                  break;
+                case 'group':
+                  typeName = 'Bàn nhóm';
+                  break;
+                case 'quiet':
+                  typeName = 'Bàn yên tĩnh';
+                  break;
+                case 'vip':
+                  typeName = 'Bàn VIP';
+                  break;
+                default:
+                  typeName = table.type;
+              }
+              seatingTypeDisplay = `${table.code} (${typeName})`;
+            }
+          }
+
           const emailData = {
             _id: savedReservation._id.toString(),
             user: { email } as IUser,
@@ -98,8 +133,9 @@ class ReservationService {
             email,
             time,
             date,
-            seating_type: table_type,
+            seating_type: seatingTypeDisplay,
             table_count: 1,
+            number_of_people: number_of_people,
             note,
             items: reservationItems.map((item) => ({
               name: item.dish_name,
@@ -120,6 +156,42 @@ class ReservationService {
     } catch (error: any) {
       console.error('❌ Error in createReservation:', error);
       throw new Error('Không thể tạo đơn đặt bàn');
+    }
+  }
+
+  async confirmReservation(reservationId: Types.ObjectId, userId: Types.ObjectId | null) {
+    try {
+      const reservation = await Reservation.findById(reservationId);
+      if (!reservation) {
+        throw new Error('Không tìm thấy reservation');
+      }
+
+      reservation.status = 'CONFIRMED';
+      await reservation.save();
+
+      if (reservation.table_type) {
+        try {
+          const table_code = reservation.table_type;
+          const holdUserId =
+            userId || `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+          await TableReservationService.bookTable(
+            table_code,
+            holdUserId,
+            reservationId,
+            reservation.date,
+            reservation.time,
+          );
+          console.log('[ReservationService] Đã chuyển bàn thành booked:', table_code);
+        } catch (bookErr) {
+          console.error('[ReservationService] Lỗi khi chuyển bàn thành booked:', bookErr);
+        }
+      }
+
+      return reservation;
+    } catch (error) {
+      console.error('[ReservationService] Lỗi khi confirm reservation:', error);
+      throw error;
     }
   }
 
