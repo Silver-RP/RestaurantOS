@@ -186,8 +186,6 @@ export interface OrderQueryParams {
   status?: Status[];
   page?: number;
   limit?: number;
-  sortBy?: string;
-  sortOrder?: string;
   searchTerm?: string;
   sortType?: 'newest' | 'oldest';
 }

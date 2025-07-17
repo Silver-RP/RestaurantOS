@@ -3,36 +3,21 @@ import ArticleCard from './PostComponent';
 import { FaDiamond } from 'react-icons/fa6';
 import ButtonComponents from '../../../common/ButtonComponents';
 import React from 'react';
+import { usePosts } from '../../../../hooks/usePosts';
 
 const Postcomponent = () => {
   const isMobileOrTablet = useMediaQuery({ maxWidth: 1024 });
+  const { data: postsData, isLoading, error } = usePosts({ limit: 3, sortBy: 'createdAt', sortOrder: 'desc', status: 'published' });
 
-  const articles = [
-    {
-      date: '18 FEB 2022',
-      title: 'Cách chế biến beefsteak ngon miệng tại nhà',
-      category: 'Thực phẩm lành mạnh, tin tức',
-      description:
-        'Hãy giữ vị trí và thể hiện phong cách của bạn. Với các công thức nấu ăn, không gì có thể thỏa mãn hơn. Chúng tôi khuyến khích sức khỏe và hương vị đặc biệt.',
-      image: '/assets/images/Post.jpg',
-    },
-    {
-      date: '18 MAY 2022',
-      title: 'Xu hướng món ăn hiện đại ngày nay',
-      category: 'Thực phẩm lành mạnh, tin tức',
-      description:
-        'Mở rộng vị giác, khám phá phong cách hiện đại từ nhà hàng của chúng tôi. Mỗi hương vị đều chứa đựng sự sáng tạo độc đáo từ đầu bếp của chúng tôi.',
-      image: '/assets/images/Post.jpg',
-    },
-    {
-      date: '18 FEB 2022',
-      title: 'Cách thưởng thức món ăn tại nhà hàng của chúng tôi',
-      category: 'Thực phẩm lành mạnh, tin tức',
-      description:
-        'Tạo ra những khoảnh khắc tuyệt vời trong ẩm thực. Những món ăn từ nguyên liệu tự nhiên không chỉ tốt cho sức khỏe mà còn đầy thú vị.',
-      image: '/assets/images/Post.jpg',
-    },
-  ];
+  if (isLoading) {
+    return <div className="text-white text-center">Đang tải bài viết...</div>;
+  }
+
+  if (error) {
+    return <div className="text-red-500 text-center">Lỗi khi tải bài viết: {error.message}</div>;
+  }
+
+  const articlesToDisplay = postsData?.docs || [];
 
   return (
     <div className="bg-[#012B40] text-white py-10 h-auto flex flex-col justify-center items-center">
@@ -55,19 +40,23 @@ const Postcomponent = () => {
 
         {isMobileOrTablet ? (
           <div className="w-full flex overflow-x-auto space-x-4 snap-x snap-mandatory">
-            {articles.map((article, index) => (
+            {articlesToDisplay.map((article, index) => (
               <div
-                key={index}
+                key={article._id}
                 className="flex-none w-[90%] max-w-[330px] h-[477px] bg-[#012B40] rounded-lg shadow-none snap-center"
               >
                 <div className="relative w-full h-[200px]">
                   <img
-                    src={article.image}
+                    src={article.images?.[0] || '/assets/images/default-post.jpg'}
                     alt={article.title}
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute left-0 bg-[#FFDEA0] text-black text-xs font-bold flex items-center justify-center top-2 w-[100px] h-[25px]">
-                    {article.date}
+                    {new Date(article.createdAt).toLocaleDateString('en-US', {
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
                   </div>
                 </div>
                 <div className="p-4 flex-grow flex flex-col mt-4 h-[277px]">
@@ -75,13 +64,13 @@ const Postcomponent = () => {
                     {article.title}
                   </h3>
                   <p className="text-sm text-[#FFDEA0] mb-4 text-left text-[10px]">
-                    {article.category}
+                    {article.categories_id.Cate_name}
                   </p>
                   <p className="text-sm mb-4 flex-grow text-left text-[10px]">
-                    {article.description}
+                    {article.desc}
                   </p>
                   <div className="mt-auto">
-                    <ButtonComponents variant="filled" size="small">
+                    <ButtonComponents variant="filled" size="small" onClick={() => window.location.href = `/post-details/${article._id}`}>
                       ĐỌC THÊM
                     </ButtonComponents>
                   </div>
@@ -91,8 +80,8 @@ const Postcomponent = () => {
           </div>
         ) : (
           <div className="grid md:grid-cols-3 gap-6">
-            {articles.map((article, index) => (
-              <ArticleCard key={index} article={article} />
+            {articlesToDisplay.map((article) => (
+              <ArticleCard key={article._id} article={article} />
             ))}
           </div>
         )}

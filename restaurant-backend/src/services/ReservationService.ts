@@ -3,12 +3,9 @@ import { ReservationDetail } from '../models/ReservationDetailModel';
 import { Types } from 'mongoose';
 import { Dish } from '../models/DishModel';
 import MailerService from './MailerService';
-import TableReservationService from './TableReservationService';
-import { IUser } from '../models/UserModel';
-import { Table } from '../models/TableModel';
 
 class ReservationService {
-  async createReservation(data: any, userId: Types.ObjectId | null) {
+  async createReservation(data: any, userId: Types.ObjectId) {
     try {
       const {
         full_name,
@@ -17,19 +14,14 @@ class ReservationService {
         time,
         table_type,
         number_of_people,
-        table_code,
         note,
         is_choose_later,
         email,
         selectedItems = [],
-        deposit,
-        room_type,
       } = data;
 
-      console.log('[ReservationService] Bắt đầu tạo reservation với data:', data);
-
       const newReservation = new Reservation({
-        user_id: userId, // Có thể là null cho khách không đăng nhập
+        user_id: userId,
         full_name,
         phone,
         date,
@@ -39,159 +31,64 @@ class ReservationService {
         note,
         is_choose_later,
         status: 'PENDING',
-        deposit,
-        room_type,
       });
 
-      let savedReservation;
-      try {
-        savedReservation = await newReservation.save();
-        console.log('[ReservationService] Đã lưu reservation:', savedReservation?._id);
-      } catch (err) {
-        console.error('[ReservationService] Lỗi khi lưu reservation:', err);
-        throw err;
-      }
-
-      // giữ bàn nếu có table_code (bàn đã được hold từ Step2Seating)
-      // if (table_code) {
-      //   try {
-      //     // Sử dụng userId hoặc một ID tạm thời cho khách không đăng nhập
-      //     const holdUserId =
-      //       userId || `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      //     await TableReservationService.holdTable(table_code, holdUserId, date, time);
-      //     console.log('[ReservationService] Đã giữ bàn thành công:', table_code);
-      //   } catch (holdErr) {
-      //     console.error('[ReservationService] Lỗi khi giữ bàn:', holdErr);
-      //     if (savedReservation && savedReservation._id) {
-      //       const reservationId = typeof savedReservation._id === 'string'
-      //         ? savedReservation._id
-      //         : (savedReservation._id as Types.ObjectId).toString();
-      //       await Reservation.findByIdAndDelete(reservationId); // rollback
-      //     }
-      //     throw new Error('Không thể giữ bàn');
-      //   }
-      // }
+      const savedReservation = await newReservation.save();
 
       if (Array.isArray(selectedItems) && selectedItems.length > 0) {
-        try {
-          const detailDocs = selectedItems.map((item: any) => ({
-            reservation_id: savedReservation._id,
-            dish_id: item.id,
-            dish_name: item.name,
-            category: item.category,
-            unit_price: item.price,
-            quantity: item.quantity,
-            total_amount: item.price * item.quantity,
-            note: item.note || '',
-          }));
+        const detailDocs = selectedItems.map((item: any) => ({
+          reservation_id: savedReservation._id,
+          dish_id: item.id,
+          dish_name: item.name,
+          category: item.category,
+          unit_price: item.price,
+          quantity: item.quantity,
+          total_amount: item.price * item.quantity,
+          note: item.note || '',
+        }));
 
-          await ReservationDetail.insertMany(detailDocs);
-          console.log('[ReservationService] Đã lưu chi tiết món ăn:', detailDocs.length);
-        } catch (err) {
-          console.error('[ReservationService] Lỗi khi lưu chi tiết món ăn:', err);
-          throw err;
-        }
+        await ReservationDetail.insertMany(detailDocs);
       }
 
       if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        console.log('📧 Starting email sending process for reservation:', savedReservation._id);
+
+        const reservationItems = await ReservationDetail.find({
+          reservation_id: savedReservation._id,
+        }).lean();
+        console.log('📦 Found reservation items:', reservationItems);
+
+        const emailData = {
+          _id: savedReservation._id.toString(),
+          user: { email } as IUser,
+          full_name,
+          phone,
+          email,
+          time,
+          date,
+          seating_type: table_type,
+          table_count: 1,
+          note,
+          items: reservationItems.map((item) => ({
+            name: item.dish_name,
+            quantity: item.quantity,
+            price: item.unit_price,
+          })),
+        };
+        console.log('📨 Email data prepared:', emailData);
+
         try {
-          const reservationItems = await ReservationDetail.find({
-            reservation_id: savedReservation._id,
-          }).lean();
-
-          // Lấy tên loại bàn hiển thị
-          let seatingTypeDisplay = table_type;
-          if (table_code) {
-            const table = await Table.findOne({ code: table_code }).lean();
-            if (table) {
-              let typeName = '';
-              switch (table.type) {
-                case 'standard':
-                  typeName = 'Bàn thường';
-                  break;
-                case 'group':
-                  typeName = 'Bàn nhóm';
-                  break;
-                case 'quiet':
-                  typeName = 'Bàn yên tĩnh';
-                  break;
-                case 'vip':
-                  typeName = 'Bàn VIP';
-                  break;
-                default:
-                  typeName = table.type;
-              }
-              seatingTypeDisplay = `${table.code} (${typeName})`;
-            }
-          }
-
-          const emailData = {
-            _id: savedReservation._id.toString(),
-            user: { email } as IUser,
-            full_name,
-            phone,
-            email,
-            time,
-            date,
-            seating_type: seatingTypeDisplay,
-            table_count: 1,
-            number_of_people: number_of_people,
-            note,
-            items: reservationItems.map((item) => ({
-              name: item.dish_name,
-              quantity: item.quantity,
-              price: item.unit_price,
-            })),
-          };
-
           await MailerService.sendReservationConfirmation(emailData);
-          console.log('[ReservationService] Đã gửi email xác nhận.');
+          console.log('✅ Email sent successfully');
         } catch (emailError) {
-          console.error('[ReservationService] Lỗi khi gửi email:', emailError);
-          // Không throw để không chặn tạo đơn
+          console.error('❌ Error sending email:', emailError);
+          // Don't throw error here to not block reservation creation
         }
       }
-      console.log('[ReservationService] Hoàn tất tạo reservation:', savedReservation?._id);
       return savedReservation;
     } catch (error: any) {
       console.error('❌ Error in createReservation:', error);
       throw new Error('Không thể tạo đơn đặt bàn');
-    }
-  }
-
-  async confirmReservation(reservationId: Types.ObjectId, userId: Types.ObjectId | null) {
-    try {
-      const reservation = await Reservation.findById(reservationId);
-      if (!reservation) {
-        throw new Error('Không tìm thấy reservation');
-      }
-
-      reservation.status = 'CONFIRMED';
-      await reservation.save();
-
-      if (reservation.table_type) {
-        try {
-          const table_code = reservation.table_type;
-          const holdUserId =
-            userId || `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-          await TableReservationService.bookTable(
-            table_code,
-            holdUserId,
-            reservationId,
-            reservation.date,
-            reservation.time,
-          );
-          console.log('[ReservationService] Đã chuyển bàn thành booked:', table_code);
-        } catch (bookErr) {
-          console.error('[ReservationService] Lỗi khi chuyển bàn thành booked:', bookErr);
-        }
-      }
-
-      return reservation;
-    } catch (error) {
-      console.error('[ReservationService] Lỗi khi confirm reservation:', error);
-      throw error;
     }
   }
 

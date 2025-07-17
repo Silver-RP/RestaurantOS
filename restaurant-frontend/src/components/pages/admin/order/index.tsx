@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+<<<<<<< HEAD
 import React, { useState, useRef, useEffect } from 'react';
 import Invoice from '../invoice/templateInvoice';
+=======
+import React, { useState } from 'react';
+>>>>>>> restore-783a07c
 import { useSearchParams } from 'react-router-dom';
 import {
   FaSort,
@@ -8,7 +12,6 @@ import {
   FaArrowDown,
   FaSearch,
   FaEye,
-  FaEllipsisV,
 } from 'react-icons/fa';
 import { useAllOrders } from '@/hooks/useOrder';
 import AdminPagination from '../AdminPagination';
@@ -28,6 +31,7 @@ const OrderTable: React.FC = () => {
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [search, setSearch] = useState(searchParams.get('keyword') || '');
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+<<<<<<< HEAD
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
   const [menuDirection, setMenuDirection] = useState<'down' | 'up'>('down');
   const [menuPosition, setMenuPosition] = useState<{top: number, left: number} | null>(null);
@@ -35,6 +39,8 @@ const OrderTable: React.FC = () => {
   const buttonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const [showInvoice, setShowInvoice] = useState(false);
   const [invoiceData, setInvoiceData] = useState<any>(null);
+=======
+>>>>>>> restore-783a07c
 
   const {
     data: orders,
@@ -120,6 +126,17 @@ const OrderTable: React.FC = () => {
     }
   };
 
+  // const getOrderTypeText = (type: string) => {
+  //   switch (type) {
+  //     case 'ONLINE':
+  //       return 'Online';
+  //     case 'OFFLINE':
+  //       return 'Tại cửa hàng';
+  //     default:
+  //       return type;
+  //   }
+  // };
+
   const getCustomerName = (order: AllOrder) => {
     if (order.address_id?.full_name) {
       const name = order.address_id?.full_name;
@@ -161,58 +178,6 @@ const OrderTable: React.FC = () => {
 
   const handleCloseOrderDetail = () => {
     setSelectedOrderId(null);
-  };
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        handleMenuClose();
-      }
-    };
-
-    if (menuOpenId) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [menuOpenId]);
-  
-  const handleMenuToggle = (orderId: string) => {
-    if (menuOpenId === orderId) {
-      setMenuOpenId(null);
-      setMenuPosition(null);
-      return;
-    }
-    setTimeout(() => {
-      const btn = buttonRefs.current[orderId];
-      if (btn) {
-        const rect = btn.getBoundingClientRect();
-        const menuHeight = 160;
-        const spaceBelow = window.innerHeight - rect.bottom;
-        const spaceAbove = rect.top;
-        let top = 0;
-        let direction: 'down' | 'up' = 'down';
-        if (spaceBelow < menuHeight && spaceAbove > menuHeight) {
-          top = rect.top - menuHeight;
-          direction = 'up';
-        } else {
-          top = rect.bottom;
-          direction = 'down';
-        }
-        setMenuDirection(direction);
-        setMenuPosition({
-          top,
-          left: rect.right - 180 
-        });
-      }
-    }, 0);
-    setMenuOpenId(orderId);
-  };
-  const handleMenuClose = () => {
-    setMenuOpenId(null);
-    setMenuPosition(null);
   };
 
   return (

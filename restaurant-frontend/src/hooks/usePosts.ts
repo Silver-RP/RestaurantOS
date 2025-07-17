@@ -2,26 +2,30 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import PostsApi, { PostsResponse, PostsQueryParams } from '../api/PostsApi';
 import { toast } from 'react-toastify';
 import { useSearchParams } from 'react-router-dom';
+import { PostType } from '../types/PostType';
 
 export const POSTS_QUERY_KEY = ['posts'];
 
-export const usePosts = () => {
+export const usePosts = (initialParams?: PostsQueryParams) => {
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const page = Number(searchParams.get('page')) || 1;
-  const limit = Number(searchParams.get('limit')) || 10;
-  const search = searchParams.get('search') || '';
-  const sortBy = searchParams.get('sortBy') || 'createdAt';
-  const sortOrder = searchParams.get('sortOrder') || 'desc';
+  const page = Number(searchParams.get('page')) || initialParams?.page || 1;
+  const limit = Number(searchParams.get('limit')) || initialParams?.limit || 10;
+  const search = searchParams.get('search') || initialParams?.search || '';
+  const sortBy = searchParams.get('sortBy') || initialParams?.sortBy || 'createdAt';
+  const sortOrder = (searchParams.get('sortOrder') || initialParams?.sortOrder || 'desc') as 'asc' | 'desc';
+  const status = initialParams?.status !== undefined ? initialParams.status : searchParams.get('status') || undefined; // Prioritize initialParams for status
 
   const queryParams: PostsQueryParams = {
     page,
     limit,
     search,
     sortBy,
-    sortOrder: sortOrder as 'asc' | 'desc'
+    sortOrder,
+    status,
   };
+  console.log('Fetching posts with queryParams:', queryParams);
 
   const { data, isLoading: isLoadingPosts, error } = useQuery({
     queryKey: [...POSTS_QUERY_KEY, queryParams],

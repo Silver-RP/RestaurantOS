@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 export interface IReservation extends mongoose.Document {
-  user_id?: mongoose.Types.ObjectId | null;
+  user_id: mongoose.Types.ObjectId;
   full_name: string;
   phone: string;
   date: string;
@@ -11,8 +11,6 @@ export interface IReservation extends mongoose.Document {
   note?: string;
   is_choose_later: boolean;
   status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'DONE';
-  deposit?: number;
-  room_type?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }

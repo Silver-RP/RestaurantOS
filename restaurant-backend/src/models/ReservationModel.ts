@@ -3,7 +3,7 @@ import { IReservation } from '../types/reservation.types';
 
 const reservationSchema = new mongoose.Schema<IReservation>(
   {
-    user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },
+    user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     full_name: { type: String, required: true },
     phone: { type: String, required: true },
     date: { type: String, required: true },
@@ -17,8 +17,6 @@ const reservationSchema = new mongoose.Schema<IReservation>(
       enum: ['PENDING', 'CONFIRMED', 'CANCELLED', 'DONE'],
       default: 'PENDING',
     },
-    deposit: { type: Number, default: 0 },
-    room_type: { type: String, default: '' },
   },
   { timestamps: true },
 );

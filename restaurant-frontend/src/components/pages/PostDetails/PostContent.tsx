@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   FaShareAlt,
   FaFacebookF,
@@ -17,6 +17,8 @@ import { usePostById } from '../../../hooks/usePosts';
 import { useAuth } from '../../../hooks/useAuth';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import ReportModal from '../../../components/common/modals/ReportModal';
+import PostReportApi from '../../../api/PostReportApi';
 
 interface PostContentProps {
   post: PostType;
@@ -36,6 +38,7 @@ const PostContent: React.FC<PostContentProps> = ({ post }) => {
   const { isAuthenticated } = useAuth();
   const { isLiked, likesCount, toggleLike } = usePostById(post._id);
   const navigate = useNavigate();
+  const [showReportModal, setShowReportModal] = useState(false); // State for report modal
   const tags = post.tags && post.tags.length > 0 ? post.tags : DEFAULT_TAGS;
   console.log(tags);
 
@@ -52,6 +55,24 @@ const PostContent: React.FC<PostContentProps> = ({ post }) => {
     navigate(`/posts/tag/${encodeURIComponent(tag)}`);
   };
 
+  const handleReportClick = () => {
+    if (!isAuthenticated) {
+      toast.info('Vui lòng đăng nhập để báo cáo bài viết');
+      return;
+    }
+    setShowReportModal(true);
+  };
+
+  const handleReportSubmit = async (reportContent: string) => {
+    try {
+      await PostReportApi.createReport({ post_id: post._id, reason: reportContent });
+      toast.success('Báo cáo của bạn đã được gửi. Cảm ơn phản hồi của bạn!');
+      setShowReportModal(false);
+    } catch (error: any) {
+      toast.error('Gửi báo cáo thất bại!');
+    }
+  };
+
   return (
     <section className="bg-[#012B40] text-white lg:py-16 px-6">
       <div className="max-w-full lg:max-w-4xl mx-auto px-4 sm:px-6">
@@ -62,7 +83,10 @@ const PostContent: React.FC<PostContentProps> = ({ post }) => {
           <button className="bg-white text-black px-3 py-1.5 text-xs flex items-center gap-1">
             <FaShareAlt /> Chia sẻ
           </button>
-          <button className="bg-white text-black px-3 py-1.5 text-xs flex items-center gap-1">
+          <button
+            className="bg-white text-black px-3 py-1.5 text-xs flex items-center gap-1"
+            onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank')}
+          >
             <FaFacebookF /> Facebook
           </button>
           <button className="bg-white text-black px-3 py-1.5 text-xs flex items-center gap-1">
@@ -75,9 +99,7 @@ const PostContent: React.FC<PostContentProps> = ({ post }) => {
           <span className="flex items-center gap-2">
             <FaUser /> Đăng bởi: <strong>{post.user_id.username}</strong>
           </span>
-          <span className="flex items-center gap-2">
-            <IoList /> Chủ đề: {post.categories_id.Cate_name}
-          </span>
+      
           <span className="flex items-center gap-2">
             <MdOutlineAccessTime />
             Ngày:{' '}
@@ -91,13 +113,19 @@ const PostContent: React.FC<PostContentProps> = ({ post }) => {
           <span className="flex items-center gap-2">
           <PiEyesDuotone /> Lượt xem: {post.views || 0}
           </span>
+          
           <button 
   onClick={handleLikeClick}
   className="flex items-center gap-2 hover:text-blue-400 transition-colors normal-case"
 >
   {isLiked ? <AiFillLike className="text-blue-400" /> : <AiOutlineLike />} Like: {likesCount}
 </button>
-
+<button
+  onClick={handleReportClick}
+  className="flex items-center gap-2 hover:text-blue-400 transition-colors normal-case"
+>
+            <IoList /> Báo cáo {post.categories_id.Cate_name}
+</button>
         </div>
 
         {/* Hình ảnh */}
@@ -191,6 +219,13 @@ const PostContent: React.FC<PostContentProps> = ({ post }) => {
         {/* Phần bình luận */}
         <CommentSection postId={post._id} />
       </div>
+      <ReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        onSubmit={handleReportSubmit}
+        title="Báo cáo bài viết"
+        placeholder="Nhập nội dung báo cáo tại đây..."
+      />
     </section>
   );
 };
