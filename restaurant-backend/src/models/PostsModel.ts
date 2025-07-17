@@ -15,6 +15,7 @@ export interface IPost extends mongoose.Document {
   createdAt: Date;
   updatedAt: Date;
   tags: string[];
+  scheduledAt?: Date; // New field for scheduled publishing
 }
 
 const postSchema = new mongoose.Schema<IPost>({
@@ -47,6 +48,7 @@ const postSchema = new mongoose.Schema<IPost>({
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
   tags: [{ type: String }],
+  scheduledAt: { type: Date, default: null }, // Initialize as null or undefined
 });
 
 export const Post = mongoose.model<IPost>('Post', postSchema);

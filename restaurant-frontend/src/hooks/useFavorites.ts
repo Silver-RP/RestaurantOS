@@ -11,7 +11,7 @@ import {
   addFavorite,
   removeFavoriteSuccess,
 } from '@/redux/feature/favorite/favoriteSlice';
-import Cookies from 'js-cookie';
+import Cookies from 'js-cookie'; 
 
 import { useFetchFavorites } from './useFetchFavorites'; // 👈
 
@@ -31,6 +31,7 @@ export const useFavorites = () => {
       return;
     }
 
+  
     try {
       const response = await addFavoriteApi(dishId);
       dispatch(addFavorite(response.data));

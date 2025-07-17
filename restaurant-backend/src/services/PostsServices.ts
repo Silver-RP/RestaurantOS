@@ -9,7 +9,7 @@ import { Types } from 'mongoose';
 import UploadImageService from '../services/UploadImageService';
 
 class PostsService {
-  async getAllPosts(page = 1, limit = 10, search = '', sortBy = 'createdAt', sortOrder: 'asc' | 'desc' = 'desc') {
+  async getAllPosts(page = 1, limit = 10, search = '', sortBy = 'createdAt', sortOrder: 'asc' | 'desc' = 'desc', status?: string) {
     try {
       const query: any = {};
       
@@ -19,6 +19,11 @@ class PostsService {
           { title: { $regex: search, $options: 'i' } },
           { desc: { $regex: search, $options: 'i' } }
         ];
+      }
+
+      // Add status filter
+      if (status) {
+        query.status = status;
       }
 
       const skip = (page - 1) * limit;
@@ -89,7 +94,7 @@ class PostsService {
   }
   async createPost(req: Request, userId: string) {
     try {
-      const { title, desc, content, categories_id, status = 'draft', images: imageUrls, tags } = req.body;
+      const { title, desc, content, categories_id, status = 'draft', images: imageUrls, tags, scheduledAt } = req.body;
       
       let images: string[] = [];
 
@@ -167,8 +172,9 @@ class PostsService {
         images,
         categories_id: new Types.ObjectId(categories_id),
         user_id: userId,
-        status,
+        status: scheduledAt ? 'draft' : status, // If scheduled, set status to draft initially
         tags: Array.isArray(tags) ? tags : (typeof tags === 'string' ? JSON.parse(tags) : []),
+        scheduledAt: scheduledAt ? new Date(scheduledAt) : null, // Save scheduledAt if provided
       });
 
       return post;
@@ -200,8 +206,24 @@ class PostsService {
         content: req.body.content,
         categories_id: req.body.categories_id,
         status: req.body.status || post.status,
-        updatedAt: new Date()
+        updatedAt: new Date(),
+        tags: Array.isArray(req.body.tags) ? req.body.tags : (typeof req.body.tags === 'string' ? JSON.parse(req.body.tags) : []), // Ensure tags are updated correctly
       };
+
+      // Handle scheduledAt logic during update
+      if (req.body.scheduledAt) {
+        updateData.scheduledAt = new Date(req.body.scheduledAt);
+        // If a scheduledAt is set, ensure status is draft until published by cron
+        updateData.status = 'draft'; 
+      } else if (req.body.status === 'published' && post.scheduledAt) {
+        // If status is explicitly set to published and there was a scheduledAt, clear scheduledAt
+        updateData.scheduledAt = null;
+      } else if (req.body.status === 'published' && !req.body.scheduledAt) {
+        updateData.scheduledAt = null;
+      } else if (req.body.status === 'draft' && !req.body.scheduledAt && post.scheduledAt) {
+        // If status is draft but scheduledAt is cleared, explicitly set scheduledAt to null
+        updateData.scheduledAt = null;
+      }
 
       // If slug should be updated (e.g., if title changed)
       if (req.body.title) {
@@ -421,6 +443,26 @@ class PostsService {
       prevPage: page > 1 ? page - 1 : null,
       nextPage: page < totalPages ? page + 1 : null
     };
+  }
+
+  async publishScheduledPosts() {
+    try {
+      const now = new Date();
+      const result = await Post.updateMany(
+        {
+          status: 'draft',
+          scheduledAt: { $ne: null, $lte: now },
+        },
+        {
+          $set: { status: 'published', scheduledAt: null }, // Set status to published and clear scheduledAt
+          updatedAt: now,
+        }
+      );
+      return result;
+    } catch (error) {
+      console.error('Error publishing scheduled posts:', error);
+      throw error;
+    }
   }
 }
 

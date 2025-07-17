@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import {
   FaHome,
@@ -14,7 +13,7 @@ import {
   FaCartPlus,
   FaImage,
   FaTicketAlt,
-  FaChevronDown,
+  FaBell,
 } from 'react-icons/fa';
 import { GiHotMeal, GiWheat } from 'react-icons/gi';
 import { FaCalendarAlt } from 'react-icons/fa';
@@ -26,9 +25,8 @@ import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@/redux/hook';
 
-const AdminLayout = () => {
+const AdminLayout: React.FC = () => {
   const { isSidebarOpen, toggleSidebarExtend } = useAdminSidebar();
-  const [isReservationOpen, setIsReservationOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -42,22 +40,23 @@ const AdminLayout = () => {
   };
 
   const handleLogout = async () => {
+
     const userInfo = JSON.parse(Cookies.get('userInfo') || '{}');
 
     if (userInfo) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (window as any).google?.accounts.id.disableAutoSelect?.();
-      Cookies.remove('userInfo');
-      localStorage.removeItem('token');
-      clearAuthData();
-      setTimeout(() => {
-        navigate('/admin/login');
-      }, 1000);
+        (window as any).google?.accounts.id.disableAutoSelect?.();
+        Cookies.remove('userInfo');
+        localStorage.removeItem('token');
+        clearAuthData();
+        setTimeout(() => {
+          navigate('/admin/login'); 
+        }, 1000);
       return;
     }
+    
 
     try {
-      await dispatch(LogoutUser()).unwrap();
+      await dispatch(LogoutUser()).unwrap(); 
       console.log('LogoutUser called');
     } catch (err) {
       console.error('Logout failed:', err);
@@ -66,10 +65,6 @@ const AdminLayout = () => {
         navigate('/admin/login');
       }, 100);
     }
-  };
-
-  const toggleReservation = () => {
-    setIsReservationOpen(!isReservationOpen);
   };
 
   return (
@@ -96,7 +91,7 @@ const AdminLayout = () => {
             )}
           </button>
 
-          <nav className="flex flex-col gap-6 w-full max-w-[200px] items-center">
+          <nav className="flex flex-col gap-6 w-full max-w-[200px items-center">
             <NavItem
               href="/admin"
               icon={<FaHome />}
@@ -125,54 +120,13 @@ const AdminLayout = () => {
               expanded={isSidebarOpen}
               currentPath={location.pathname}
             />
-
-            {/* Reservation Dropdown */}
-            <div className="w-full">
-              <button
-                onClick={toggleReservation}
-                className={classNames(
-                  'flex items-center px-4 py-2 rounded-lg hover:bg-adminhover transition-colors w-full',
-                  isSidebarOpen ? 'justify-between' : 'justify-center',
-                )}
-              >
-                <div
-                  className={classNames(
-                    'flex items-center',
-                    isSidebarOpen ? 'gap-3' : 'justify-center',
-                  )}
-                >
-                  <span className="text-lg">
-                    <FaCalendarAlt />
-                  </span>
-                  {isSidebarOpen && <span className="text-left">Đặt bàn</span>}
-                </div>
-                {isSidebarOpen && (
-                  <span
-                    className={classNames(
-                      'text-sm transition-transform duration-300',
-                      isReservationOpen ? 'rotate-180' : 'rotate-0',
-                    )}
-                  >
-                    <FaChevronDown />
-                  </span>
-                )}
-              </button>
-
-              <div
-                className={classNames(
-                  'overflow-hidden transition-all duration-300 ease-in-out',
-                  isSidebarOpen && isReservationOpen
-                    ? 'max-h-32 opacity-100'
-                    : 'max-h-0 opacity-0',
-                )}
-              >
-                <div className="ml-6 mt-2 space-y-2 transform transition-transform duration-300">
-                  <SubNavItem href="/admin/reservations" label="Đặt bàn" />
-                  <SubNavItem href="/admin/tables" label="Quản lý bàn" />
-                </div>
-              </div>
-            </div>
-
+            <NavItem
+              href="/admin/reservations"
+              icon={<FaCalendarAlt />}
+              label="Đặt bàn"
+              expanded={isSidebarOpen}
+              currentPath={location.pathname}
+            />
             <NavItem
               href="/admin/posts"
               icon={<FaFileAlt />}
@@ -211,7 +165,21 @@ const AdminLayout = () => {
               expanded={isSidebarOpen}
               currentPath={location.pathname}
             />
-            
+            <NavItem
+              href="/admin/about"
+              icon={<FaInfoCircle />}
+              label="Giới thiệu"
+              expanded={isSidebarOpen}
+              currentPath={location.pathname}
+            />
+
+            <NavItem
+              href="/admin/contact"
+              icon={<FaEnvelope />}
+              label="Liên hệ"
+              expanded={isSidebarOpen}
+              currentPath={location.pathname}
+            />
           </nav>
         </div>
 
@@ -222,9 +190,7 @@ const AdminLayout = () => {
             label="Đăng xuất"
             expanded={isSidebarOpen}
             className="text-red-400"
-            currentPath={location.pathname}
-            href={''}
-          />
+            currentPath={location.pathname} href={''}          />
         </div>
       </aside>
 
@@ -273,13 +239,19 @@ const NavItem: React.FC<NavItemProps> = ({
   const classes = classNames(
     'flex items-center px-4 py-2 rounded-lg transition-colors w-full',
     expanded ? 'justify-start gap-3' : 'justify-center',
-    isActive ? 'bg-bodyBackground text-white ' : 'hover:bg-adminhover',
+    isActive
+      ? 'bg-bodyBackground text-white '
+      : 'hover:bg-adminhover',
     className,
   );
 
   if (onClick) {
     return (
-      <button type="button" onClick={onClick} className={classes}>
+      <button
+        type="button"
+        onClick={onClick}
+        className={classes}
+      >
         <span className="text-lg">{icon}</span>
         {expanded && <span className="text-left w-full">{label}</span>}
       </button>
@@ -293,20 +265,6 @@ const NavItem: React.FC<NavItemProps> = ({
     </Link>
   );
 };
-interface SubNavItemProps {
-  href: string;
-  label: string;
-}
 
-const SubNavItem: React.FC<SubNavItemProps> = ({ href, label }) => {
-  return (
-    <Link
-      to={href}
-      className="flex items-center px-3 py-2 rounded-lg hover:bg-adminhover transition-colors text-sm text-admintext/80 hover:text-admintext"
-    >
-      <span className="text-left w-full">{label}</span>
-    </Link>
-  );
-};
 
 export default AdminLayout;

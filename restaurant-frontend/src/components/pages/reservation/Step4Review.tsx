@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { ReservationFormData } from '../../../types/reservation.type';
-import ButtonComponents from '@components/common/ButtonComponents';
-import { toast } from 'react-toastify';
-import ReservationSidebar from './Sidebar';
+import Sidebar from './Sidebar';
 import Section from './Section';
+import ButtonComponents from '../../common/ButtonComponents';
+// import { useReservations } from '@/hooks/useReservations';
+import { ReservationFormData } from '@/types/reservation.type';
+import { toast } from 'react-toastify';
 
 interface Step4ReviewProps {
   formData: ReservationFormData;
@@ -17,11 +18,33 @@ const Step4Review: React.FC<Step4ReviewProps> = ({
   onNext,
   onBack,
 }) => {
+  // const { createReservation } = useReservations();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleConfirmReservation = async () => {
     setIsSubmitting(true);
     try {
+      // const reservationPayload = {
+      //   full_name: formData.full_name,
+      //   phone: formData.phone,
+      //   email: formData.email,
+      //   date: formData.date,
+      //   time: formData.time,
+      //   table_type: formData.table_type,
+      //   number_of_people: formData.number_of_people,
+      //   note: formData.note,
+      //   is_choose_later: formData.selectedItems.length === 0,
+      //   selectedItems: formData.selectedItems.map((item) => ({
+      //     id: item.id,
+      //     name: item.name,
+      //     category: item.category,
+      //     price: item.price,
+      //     quantity: item.quantity,
+      //     note: item.note,
+      //   })),
+      // };
+
+      // await createReservation(reservationPayload);
       localStorage.removeItem('reservation-data');
       onNext();
     } catch (error) {
@@ -41,7 +64,7 @@ const Step4Review: React.FC<Step4ReviewProps> = ({
 
         <div className="flex flex-col lg:flex-row gap-6 items-start">
           <div className="w-full lg:w-1/3">
-            <ReservationSidebar formData={formData} />
+            <Sidebar formData={formData} />
           </div>
 
           <div className="w-full lg:w-2/3">

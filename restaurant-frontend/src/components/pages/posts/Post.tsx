@@ -37,10 +37,16 @@ const Post: React.FC<PostProps> = ({ post }) => {
         <button className="bg-white text-black px-2 py-1 text-xs flex items-center gap-1">
           <FaShareAlt /> Share
         </button>
-        <button className="bg-white text-black px-2 py-1 text-xs flex items-center gap-1">
+        <button
+          className="bg-white text-black px-2 py-1 text-xs flex items-center gap-1"
+          onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`${window.location.origin}/post-details/${post._id}`)}`, '_blank')}
+        >
           <FaFacebookF /> Facebook
         </button>
-        <button className="bg-white text-black px-2 py-1 text-xs flex items-center gap-1">
+        <button
+          className="bg-white text-black px-2 py-1 text-xs flex items-center gap-1"
+          onClick={() => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(`${window.location.origin}/post-details/${post._id}`)}`, '_blank')}
+        >
           <FaTwitter /> Twitter
         </button>
       </div>
