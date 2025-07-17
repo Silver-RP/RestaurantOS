@@ -7,6 +7,13 @@ export const getAllTablesApi = async (params?: Record<string, any>) => {
   return response.data.data;
 };
 
+export const getTablesByDateTimeApi = async (date: string, time: string) => {
+  const response = await axiosInstance.get('/tables/by-datetime', {
+    params: { date, time },
+  });
+  return response.data.data;
+};
+
 export const getTableByCodeApi = async (code: string) => {
   const response = await axiosInstance.get(`/tables/${code}`);
   return response.data.data;

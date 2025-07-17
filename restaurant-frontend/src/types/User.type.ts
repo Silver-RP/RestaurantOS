@@ -15,6 +15,16 @@ export interface User {
   createdAt: string;
   updatedAt: string;
   ordersCount?: number;
+  loyalty_tier?: {
+    _id: string;
+    tier_name: string;
+    min_spent: number;
+    discount: number;
+    benefits?: string;
+    sort_order: number;
+  } | null;
+  loyalty_total_spent?: number;
+  loyalty_total_points?: number;
 }
 export type FilterUserParams = {
   keyword?: string;

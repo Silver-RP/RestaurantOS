@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useGetCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
-import { toastService } from '@/utils/toastService';
+// Bỏ import toastService vì không sử dụng nữa
+// import { toastService } from '@/utils/toastService';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import Cookies from 'js-cookie';
@@ -51,10 +52,6 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
   const navigate = useNavigate();
 
   const handleReservationClick = () => {
-    if (!isAuthenticated) {
-      toastService.warning('Vui lòng đăng nhập để đặt bàn');
-      return;
-    } 
     navigate('/reservation');
   };
 

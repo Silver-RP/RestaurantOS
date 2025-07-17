@@ -1,6 +1,13 @@
 import mongoose from 'mongoose';
 import { Document, Types } from 'mongoose';
 
+export interface ITableReservationStatusInfo {
+  status: 'holding' | 'booked';
+  date: string;
+  time: string;
+  expireAt: Date;
+}
+
 export interface ITable extends mongoose.Document {
   code: string;
   type: 'standard' | 'group' | 'quiet' | 'vip';
@@ -18,6 +25,9 @@ export interface ITable extends mongoose.Document {
     y: number;
   };
 
+  // Thông tin trạng thái booking/holding (được thêm bởi service)
+  reservationStatus?: ITableReservationStatusInfo | null;
+
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -27,7 +37,7 @@ export interface ITableReservationStatus extends Document {
   date: string;
   time: string;
   status: 'holding' | 'booked';
-  heldBy?: Types.ObjectId | null;
+  heldBy?: Types.ObjectId | string | null;
   reservation_id?: Types.ObjectId | null;
   expireAt: Date;
   createdAt?: Date;

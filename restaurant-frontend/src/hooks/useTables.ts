@@ -2,6 +2,7 @@
 import { useCallback, useState } from 'react';
 import {
   getAllTablesApi,
+  getTablesByDateTimeApi,
   getTableByCodeApi,
   createTableApi,
   updateTableApi,
@@ -22,6 +23,23 @@ export const useTables = () => {
       toastService.error('Không thể tải danh sách bàn');
     }
   }, []);
+
+  const getTablesByDateTime = useCallback(
+    async (date: string, time: string) => {
+      try {
+        const data = await getTablesByDateTimeApi(date, time);
+        console.log('📦 Fetched Tables by DateTime:', data);
+        return data;
+      } catch (error: any) {
+        console.error(
+          '❌ getTablesByDateTime error:',
+          error?.response || error,
+        );
+        toastService.error('Không thể tải danh sách bàn theo thời gian');
+      }
+    },
+    [],
+  );
 
   const getTableDetail = useCallback(async (code: string) => {
     try {
@@ -83,6 +101,7 @@ export const useTables = () => {
 
   return {
     getAllTables,
+    getTablesByDateTime,
     getTableDetail,
     createTable,
     updateTable,
@@ -127,7 +146,13 @@ export const useTableManagement = () => {
             const aValue = a[params.sortBy as keyof ITable];
             const bValue = b[params.sortBy as keyof ITable];
 
-            if (aValue === undefined || bValue === undefined) return 0;
+            if (
+              aValue === undefined ||
+              bValue === undefined ||
+              aValue === null ||
+              bValue === null
+            )
+              return 0;
 
             if (params.sortOrder === 'desc') {
               return aValue < bValue ? 1 : -1;

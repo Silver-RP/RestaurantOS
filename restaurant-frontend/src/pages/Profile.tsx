@@ -13,6 +13,7 @@ import { useChangePasswordProfile } from '@/hooks/useAuth';
 import { useCheckPassword } from '@/hooks/useUsers';
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
 import Container from '@/components/common/Container';
+import UserLoyaltyTier from '@/components/pages/proflie/UserLoyaltyTier';
 
 
 const ProfilePage = () => {
@@ -319,6 +320,7 @@ const ProfilePage = () => {
         </div>
 
         <div className="flex-1 w-2/3 bg-bodyBackground p-10 border border-[#FFE0A0]">
+          <UserLoyaltyTier />
           <h2 className="text-3xl font-restora font-bold text-white mb-8">
             Thông tin tài khoản
           </h2>

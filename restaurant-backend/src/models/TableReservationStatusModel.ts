@@ -1,4 +1,3 @@
-// models/TableReservationStatusModel.ts
 import mongoose from 'mongoose';
 import { ITableReservationStatus } from '../types/ITable.types';
 
@@ -13,7 +12,7 @@ const tableReservationStatusSchema = new mongoose.Schema<ITableReservationStatus
       required: true,
     },
     heldBy: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.Mixed, // Cho phép cả ObjectId và string
       ref: 'User',
       default: null,
     },

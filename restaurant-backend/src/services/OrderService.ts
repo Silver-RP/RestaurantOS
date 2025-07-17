@@ -17,6 +17,7 @@ import axios from 'axios';
 import MailerService from './MailerService';
 import User, { IUser } from '../models/UserModel';
 import Voucher from '../models/VoucherModel';
+import LoyaltyService from './LoyaltyService';
 
 enum Status {
   ORDER_PLACED = 'ORDER_PLACED',
@@ -884,6 +885,16 @@ class OrderService {
           };
         }
         order.delivered_at = new Date();
+      }
+
+      // Nếu chuyển sang DELIVERED thì cộng điểm và tổng chi tiêu
+      if (status === 'DELIVERED' && order.user_id && order.total_price) {
+        // Kiểm tra đã cộng điểm cho đơn này chưa (dựa vào LoyaltyTransaction)
+        const existed = await LoyaltyService.getTransactionHistory(order.user_id.toString());
+        const alreadyAdded = existed.some((tx: any) => tx.order_id?.toString() === order._id.toString() && tx.type === 'earn');
+        if (!alreadyAdded) {
+          await LoyaltyService.addPoints(order.user_id.toString(), order._id.toString(), order.total_price);
+        }
       }
 
       await order.save();

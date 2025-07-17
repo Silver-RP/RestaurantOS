@@ -9,12 +9,14 @@ import {
   FaSort,
   FaArrowUp,
   FaArrowDown,
+  FaEye,
 } from 'react-icons/fa';
 import { toggleUserBlockStatus } from '@/api/UserApi';
 import { toast } from 'react-toastify';
 import UserFilterPanel from './UserFilterPanel';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
+import { User } from 'types/User.type';
 const CONFIRM_TOAST_ID = 'confirm-toggle-user';
 
 const UserIndexPage: React.FC = () => {
@@ -36,6 +38,7 @@ const UserIndexPage: React.FC = () => {
   const navigate = useNavigate();
   const currentUser = useSelector((state: RootState) => state.user.user);
   // const { roles: allRoles } = useRoles();
+  const [loyaltyModalUser, setLoyaltyModalUser] = useState<User | null>(null);
 
   const getRoleNames = (roles: any[]): string[] =>
     roles
@@ -399,7 +402,14 @@ const UserIndexPage: React.FC = () => {
                   <td className="px-4 py-2">{user.ordersCount || 0}</td>
 
 
-                  <td className="px-4 py-2 space-x-2">
+                  <td className="px-4 py-2 space-x-2">                 
+                    <button
+                      onClick={() => setLoyaltyModalUser(user)}
+                      className="text-blue-600 hover:text-blue-800 ml-2"
+                      title="Xem thông tin loyalty"
+                    >
+                      <FaEye />
+                    </button>
                     <button
                       onClick={() => handleEditUser(user)}
                       className="text-blue-500 hover:underline"
@@ -428,6 +438,47 @@ const UserIndexPage: React.FC = () => {
               setSearchParams(newParams);
             }}
           />
+        </div>
+      )}
+      {/* Loyalty Info Modal */}
+      {loyaltyModalUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg p-6 min-w-[320px] max-w-[90vw] relative">
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 text-xl"
+              onClick={() => setLoyaltyModalUser(null)}
+              aria-label="Đóng"
+            >
+              ×
+            </button>
+            <h2 className="text-lg font-bold mb-4 text-center">Thông tin tích điểm</h2>
+            <div className="space-y-2">
+              <div>
+                <span className="font-semibold">Hạng thành viên: </span>
+                {loyaltyModalUser.loyalty_tier?.tier_name
+                  ? loyaltyModalUser.loyalty_tier.tier_name.toUpperCase()
+                  : <span className="italic text-gray-500">Chưa có</span>}
+              </div>
+              <div>
+                <span className="font-semibold">Tổng chi tiêu: </span>
+                {typeof loyaltyModalUser.loyalty_total_spent === 'number'
+                  ? loyaltyModalUser.loyalty_total_spent.toLocaleString('vi-VN') + ' đ'
+                  : <span className="italic text-gray-500">Chưa có</span>}
+              </div>
+              <div>
+                <span className="font-semibold">Số điểm tích lũy: </span>
+                {typeof loyaltyModalUser.loyalty_total_points === 'number'
+                  ? loyaltyModalUser.loyalty_total_points
+                  : <span className="italic text-gray-500">Chưa có</span>}
+              </div>
+              {loyaltyModalUser.loyalty_tier?.benefits && (
+                <div>
+                  <span className="font-semibold">Quyền lợi: </span>
+                  {loyaltyModalUser.loyalty_tier.benefits}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>
