@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useRef, useEffect } from 'react';
+import Invoice from '../invoice/templateInvoice';
 import { useSearchParams } from 'react-router-dom';
 import {
   FaSort,
@@ -32,6 +33,8 @@ const OrderTable: React.FC = () => {
   const [menuPosition, setMenuPosition] = useState<{top: number, left: number} | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const [showInvoice, setShowInvoice] = useState(false);
+  const [invoiceData, setInvoiceData] = useState<any>(null);
 
   const {
     data: orders,
@@ -430,7 +433,8 @@ const OrderTable: React.FC = () => {
                             <button
                               className="flex items-center gap-2 w-full text-left px-5 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
                               onClick={() => {
-                                handleViewOrder(order._id);
+                                setInvoiceData(order);
+                                setShowInvoice(true);
                                 handleMenuClose();
                               }}
                             >
@@ -487,6 +491,21 @@ const OrderTable: React.FC = () => {
         />
       )}
 
+
+      {/* Popup hóa đơn */}
+      {showInvoice && invoiceData && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto relative">
+            <button
+              className="absolute top-2 right-2 text-2xl text-gray-500 hover:text-red-600 z-10"
+              onClick={() => setShowInvoice(false)}
+            >
+              &times;
+            </button>
+            <Invoice order={invoiceData} />
+          </div>
+        </div>
+      )}
       {selectedOrderId && (
         <OrderDetail
           orderId={selectedOrderId}
