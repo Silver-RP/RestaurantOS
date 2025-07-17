@@ -30,6 +30,7 @@ import DashboardRoutes from './routes/DashboardRoutes';
 import IngredientsRouter from './routes/IngredientsRouter';
 import VoucherRoutes from './routes/VoucherRoutes';
 import ReviewRoutes from './routes/ReviewRoutes';
+import LoyaltyRoutes from './routes/LoyaltyRoutes';
 
 import dotenv from 'dotenv';
 import connectDB from './config/db';
@@ -37,6 +38,9 @@ import cookieParser from 'cookie-parser';
 import passport from 'passport';
 import cors from 'cors';
 import path from 'path';
+
+
+import { scheduleLoyaltyYearlyJob } from './cron/loyaltyYearlyJob';
 
 const app = express();
 
@@ -51,6 +55,10 @@ import './swaggers/CategorySwagger';
 
 dotenv.config();
 connectDB();
+
+// Khởi động cron-job loyalty
+scheduleLoyaltyYearlyJob();
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
@@ -140,6 +148,7 @@ app.use('/api/favorite', AuthMiddleWare.verifyToken, FavoriteRoutes);
 app.use('/api/address', AuthMiddleWare.verifyToken, AddressRouter);
 app.use('/api/payment', PaymentRoutes);
 app.use('/api/review', ReviewRoutes);
+app.use('/api/loyalty', LoyaltyRoutes);
 
 app.use('/api/ingredients', AuthMiddleWare.verifyToken, IngredientsRouter);
 app.use('/api/inventory', AuthMiddleWare.verifyToken, InventoryRoutes);

@@ -27,6 +27,7 @@ interface ProductInfoProps {
   onNoteChange?: (note: string) => void;
   onProductNoteChange?: (productIndex: number, note: string) => void;
   onVoucherChange?: (voucher: UserVoucherDisplay | null) => void;
+  loyaltyDiscountPercent?: number; // Thêm props này
 }
 
 const ProductInfoSection = ({
@@ -40,6 +41,7 @@ const ProductInfoSection = ({
   onNoteChange,
   onProductNoteChange,
   onVoucherChange,
+  loyaltyDiscountPercent = 0, // default 0
 }: ProductInfoProps) => {
   const [selectedVoucher, setSelectedVoucher] = useState<UserVoucherDisplay | null>(null);
   const [discountAmount, setDiscountAmount] = useState(0);
@@ -68,8 +70,11 @@ const ProductInfoSection = ({
     0
   );
 
+  // Tính giảm giá loyalty
+  const loyaltyDiscount = Math.round(totalPrice * (loyaltyDiscountPercent / 100));
+
   const vatAmount = Math.round(totalPrice * 0.08);
-  const finalAmount = totalPrice + shippingFee + vatAmount - discountAmount;
+  const finalAmount = totalPrice + shippingFee + vatAmount - discountAmount - loyaltyDiscount;
 
   const handleVoucherApply = (voucher: UserVoucherDisplay, discount: number) => {
     if (!voucher.user_voucher_id) {
@@ -260,6 +265,17 @@ const ProductInfoSection = ({
                 </span>
                 <span className="text-green-400">
                   -{discountAmount.toLocaleString()} VND
+                </span>
+              </div>
+            )}
+            {/* Loyalty discount */}
+            {loyaltyDiscountPercent > 0 && loyaltyDiscount > 0 && (
+              <div className="flex justify-between items-center">
+                <span className="text-white/80">
+                  Giảm giá thành viên ({loyaltyDiscountPercent}%)
+                </span>
+                <span className="text-green-400">
+                  -{loyaltyDiscount.toLocaleString()} VND
                 </span>
               </div>
             )}

@@ -92,19 +92,23 @@ const VoucherList: React.FC = () => {
                   );
                 })
               ) : (
-                <p className="text-center text-xl font-light text-secondaryColor">
-                  Hiện chưa có voucher nào.
-                </p>
+                <div className="col-span-full flex justify-center items-center ">
+                  <p className="text-center text-xl font-light text-secondaryColor">
+                    Hiện chưa có voucher nào.
+                  </p>
+                </div>
               )}
             </div>
-            <Pagination
-              currentPage={page}
-              totalPages={totalPages}
-              onPageChange={setPage}
-              limit={limit}
-              onLimitChange={handleLimitChange}
-              showLimit={true}
-            />
+            {vouchers.length > 0 && (
+              <Pagination
+                currentPage={page}
+                totalPages={totalPages}
+                onPageChange={setPage}
+                limit={limit}
+                onLimitChange={handleLimitChange}
+                showLimit={true}
+              />
+            )}
           </>
         )}
       </div>
