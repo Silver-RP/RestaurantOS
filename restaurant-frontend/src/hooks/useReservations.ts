@@ -10,19 +10,12 @@ import {
   cancelReservationApi,
   restoreReservationApi,
   addReservationItemApi,
+  confirmReservationApi,
 } from '@/api/ReservationApi';
 import { IReservation } from '@/types/reservation.type';
-import { useAuth } from './useAuth';
 
 export const useReservations = () => {
-  const { currentUser, isAuthenticated } = useAuth();
-
   const createReservation = async (data: Partial<IReservation>) => {
-    if (!isAuthenticated || !currentUser?._id) {
-      toastService.warning('Vui lòng đăng nhập để đặt bàn');
-      return;
-    }
-
     try {
       const res = await createReservationApi(data);
       toastService.success('Đặt bàn thành công');
@@ -114,6 +107,18 @@ export const useReservations = () => {
     }
   }, []);
 
+  const confirmReservation = useCallback(async (id: string) => {
+    try {
+      const res = await confirmReservationApi(id);
+      toastService.success('Xác nhận đặt bàn thành công');
+      return res;
+    } catch (error: any) {
+      toastService.error(
+        error?.response?.data?.message || 'Xác nhận đặt bàn thất bại',
+      );
+    }
+  }, []);
+
   return {
     createReservation,
     addReservationItem,
@@ -123,5 +128,6 @@ export const useReservations = () => {
     updateReservationStatus,
     cancelReservation,
     restoreReservation,
+    confirmReservation,
   };
 };

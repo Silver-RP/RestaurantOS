@@ -14,7 +14,6 @@ import {
 import Cookies from 'js-cookie';
 
 import { useFetchFavorites } from './useFetchFavorites'; // 👈
-import { useAuth } from './useAuth';
 
 export const useFavorites = () => {
   const dispatch = useDispatch();

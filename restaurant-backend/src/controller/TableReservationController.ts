@@ -15,13 +15,18 @@ const TableReservationController = {
 
   holdTable: async (req: Request, res: Response) => {
     try {
-      const { table_code, heldBy } = req.body;
+      const { table_code, heldBy, date, time } = req.body;
       const userId = (req.user as IUser)?.id || heldBy; // ưu tiên token, nếu không có thì lấy từ body
 
       if (!table_code) {
         return res.status(400).json({ message: 'Thiếu mã bàn' });
       }
-      const result = await TableReservationService.holdTable(table_code, userId);
+
+      if (!date || !time) {
+        return res.status(400).json({ message: 'Thiếu thông tin ngày và giờ' });
+      }
+
+      const result = await TableReservationService.holdTable(table_code, userId, date, time);
       res.status(201).json({ success: true, data: result });
     } catch (error: any) {
       if (error.message === 'TABLE_ALREADY_HELD') {

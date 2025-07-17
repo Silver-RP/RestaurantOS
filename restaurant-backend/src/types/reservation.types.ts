@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 export interface IReservation extends mongoose.Document {
-  user_id: mongoose.Types.ObjectId;
+  user_id?: mongoose.Types.ObjectId | null;
   full_name: string;
   phone: string;
   date: string;

@@ -18,6 +18,7 @@ interface TableItemProps {
   x?: number;
   y?: number;
   capacity?: number;
+  disabled?: boolean;
 }
 
 const getBorderColor = (status: TableStatus) => {
@@ -40,6 +41,7 @@ const TableItem: React.FC<TableItemProps> = ({
   x,
   y,
   capacity = 4,
+  disabled = false,
 }) => {
   // Bàn đặc biệt giữ nguyên
   if (type === 'stage' || type === 'piano') {
@@ -189,14 +191,14 @@ const TableItem: React.FC<TableItemProps> = ({
 
   return (
     <div
-      className={`relative flex items-center justify-center m-2 ${sizeClass}`}
+      className={`relative flex items-center justify-center m-2 ${sizeClass} ${disabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
       style={{
         minWidth: 60,
         position: x !== undefined && y !== undefined ? 'absolute' : undefined,
         left: x,
         top: y,
       }}
-      onClick={onClick}
+      onClick={disabled ? undefined : onClick}
     >
       {/* Ghế */}
       {chairs}

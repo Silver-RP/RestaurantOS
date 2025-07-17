@@ -1,15 +1,13 @@
 import { Request, Response } from 'express';
 import { IUser } from '../models/UserModel';
 import ReservationService from '../services/ReservationService';
+import { Types } from 'mongoose';
 
 export const ReservationController = {
   create: async (req: Request, res: Response): Promise<Response> => {
     try {
       const user = req.user as IUser;
-
-      if (!user?.id) {
-        return res.status(401).json({ message: 'Unauthorized' });
-      }
+      const userId = user?.id || null; // Cho phép null nếu không đăng nhập
 
       const {
         full_name,
@@ -43,7 +41,7 @@ export const ReservationController = {
         room_type,
       };
 
-      const reservation = await ReservationService.createReservation(data, user.id);
+      const reservation = await ReservationService.createReservation(data, userId);
 
       return res.status(201).json({
         message: 'Đặt bàn thành công',
@@ -59,9 +57,11 @@ export const ReservationController = {
 
   getMyReservations: async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = (req.user as IUser).id?.toString();
+      const user = req.user as IUser;
+      const userId = user?.id?.toString();
+
       if (!userId) {
-        res.status(401).json({ message: 'Unauthorized' });
+        res.status(401).json({ message: 'Unauthorized - Please login to view your reservations' });
         return;
       }
 
@@ -107,6 +107,29 @@ export const ReservationController = {
     } catch (error) {
       console.error('Get all reservations error:', error);
       res.status(500).json({ message: 'Server error' });
+    }
+  },
+
+  confirmReservation: async (req: Request, res: Response): Promise<Response> => {
+    try {
+      const { reservationId } = req.params;
+      const user = req.user as IUser;
+      const userId = user?.id || null;
+
+      const reservation = await ReservationService.confirmReservation(
+        new Types.ObjectId(reservationId),
+        userId,
+      );
+
+      return res.status(200).json({
+        message: 'Xác nhận đặt bàn thành công',
+        data: reservation,
+      });
+    } catch (error: any) {
+      console.error('❌ Confirm reservation error:', error);
+      return res.status(error.statusCode || 500).json({
+        message: error?.message || 'Đã xảy ra lỗi khi xác nhận đặt bàn',
+      });
     }
   },
 

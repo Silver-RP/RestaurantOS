@@ -4,7 +4,7 @@ import { useTables } from '@/hooks/useTables';
 import { ITable } from '@/types/Table.type';
 import TableItem from './TableItem';
 import ButtonComponents from '@components/common/ButtonComponents';
-import { ReservationFormData } from '../../../types/reservation.type';
+import { ReservationFormData } from '../../../types/Reservation.type';
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
 
@@ -588,20 +588,37 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({
 }) => {
   // const [floor, setFloor] = React.useState(1); // Ẩn chuyển tầng
 
-  const { getAllTables } = useTables();
+  const { getAllTables, getTablesByDateTime } = useTables();
   const [tables, setTables] = useState<ITable[]>([]);
 
   useEffect(() => {
     const fetchTables = async () => {
-      const res = await getAllTables();
+      let res;
+
+      // Nếu có thông tin ngày và giờ, sử dụng API lấy bàn theo thời gian
+      if (formData.date && formData.time) {
+        res = await getTablesByDateTime(formData.date, formData.time);
+      } else {
+        // Ngược lại, lấy tất cả bàn
+        res = await getAllTables();
+      }
+
       if (Array.isArray(res)) {
         setTables(res);
       }
     };
     fetchTables();
-  }, [getAllTables]);
+  }, [getAllTables, getTablesByDateTime, formData.date, formData.time]);
 
-  const handleSelect = (id: string, name: string) => {
+  const handleSelect = async (
+    id: string,
+    name: string,
+    isAvailable: boolean,
+  ) => {
+    if (!isAvailable) {
+      return;
+    }
+    // Không gọi holdTableApi ở đây nữa, chỉ lưu lựa chọn vào formData
     setFormData((prev) => ({ ...prev, table_type: id, seatingName: name }));
   };
 
@@ -666,6 +683,8 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({
             .map((t) => {
               const tableId = t._id ?? t.code;
               const isGroupOrVip = t.type === 'group' || t.type === 'vip';
+              const isSelected = formData.table_type === tableId;
+              const isAvailable = !!t.isAvailable;
               return (
                 <div
                   key={tableId}
@@ -681,14 +700,15 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({
                     name={t.code}
                     type={t.type}
                     status={
-                      formData.table_type === tableId
+                      isSelected
                         ? 'selected'
-                        : t.isAvailable
+                        : isAvailable
                           ? 'available'
                           : 'reserved'
                     }
-                    onClick={() => handleSelect(tableId, t.code)}
+                    onClick={() => handleSelect(tableId, t.code, isAvailable)}
                     capacity={t.capacity}
+                    disabled={!isAvailable && !isSelected}
                   />
                 </div>
               );

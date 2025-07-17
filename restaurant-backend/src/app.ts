@@ -116,7 +116,8 @@ app.use(
 );
 app.use('/api/permission', PermissionRoutes);
 app.use('/api/category', CateRoutes);
-app.use('/api/reservation', AuthMiddleWare.verifyToken, ReservationRoutes);
+app.use('/api/reservation', ReservationRoutes);
+app.use('/api/my-reservations', AuthMiddleWare.verifyToken, ReservationRoutes);
 app.use('/api/tables', TableRoutes);
 app.use('/api/table-reservations', TableReservationRouter);
 app.use('/api/banner', BannerRoutes);
