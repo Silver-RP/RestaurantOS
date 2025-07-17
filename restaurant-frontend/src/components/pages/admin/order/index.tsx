@@ -1,10 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-<<<<<<< HEAD
 import React, { useState, useRef, useEffect } from 'react';
 import Invoice from '../invoice/templateInvoice';
-=======
-import React, { useState } from 'react';
->>>>>>> restore-783a07c
+
 import { useSearchParams } from 'react-router-dom';
 import {
   FaSort,
@@ -31,7 +28,6 @@ const OrderTable: React.FC = () => {
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [search, setSearch] = useState(searchParams.get('keyword') || '');
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
-<<<<<<< HEAD
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
   const [menuDirection, setMenuDirection] = useState<'down' | 'up'>('down');
   const [menuPosition, setMenuPosition] = useState<{top: number, left: number} | null>(null);
@@ -39,8 +35,6 @@ const OrderTable: React.FC = () => {
   const buttonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const [showInvoice, setShowInvoice] = useState(false);
   const [invoiceData, setInvoiceData] = useState<any>(null);
-=======
->>>>>>> restore-783a07c
 
   const {
     data: orders,

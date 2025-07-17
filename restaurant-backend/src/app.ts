@@ -56,14 +56,12 @@ import './swaggers/CategorySwagger';
 
 dotenv.config();
 connectDB();
-<<<<<<< HEAD
 
 // Khởi động cron-job loyalty
 scheduleLoyaltyYearlyJob();
 
-=======
 CronJobService.start(); // Start cron jobs after DB connection
->>>>>>> restore-783a07c
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
