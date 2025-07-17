@@ -9,6 +9,7 @@ import {
   FaArrowDown,
   FaSearch,
   FaEye,
+  FaEllipsisV,
 } from 'react-icons/fa';
 import { useAllOrders } from '@/hooks/useOrder';
 import AdminPagination from '../AdminPagination';
@@ -174,6 +175,58 @@ const OrderTable: React.FC = () => {
     setSelectedOrderId(null);
   };
 
+   useEffect(() => {
+     const handleClickOutside = (event: MouseEvent) => {
+       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+         handleMenuClose();
+       }
+     };
+
+     if (menuOpenId) {
+       document.addEventListener('mousedown', handleClickOutside);
+     }
+
+     return () => {
+       document.removeEventListener('mousedown', handleClickOutside);
+     };
+   }, [menuOpenId]);
+
+   const handleMenuToggle = (orderId: string) => {
+     if (menuOpenId === orderId) {
+       setMenuOpenId(null);
+       setMenuPosition(null);
+       return;
+     }
+     setTimeout(() => {
+       const btn = buttonRefs.current[orderId];
+       if (btn) {
+         const rect = btn.getBoundingClientRect();
+         const menuHeight = 160;
+         const spaceBelow = window.innerHeight - rect.bottom;
+         const spaceAbove = rect.top;
+         let top = 0;
+         let direction: 'down' | 'up' = 'down';
+         if (spaceBelow < menuHeight && spaceAbove > menuHeight) {
+           top = rect.top - menuHeight;
+           direction = 'up';
+         } else {
+           top = rect.bottom;
+           direction = 'down';
+         }
+         setMenuDirection(direction);
+         setMenuPosition({
+           top,
+           left: rect.right - 180,
+         });
+       }
+     }, 0);
+     setMenuOpenId(orderId);
+   };
+   const handleMenuClose = () => {
+     setMenuOpenId(null);
+     setMenuPosition(null);
+   };
+  
   return (
     <main className="!p-0 bg-white rounded-lg ">
       <div className="flex flex-wrap gap-4 mb-4 items-center justify-between">
