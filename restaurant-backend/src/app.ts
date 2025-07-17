@@ -39,6 +39,9 @@ import passport from 'passport';
 import cors from 'cors';
 import path from 'path';
 
+// Thêm dòng này để import và khởi động cron-job loyalty
+import { scheduleLoyaltyYearlyJob } from './cron/loyaltyYearlyJob';
+
 const app = express();
 
 // Import file authSwagger để đăng ký metadata
@@ -52,6 +55,10 @@ import './swaggers/CategorySwagger';
 
 dotenv.config();
 connectDB();
+
+// Khởi động cron-job loyalty
+scheduleLoyaltyYearlyJob();
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(

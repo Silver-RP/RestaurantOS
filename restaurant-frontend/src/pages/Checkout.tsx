@@ -10,6 +10,7 @@ import { toast } from 'react-toastify';
 import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
 import { useUserVouchers } from '@/hooks/useVouchers';
 import { UserVoucherDisplay } from '@/types/Voucher.type';
+import { getAccountInfo } from '@/api/LoyaltyApi';
 
 
 interface Product {
@@ -87,6 +88,7 @@ const CheckoutPage = () => {
   const { data: userVouchers = [] } = useUserVouchers();
   const [selectedVoucher, setSelectedVoucher] = useState<UserVoucherDisplay | null>(null);
   const [discountAmount, setDiscountAmount] = useState<number>(0);
+  const [loyaltyDiscountPercent, setLoyaltyDiscountPercent] = useState<number>(0);
 
   useEffect(() => {
     const selectedItemsStr = localStorage.getItem('selectedCartItems');
@@ -97,13 +99,13 @@ const CheckoutPage = () => {
 
         if (selectedItems && selectedItems.length > 0) {
           const formattedProducts: Product[] = selectedItems.map(
-            (item: any) => {
+            (item: Partial<Product> & { id: string; imageUrl: string }) => {
               return {
                 image: item.imageUrl,
-                name: item.name,
-                discountedPrice: item.discountedPrice,
-                price: item.price,
-                quantity: item.quantity,
+                name: item.name || '',
+                discountedPrice: item.discountedPrice || 0,
+                price: item.price || 0,
+                quantity: item.quantity || 0,
                 dish_id: item.id, // Use the id field from selectedCartItems
                 category: item.category || '',
                 notes: item.notes || '',
@@ -132,6 +134,14 @@ const CheckoutPage = () => {
         null,
     );
   }, [fetchedAddresses]);
+
+  useEffect(() => {
+    // Lấy loyalty discount percent
+    getAccountInfo().then((info) => {
+      setLoyaltyDiscountPercent(info?.current_tier?.discount || 0);
+    }).catch(() => setLoyaltyDiscountPercent(0));
+  }, []);
+
   const handleAddAddress = async (newAddr: Omit<Address, '_id'>) => {
     const newAddress: Address = {
       ...newAddr,
@@ -320,6 +330,7 @@ const CheckoutPage = () => {
             onNoteChange={handleOrderNoteChange}
             onProductNoteChange={handleProductNotes}
             onVoucherChange={handleVoucherChange}
+            loyaltyDiscountPercent={loyaltyDiscountPercent}
           />
         </div>
       </div>

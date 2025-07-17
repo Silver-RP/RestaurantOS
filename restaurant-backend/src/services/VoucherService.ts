@@ -376,10 +376,25 @@ export default class VoucherService {
       .populate<{ voucher_id: IVoucherDocument }>('voucher_id')
       .lean(); // Use lean for better performance
 
-    // Tính lại status cho từng voucher
+    // Tính lại status cho từng voucher và cập nhật user_voucher nếu cần
     await Promise.all(userVouchers.map(async (uv) => {
       if (uv.voucher_id) {
         const newStatus = this.calcVoucherStatus(uv.voucher_id);
+        let userVoucherStatus = uv.status;
+        if (newStatus === 'expired' && uv.status !== 'used' && uv.status !== 'expired') {
+          // Nếu voucher hết hạn và user chưa dùng thì user_voucher thành expired
+          await UserVoucher.updateOne({ _id: uv._id }, { status: 'expired' });
+          uv.status = 'expired';
+        } else if (newStatus === 'out_of_stock' && uv.status !== 'used' && uv.status !== 'out_of_stock') {
+          // Nếu voucher hết lượt và user chưa dùng thì user_voucher thành out_of_stock
+          await UserVoucher.updateOne({ _id: uv._id }, { status: 'out_of_stock' });
+          uv.status = 'out_of_stock';
+        } else if ((newStatus === 'active' || newStatus === 'inactive') && (uv.status === 'expired' || uv.status === 'out_of_stock')) {
+          // Nếu voucher còn hạn/lượt mà user_voucher đang là expired/out_of_stock thì chuyển về saved
+          await UserVoucher.updateOne({ _id: uv._id }, { status: 'saved' });
+          uv.status = 'saved';
+        }
+        // Đồng bộ trạng thái voucher
         if (uv.voucher_id.status !== newStatus) {
           await Voucher.findByIdAndUpdate(uv.voucher_id._id, { status: newStatus });
           uv.voucher_id.status = newStatus;
@@ -387,8 +402,24 @@ export default class VoucherService {
       }
     }));
 
+    const now = new Date();
     return userVouchers
-      .filter((uv) => uv.voucher_id)
+      .filter((uv) => {
+        if (!uv.voucher_id) return false;
+        const v = uv.voucher_id;
+        // Nếu là private và inactive thì vẫn trả về
+        if (v.type === 'private' && v.status === 'inactive') return true;
+        if (v.status === 'active') return true;
+        if (v.status === 'out_of_stock') {
+          // Chỉ hiện nếu trong khoảng ngày hợp lệ
+          const start = v.start_date ? new Date(v.start_date) : null;
+          const end = v.end_date ? new Date(v.end_date) : null;
+          if ((start && now < start) || (end && now > end)) return false;
+          return true;
+        }
+        // Ẩn các trạng thái khác
+        return false;
+      })
       .map((uv) => {
         const { voucher_id, ...uvDataRaw } = uv;
         const uvData = uvDataRaw as { createdAt?: Date; updatedAt?: Date; status: string; _id: any };
