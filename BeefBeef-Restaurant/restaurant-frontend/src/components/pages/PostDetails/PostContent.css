@@ -1,0 +1,70 @@
+/* CSS để xử lý ảnh trong nội dung */
+.post-content img {
+  max-width: 100%;
+  height: auto;
+  margin: 1rem 0;
+  border-radius: 0.5rem;
+}
+
+.post-content figure {
+  margin: 1.5rem 0;
+  max-width: 100%;
+}
+
+.post-content figure img {
+  margin: 0;
+}
+
+.post-content figcaption {
+  font-size: 0.875rem;
+  color: #ccc;
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+/* Loại bỏ chữ "Image" không mong muốn */
+.post-content p:empty,
+.post-content p:only-child:has(img) + p:empty {
+  display: none;
+}
+
+/* Xử lý ảnh trong nội dung */
+.post-content img {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Đảm bảo kích thước ảnh đồng nhất */
+.post-content .toastui-editor-contents img {
+  max-height: 400px;
+  object-fit: contain;
+}
+
+/* Xóa chữ Image không mong muốn */
+.post-content p:has(img) + p:empty,
+.post-content p:has(img) + p:only-child:not(:has(*)) {
+  display: none;
+}
+
+/* Xử lý khoảng cách giữa các ảnh */
+.post-content p:has(img) {
+  margin-bottom: 1.5rem;
+}
+
+/* Xử lý hiển thị ảnh trong các thẻ figure */
+.post-content figure {
+  text-align: center;
+}
+
+/* Đảm bảo ảnh hiển thị đẹp trong nội dung */
+.post-content .image-container {
+  margin: 1.5rem 0;
+  text-align: center;
+}
+
+/* Xử lý ảnh từ Toast UI Editor */
+.post-content .toastui-editor-contents p img {
+  margin: 0 auto;
+} 
