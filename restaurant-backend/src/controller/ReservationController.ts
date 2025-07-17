@@ -1,12 +1,13 @@
 import { Request, Response } from 'express';
 import { IUser } from '../models/UserModel';
 import ReservationService from '../services/ReservationService';
+import { Types } from 'mongoose';
 
 export const ReservationController = {
   create: async (req: Request, res: Response): Promise<Response> => {
     try {
       const user = req.user as IUser;
-      const userId = user?.id || null;
+      const userId = user?.id || null; // Cho phép null nếu không đăng nhập
 
       const {
         full_name,
@@ -20,14 +21,11 @@ export const ReservationController = {
         email,
         selectedItems,
         table_code,
-        deposit_amount,
+        deposit,
         room_type,
-        payment_method,
       } = req.body;
 
-      console.log('Creating reservation with data:', req.body);
-  
-      const reservation = await ReservationService.createReservation({
+      const data = {
         full_name,
         phone,
         date,
@@ -39,18 +37,15 @@ export const ReservationController = {
         email,
         selectedItems,
         table_code,
-        deposit_amount,
+        deposit,
         room_type,
-        payment_method,
-      }, userId);
-  
-      const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
-      const postPayment = await ReservationService.handleReservationPostPaymentLogic(reservation, clientIp.toString());
-  
+      };
+
+      const reservation = await ReservationService.createReservation(data, userId);
+
       return res.status(201).json({
         message: 'Đặt bàn thành công',
         data: reservation,
-        postPayment,
       });
     } catch (error: any) {
       console.error('❌ Create reservation error:', error);
@@ -59,13 +54,14 @@ export const ReservationController = {
       });
     }
   },
-  
 
   getMyReservations: async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = (req.user as IUser).id?.toString();
+      const user = req.user as IUser;
+      const userId = user?.id?.toString();
+
       if (!userId) {
-        res.status(401).json({ message: 'Unauthorized' });
+        res.status(401).json({ message: 'Unauthorized - Please login to view your reservations' });
         return;
       }
 
@@ -111,6 +107,29 @@ export const ReservationController = {
     } catch (error) {
       console.error('Get all reservations error:', error);
       res.status(500).json({ message: 'Server error' });
+    }
+  },
+
+  confirmReservation: async (req: Request, res: Response): Promise<Response> => {
+    try {
+      const { reservationId } = req.params;
+      const user = req.user as IUser;
+      const userId = user?.id || null;
+
+      const reservation = await ReservationService.confirmReservation(
+        new Types.ObjectId(reservationId),
+        userId,
+      );
+
+      return res.status(200).json({
+        message: 'Xác nhận đặt bàn thành công',
+        data: reservation,
+      });
+    } catch (error: any) {
+      console.error('❌ Confirm reservation error:', error);
+      return res.status(error.statusCode || 500).json({
+        message: error?.message || 'Đã xảy ra lỗi khi xác nhận đặt bàn',
+      });
     }
   },
 

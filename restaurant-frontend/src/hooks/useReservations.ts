@@ -10,28 +10,16 @@ import {
   cancelReservationApi,
   restoreReservationApi,
   addReservationItemApi,
+  confirmReservationApi,
 } from '@/api/ReservationApi';
 import { IReservation } from '@/types/reservation.type';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/redux/store';
 
 export const useReservations = () => {
-  const currentUser = useSelector((state: RootState) => state.user.user);
-
   const createReservation = async (data: Partial<IReservation>) => {
-    if (!currentUser?._id) {
-      toastService.warning('Vui lòng đăng nhập để đặt bàn');
-      return;
-    }
-
     try {
-      console.log('📞 Gọi API createReservationApi với dữ liệu:', data);
       const res = await createReservationApi(data);
-      if (res.postPayment?.redirectUrl) {
-        window.location.href = res.postPayment.redirectUrl;
-        return;
-      }
-      return res.data;
+      toastService.success('Đặt bàn thành công');
+      return res;
     } catch (error: any) {
       console.error(
         '❌ Lỗi khi gọi createReservationApi:',
@@ -64,82 +52,82 @@ export const useReservations = () => {
     }
   }, []);
 
-  const getMyReservations = useCallback(
-    async (params?: {
-      status?: string[] | null;
-      page?: number;
-      limit?: number;
-    }) => {
+  const getMyReservations = useCallback(async (params?: any) => {
+    try {
+      return await getMyReservationsApi(params);
+    } catch {
+      toastService.error('Không thể tải danh sách đặt bàn của bạn');
+    }
+  }, []);
+
+  const getReservationById = useCallback(async (id: string) => {
+    try {
+      return await getReservationByIdApi(id);
+    } catch {
+      toastService.error('Không thể tải thông tin đặt bàn');
+    }
+  }, []);
+
+  const updateReservationStatus = useCallback(
+    async (id: string, status: string) => {
       try {
-        return await getMyReservationsApi(params);
-      } catch {
-        toastService.error('Không thể tải lịch sử đặt bàn');
+        const res = await updateReservationStatusApi(id, status);
+        toastService.success('Cập nhật trạng thái thành công');
+        return res;
+      } catch (error: any) {
+        toastService.error(
+          error?.response?.data?.message || 'Cập nhật trạng thái thất bại',
+        );
       }
     },
     [],
   );
 
-  const getReservationById = async (id: string) => {
-    try {
-      return await getReservationByIdApi(id);
-    } catch {
-      toastService.error('Không tìm thấy thông tin đặt bàn');
-    }
-  };
-
-  const updateReservationStatus = async (
-    id: string,
-    status: IReservation['status'],
-  ) => {
-    try {
-      const res = await updateReservationStatusApi(id, status);
-      toastService.success('Cập nhật trạng thái thành công');
-      return res;
-    } catch {
-      toastService.error('Cập nhật trạng thái thất bại');
-    }
-  };
-
-  const cancelReservation = async (id: string) => {
+  const cancelReservation = useCallback(async (id: string) => {
     try {
       const res = await cancelReservationApi(id);
-      toastService.success('Huỷ đơn đặt bàn thành công');
+      toastService.success('Hủy đặt bàn thành công');
       return res;
-    } catch {
-      toastService.error('Huỷ đơn đặt bàn thất bại');
+    } catch (error: any) {
+      toastService.error(
+        error?.response?.data?.message || 'Hủy đặt bàn thất bại',
+      );
     }
-  };
+  }, []);
 
-  const restoreReservation = async (id: string) => {
+  const restoreReservation = useCallback(async (id: string) => {
     try {
       const res = await restoreReservationApi(id);
-      toastService.success('Khôi phục đơn đặt bàn thành công');
+      toastService.success('Khôi phục đặt bàn thành công');
       return res;
-    } catch {
-      toastService.error('Khôi phục đơn đặt bàn thất bại');
+    } catch (error: any) {
+      toastService.error(
+        error?.response?.data?.message || 'Khôi phục đặt bàn thất bại',
+      );
     }
-  };
+  }, []);
 
-  // const confirmReservation = useCallback(async (id: string) => {
-  //   try {
-  //     const res = await confirmReservationApi(id);
-  //    toastService.success('Xác nhận đặt bàn thành công'); 
-  //     return res;
-  //   } catch (error: any) {
-  //     toastService.error(
-  //       error?.response?.data?.message || 'Xác nhận đặt bàn thất bại',
-  //     );
-  //   }
-  // }, []);
+  const confirmReservation = useCallback(async (id: string) => {
+    try {
+      const res = await confirmReservationApi(id);
+      toastService.success('Xác nhận đặt bàn thành công');
+      return res;
+    } catch (error: any) {
+      toastService.error(
+        error?.response?.data?.message || 'Xác nhận đặt bàn thất bại',
+      );
+    }
+  }, []);
 
   return {
     createReservation,
+    addReservationItem,
     getAllReservations,
     getMyReservations,
     getReservationById,
     updateReservationStatus,
     cancelReservation,
     restoreReservation,
-    addReservationItem,
+    confirmReservation,
   };
 };

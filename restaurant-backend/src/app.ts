@@ -10,9 +10,10 @@ import ReservationContactRoutes from './routes/ReservationContactRoutes';
 import ReservationDetailContactRoutes from './routes/ReservationDetailContactRoutes';
 import ProfileRoutes from './routes/ProfileRoutes';
 import ReservationRoutes from './routes/ReservationRouter';
+import TableReservationRouter from './routes/TableReservationRouter';
+import TableRoutes from './routes/TableRouters';
 import BannerRoutes from './routes/BannerRoutes';
 import PostsRoutes from './routes/PostsRoutes';
-import PostReportRoutes from './routes/PostReportRoutes';
 import commentPostRoutes from './routes/CommentPostRoutes';
 
 import StaffRoutes from './routes/StaffRoutes';
@@ -29,7 +30,6 @@ import DashboardRoutes from './routes/DashboardRoutes';
 import IngredientsRouter from './routes/IngredientsRouter';
 import VoucherRoutes from './routes/VoucherRoutes';
 import ReviewRoutes from './routes/ReviewRoutes';
-import LoyaltyRoutes from './routes/LoyaltyRoutes';
 
 import dotenv from 'dotenv';
 import connectDB from './config/db';
@@ -37,10 +37,6 @@ import cookieParser from 'cookie-parser';
 import passport from 'passport';
 import cors from 'cors';
 import path from 'path';
-import CronJobService from './services/CronJobService';
-
-
-import { scheduleLoyaltyYearlyJob } from './cron/loyaltyYearlyJob';
 
 const app = express();
 
@@ -53,15 +49,8 @@ import './swaggers/StaffSwagger';
 import './swaggers/UserSwagger';
 import './swaggers/CategorySwagger';
 
-
 dotenv.config();
 connectDB();
-
-// Khởi động cron-job loyalty
-scheduleLoyaltyYearlyJob();
-
-CronJobService.start(); // Start cron jobs after DB connection
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
@@ -127,7 +116,10 @@ app.use(
 );
 app.use('/api/permission', PermissionRoutes);
 app.use('/api/category', CateRoutes);
-app.use('/api/reservation', AuthMiddleWare.verifyToken, ReservationRoutes);
+app.use('/api/reservation', ReservationRoutes);
+app.use('/api/my-reservations', AuthMiddleWare.verifyToken, ReservationRoutes);
+app.use('/api/tables', TableRoutes);
+app.use('/api/table-reservations', TableReservationRouter);
 app.use('/api/banner', BannerRoutes);
 app.use('/api/reservationcontact', ReservationContactRoutes);
 app.use('/api/reservationdetailcontact', ReservationDetailContactRoutes);
@@ -140,7 +132,6 @@ app.use(
 
 app.use('/api/food', FoodRoutes);
 app.use('/api/posts', PostsRoutes);
-app.use('/api/post-reports', PostReportRoutes);
 app.use('/api/posts', commentPostRoutes);
 app.use('/api/order', AuthMiddleWare.verifyToken, OrderRoutes);
 app.use('/api/cart', AuthMiddleWare.verifyToken, CartRouter);
@@ -149,8 +140,6 @@ app.use('/api/favorite', AuthMiddleWare.verifyToken, FavoriteRoutes);
 app.use('/api/address', AuthMiddleWare.verifyToken, AddressRouter);
 app.use('/api/payment', PaymentRoutes);
 app.use('/api/review', ReviewRoutes);
-app.use('/api/loyalty', LoyaltyRoutes);
-app.use('/api/review',  ReviewRoutes);
 
 app.use('/api/ingredients', AuthMiddleWare.verifyToken, IngredientsRouter);
 app.use('/api/inventory', AuthMiddleWare.verifyToken, InventoryRoutes);

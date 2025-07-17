@@ -1,4 +1,3 @@
-// routes/ReservationRouter.ts
 import { Router } from 'express';
 import { ReservationController } from '../controller/ReservationController';
 
@@ -17,5 +16,7 @@ router.patch('/:id/status', ReservationController.updateStatus);
 router.patch('/:id/cancel', ReservationController.cancel);
 
 router.patch('/:id/restore', ReservationController.restore);
+
+router.patch('/:reservationId/confirm', ReservationController.confirmReservation);
 
 export default router;
