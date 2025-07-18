@@ -6,7 +6,9 @@ import { usePosts } from '../hooks/usePosts';
 import Pagination from '../components/common/Pagination';
 
 const PostPage: React.FC = () => {
-  const { data: postsData, isLoading, error, searchParams, setSearchParams } = usePosts();
+  const { data: postsData, isLoading, error, searchParams, setSearchParams } = usePosts({
+    status: 'published' // Only fetch published posts for the public view
+  });
 
   if (isLoading) {
     return <div className="text-white">Loading...</div>;

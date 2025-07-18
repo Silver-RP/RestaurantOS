@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ReservationFormData } from '@/types/Reservation.type';
+import { ReservationFormData } from '@/types/reservation.type';
 import ButtonComponents from '@/components/common/ButtonComponents';
 import { fCurrency } from '@/utils/format-number';
 import { toastService } from '@/utils/toastService';
@@ -31,7 +31,7 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
   const [foodDeposit, setFoodDeposit] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState<string>('');
 
-  const { createReservation, confirmReservation } = useReservations();
+  const { createReservation } = useReservations();
 
   useEffect(() => {
     const { table_type, number_of_people, selectedItems } = formData;
@@ -109,9 +109,9 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
       console.log("result step5: ", result);
 
       if (result) {
-        if (result._id) {
-          await confirmReservation(result._id);
-        }
+        // if (result._id) {
+        //   await confirmReservation(result._id);
+        // }
 
         localStorage.removeItem('reservation-data');
         onSuccess();

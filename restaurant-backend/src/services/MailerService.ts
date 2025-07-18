@@ -132,7 +132,6 @@ const MailerService = {
     date: string;
     seating_type: string;
     table_count: number;
-    number_of_people: number;
     note?: string;
     items?: {
       name: string;
@@ -150,7 +149,6 @@ const MailerService = {
       date,
       seating_type,
       table_count,
-      number_of_people,
       note,
       items,
     } = reservation;
@@ -171,7 +169,6 @@ const MailerService = {
       }),
       seatingType: seating_type,
       tableCount: table_count,
-      number_of_people: number_of_people,
       note: note || 'Không có ghi chú',
       items:
         items?.map((item) => ({

@@ -24,7 +24,6 @@ class ReservationService {
         time,
         table_type,
         number_of_people,
-        table_code,
         note,
         is_choose_later,
         email,
@@ -35,7 +34,7 @@ class ReservationService {
       } = data;
 
       const newReservation = new Reservation({
-        user_id: userId, // Có thể là null cho khách không đăng nhập
+        user_id: userId,
         full_name,
         phone,
         date,
@@ -79,27 +78,47 @@ class ReservationService {
       // }
 
       if (Array.isArray(selectedItems) && selectedItems.length > 0) {
-        try {
-          const detailDocs = selectedItems.map((item: any) => ({
-            reservation_id: savedReservation._id,
-            dish_id: item.id,
-            dish_name: item.name,
-            category: item.category,
-            unit_price: item.price,
-            quantity: item.quantity,
-            total_amount: item.price * item.quantity,
-            note: item.note || '',
-          }));
+        const detailDocs = selectedItems.map((item: any) => ({
+          reservation_id: savedReservation._id,
+          dish_id: item.id,
+          dish_name: item.name,
+          category: item.category,
+          unit_price: item.price,
+          quantity: item.quantity,
+          total_amount: item.price * item.quantity,
+          note: item.note || '',
+        }));
 
-          await ReservationDetail.insertMany(detailDocs);
-          console.log('[ReservationService] Đã lưu chi tiết món ăn:', detailDocs.length);
-        } catch (err) {
-          console.error('[ReservationService] Lỗi khi lưu chi tiết món ăn:', err);
-          throw err;
-        }
+        await ReservationDetail.insertMany(detailDocs);
       }
 
       if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        console.log('📧 Starting email sending process for reservation:', savedReservation._id);
+
+        const reservationItems = await ReservationDetail.find({
+          reservation_id: savedReservation._id,
+        }).lean();
+        console.log('📦 Found reservation items:', reservationItems);
+
+        const emailData = {
+            _id: (savedReservation._id as string),
+          user: { email } as IUser,
+          full_name,
+          phone,
+          email,
+          time,
+          date,
+          seating_type: table_type,
+          table_count: 1,
+          note,
+          items: reservationItems.map((item) => ({
+            name: item.dish_name,
+            quantity: item.quantity,
+            price: item.unit_price,
+          })),
+        };
+        console.log('📨 Email data prepared:', emailData);
+
         try {
           const reservationItems = await ReservationDetail.find({
             reservation_id: savedReservation._id,
@@ -152,11 +171,10 @@ class ReservationService {
 
           await MailerService.sendReservationConfirmation(emailData);
         } catch (emailError) {
-          console.error('[ReservationService] Lỗi khi gửi email:', emailError);
-          // Không throw để không chặn tạo đơn
+          console.error('❌ Error sending email:', emailError);
+          // Don't throw error here to not block reservation creation
         }
       }
-      console.log('[ReservationService] Hoàn tất tạo reservation:', savedReservation);
       return savedReservation;
     } catch (error: any) {
       console.error('❌ Error in createReservation:', error);
