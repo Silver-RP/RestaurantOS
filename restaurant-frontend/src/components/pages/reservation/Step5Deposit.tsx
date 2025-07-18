@@ -106,8 +106,6 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
 
       // Gọi API tạo reservation
       const result = await createReservation(reservationData);
-      console.log("result step5: ", result);
-
       if (result) {
         // if (result._id) {
         //   await confirmReservation(result._id);
