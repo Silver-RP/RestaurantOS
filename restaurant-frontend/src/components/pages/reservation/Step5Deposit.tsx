@@ -115,7 +115,7 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
 
   return (
     <div className="bg-bodyBackground text-white py-8 px-2 flex items-center justify-center">
-      <div className="max-w-2xl w-full mx-auto">
+      <div className="  w-full mx-auto">
         <h1 className="text-3xl mb-8 text-center text-secondaryColor uppercase tracking-widest font-restora font-bold drop-shadow-lg">
           Thanh toán đặt cọc
         </h1>

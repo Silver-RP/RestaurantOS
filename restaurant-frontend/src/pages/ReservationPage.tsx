@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Step1BasicInfo from '@components/pages/reservation/Step1BasicInfo';
 import BreadcrumbComponent from '@components/common/BreadCrumbComponents';
-import ShowcaseSection from '@components/common/ShowcaseSection';
 import Step2Seating from '@components/pages/reservation/Step2Seating';
 import Step3Menu from '@components/pages/reservation/Step3Menu';
 import Step4Review from '@/components/pages/reservation/Step4Review';
@@ -242,7 +241,6 @@ const ReservationPage: React.FC = () => {
             </div>
           )}
         </div>
-        <ShowcaseSection />
       </div>
     </>
   );

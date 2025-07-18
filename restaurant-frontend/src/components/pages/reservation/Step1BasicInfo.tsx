@@ -17,7 +17,8 @@ const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({
 }) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [timeOptions, setTimeOptions] = useState<string[]>([]);
-  const [selectedTime, setSelectedTime] = useState(formData.time);
+  const [selectedTime, setSelectedTime] = useState('');
+  const [selectedDate, setSelectedDate] = useState(formData.date || '');
   const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
   const [submitted, setSubmitted] = useState(false);
 
@@ -31,7 +32,7 @@ const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({
       const selectedDate = new Date(formData.date);
       const isToday = selectedDate.toDateString() === now.toDateString();
       const minTime = isToday
-        ? new Date(now.getTime() + 3 * 60 * 60 * 1000)
+        ? new Date(now.getTime() + 30 * 60 * 1000)
         : new Date(selectedDate.setHours(0, 0, 0, 0));
 
       for (let hour = 9; hour <= 21; hour++) {
@@ -248,8 +249,12 @@ const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({
                   .toISOString()
                   .split('T')[0]
               }
-              value={formData.date}
-              onChange={handleChange}
+              value={selectedDate}
+              onChange={(e) => {
+                setSelectedDate(e.target.value);
+                setFormData((prev) => ({ ...prev, date: e.target.value }));
+                handleChange(e);
+              }}
               className="h-[48px] w-full px-4 pr-2 bg-transparent border border-[#074b6b] text-white placeholder:text-gray-400 rounded focus:outline-none focus:border-secondaryColor focus:ring-1 focus:ring-secondaryColor transition [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:invert"
             />
             {errors.date && (
@@ -266,6 +271,7 @@ const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({
               onChange={(val) => {
                 setSelectedTime(val);
                 setFormData((prev) => ({ ...prev, time: val }));
+                setErrors((prev) => ({ ...prev, time: '' }));
               }}
             >
               <div className="relative">
