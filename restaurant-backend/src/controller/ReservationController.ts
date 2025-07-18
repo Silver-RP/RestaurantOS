@@ -23,6 +23,7 @@ export const ReservationController = {
         table_code,
         deposit,
         room_type,
+        payment_method,
       } = req.body;
 
       const data = {
@@ -39,14 +40,20 @@ export const ReservationController = {
         table_code,
         deposit,
         room_type,
+        payment_method,
       };
 
       const reservation = await ReservationService.createReservation(data, userId);
 
+      const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
+      const postPayment = await ReservationService.handleReservationPostPaymentLogic(reservation, clientIp.toString());
+  
       return res.status(201).json({
         message: 'Đặt bàn thành công',
         data: reservation,
+        postPayment,
       });
+
     } catch (error: any) {
       console.error('❌ Create reservation error:', error);
       return res.status(error.statusCode || 500).json({
@@ -97,6 +104,34 @@ export const ReservationController = {
     } catch (error) {
       console.error('Get reservation by id error:', error);
       res.status(500).json({ message: 'Server error' });
+    }
+  },
+
+  getReservationByCodeAndPhoneNumber: async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { reservationCode, phone } = req.query;
+  
+      if (!reservationCode || !phone) {
+        res.status(400).json({ message: 'Reservation code and phone number are required' });
+        return;
+      }
+  
+      const { exists, reservation } = await ReservationService.getReservationByCodeAndPhoneNumber(
+        String(reservationCode),
+        String(phone)
+      );
+  
+      if (!exists) {
+        res.status(404).json({ message: 'Không tìm thấy đơn đặt bàn phù hợp' });
+        return;
+      }
+
+      console.log('Found reservation data:', reservation);
+  
+      res.status(200).json({ success: true, data: reservation });
+    } catch (error) {
+      console.error('Get reservation by code and phone error:', error);
+      res.status(500).json({ message: 'Đã có lỗi xảy ra trên server' });
     }
   },
 

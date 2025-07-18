@@ -30,6 +30,7 @@ import PaymentFailed from '@/pages/PaymentFailed';
 import PostsByTagPage from '../pages/PostsByTagPage';
 import VoucherPage from '../pages/VoucherPage';
 import UserVoucherList from '@/components/pages/voucher/UserVoucherList';
+import TrackingReservationPage from '@/pages/TrackingReservation';
 
 
 const PublicRoutes = [
@@ -68,6 +69,8 @@ const PublicRoutes = [
       { path: '/payment-failed', element: <PaymentFailed /> },
       { path: 'vouchers', element: <VoucherPage /> },
       { path: '/profile/user-vouchers', element: <UserVoucherList /> },
+      { path: '/reservation/lookup-reservation', element: <TrackingReservationPage /> },
+
     ],
   },
 ];

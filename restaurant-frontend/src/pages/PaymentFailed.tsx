@@ -85,7 +85,7 @@ const PaymentFailed = () => {
               const targetPath = isReservation
                 ? userInfo
                   ? '/profile/reservations'
-                  : '/reservation/lookup'
+                  : '/reservation/lookup-reservation'
                 : userInfo
                   ? '/profile/orders'
                   : '';

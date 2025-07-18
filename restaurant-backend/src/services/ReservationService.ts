@@ -1,11 +1,17 @@
 import { Reservation } from '../models/ReservationModel';
 import { ReservationDetail } from '../models/ReservationDetailModel';
-import { Types } from 'mongoose';
+import mongoose, { Document, Types } from 'mongoose';
 import { Dish } from '../models/DishModel';
 import MailerService from './MailerService';
 import TableReservationService from './TableReservationService';
 import { IUser } from '../models/UserModel';
 import { Table } from '../models/TableModel';
+import { IReservation } from '../types/reservation.types';
+import Payment  from '../models/PaymentModel';
+import { createVNPayPaymentUrl } from '../services/payments/VnPayService';
+import { createMomoPaymentUrl } from '../services/payments/MomoService';
+import { createSimplePayPalOrder } from '../services/payments/PaypalService';
+import axios from 'axios';
 
 class ReservationService {
   async createReservation(data: any, userId: Types.ObjectId | null) {
@@ -13,6 +19,7 @@ class ReservationService {
       const {
         full_name,
         phone,
+        email,
         date,
         time,
         table_type,
@@ -20,7 +27,6 @@ class ReservationService {
         table_code,
         note,
         is_choose_later,
-        email,
         selectedItems = [],
         deposit,
         room_type,
@@ -32,6 +38,7 @@ class ReservationService {
         user_id: userId, // Có thể là null cho khách không đăng nhập
         full_name,
         phone,
+        email,
         date,
         time,
         table_type,
@@ -39,14 +46,15 @@ class ReservationService {
         note,
         is_choose_later,
         status: 'PENDING',
-        deposit,
+        deposit_amount: deposit || 0,
         room_type,
+        payment_method: data.payment_method 
       });
 
-      let savedReservation;
+      let savedReservation: Document<unknown, {}, IReservation, {}> & IReservation & Required<{ _id: unknown; }> & { __v: number; };
       try {
         savedReservation = await newReservation.save();
-        console.log('[ReservationService] Đã lưu reservation:', savedReservation?._id);
+        console.log('[ReservationService] Đã lưu reservation:', savedReservation);
       } catch (err) {
         console.error('[ReservationService] Lỗi khi lưu reservation:', err);
         throw err;
@@ -126,7 +134,7 @@ class ReservationService {
           }
 
           const emailData = {
-            _id: savedReservation._id.toString(),
+            _id: (savedReservation._id as Types.ObjectId).toString(),
             user: { email } as IUser,
             full_name,
             phone,
@@ -157,6 +165,172 @@ class ReservationService {
       console.error('❌ Error in createReservation:', error);
       throw new Error('Không thể tạo đơn đặt bàn');
     }
+  }
+
+  async handleReservationPostPaymentLogic(
+    reservation: IReservation,
+    clientIp: string
+  ) {
+    const payment_method = reservation.payment_method;
+    const amount = reservation.deposit_amount || 0;
+    let redirectUrl: string | null = null;
+    let bankingInfo = null;
+  
+    const newPayment = await Payment.create({
+      reservationId: reservation._id,
+      payment_method,
+      payment_status: 'UNPAID',
+      amount,
+      transaction_code: null,
+      bankingInfo: null,
+    });
+  
+    const paymentTransactionId = newPayment._id.toString();
+    const transactionCode = `RSV-${payment_method}-${paymentTransactionId.slice(-6)}`;
+  
+    await Payment.findByIdAndUpdate(paymentTransactionId, {
+      transaction_code: transactionCode,
+    });
+  
+    if (payment_method === 'BANKING') {
+      const bank_name = 'Vietcombank';
+      const bank_code = '970436';
+      const account_number = '0123456789';
+      const account_name = 'Công ty TNHH BeefBeef';
+      const transfer_note = `RESERVATION-${reservation._id}`;
+  
+      const qrRes = await axios.post('https://api.vietqr.io/v2/generate', {
+        accountNo: account_number,
+        accountName: account_name,
+        acqId: bank_code,
+        amount,
+        addInfo: transfer_note,
+        format: 'base64',
+      });
+  
+      const qr_base64 = qrRes?.data?.data?.qrDataURL;
+  
+      bankingInfo = {
+        bank_name,
+        account_number,
+        account_name,
+        qr_code: qr_base64,
+        transfer_note,
+      };
+  
+      await Payment.findByIdAndUpdate(paymentTransactionId, { bankingInfo });
+    }
+  
+    const reservationId = (reservation._id as Types.ObjectId).toString();
+  
+    switch (payment_method) {
+      case 'MOMO':
+        redirectUrl = await createMomoPaymentUrl({
+          amount,
+          method: 'wallet',
+          objectId: reservationId,
+          transactionId: paymentTransactionId,
+          objectType: 'reservation',
+        });
+        break;
+  
+      case 'MOMO_ATM':
+        redirectUrl = await createMomoPaymentUrl({
+          amount,
+          method: 'atm',
+          objectId: reservationId,
+          transactionId: paymentTransactionId,
+          objectType: 'reservation',
+        });
+        break;
+  
+      case 'VNPAY':
+        redirectUrl = createVNPayPaymentUrl({
+          amount,
+          clientIp,
+          transactionId: paymentTransactionId,
+          objectId: reservationId,
+          objectType: 'reservation',
+        });
+        break;
+  
+      case 'CREDIT_CARD':
+        redirectUrl = await createSimplePayPalOrder({
+          amount,
+          objectId: reservationId,
+          paymentId: paymentTransactionId,
+          objectType: 'reservation',
+        });
+        break;
+    }
+  
+    return {
+      type: payment_method,
+      redirectUrl,
+      bankingInfo,
+      amount,
+    };
+  }
+
+  async markPaymentPaid(
+    paymentId: string,
+    paidAmount: number,
+    userId: string | null,
+  ) {
+    const payment = await Payment.findById(paymentId);
+    if (!payment) throw new Error('Payment not found');
+    console.log('Marking payment as paid:ReservationService.ts', paymentId, paidAmount, userId);
+    const allowedDifference = 1000; 
+
+    if (Math.abs((payment.amount || 0) - paidAmount) > allowedDifference) {
+      throw new Error('Paid amount does not match expected payment amount');
+    }
+
+    payment.payment_status = 'PAID';
+    payment.payment_date = new Date();
+    payment.amount = paidAmount;
+
+    if (userId) {
+      payment.confirmed_by = new mongoose.Types.ObjectId(userId);
+    }
+
+    await payment.save();
+
+    if (!payment.reservationId) throw new Error('Payment is not associated with any reservation');
+
+    const reservation = await Reservation.findById(payment.reservationId);
+    if (!reservation) throw new Error('Reservation not found');
+
+    if (reservation.payment_status !== 'PAID') {
+      reservation.payment_status = 'PAID';
+      reservation.paid_at = new Date();
+      await reservation.save();
+    }
+
+    await this.sendReservationPaymentSuccessEmail(payment._id);
+
+    console.log('Payment marked as paid: OK');
+    return { reservation, payment };
+  }
+
+  async markPaymentFailed(paymentId: string, reason?: string) {
+    const payment = await Payment.findById(paymentId);
+    if (!payment) throw new Error('Payment not found');
+
+    payment.payment_status = 'FAILED';
+    payment.payment_date = new Date();
+    payment.failure_reason = reason || 'Unknown failure';
+    await payment.save();
+
+    if (!payment.reservationId) throw new Error('Payment is not associated with any reservation');
+
+    const reservation = await Reservation.findById(payment.reservationId);
+    if (!reservation) throw new Error('Reservation not found');
+
+    reservation.payment_status = 'FAILED';
+    await reservation.save();
+
+    return reservation;
   }
 
   async confirmReservation(reservationId: Types.ObjectId, userId: Types.ObjectId | null) {
@@ -238,6 +412,41 @@ class ReservationService {
     return { ...reservation, details: detailsWithImages };
   }
 
+  async getReservationByCodeAndPhoneNumber(reservationCode: string, phoneNumber: string) {
+    const reservations = await Reservation.find({ phone: phoneNumber }).lean();
+    const match = reservations.find((r) =>
+      r._id.toString().slice(-6) === reservationCode
+    );
+  
+    if (!match) {
+      return { exists: false };
+    }
+  
+    const details = await ReservationDetail.find({ reservation_id: match._id }).lean();
+  
+    const detailsWithImages = await Promise.all(
+      details.map(async (item) => {
+        let image: string | null = null;
+        try {
+          const dish = await Dish.findById(item.dish_id, 'images').lean();
+          image = dish?.images?.[0] || null;
+        } catch (err: any) {
+          console.warn('Không tìm thấy ảnh cho món:', item.dish_id, '| Lỗi:', err?.message);
+        }
+        return { ...item, image };
+      }),
+    );
+  
+    return {
+      exists: true,
+      reservation: {
+        ...match,
+        order_items: detailsWithImages
+      }
+    };
+  }
+  
+
   async getAllReservations() {
     return await Reservation.find().sort({ createdAt: -1 }).lean();
   }
@@ -265,6 +474,23 @@ class ReservationService {
     }
     reservation.status = 'PENDING';
     return await reservation.save();
+  }
+
+  async sendReservationPaymentSuccessEmail(paymentId: Types.ObjectId) {
+    const payment = await Payment.findById(paymentId).populate('reservationId').lean();
+    if (!payment) throw new Error('Payment not found');
+    if (!payment.reservationId) throw new Error('Order not found in payment');
+
+    const reservation = await Reservation.findById(payment.reservationId).lean();
+    if (!reservation ) throw new Error('Reservation not found');
+
+    const userEmail = reservation.email;
+
+    await MailerService.sendReservationPaymentSuccess({
+      payment,
+      reservation,
+      userEmail,
+    });
   }
 }
 

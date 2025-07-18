@@ -11,6 +11,5 @@ router.get('/:id', AuthMiddleWare.verifyToken, OrderController.getOrderById);
 router.put('/order-status/:id', AuthMiddleWare.verifyToken, OrderController.updateOrderStatus);
 router.put('/cancel-order/:id', AuthMiddleWare.verifyToken, OrderController.cancelOrder);
 router.put('/request-return/:id', AuthMiddleWare.verifyToken, OrderController.requestReturn);
-router.put('/request-cancel/:id', AuthMiddleWare.verifyToken, OrderController.requestCancel);
 
 export default router;

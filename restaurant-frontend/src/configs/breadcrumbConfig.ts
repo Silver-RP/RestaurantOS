@@ -21,5 +21,6 @@ export const breadcrumbConfig: Record<string, string> = {
     "/payment-failed": "Thanh toán thất bại",
     "/vouchers": "Chương trình khuyến mãi",    
     "/profile/my-reservation": "Lịch sử đặt bàn",
+    "/reservation/lookup-reservation": "Tra cứu đặt bàn",
   };
   

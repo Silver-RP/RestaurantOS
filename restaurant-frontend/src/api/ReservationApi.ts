@@ -1,5 +1,5 @@
 import axiosInstance from './axiosInstance';
-import { IReservation, IReservationDetail } from '@/types/reservation.type';
+import { IReservation, IReservationDetail } from '@/types/Reservation.type';
 
 export const createReservationApi = async (data: Partial<IReservation>) => {
   const response = await axiosInstance.post('/reservation/create', data);
@@ -28,6 +28,11 @@ export const getAllReservationsApi = async (params?: Record<string, any>) => {
 export const getReservationByIdApi = async (id: string) => {
   const response = await axiosInstance.get(`/reservation/${id}`);
   return response.data.data;
+};
+
+export const getReservationReservationcodeAndPhoneNumber = async (reservationCode: string, phoneNumber: string) => {
+  const response = await axiosInstance.get(`/reservation/validate?reservationCode=${reservationCode}&phone=${phoneNumber}`);
+  return response.data;
 };
 
 export const updateReservationStatusApi = async (

@@ -89,7 +89,7 @@ export const momoReturn = async (req: Request, res: Response): Promise<any> => {
 
         if (objectType === 'reservation') {
             await ReservationService.markPaymentPaid(paymentId, paidAmount, transactionCode);
-            return res.redirect(`${CLIENT_BASE_URL}/payment-success?method=vnpay`);
+            return res.redirect(`${CLIENT_BASE_URL}/payment-success?method=vnpay&type=reservation`);
         } else {
             await OrderService.markPaymentPaid(paymentId, paidAmount, transactionCode, null);
             return res.redirect(`${CLIENT_BASE_URL}/payment-success?method=vnpay`);
@@ -131,6 +131,7 @@ export const paypalReturn = async (req: Request, res: Response): Promise<any> =>
               await OrderService.markPaymentPaid(payment.id, amountVND, captureResult.id, null);
             } else if (payment.reservationId) {
               await ReservationService.markPaymentPaid(payment.id, amountVND, null);
+              return res.redirect(`${CLIENT_BASE_URL}/payment-success?method=paypal&type=reservation`);
             } else {
               return res.status(400).send('Invalid payment object: missing both orderId and reservationId');
             }

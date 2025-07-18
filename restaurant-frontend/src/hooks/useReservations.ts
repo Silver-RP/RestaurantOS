@@ -12,14 +12,18 @@ import {
   addReservationItemApi,
   confirmReservationApi,
 } from '@/api/ReservationApi';
-import { IReservation } from '@/types/reservation.type';
+import { IReservation } from '@/types/Reservation.type';
 
 export const useReservations = () => {
   const createReservation = async (data: Partial<IReservation>) => {
     try {
       const res = await createReservationApi(data);
+      if (res.postPayment?.redirectUrl) {
+        window.location.href = res.postPayment.redirectUrl;
+        return;
+      }
       toastService.success('Đặt bàn thành công');
-      return res;
+      return res.data;
     } catch (error: any) {
       console.error(
         '❌ Lỗi khi gọi createReservationApi:',
