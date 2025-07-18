@@ -134,7 +134,7 @@ const Invoice: React.FC<InvoiceProps> = ({ orderId }) => {
             </div>
             <div className="bg-[#F7FAFC] border border-[#E2E8F0] p-4 rounded">
               <div className="flex justify-between mb-2">
-                <span className="text-[#1F2937] font-semibold">Mã:</span>
+                <span className="text-[#1F2937] font-semibold">Mã đơn hàng:</span>
                 <span className="text-[#1F2937]">
                   {invoiceData.number.slice(-6).toUpperCase()}
                 </span>

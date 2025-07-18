@@ -488,14 +488,17 @@ const OrderTable: React.FC = () => {
       {/* Popup hóa đơn */}
       {showInvoice && invoiceData && (
         <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black bg-opacity-40">
-          <div className="bg-white rounded shadow-[0_0_10px_5px_rgba(0,0,0,0.2)] max-w-4xl w-full max-h-[90vh] overflow-y-auto relative">
+          <div className="relative max-w-4xl w-full">
             <button
-              className="absolute top-2 right-2 text-2xl text-gray-500 hover:text-red-600 z-10"
+              className="absolute top-2 right-6 text-3xl text-gray-500 hover:text-red-600 z-10 "
               onClick={() => setShowInvoice(false)}
             >
               ×
             </button>
-            <Invoice orderId={invoiceData} />
+
+            <div className="bg-white rounded shadow-[0_0_10px_5px_rgba(0,0,0,0.2)] max-h-[90vh] overflow-y-auto">
+              <Invoice orderId={invoiceData} />
+            </div>
           </div>
         </div>
       )}
