@@ -48,7 +48,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
   }, [data?.order]);
 
   const handleRetryPayment = () => {
-    retryPaymentMutate({ orderId });
+    retryPaymentMutate({ type: 'order', id: orderId }); 
   };
   const handleChangePaymentMethod = () => {
     setShowSelector(true);
@@ -57,7 +57,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
   const handleConfirmChangePaymentMethod = () => {
     if (!selectedMethod || selectedMethod === data?.order?.payment_method)
       return;
-    changePaymentMethodMutate({ orderId, paymentMethod: selectedMethod });
+    changePaymentMethodMutate({ objectId: orderId, paymentMethod: selectedMethod, objectType: 'order' });
   };
 
   useEffect(() => {

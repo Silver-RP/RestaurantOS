@@ -83,7 +83,7 @@ const PaymentFailed = () => {
               const userInfo = Cookies.get('userInfo');
               const targetPath = isReservation
                 ? userInfo
-                  ? '/profile/reservations'
+                  ? '/profile/my-reservation'
                   : '/reservation/lookup-reservation'
                 : userInfo
                   ? '/profile/orders'
