@@ -6,16 +6,14 @@ import Step2Seating from '@components/pages/reservation/Step2Seating';
 import Step3Menu from '@components/pages/reservation/Step3Menu';
 import Step4Review from '@/components/pages/reservation/Step4Review';
 import Step5Deposit from '@/components/pages/reservation/Step5Deposit';
-import { ReservationFormData } from '@/types/reservation.type';
-import ReservationSteps from '@/components/pages/reservation/ReservationSteps';
+import { ReservationFormData } from '../types/Reservation.type';
+import ReservationSteps from '@components/pages/reservation/ReservationSteps';
 import { confirmAlert } from 'react-confirm-alert';
 import ButtonComponents from '@/components/common/ButtonComponents';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/redux/store';
-import { toastService } from '@/utils/toastService';
 import { AiOutlineCheckCircle } from 'react-icons/ai';
 import { motion } from 'framer-motion';
+import { releaseTableApi } from '@/api/TableReservationApi';
 
 const steps = [
   { label: 'Thông tin', step: 1 },
@@ -27,8 +25,8 @@ const steps = [
 
 const ReservationPage: React.FC = () => {
   const navigate = useNavigate();
-  const currentUser = useSelector((state: RootState) => state.user.user);
-
+  const [paymentMethod, setPaymentMethod] = useState<string>('');
+  
   const getInitialFormData = (): ReservationFormData => {
     const saved = localStorage.getItem('reservation-data');
     if (saved) {
@@ -42,7 +40,7 @@ const ReservationPage: React.FC = () => {
       email: '',
       date: '',
       time: '',
-      number_of_people: 1,
+      number_of_people: 0,
       note: '',
       table_type: '',
       seatingName: '',
@@ -51,16 +49,31 @@ const ReservationPage: React.FC = () => {
     };
   };
 
-  useEffect(() => {
-    if (!currentUser?._id) {
-      toastService.warning('Vui lòng đăng nhập để đặt bàn');
-      navigate('/');
-    }
-  }, [currentUser, navigate]);
-
   const [formData, setFormData] =
     useState<ReservationFormData>(getInitialFormData());
   const [step, setStep] = useState(1);
+
+  useEffect(() => {
+    const handleBeforeUnload = async () => {
+      if (formData.table_type && step < 6) {
+        try {
+          await releaseTableApi({ table_code: formData.seatingName });
+          console.log(
+            'Đã tự động release bàn khi user thoát:',
+            formData.seatingName,
+          );
+        } catch (error) {
+          console.error('Lỗi khi release bàn:', error);
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [formData.table_type, formData.seatingName, step]);
 
   useEffect(() => {
     const saved = localStorage.getItem('reservation-data');
@@ -96,7 +109,7 @@ const ReservationPage: React.FC = () => {
                       email: '',
                       date: '',
                       time: '',
-                      number_of_people: 1,
+                      number_of_people: 0,
                       note: '',
                       table_type: '',
                       seatingName: '',
@@ -187,9 +200,9 @@ const ReservationPage: React.FC = () => {
           {step === 5 && (
             <Step5Deposit
               formData={formData}
-              setFormData={setFormData}
               onSuccess={() => setStep(6)}
               onBack={() => setStep(4)}
+              onPaymentMethodChange={(method) => setPaymentMethod(method || '')}
             />
           )}
 
@@ -209,8 +222,8 @@ const ReservationPage: React.FC = () => {
               </h2>
               <p className="text-gray-400 text-base max-w-md mx-auto mb-6">
                 Cảm ơn bạn đã đặt bàn. Chúng tôi sẽ liên hệ để xác nhận lại
-                trong thời gian sớm nhất. Vui lòng kiểm tra email hoặc lịch sử
-                đặt bàn để theo dõi trạng thái.
+                trạng thái. Vui lòng kiểm tra email hoặc lịch sử đặt bàn để theo
+                dõi trạng thái.
               </p>
 
               <div className="flex flex-wrap justify-center gap-4">

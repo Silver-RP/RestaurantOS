@@ -207,9 +207,10 @@ class OrderService {
     const payment_method = order.payment_method;
     let redirectUrl: string | null = null;
     let bankingInfo = null;
-
+  
     const amount = order.total_price || 0;
-
+  
+    // Tạo bản ghi thanh toán
     const newPayment = await Payment.create({
       orderId: order._id,
       payment_method,
@@ -218,21 +219,22 @@ class OrderService {
       transaction_code: null,
       bankingInfo: null,
     });
-
+  
     const paymentTransactionId = newPayment._id.toString();
     const transactionCode = this.generateTransactionCode(payment_method, paymentTransactionId);
-
+  
     await Payment.findByIdAndUpdate(paymentTransactionId, {
       transaction_code: transactionCode,
     });
-
+  
+    // BANKING
     if (payment_method === 'BANKING') {
       const bank_name = 'Vietcombank';
       const bank_code = '970436';
       const account_number = '0123456789';
       const account_name = 'Công ty TNHH BeefBeef';
       const transfer_note = `ORDER-${order._id}`;
-
+  
       const qrRes = await axios.post('https://api.vietqr.io/v2/generate', {
         accountNo: account_number,
         accountName: account_name,
@@ -241,9 +243,9 @@ class OrderService {
         addInfo: transfer_note,
         format: 'base64',
       });
-
+  
       const qr_base64 = qrRes?.data?.data?.qrDataURL;
-
+  
       bankingInfo = {
         bank_name,
         account_number,
@@ -251,33 +253,57 @@ class OrderService {
         qr_code: qr_base64,
         transfer_note,
       };
+  
       await Payment.findByIdAndUpdate(paymentTransactionId, { bankingInfo });
     }
-
+  
+    // Các cổng thanh toán điện tử
     switch (payment_method) {
       case 'MOMO':
-        redirectUrl = await createMomoPaymentUrl(order, 'wallet', paymentTransactionId);
+        redirectUrl = await createMomoPaymentUrl({
+          amount,
+          method: 'wallet',
+          objectId: order._id.toString(),
+          transactionId: paymentTransactionId,
+          objectType: 'order',
+        });
         break;
+  
       case 'MOMO_ATM':
-        redirectUrl = await createMomoPaymentUrl(order, 'atm', paymentTransactionId);
+        redirectUrl = await createMomoPaymentUrl({
+          amount,
+          method: 'atm',
+          objectId: order._id.toString(),
+          transactionId: paymentTransactionId,
+          objectType: 'order',
+        });
         break;
+  
       case 'VNPAY':
-        redirectUrl = createVNPayPaymentUrl(order, clientIp, paymentTransactionId);
+        redirectUrl = createVNPayPaymentUrl({
+          amount,
+          clientIp,
+          transactionId: paymentTransactionId,
+          objectId: order._id.toString(),
+          objectType: 'order',
+        });
         break;
+  
       case 'CREDIT_CARD':
-        const orderWithItems = await this.getOrderById(order._id);
+        const orderWithItems = await this.getOrderById(order._id); // chứa order_items
         redirectUrl = await createPayPalOrder(orderWithItems as any, paymentTransactionId);
         break;
+  
       default:
         redirectUrl = null;
         break;
     }
-
+  
     return {
       type: payment_method,
       redirectUrl,
       bankingInfo,
-      orderTotal: order.total_price,
+      orderTotal: amount,
     };
   }
 

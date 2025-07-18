@@ -1,31 +1,37 @@
 import React, { useEffect, useState } from 'react';
-import { ReservationFormData } from '@/types/reservation.type';
+import { ReservationFormData } from '@/types/Reservation.type';
 import ButtonComponents from '@/components/common/ButtonComponents';
 import { fCurrency } from '@/utils/format-number';
 import { toastService } from '@/utils/toastService';
 import { MdChair } from 'react-icons/md';
 import { FaUsers } from 'react-icons/fa';
 import { GiKnifeFork } from 'react-icons/gi';
+import { useReservations } from '@/hooks/useReservations';
+import { holdTableApi } from '@/api/TableReservationApi';
+import { toast } from 'react-toastify';
+import PaymentMethodSelector,  { paymentMethods } from '../checkout/PaymentMethodSelector';
 
 type Step5DepositProps = {
   formData: ReservationFormData;
-  setFormData: React.Dispatch<React.SetStateAction<ReservationFormData>>;
   onSuccess: () => void;
   onBack: () => void;
+  onPaymentMethodChange: (method: string | null) => void;
 };
 
 const Step5Deposit: React.FC<Step5DepositProps> = ({
   formData,
-  setFormData,
   onSuccess,
   onBack,
+  onPaymentMethodChange,
 }) => {
   const [depositAmount, setDepositAmount] = useState<number>(0);
   const [isPaying, setIsPaying] = useState(false);
-  const [showExplanation, setShowExplanation] = useState(false);
   const [tableDeposit, setTableDeposit] = useState(0);
   const [guestDeposit, setGuestDeposit] = useState(0);
   const [foodDeposit, setFoodDeposit] = useState(0);
+  const [paymentMethod, setPaymentMethod] = useState<string>('');
+
+  const { createReservation, confirmReservation } = useReservations();
 
   useEffect(() => {
     const { table_type, number_of_people, selectedItems } = formData;
@@ -65,49 +71,161 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
     setDepositAmount(amount + foodDeposit);
   }, [formData]);
 
-  const handleMockPayment = () => {
+  const handlePayment = async () => {
+    if (!paymentMethod) {
+      toast.error('Vui lòng chọn phương thức thanh toán');
+      return;
+    }
+    console.log('🚀 Đang xử lý thanh toán với phương thức:', paymentMethod);
     setIsPaying(true);
 
-    setTimeout(() => {
-      toastService.success('Thanh toán thành công!');
+    try {
+      // Gọi API giữ bàn trước khi tạo reservation
+      await holdTableApi({
+        table_code: formData.seatingName,
+        heldBy: `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        date: formData.date,
+        time: formData.time,
+      });
+
+      const reservationData = {
+        full_name: formData.full_name,
+        phone: formData.phone,
+        email: formData.email,
+        date: formData.date,
+        time: formData.time,
+        table_type: formData.table_type,
+        table_code: formData.seatingName,
+        number_of_people: formData.number_of_people,
+        note: formData.note,
+        is_choose_later: formData.selectedItems.length === 0,
+        selectedItems: formData.selectedItems,
+        payment_method: paymentMethod,
+        deposit: depositAmount,
+      };
+
+      // Gọi API tạo reservation
+      const result = await createReservation(reservationData);
+      console.log("result step5: ", result);
+
+      if (result) {
+        if (result._id) {
+          await confirmReservation(result._id);
+        }
+
+        localStorage.removeItem('reservation-data');
+        onSuccess();
+      }
+    } catch (error) {
+      console.error('❌ Lỗi khi đặt bàn:', error);
+      toastService.error(
+        'Không thể giữ bàn này hoặc đã có người khác giữ trước. Vui lòng chọn lại bàn khác!',
+      );
+    } finally {
       setIsPaying(false);
-      onSuccess();
-    }, 2000);
+    }
   };
 
+  const filteredMethods = paymentMethods.filter(m => m.value !== 'CASH');
+
   return (
-    <div className="bg-bodyBackground text-white py-4 px-4 flex items-center justify-center">
-      <div className="max-w-7xl mx-auto w-full">
-        <h1 className="text-2xl mb-10 text-center text-secondaryColor uppercase tracking-wide">
+    <div className="bg-bodyBackground text-white py-8 px-2 flex items-center justify-center">
+      <div className="max-w-2xl w-full mx-auto">
+        <h1 className="text-3xl mb-8 text-center text-secondaryColor uppercase tracking-widest font-restora font-bold drop-shadow-lg">
           Thanh toán đặt cọc
         </h1>
 
-        <div className="bg-headerBackground p-6 rounded-md shadow-md text-center max-w-xl mx-auto">
-          <p className="text-lg text-gray-300 mb-2">
+        {/* Tổng tiền đặt cọc nổi bật */}
+        <div className="bg-headerBackground/80 border-2 border-secondaryColor shadow-xl p-8 mb-8 flex flex-col items-center">
+          <p className="text-lg text-gray-300 mb-2 font-medium tracking-wide">
             Bạn cần đặt cọc để xác nhận đặt bàn:
           </p>
-
-          <div className="text-4xl font-bold text-secondaryColor mb-4">
-            {fCurrency(depositAmount)} VNĐ
+          <div className="text-5xl font-extrabold text-secondaryColor mb-2 drop-shadow-lg flex items-center gap-2">
+            {fCurrency(depositAmount)}
+            <span className="text-2xl font-bold">₫</span>
+            <span className="text-lg font-semibold text-gray-300 ml-1">
+              VNĐ
+            </span>
           </div>
-
-          <p className="text-sm text-gray-400 mb-6">
+          <p className="text-sm text-gray-400 mb-2 text-center">
             Số tiền này sẽ được trừ vào hóa đơn thanh toán khi bạn đến nhà hàng.
           </p>
-          <button
-            onClick={() => setShowExplanation(true)}
-            className="text-sm underline text-gray-400 hover:text-white mt-2"
-          >
-            Bạn thắc mắc số tiền đặt cọc được tính như thế nào?
-          </button>
         </div>
 
-        <div className="flex justify-center mt-10 gap-6">
+        {/* Card giải thích các khoản cọc */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          {/* Cọc theo loại bàn */}
+          <div className="bg-headerBackground/90 border border-secondaryColor/40 p-4 flex flex-col items-center shadow-md">
+            <MdChair className="text-secondaryColor w-8 h-8 mb-2" />
+            <p className="font-semibold text-white mb-1 text-center">
+              Cọc theo loại bàn
+            </p>
+            <p className="text-xs text-gray-400 mb-1 text-center">
+              {formData.seatingName || 'Không xác định'}
+            </p>
+            <span className="text-xl font-bold text-secondaryColor">
+              {fCurrency(tableDeposit)}
+            </span>
+          </div>
+          {/* Cọc theo số lượng người */}
+          <div className="bg-headerBackground/90 border border-secondaryColor/40 p-4 flex flex-col items-center shadow-md">
+            <FaUsers className="text-secondaryColor w-8 h-8 mb-2" />
+            <p className="font-semibold text-white mb-1 text-center">
+              Cọc theo số lượng người
+            </p>
+            <p className="text-xs text-gray-400 mb-1 text-center">
+              {formData.number_of_people} người
+            </p>
+            <span className="text-xl font-bold text-secondaryColor">
+              {fCurrency(guestDeposit)}
+            </span>
+          </div>
+          {/* Cọc theo món ăn đã chọn */}
+          <div className="bg-headerBackground/90 border border-secondaryColor/40 p-4 flex flex-col items-center shadow-md">
+            <GiKnifeFork className="text-secondaryColor w-8 h-8 mb-2" />
+            <p className="font-semibold text-white mb-1 text-center">
+              Cọc theo món ăn đã chọn
+            </p>
+            <p className="text-xs text-gray-400 mb-1 text-center">
+              20% giá trị món ăn đã chọn
+            </p>
+            <span className="text-xl font-bold text-secondaryColor">
+              {fCurrency(foodDeposit)}
+            </span>
+          </div>
+        </div>
+
+        {/* Tổng tiền đặt cọc lần nữa */}
+        <div className="bg-headerBackground/80 border border-secondaryColor/60 shadow p-4 mb-8 flex flex-col items-center">
+          <span className="text-base text-white font-semibold mb-1">
+            Tổng tiền đặt cọc
+          </span>
+          <span className="text-3xl font-bold text-secondaryColor drop-shadow-lg">
+            {fCurrency(depositAmount)} ₫
+          </span>
+        </div>
+
+        <div className="mt-4 mb-12 md:mt-6 flex flex-col md:flex-row md:gap-4">
+          {/* Phương thức thanh toán */}
+          <div className="flex-1 text-left ">
+            <PaymentMethodSelector
+              selectedMethod={paymentMethod}
+              onChange={(method) => {
+                setPaymentMethod(method || '');
+                onPaymentMethodChange(method);
+              }}
+              methods={filteredMethods}
+            />
+          </div>
+        </div>
+
+        {/* Nút điều hướng */}
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-6 mt-6">
           <ButtonComponents
             variant="outline"
-            size="medium"
+            size="large"
             onClick={onBack}
-            className="px-8 py-3 text-sm sm:text-base border-2 transition"
+            className="px-10 py-3 text-base border-2  font-semibold hover:bg-secondaryColor/10 hover:text-secondaryColor transition-all duration-200 min-w-[140px]"
             disabled={isPaying}
           >
             Quay lại
@@ -115,87 +233,37 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
 
           <ButtonComponents
             variant="filled"
-            size="medium"
-            onClick={handleMockPayment}
-            loading={isPaying}
-            className="px-8 py-3 text-sm sm:text-base shadow-lg transition"
+            size="large"
+            onClick={handlePayment}
+            disabled={isPaying}
+            className="px-10 py-3 text-base font-bold shadow-lg hover:scale-105 hover:shadow-xl transition-all duration-200 min-w-[160px] flex items-center justify-center gap-2"
           >
+            {isPaying && (
+              <svg
+                className="animate-spin h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                ></path>
+              </svg>
+            )}
             {isPaying ? 'Đang xử lý...' : 'Thanh toán'}
           </ButtonComponents>
         </div>
       </div>
-      {showExplanation && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-          <div className="bg-headerBackground text-white px-8 py-6 rounded-md max-w-md w-full relative shadow-xl border border-gray-700">
-            <h2 className="text-2xl mb-5 text-center text-secondaryColor">
-              Cách tính tiền đặt cọc
-            </h2>
-
-            <div className="space-y-4 text-sm text-gray-300">
-              <div className="flex items-start gap-2">
-                <MdChair className="text-secondaryColor w-5 h-5 mt-1" />
-                <div>
-                  <p className="font-medium text-white text-left mb-1">
-                    Cọc theo loại bàn:
-                  </p>
-                  <p>
-                    – {formData.seatingName || 'Không xác định'}:&nbsp;
-                    <strong className="text-secondaryColor">
-                      {fCurrency(tableDeposit)}
-                    </strong>
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-2">
-                <FaUsers className="text-secondaryColor w-5 h-5 mt-1" />
-                <div>
-                  <p className="font-medium text-white text-left mb-1">
-                    Cọc theo số lượng người:
-                  </p>
-                  <p className="text-left">
-                    – {formData.number_of_people} người →&nbsp;
-                    <strong className="text-secondaryColor">
-                      {fCurrency(guestDeposit)}
-                    </strong>
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-2">
-                <GiKnifeFork className="text-secondaryColor w-5 h-5 mt-1" />
-                <div>
-                  <p className="font-medium text-white text-left mb-1">
-                    Cọc theo món ăn đã chọn:
-                  </p>
-                  <p>
-                    – 20% giá trị món ăn đã chọn →&nbsp;
-                    <strong className="text-secondaryColor">
-                      {fCurrency(foodDeposit)}
-                    </strong>
-                  </p>
-                </div>
-              </div>
-
-              <hr className="my-4 border-gray-600" />
-
-              <div className="text-white text-base font-semibold text-center">
-                Tổng tiền đặt cọc:&nbsp;
-                <span className="text-secondaryColor">
-                  {fCurrency(depositAmount)}
-                </span>
-              </div>
-            </div>
-
-            <button
-              onClick={() => setShowExplanation(false)}
-              className="absolute top-3 right-4 text-gray-400 hover:text-white text-xl"
-            >
-              &times;
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

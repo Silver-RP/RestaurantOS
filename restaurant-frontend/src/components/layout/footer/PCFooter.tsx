@@ -41,6 +41,7 @@ const Footer = () => {
               <li><Link to="profile/faqs" className="text-sm hover:text-secondaryColor transition">Chính sách giao hàng</Link></li>
               <li><Link to="profile/faqs" className="text-sm hover:text-secondaryColor transition">Điều khoản và điều kiện</Link></li>
               <li><Link to="contact" className="text-sm hover:text-secondaryColor transition">Khiếu nại và góp ý</Link></li>
+              <li><Link to="/reservation/lookup-reservation" className="text-sm hover:text-secondaryColor transition">Tra cứu đơn đặt bàn</Link></li>
             </ul>
           </div>
           <div className="flex flex-col items-center xs:block col-span-8 md:col-span-3 xl:col-span-4">

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import PaymentMethodSelector from './PaymentMethodSelector';
+import PaymentMethodSelector,  { paymentMethods } from './PaymentMethodSelector';
 import ButtonComponents from '@components/common/ButtonComponents';
 import VoucherSelector from './VoucherSelector';
 import { UserVoucherDisplay } from '@/types/Voucher.type';
@@ -212,6 +212,7 @@ const ProductInfoSection = ({
           <PaymentMethodSelector
             selectedMethod={paymentMethod ?? ''}
             onChange={onPaymentMethodChange}
+            methods={paymentMethods}
           />
         </div>
         {/* Chọn mã giảm giá */}

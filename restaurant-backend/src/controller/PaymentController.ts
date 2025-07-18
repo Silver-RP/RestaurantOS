@@ -4,6 +4,7 @@ import { flattenQueryParams } from '../utils/queryHelpers';
 import OrderService from '../services/OrderService';
 import Payment from '../models/PaymentModel';
 import { capturePayPalOrder } from '../services/payments/PaypalService';
+import ReservationService from '../services/ReservationService';
 import { IUser } from '../models/UserModel';
 import { Types } from 'mongoose';
 
@@ -52,22 +53,47 @@ export const momoReturn = async (req: Request, res: Response): Promise<any> => {
             return res.status(400).send('Thiếu tham số từ MoMo');
         }
 
+        // ✅ Giải mã extraData
+        const extraDataEncoded = req.query.extraData as string;
+        let objectType: string | undefined;
+        let objectId: string | undefined;
+
+        if (extraDataEncoded) {
+            try {
+                const decoded = JSON.parse(Buffer.from(extraDataEncoded, 'base64').toString('utf8'));
+                objectType = decoded.objectType;
+                objectId = decoded.objectId;
+                console.log('✅ extraData decoded:', decoded);
+            } catch (err) {
+                console.warn('⚠️ Lỗi giải mã extraData:', err);
+            }
+        }
+
         const payment = await Payment.findById(paymentId);
         if (!payment) {
             return res.status(404).send('Không tìm thấy giao dịch thanh toán');
         }
 
         if (resultCode !== '0') {
-            await OrderService.markPaymentFailed(paymentId, req.query.message as string);
-            return res.redirect(`${CLIENT_BASE_URL}/payment-failed?orderId=${payment.orderId}`);
+            if (objectType === 'reservation') {
+                await ReservationService.markPaymentFailed(paymentId, req.query.message as string);
+                return res.redirect(`${CLIENT_BASE_URL}/payment-failed?type=reservation&id=${objectId}`);
+            } else {
+                await OrderService.markPaymentFailed(paymentId, req.query.message as string);
+                return res.redirect(`${CLIENT_BASE_URL}/payment-failed?type=order&id=${objectId}`);
+            }
         }
 
         const paidAmount = Number(amount);
         const transactionCode = req.query.transId as string;
 
-        await OrderService.markPaymentPaid(paymentId, paidAmount, transactionCode, null);
-
-        return res.redirect(`${CLIENT_BASE_URL}/payment-success?method=vnpay`);
+        if (objectType === 'reservation') {
+            await ReservationService.markPaymentPaid(paymentId, paidAmount, transactionCode);
+            return res.redirect(`${CLIENT_BASE_URL}/payment-success?method=vnpay&type=reservation`);
+        } else {
+            await OrderService.markPaymentPaid(paymentId, paidAmount, transactionCode, null);
+            return res.redirect(`${CLIENT_BASE_URL}/payment-success?method=vnpay`);
+        }
     } catch (error) {
         console.error('MoMo return error:', error);
         return res.status(500).send('Internal Server Error');
@@ -101,12 +127,28 @@ export const paypalReturn = async (req: Request, res: Response): Promise<any> =>
         const amountVND = convertUSDtoVND(amountUSD);
 
         if (captureResult.status === 'COMPLETED') {
-            await OrderService.markPaymentPaid(payment.id, amountVND, captureResult.id, null);
-            return res.redirect(`${CLIENT_BASE_URL}/payment-success?method=vnpay`);
-        } else {
-            await OrderService.markPaymentFailed(payment.id, `PayPal status: ${captureResult.status}`);
-            return res.redirect(`${CLIENT_BASE_URL}/payment-failed?orderId=${payment.orderId}`);
-        }
+            if (payment.orderId) {
+              await OrderService.markPaymentPaid(payment.id, amountVND, captureResult.id, null);
+            } else if (payment.reservationId) {
+              await ReservationService.markPaymentPaid(payment.id, amountVND, null);
+              return res.redirect(`${CLIENT_BASE_URL}/payment-success?method=paypal&type=reservation`);
+            } else {
+              return res.status(400).send('Invalid payment object: missing both orderId and reservationId');
+            }
+          
+            return res.redirect(`${CLIENT_BASE_URL}/payment-success?method=paypal`);
+          } else {
+            if (payment.orderId) {
+              await OrderService.markPaymentFailed(payment.id, `PayPal status: ${captureResult.status}`);
+            } else if (payment.reservationId) {
+              await ReservationService.markPaymentFailed(payment.id, `PayPal status: ${captureResult.status}`);
+            } else {
+              return res.status(400).send('Invalid payment object: missing both orderId and reservationId');
+            }
+          
+            return res.redirect(`${CLIENT_BASE_URL}/payment-failed?orderId=${payment.orderId || ''}`);
+          }
+          
     } catch (error) {
         console.error('PayPal return error:', error);
         return res.status(500).send('Internal Server Error');
@@ -179,7 +221,7 @@ export const changePaymentMethod = async (req: Request, res: Response): Promise<
         const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
         const postPayment = await OrderService.handlePostPaymentLogic(updatedOrder, clientIp.toString());
 
-        return res.status(200).json({updatedOrder, postPayment});
+        return res.status(200).json({ updatedOrder, postPayment });
     } catch (error) {
         console.error('Change payment method error:', error);
         return res.status(500).send('Internal Server Error');

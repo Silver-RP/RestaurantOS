@@ -20,7 +20,6 @@ class GoogleAuthMiddleWare {
         });
 
         const payload = ticket.getPayload(); // Nhận thông tin người dùng từ payload
-        console.log('payload', payload); // Kiểm tra payload
 
         if (payload) {
           // Lưu thông tin người dùng vào request để dùng ở các middleware sau
