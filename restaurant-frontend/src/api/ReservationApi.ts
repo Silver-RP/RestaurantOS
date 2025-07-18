@@ -81,3 +81,8 @@ export const getMyReservationsApi = async (params?: {
   );
   return res.data;
 };
+
+export const retryReservationPayment = async (reservationId: string) => {
+  const response = await axiosInstance.post(`/payment/retry-reservation/${reservationId}`);
+  return response.data;
+}

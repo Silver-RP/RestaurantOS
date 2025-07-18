@@ -13,6 +13,7 @@ import {
   changePaymentMethod,
   getUserOrders,
 } from '@/api/OrderApi';
+import { retryReservationPayment } from '@/api/ReservationApi';
 import { checkIsLoggedIn } from './useCart';
 import {
   OrderQueryParams,
@@ -154,26 +155,32 @@ export const useHandleRetryPayment = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ orderId }: { orderId: string; }) =>
-      retryPayment(orderId),
+    mutationFn: async ({ type, id }: { type: 'order' | 'reservation'; id: string }) => {
+      if (type === 'order') {
+        return retryPayment(id);
+      } else if (type === 'reservation') {
+        return retryReservationPayment(id);
+      } else {
+        throw new Error('Loại thanh toán không hợp lệ');
+      }
+    },
     onSuccess: (res) => {
       if (res.postPayment?.redirectUrl) {
         window.location.href = res.postPayment.redirectUrl;
         return;
       }
+      toast.success('Thanh toán lại thành công');
       queryClient.invalidateQueries({ queryKey: ['orders'] });
-      queryClient.invalidateQueries({ queryKey: ['all-orders'] });
-      queryClient.invalidateQueries({ queryKey: ['order'] });
-      toast.success('Thanh toán thành công');
+      queryClient.invalidateQueries({ queryKey: ['reservations'] });
     },
     onError: (error: any) => {
       const errorMessage =
-        error.response?.data?.message ||
-        'Có lỗi xảy ra khi thanh toán';
+        error.response?.data?.message || 'Có lỗi xảy ra khi thanh toán lại';
       toast.error(errorMessage);
     },
   });
-}
+};
+
 
 export const useHandleChangePaymentMethod = () => {
   const queryClient = useQueryClient();

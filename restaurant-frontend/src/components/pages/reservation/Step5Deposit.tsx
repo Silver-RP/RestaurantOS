@@ -35,41 +35,29 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
 
   useEffect(() => {
     const { table_type, number_of_people, selectedItems } = formData;
-
+  
+    const baseDeposit = 300_000; 
     const depositByTable: Record<string, number> = {
       'vip-room': 500_000,
       'table-4-10': 200_000,
     };
-
+  
     const tableFee = depositByTable[table_type] || 0;
     const guestFee = number_of_people >= 6 ? 300_000 : 0;
-
+  
     const foodTotal = selectedItems.reduce((total, item) => {
       return total + item.price * item.quantity;
     }, 0);
     const foodFee = foodTotal > 0 ? Math.floor(foodTotal * 0.2) : 0;
-
+  
+    // Cập nhật các phần chi tiết
     setTableDeposit(tableFee);
     setGuestDeposit(guestFee);
     setFoodDeposit(foodFee);
-    setDepositAmount(tableFee + guestFee + foodFee);
+  
+    setDepositAmount(baseDeposit + tableFee + guestFee + foodFee);
   }, [formData]);
-  useEffect(() => {
-    const { table_type, number_of_people, selectedItems } = formData;
-    let amount = 0;
-
-    if (table_type === 'vip-room') amount += 500_000;
-    else if (number_of_people >= 6) amount += 300_000;
-    else if (table_type === 'table-4-10') amount += 200_000;
-
-    const foodTotal = selectedItems.reduce((total, item) => {
-      return total + item.price * item.quantity;
-    }, 0);
-
-    const foodDeposit = foodTotal > 0 ? foodTotal * 0.2 : 0;
-
-    setDepositAmount(amount + foodDeposit);
-  }, [formData]);
+  
 
   const handlePayment = async () => {
     if (!paymentMethod) {
@@ -142,13 +130,14 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
           </p>
           <div className="text-5xl font-extrabold text-secondaryColor mb-2 drop-shadow-lg flex items-center gap-2">
             {fCurrency(depositAmount)}
-            <span className="text-2xl font-bold">₫</span>
+            <span className="text-2xl font-bold"></span>
             <span className="text-lg font-semibold text-gray-300 ml-1">
               VNĐ
             </span>
           </div>
           <p className="text-sm text-gray-400 mb-2 text-center">
-            Số tiền này sẽ được trừ vào hóa đơn thanh toán khi bạn đến nhà hàng.
+            Số tiền này có bao gồm 300.000 VNĐ đặt cọc giữ bàn và sẽ 
+            được trừ vào hóa đơn thanh toán khi bạn đến nhà hàng.
           </p>
         </div>
 
@@ -187,7 +176,7 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
               Cọc theo món ăn đã chọn
             </p>
             <p className="text-xs text-gray-400 mb-1 text-center">
-              20% giá trị món ăn đã chọn
+              20% giá trị món ăn đã chọn nếu có giá trên 1 triệu
             </p>
             <span className="text-xl font-bold text-secondaryColor">
               {fCurrency(foodDeposit)}
@@ -201,7 +190,7 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
             Tổng tiền đặt cọc
           </span>
           <span className="text-3xl font-bold text-secondaryColor drop-shadow-lg">
-            {fCurrency(depositAmount)} ₫
+            {fCurrency(depositAmount)}
           </span>
         </div>
 

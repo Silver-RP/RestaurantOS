@@ -8,7 +8,6 @@ import {
   OrderDetailResponse,
   PlaceOrderRequest,
 } from '../types/Order.type';
-import { SearchParams } from '@/types/search.type';
 
 export async function getOrders(
   params?: OrderQueryParams,

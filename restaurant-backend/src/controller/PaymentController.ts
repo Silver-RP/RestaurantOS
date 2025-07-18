@@ -88,8 +88,8 @@ export const momoReturn = async (req: Request, res: Response): Promise<any> => {
         const transactionCode = req.query.transId as string;
 
         if (objectType === 'reservation') {
-            await ReservationService.markPaymentPaid(paymentId, paidAmount, transactionCode);
-            return res.redirect(`${CLIENT_BASE_URL}/payment-success?method=vnpay&type=reservation`);
+            await ReservationService.markPaymentPaid(paymentId, paidAmount, null);
+            return res.redirect(`${CLIENT_BASE_URL}/payment-success?method=momo&type=reservation`);
         } else {
             await OrderService.markPaymentPaid(paymentId, paidAmount, transactionCode, null);
             return res.redirect(`${CLIENT_BASE_URL}/payment-success?method=vnpay`);
@@ -228,5 +228,22 @@ export const changePaymentMethod = async (req: Request, res: Response): Promise<
     }
 }
 
+export const retryReservationPayment = async (req: Request, res: Response): Promise<any> => {
+    const { reservationId } = req.params;
+    if (!reservationId) return res.status(400).send('Missing reservationId');
+
+    const reservation = await ReservationService.getReservationById(reservationId.toString());
+    if (!reservation) return res.status(404).send('Reservation not found');
+
+    if (!['UNPAID', 'FAILED'].includes(reservation.payment_status)) {
+        return res.status(400).send('Reservation is not in a retryable state');
+    }
+
+    const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
+    const postPayment = await ReservationService.handleReservationPostPaymentLogic(reservation, clientIp.toString());
+  
+    return res.status(200).json({ reservation, postPayment });
+  };
+  
 
 
