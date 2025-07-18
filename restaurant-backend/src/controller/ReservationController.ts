@@ -126,8 +126,6 @@ export const ReservationController = {
         return;
       }
 
-      console.log('Found reservation data:', reservation);
-  
       res.status(200).json({ success: true, data: reservation });
     } catch (error) {
       console.error('Get reservation by code and phone error:', error);

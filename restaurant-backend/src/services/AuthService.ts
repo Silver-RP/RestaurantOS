@@ -230,8 +230,8 @@ class AuthService {
         token: refreshToken,
         userId: user._id,
         expiresAt: new Date(Date.now() + refreshTokenExpiresIn * 1000),
-        userAgent: req.get('User-Agent'),
-        ipAddress: req.ip,
+        userAgent: req?.get?.('User-Agent') || 'unknown',
+        ipAddress: req?.ip || 'unknown',
       });
   
       return {
