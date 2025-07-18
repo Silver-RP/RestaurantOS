@@ -1,5 +1,5 @@
 import axiosInstance from './axiosInstance';
-import { IReservation, IReservationDetail } from '@/types/reservation.type';
+import { IReservation, IReservationDetail } from '@/types/Reservation.type';
 
 export const createReservationApi = async (data: Partial<IReservation>) => {
   const response = await axiosInstance.post('/reservation/create', data);

@@ -23,6 +23,7 @@ export const ReservationController = {
         table_code,
         deposit,
         room_type,
+        payment_method,
       } = req.body;
 
       const data = {
@@ -39,14 +40,20 @@ export const ReservationController = {
         table_code,
         deposit,
         room_type,
+        payment_method,
       };
 
       const reservation = await ReservationService.createReservation(data, userId);
 
+      const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
+      const postPayment = await ReservationService.handleReservationPostPaymentLogic(reservation, clientIp.toString());
+  
       return res.status(201).json({
         message: 'Đặt bàn thành công',
         data: reservation,
+        postPayment,
       });
+
     } catch (error: any) {
       console.error('❌ Create reservation error:', error);
       return res.status(error.statusCode || 500).json({

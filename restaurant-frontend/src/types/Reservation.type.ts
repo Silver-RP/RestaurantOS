@@ -4,6 +4,7 @@ export interface IReservation {
   _id?: string;
   full_name: string;
   phone: string;
+  email: string;
   date: string;
   time: string;
   table_type: string;
@@ -11,6 +12,7 @@ export interface IReservation {
   note?: string;
   is_choose_later: boolean;
   status: ReservationStatus;
+  deposit?: number;
   createdAt?: string;
   updatedAt?: string;
 }

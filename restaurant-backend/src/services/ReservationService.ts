@@ -19,6 +19,7 @@ class ReservationService {
       const {
         full_name,
         phone,
+        email,
         date,
         time,
         table_type,
@@ -26,7 +27,6 @@ class ReservationService {
         table_code,
         note,
         is_choose_later,
-        email,
         selectedItems = [],
         deposit,
         room_type,
@@ -38,6 +38,7 @@ class ReservationService {
         user_id: userId, // Có thể là null cho khách không đăng nhập
         full_name,
         phone,
+        email,
         date,
         time,
         table_type,
@@ -45,14 +46,15 @@ class ReservationService {
         note,
         is_choose_later,
         status: 'PENDING',
-        deposit,
+        deposit_amount: deposit || 0,
         room_type,
+        payment_method: data.payment_method 
       });
 
       let savedReservation: Document<unknown, {}, IReservation, {}> & IReservation & Required<{ _id: unknown; }> & { __v: number; };
       try {
         savedReservation = await newReservation.save();
-        console.log('[ReservationService] Đã lưu reservation:', savedReservation?._id);
+        console.log('[ReservationService] Đã lưu reservation:', savedReservation);
       } catch (err) {
         console.error('[ReservationService] Lỗi khi lưu reservation:', err);
         throw err;
@@ -440,7 +442,7 @@ class ReservationService {
   }
 
   async sendReservationPaymentSuccessEmail(paymentId: Types.ObjectId) {
-    const payment = await Payment.findById(paymentId).populate('reservationId,').lean();
+    const payment = await Payment.findById(paymentId).populate('reservationId').lean();
     if (!payment) throw new Error('Payment not found');
     if (!payment.reservationId) throw new Error('Order not found in payment');
 
