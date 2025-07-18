@@ -263,6 +263,7 @@ export interface AllOrder {
   vat_amount: number;
   items_price: number;
   total_price: number;
+  discount?: number;
   total_quantity: number;
   paid_at: string | null;
   payment_status?: string; // Thêm trường payment_status (tùy chọn)

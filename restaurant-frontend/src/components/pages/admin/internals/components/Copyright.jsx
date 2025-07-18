@@ -15,11 +15,8 @@ export default function Copyright(props) {
         ...(Array.isArray(props.sx) ? props.sx : [props.sx]),
       ]}
     >
-      {'Copyright © '}
-      <Link color="inherit" href="https://mui.com/">
-        Sitemark
-      </Link>{' '}
-      {new Date().getFullYear()}
+      {'Copyright © 2025 Beefbeef Restaurant'}
+      
       {'.'}
     </Typography>
   );
