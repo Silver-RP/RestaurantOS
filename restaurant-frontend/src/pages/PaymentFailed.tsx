@@ -9,7 +9,7 @@ import Cookies from 'js-cookie';
 const PaymentFailed = () => {
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(window.location.search);
-  const orderId = searchParams.get('orderId');
+  const orderId = new URLSearchParams(window.location.search).get('id');
   const type = searchParams.get('type') || 'order'; 
 
   const { mutate: retryPaymentMutate, isPending: retrying } =
