@@ -50,6 +50,7 @@ const MobileFooter = () => {
                 <li><Link to={""} className="hover:text-secondaryColor">Chính sách giao hàng</Link></li>
                 <li><Link to={""} className="hover:text-secondaryColor">Điều khoản & điều kiện</Link></li>
                 <li><Link to={""} className="hover:text-secondaryColor">Khiếu nại & góp ý</Link></li>
+                <li><Link to="/reservation/lookup-reservation" className="text-sm hover:text-secondaryColor transition">Tra cứu đơn đặt bàn</Link></li>
               </ul>
             ),
           },

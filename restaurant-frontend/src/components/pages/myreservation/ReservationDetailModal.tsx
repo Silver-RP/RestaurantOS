@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getReservationByIdApi } from '@/api/ReservationApi';
-import { IReservationDetail } from '@/types/reservation.type';
+import { IReservationDetail } from '@/types/Reservation.type';
 import Modal from '../../common/ModalComponents';
 
 interface Props {

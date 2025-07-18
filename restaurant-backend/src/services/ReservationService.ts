@@ -412,6 +412,41 @@ class ReservationService {
     return { ...reservation, details: detailsWithImages };
   }
 
+  async getReservationByCodeAndPhoneNumber(reservationCode: string, phoneNumber: string) {
+    const reservations = await Reservation.find({ phone: phoneNumber }).lean();
+    const match = reservations.find((r) =>
+      r._id.toString().slice(-6) === reservationCode
+    );
+  
+    if (!match) {
+      return { exists: false };
+    }
+  
+    const details = await ReservationDetail.find({ reservation_id: match._id }).lean();
+  
+    const detailsWithImages = await Promise.all(
+      details.map(async (item) => {
+        let image: string | null = null;
+        try {
+          const dish = await Dish.findById(item.dish_id, 'images').lean();
+          image = dish?.images?.[0] || null;
+        } catch (err: any) {
+          console.warn('Không tìm thấy ảnh cho món:', item.dish_id, '| Lỗi:', err?.message);
+        }
+        return { ...item, image };
+      }),
+    );
+  
+    return {
+      exists: true,
+      reservation: {
+        ...match,
+        order_items: detailsWithImages
+      }
+    };
+  }
+  
+
   async getAllReservations() {
     return await Reservation.find().sort({ createdAt: -1 }).lean();
   }

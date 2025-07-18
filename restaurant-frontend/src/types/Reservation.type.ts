@@ -13,6 +13,11 @@ export interface IReservation {
   is_choose_later: boolean;
   status: ReservationStatus;
   deposit?: number;
+  deposit_amount?: number;
+  payment_status: string;
+  payment_method: string;
+  paid_at?: string;
+  order_items: IReservationDetail[];
   createdAt?: string;
   updatedAt?: string;
 }

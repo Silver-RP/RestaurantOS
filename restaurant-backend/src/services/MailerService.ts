@@ -210,7 +210,7 @@ const MailerService = {
           hour: '2-digit',
           minute: '2-digit',
         }),
-        reservationUrl: `${process.env.CLIENT_BASE_URL || '#'}/profile/lookup-reservations`,
+        reservationUrl: `${process.env.CLIENT_BASE_URL || '#'}/reservation/lookup-reservation`,
       },
     });
   },

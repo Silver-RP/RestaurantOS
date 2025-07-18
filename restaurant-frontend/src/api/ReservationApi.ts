@@ -30,6 +30,11 @@ export const getReservationByIdApi = async (id: string) => {
   return response.data.data;
 };
 
+export const getReservationReservationcodeAndPhoneNumber = async (reservationCode: string, phoneNumber: string) => {
+  const response = await axiosInstance.get(`/reservation/validate?reservationCode=${reservationCode}&phone=${phoneNumber}`);
+  return response.data;
+};
+
 export const updateReservationStatusApi = async (
   id: string,
   status: string,

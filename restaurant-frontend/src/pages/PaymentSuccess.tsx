@@ -65,7 +65,7 @@ const PaymentSuccess = () => {
 
   if (isReservation) {
     buttonLabel = isLoggedIn ? 'Lịch sử đặt bàn' : 'Tra cứu đặt bàn';
-    targetPath = isLoggedIn ? '/profile/my-reservation' : '/reservation/lookup';
+    targetPath = isLoggedIn ? '/profile/my-reservation' : '/reservation/lookup-reservation';
   } else if (isLoggedIn) {
     buttonLabel = 'Lịch sử đơn hàng';
     targetPath = '/profile/orders';
