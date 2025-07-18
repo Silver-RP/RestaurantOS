@@ -322,8 +322,7 @@ class ReservationService {
       await reservation.save();
     }
 
-    // Optional: Gửi email xác nhận thanh toán thành công
-    // await this.sendReservationPaymentSuccessEmail(payment._id);
+    await this.sendReservationPaymentSuccessEmail(payment._id);
 
     console.log('Payment marked as paid: OK');
     return { reservation, payment };
@@ -455,6 +454,23 @@ class ReservationService {
     }
     reservation.status = 'PENDING';
     return await reservation.save();
+  }
+
+  async sendReservationPaymentSuccessEmail(paymentId: Types.ObjectId) {
+    const payment = await Payment.findById(paymentId).populate('reservationId,').lean();
+    if (!payment) throw new Error('Payment not found');
+    if (!payment.reservationId) throw new Error('Order not found in payment');
+
+    const reservation = await Reservation.findById(payment.reservationId).lean();
+    if (!reservation ) throw new Error('Reservation not found');
+
+    const userEmail = reservation.email;
+
+    await MailerService.sendReservationPaymentSuccess({
+      payment,
+      reservation,
+      userEmail,
+    });
   }
 }
 

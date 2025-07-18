@@ -6,6 +6,7 @@ const reservationSchema = new mongoose.Schema<IReservation>(
     user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     full_name: { type: String, required: true },
     phone: { type: String, required: true },
+    email: { type: String, required: true },
     date: { type: String, required: true },
     time: { type: String, required: true },
     table_type: { type: String, required: true },

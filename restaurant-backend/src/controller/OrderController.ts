@@ -242,23 +242,6 @@ class OrderController {
     }
   }
 
-  async requestCancel(req: Request, res: Response, next: NextFunction): Promise<any> {
-    try {
-      const orderId = new Types.ObjectId(req.params.id);
-      const { reason } = req.body;
-      const updatedOrder = await OrderService.requestCancel(orderId, reason);
-
-      return res.status(200).json({
-        message: 'Cancel requested successfully',
-        order: updatedOrder,
-      });
-    } catch (error: any) {
-      console.error('Error requesting cancel:', error.message);
-      return res
-        .status(error.statusCode || 500)
-        .json({ message: error.message || 'Internal Server Error' });
-    }
-  }
 }
 
 export default new OrderController();

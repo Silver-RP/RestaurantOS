@@ -4,6 +4,7 @@ export interface IReservation extends mongoose.Document {
   user_id: mongoose.Types.ObjectId;
   full_name: string;
   phone: string;
+  email: string;
   date: string;
   time: string;
   table_type: string;

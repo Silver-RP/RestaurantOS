@@ -5,6 +5,7 @@ import { IAddress } from '../models/AddressModel';
 import { IOrderDetail } from '../models/OrderDetailModel';
 import { IPayment } from '../models/PaymentModel';
 import { IVoucher } from '../models/VoucherModel';
+import { IReservation } from '../types/reservation.types';
 
 type MailTemplateParams = {
   to: string;
@@ -116,7 +117,7 @@ const MailerService = {
           voucher.discount_type === 'percent'
             ? `${voucher.discount_value}%`
             : `${voucher.discount_value.toLocaleString('vi-VN')}₫`,
-        expiryDate: new Date(voucher.end_date).toLocaleDateString('vi-VN'),
+        expiryDate: voucher.end_date ? new Date(voucher.end_date).toLocaleDateString('vi-VN') : 'Không xác định',
         voucherWalletUrl: `${process.env.CLIENT_BASE_URL || '#'}/profile/vouchers`,
       },
     });
@@ -184,6 +185,30 @@ const MailerService = {
       subject: `Xác nhận đặt bàn #${orderIdShort}`,
       template: 'reservation-confirmation',
       context: emailContext,
+    });
+  },
+
+  async sendReservationPaymentSuccess(params: { payment: IPayment; reservation: IReservation; userEmail: string }) {
+    const { payment, reservation, userEmail } = params;
+
+    await this.sendTemplateEmail({
+      to: userEmail,
+      subject: `Thanh toán thành công khoản cọc cho đơn đặt bàn tại nhà hàng BeefBeef`,
+      template: 'reservationPayment-success',
+      context: {
+        reservationId: (reservation as { _id: string })._id.toString().slice(-6).toUpperCase(),
+        transactionCode: payment.transaction_code?.toString().toUpperCase(),
+        paymentMethod: this.getPaymentMethodName(payment.payment_method).toString().toUpperCase(),
+        amount: payment.amount.toLocaleString('vi-VN') + '₫',
+        date: new Date(payment.created_at).toLocaleString('vi-VN', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+        reservationUrl: `${process.env.CLIENT_BASE_URL || '#'}/profile/lookup-reservations`,
+      },
     });
   },
 
