@@ -14,8 +14,8 @@ import TableReservationRouter from './routes/TableReservationRouter';
 import TableRoutes from './routes/TableRouters';
 import BannerRoutes from './routes/BannerRoutes';
 import PostsRoutes from './routes/PostsRoutes';
+import PostReportRoutes from './routes/PostReportRoutes';
 import commentPostRoutes from './routes/CommentPostRoutes';
-
 import StaffRoutes from './routes/StaffRoutes';
 import FoodRoutes from './routes/FoodRoutes';
 import PermissionRoutes from './routes/PermissionRoutes';
@@ -30,6 +30,8 @@ import DashboardRoutes from './routes/DashboardRoutes';
 import IngredientsRouter from './routes/IngredientsRouter';
 import VoucherRoutes from './routes/VoucherRoutes';
 import ReviewRoutes from './routes/ReviewRoutes';
+import LoyaltyRoutes from './routes/LoyaltyRoutes';
+
 
 import dotenv from 'dotenv';
 import connectDB from './config/db';
@@ -141,6 +143,8 @@ app.use(
 app.use('/api/food', FoodRoutes);
 app.use('/api/posts', PostsRoutes);
 app.use('/api/posts', commentPostRoutes);
+app.use('/api/post-reports', PostReportRoutes);
+app.use('/api/loyalty', LoyaltyRoutes);
 app.use('/api/order', AuthMiddleWare.verifyToken, OrderRoutes);
 app.use('/api/cart', AuthMiddleWare.verifyToken, CartRouter);
 app.use('/api/dashboard', AuthMiddleWare.verifyToken, DashboardRoutes);
