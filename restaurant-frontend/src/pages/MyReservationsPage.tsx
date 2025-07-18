@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { IReservation } from '@/types/reservation.type';
+import { IReservation } from '@/types/Reservation.type';
 import Container from '@/components/common/Container';
 import { useReservations } from '@/hooks/useReservations';
 import BreadcrumbComponent from '@/components/common/BreadCrumbComponents';

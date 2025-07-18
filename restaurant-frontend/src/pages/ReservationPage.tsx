@@ -25,6 +25,7 @@ const steps = [
 
 const ReservationPage: React.FC = () => {
   const navigate = useNavigate();
+  const [paymentMethod, setPaymentMethod] = useState<string>('');
 
   const getInitialFormData = (): ReservationFormData => {
     const saved = localStorage.getItem('reservation-data');
@@ -201,6 +202,7 @@ const ReservationPage: React.FC = () => {
               formData={formData}
               onSuccess={() => setStep(6)}
               onBack={() => setStep(4)}
+              onPaymentMethodChange={(method) => setPaymentMethod(method || '')}
             />
           )}
 

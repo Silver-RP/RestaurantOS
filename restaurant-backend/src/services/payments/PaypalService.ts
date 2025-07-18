@@ -104,6 +104,47 @@ export async function createPayPalOrder(order: IOrderWithItems, paymentId: strin
   }
 }
 
+export async function createSimplePayPalOrder({
+  amount,
+  objectId,
+  paymentId,
+  objectType
+}: {
+  amount: number;
+  objectId: string;
+  paymentId: string;
+  objectType: 'order' | 'reservation';
+}): Promise<string> {
+  const usdAmount = convertVNDToUSD(amount);
+
+  const request = new paypal.orders.OrdersCreateRequest();
+  request.prefer('return=representation');
+  request.requestBody({
+    intent: 'CAPTURE',
+    purchase_units: [{
+      reference_id: paymentId,
+      amount: {
+        currency_code: 'USD',
+        value: usdAmount.toFixed(2),
+      },
+      description: `Thanh toán ${objectType} ${objectId}`
+    }],
+    application_context: {
+      return_url: `${process.env.SERVER_BASE_URL}/api/payment/paypal-return`,
+      cancel_url: `${process.env.CLIENT_BASE_URL}/payment-cancel`,
+    }
+  });
+
+  try {
+    const response = await paypalClient.execute(request);
+    const approvalUrl = response.result.links?.find((link: { rel: string; }) => link.rel === 'approve')?.href;
+    if (!approvalUrl) throw new Error('Approval URL not found in PayPal response');
+    return approvalUrl;
+  } catch (error) {
+    console.error('PayPal create order error:', error);
+    throw error;
+  }
+}
 
 export async function capturePayPalOrder(paypalOrderId: string) {
     const request = new paypal.orders.OrdersCaptureRequest(paypalOrderId);

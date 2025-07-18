@@ -7,8 +7,8 @@ export const ReservationController = {
   create: async (req: Request, res: Response): Promise<Response> => {
     try {
       const user = req.user as IUser;
-      const userId = user?.id || null; // Cho phép null nếu không đăng nhập
-
+      const userId = user?.id || null;
+  
       const {
         full_name,
         phone,
@@ -21,11 +21,14 @@ export const ReservationController = {
         email,
         selectedItems,
         table_code,
-        deposit,
+        deposit_amount,
         room_type,
+        payment_method,
       } = req.body;
 
-      const data = {
+      console.log('Creating reservation with data:', req.body);
+  
+      const reservation = await ReservationService.createReservation({
         full_name,
         phone,
         date,
@@ -37,15 +40,18 @@ export const ReservationController = {
         email,
         selectedItems,
         table_code,
-        deposit,
+        deposit_amount,
         room_type,
-      };
-
-      const reservation = await ReservationService.createReservation(data, userId);
-
+        payment_method,
+      }, userId);
+  
+      const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
+      const postPayment = await ReservationService.handleReservationPostPaymentLogic(reservation, clientIp.toString());
+  
       return res.status(201).json({
         message: 'Đặt bàn thành công',
         data: reservation,
+        postPayment,
       });
     } catch (error: any) {
       console.error('❌ Create reservation error:', error);
@@ -54,6 +60,7 @@ export const ReservationController = {
       });
     }
   },
+  
 
   getMyReservations: async (req: Request, res: Response): Promise<void> => {
     try {

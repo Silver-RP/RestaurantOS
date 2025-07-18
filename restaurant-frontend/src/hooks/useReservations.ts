@@ -12,14 +12,18 @@ import {
   addReservationItemApi,
   confirmReservationApi,
 } from '@/api/ReservationApi';
-import { IReservation } from '@/types/reservation.type';
+import { IReservation } from '@/types/Reservation.type';
 
 export const useReservations = () => {
   const createReservation = async (data: Partial<IReservation>) => {
     try {
+      console.log('📞 Gọi API createReservationApi với dữ liệu:', data);
       const res = await createReservationApi(data);
-      toastService.success('Đặt bàn thành công');
-      return res;
+      if (res.postPayment?.redirectUrl) {
+        window.location.href = res.postPayment.redirectUrl;
+        return;
+      }
+      return res.data;
     } catch (error: any) {
       console.error(
         '❌ Lỗi khi gọi createReservationApi:',
@@ -110,7 +114,7 @@ export const useReservations = () => {
   const confirmReservation = useCallback(async (id: string) => {
     try {
       const res = await confirmReservationApi(id);
-      toastService.success('Xác nhận đặt bàn thành công');
+     toastService.success('Xác nhận đặt bàn thành công'); 
       return res;
     } catch (error: any) {
       toastService.error(

@@ -21,6 +21,7 @@ import {
   PlaceOrderRequest,
 } from '../types/Order.type';
 import { toast } from 'react-toastify';
+import { AxiosError } from 'axios';
 
 export const useOrders = (params: OrderQueryParams) => {
   return useQuery({

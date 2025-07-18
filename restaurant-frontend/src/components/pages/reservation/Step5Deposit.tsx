@@ -8,6 +8,7 @@ import { FaUsers } from 'react-icons/fa';
 import { GiKnifeFork } from 'react-icons/gi';
 import { useReservations } from '@/hooks/useReservations';
 import { holdTableApi } from '@/api/TableReservationApi';
+import { toast } from 'react-toastify';
 import PaymentMethodSelector,  { paymentMethods } from '../checkout/PaymentMethodSelector';
 
 type Step5DepositProps = {
@@ -71,6 +72,11 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
   }, [formData]);
 
   const handlePayment = async () => {
+    if (!paymentMethod) {
+      toast.error('Vui lòng chọn phương thức thanh toán');
+      return;
+    }
+    console.log('🚀 Đang xử lý thanh toán với phương thức:', paymentMethod);
     setIsPaying(true);
 
     try {
@@ -94,10 +100,13 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
         note: formData.note,
         is_choose_later: formData.selectedItems.length === 0,
         selectedItems: formData.selectedItems,
+        payment_method: paymentMethod,
+        deposit_amount: depositAmount,
       };
 
       // Gọi API tạo reservation
       const result = await createReservation(reservationData);
+      console.log("result step5: ", result);
 
       if (result) {
         if (result._id) {
