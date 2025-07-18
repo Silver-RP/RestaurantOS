@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ReservationFormData } from '@/types/reservation.type';
+import { ReservationFormData } from '@/types/Reservation.type';
 import ButtonComponents from '@/components/common/ButtonComponents';
 import { fCurrency } from '@/utils/format-number';
 import { toastService } from '@/utils/toastService';
@@ -8,30 +8,25 @@ import { FaUsers } from 'react-icons/fa';
 import { GiKnifeFork } from 'react-icons/gi';
 import { useReservations } from '@/hooks/useReservations';
 import { holdTableApi } from '@/api/TableReservationApi';
-import { toast } from 'react-toastify';
-import PaymentMethodSelector,  { paymentMethods } from '../checkout/PaymentMethodSelector';
 
 type Step5DepositProps = {
   formData: ReservationFormData;
   onSuccess: () => void;
   onBack: () => void;
-  onPaymentMethodChange: (method: string | null) => void;
 };
 
 const Step5Deposit: React.FC<Step5DepositProps> = ({
   formData,
   onSuccess,
   onBack,
-  onPaymentMethodChange,
 }) => {
   const [depositAmount, setDepositAmount] = useState<number>(0);
   const [isPaying, setIsPaying] = useState(false);
   const [tableDeposit, setTableDeposit] = useState(0);
   const [guestDeposit, setGuestDeposit] = useState(0);
   const [foodDeposit, setFoodDeposit] = useState(0);
-  const [paymentMethod, setPaymentMethod] = useState<string>('');
 
-  const { createReservation } = useReservations();
+  const { createReservation, confirmReservation } = useReservations();
 
   useEffect(() => {
     const { table_type, number_of_people, selectedItems } = formData;
@@ -72,11 +67,6 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
   }, [formData]);
 
   const handlePayment = async () => {
-    if (!paymentMethod) {
-      toast.error('Vui lòng chọn phương thức thanh toán');
-      return;
-    }
-    console.log('🚀 Đang xử lý thanh toán với phương thức:', paymentMethod);
     setIsPaying(true);
 
     try {
@@ -100,16 +90,14 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
         note: formData.note,
         is_choose_later: formData.selectedItems.length === 0,
         selectedItems: formData.selectedItems,
-        payment_method: paymentMethod,
-        deposit_amount: depositAmount,
       };
 
       // Gọi API tạo reservation
       const result = await createReservation(reservationData);
       if (result) {
-        // if (result._id) {
-        //   await confirmReservation(result._id);
-        // }
+        if (result._id) {
+          await confirmReservation(result._id);
+        }
 
         localStorage.removeItem('reservation-data');
         onSuccess();
@@ -123,8 +111,6 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
       setIsPaying(false);
     }
   };
-
-  const filteredMethods = paymentMethods.filter(m => m.value !== 'CASH');
 
   return (
     <div className="bg-bodyBackground text-white py-8 px-2 flex items-center justify-center">
@@ -201,20 +187,6 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
           <span className="text-3xl font-bold text-secondaryColor drop-shadow-lg">
             {fCurrency(depositAmount)} ₫
           </span>
-        </div>
-
-        <div className="mt-4 mb-12 md:mt-6 flex flex-col md:flex-row md:gap-4">
-          {/* Phương thức thanh toán */}
-          <div className="flex-1 text-left ">
-            <PaymentMethodSelector
-              selectedMethod={paymentMethod}
-              onChange={(method) => {
-                setPaymentMethod(method || '');
-                onPaymentMethodChange(method);
-              }}
-              methods={filteredMethods}
-            />
-          </div>
         </div>
 
         {/* Nút điều hướng */}
