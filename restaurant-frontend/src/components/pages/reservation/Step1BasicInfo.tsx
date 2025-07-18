@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ReservationFormData } from '../../../types/Reservation.type';
+import { ReservationFormData } from '../../../types/reservation.type';
 import ButtonComponents from '@components/common/ButtonComponents';
 import { reservationSchema } from '@/utils/zodSchemas';
 import { Listbox } from '@headlessui/react';
@@ -80,51 +80,13 @@ const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({
     >,
   ) => {
     const { name, value } = e.target;
+    const parsedValue = name === 'number_of_people' ? Number(value) : value;
 
-    if (name === 'number_of_people') {
-      // Chỉ cho phép số, tối đa 3 chữ số
-      if (!/^\d{0,3}$/.test(value)) return;
-
-      // Nếu rỗng thì set về 0
-      if (value === '') {
-        setFormData((prev) => ({ ...prev, number_of_people: 0 }));
-        setTouched((prev) => ({ ...prev, [name]: true }));
-        return;
-      }
-
-      // Không cho phép số 0 ở đầu (trừ khi chỉ có 0)
-      if (/^0\d+/.test(value)) return;
-
-      // Không cho phép lớn hơn 100
-      const num = Number(value);
-      if (num > 100) return;
-
-      setFormData((prev) => ({ ...prev, number_of_people: num }));
-      setTouched((prev) => ({ ...prev, [name]: true }));
-
-      const result = reservationSchema.safeParse({
-        ...formData,
-        number_of_people: num,
-      });
-
-      if (!result.success) {
-        const fieldErrors = result.error.flatten().fieldErrors;
-        const errorMessage =
-          fieldErrors[name as keyof typeof fieldErrors]?.[0] || '';
-        setErrors((prev) => ({ ...prev, [name]: errorMessage }));
-      } else {
-        setErrors((prev) => ({ ...prev, [name]: '' }));
-      }
-      return;
-    }
-
-    // Các trường khác giữ nguyên
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    setTouched((prev) => ({ ...prev, [name]: true }));
+    setFormData((prev) => ({ ...prev, [name]: parsedValue }));
 
     const result = reservationSchema.safeParse({
       ...formData,
-      [name]: value,
+      [name]: parsedValue,
     });
 
     if (!result.success) {
@@ -139,7 +101,6 @@ const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
     const result = reservationSchema.safeParse(formData);
 
     if (result.success) {
@@ -212,28 +173,18 @@ const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({
           <label className="text-sm mb-1">Số người</label>
           <div className="relative">
             <input
-              type="text"
+              type="number"
               name="number_of_people"
+              min={1}
               max={100}
               placeholder="Nhập số người"
-              value={
-                formData.number_of_people === 0 ? '' : formData.number_of_people
-              }
+              value={formData.number_of_people}
               onChange={handleChange}
               className="h-[48px] w-full px-4 bg-transparent border border-[#074b6b] text-white placeholder:text-gray-400 rounded focus:outline-none focus:border-secondaryColor focus:ring-1 focus:ring-secondaryColor transition pr-10 no-spinner"
             />
-            {(submitted || touched.number_of_people) &&
-              (!formData.number_of_people || formData.number_of_people < 1) && (
-                <p className="text-red-400 text-sm">
-                  Vui lòng nhập số lượng người lớn hơn 0
-                </p>
-              )}
-            {(submitted || touched.number_of_people) &&
-              errors.number_of_people && (
-                <p className="text-red-400 text-sm">
-                  {errors.number_of_people}
-                </p>
-              )}
+            {errors.number_of_people && (
+              <p className="text-red-400 text-sm">{errors.number_of_people}</p>
+            )}
           </div>
         </div>
 

@@ -4,15 +4,33 @@ import { Payment, IPayment } from '../models/PaymentModel';
 import cron from 'node-cron';
 import MailerService from './MailerService';
 import User from '../models/UserModel';
+import PostsService from './PostsServices'; // Import PostsService
 
 class CronJobService {
   private readonly ONLINE_PAYMENT_METHODS = ['VNPAY', 'MOMO', 'MOMO_ATM', 'CREDIT_CARD', 'BANKING'];
-  private task: any;
+  private cancelOrderTask: any;
+  private publishPostTask: any; // Task for publishing scheduled posts
 
   constructor() {
-    this.task = cron.schedule('* * * * *', async () => {
+    // Cron job for cancelling unpaid orders
+    this.cancelOrderTask = cron.schedule('* * * * *', async () => {
       console.log('Chạy cron job kiểm tra đơn hàng chưa thanh toán...');
       await this.cancelUnpaidOrders();
+    });
+
+    // Cron job for publishing scheduled posts (e.g., every minute)
+    this.publishPostTask = cron.schedule('* * * * *', async () => {
+      console.log('Chạy cron job kiểm tra bài viết đã lên lịch...');
+      try {
+        const result = await PostsService.publishScheduledPosts();
+        if (result.modifiedCount > 0) {
+          console.log(`Đã đăng thành công ${result.modifiedCount} bài viết đã lên lịch.`);
+        } else {
+          console.log('Không có bài viết nào cần đăng theo lịch.');
+        }
+      } catch (error: any) {
+        console.error('Lỗi trong cron job đăng bài viết đã lên lịch:', error.message);
+      }
     });
   }
 
@@ -88,12 +106,15 @@ class CronJobService {
   }
 
   public start() {
-    this.task.start();
+    this.cancelOrderTask.start();
+    this.publishPostTask.start();
   }
 
   public stop() {
-    this.task.stop();
+    this.cancelOrderTask.stop();
+    this.publishPostTask.stop();
   }
 }
 
 export default new CronJobService();
+

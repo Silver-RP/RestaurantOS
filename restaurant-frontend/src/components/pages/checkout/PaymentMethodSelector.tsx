@@ -8,7 +8,9 @@ interface PaymentMethodSelectorProps {
   selectedMethod: string | null;
   onChange: (method: string) => void;
   size?: 'sm' | 'md';
+  methods: PaymentMethod[];
 }
+
 
 type IconType = React.ComponentType<{ className?: string }>;
 
@@ -19,7 +21,7 @@ interface PaymentMethod {
   iconUrl?: string; 
 }
 
-const paymentMethods: PaymentMethod[] = [
+export const paymentMethods: PaymentMethod[] = [
   { value: '', label: 'Chọn phương thức thanh toán' },
   { value: 'CASH', label: 'Tiền mặt khi nhận hàng', Icon: FiDollarSign },
   { value: 'VNPAY', label: 'Thanh toán VNPay', iconUrl: '/assets/logos/vnpay-logo-inkythuatso-01-13-16-26-42.jpg' },
@@ -33,7 +35,9 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
   selectedMethod,
   onChange,
   size = 'md',
+  methods,
 }) => {
+  const availableMethods = methods || paymentMethods;
   const selected =
     paymentMethods.find((m) => m.value === selectedMethod) || paymentMethods[0];
 
@@ -68,7 +72,7 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
             </Listbox.Button>
 
             <Listbox.Options className="absolute w-full mt-1 bg-bodyBackground border border-white/20 rounded-md shadow-lg z-10 max-h-80 overflow-auto">
-              {paymentMethods.map((method) => (
+              {availableMethods.map((method) => (
                 <Listbox.Option
                   key={method.value}
                   value={method.value}

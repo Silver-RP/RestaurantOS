@@ -19,6 +19,7 @@ export interface PostsQueryParams {
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+  status?: string;
 }
 
 const PostsApi = {

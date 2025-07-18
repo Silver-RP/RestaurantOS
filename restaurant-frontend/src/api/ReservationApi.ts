@@ -1,16 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import axiosInstance from './axiosInstance';
 import { IReservation, IReservationDetail } from '@/types/reservation.type';
 
 export const createReservationApi = async (data: Partial<IReservation>) => {
   const response = await axiosInstance.post('/reservation/create', data);
-  return response.data.data;
-};
-
-export const confirmReservationApi = async (reservationId: string) => {
-  const response = await axiosInstance.patch(
-    `/reservation/${reservationId}/confirm`,
-  );
-  return response.data.data;
+  return response.data;
 };
 
 export const addReservationItemApi = async (
@@ -72,7 +66,7 @@ export const getMyReservationsApi = async (params?: {
 
   const queryString = query.toString() ? `?${query.toString()}` : '';
   const res = await axiosInstance.get(
-    `/my-reservations/my-reservations${queryString}`,
+    `/reservation/my-reservations${queryString}`,
   );
   return res.data;
 };

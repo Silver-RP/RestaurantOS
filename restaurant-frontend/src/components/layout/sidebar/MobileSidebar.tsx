@@ -14,10 +14,7 @@ interface MobileSidebarProps {
 const userInfo = Cookies.get('userInfo');
 const user = userInfo ? JSON.parse(userInfo) : null;
 
-const MobileSidebar: React.FC<MobileSidebarProps> = ({
-  toggleSidebar,
-  isOpen,
-}) => {
+const MobileSidebar: React.FC<MobileSidebarProps> = ({ toggleSidebar, isOpen }) => {
   const navigate = useNavigate();
 
   const handleNavigate = (path: string) => {
@@ -34,6 +31,7 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
         }`}
       >
         <div className="flex flex-col h-full relative">
+
           <div className="p-6">
             <img
               src="/assets/images/logo.png"
@@ -51,37 +49,24 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
 
             <div className="flex flex-col items-center space-y-6 mt-8">
               <div className="flex space-x-6 text-xl">
-                {user ? (
-                  <Link to="/profile" aria-label="Login">
-                    <BsPersonCheck className="hover:text-secondaryColor" />
-                  </Link>
-                ) : (
-                  <Link to="/login" onClick={toggleSidebar} aria-label="Login">
-                    <FiUser className="hover:text-secondaryColor" />
-                  </Link>
-                )}
-
-                <Link
-                  to="/favorites"
-                  onClick={toggleSidebar}
-                  aria-label="Favorites"
-                  className="relative"
-                >
+              {user ? (
+              <Link to="/profile" aria-label="Login"> 
+              <BsPersonCheck className="hover:text-secondaryColor" />
+            </Link>
+              ) : (
+                <Link to="/login" onClick={toggleSidebar} aria-label="Login">
+                <FiUser className="hover:text-secondaryColor" />
+              </Link>
+              )}
+               
+              
+                <Link to="/favorites" onClick={toggleSidebar} aria-label="Favorites" className="relative">
                   <FiHeart className="hover:text-secondaryColor" />
-                  <span className="absolute -top-1 -right-2 bg-secondaryColor text-black text-xs rounded-full px-1">
-                    0
-                  </span>
+                  <span className="absolute -top-1 -right-2 bg-secondaryColor text-black text-xs rounded-full px-1">0</span>
                 </Link>
-                <Link
-                  to="/cart"
-                  onClick={toggleSidebar}
-                  aria-label="Shopping Cart"
-                  className="relative"
-                >
+                <Link to="/cart" onClick={toggleSidebar} aria-label="Shopping Cart" className="relative">
                   <FiShoppingCart className="hover:text-secondaryColor" />
-                  <span className="absolute -top-1 -right-2 bg-secondaryColor text-black text-xs rounded-full px-1">
-                    0
-                  </span>
+                  <span className="absolute -top-1 -right-2 bg-secondaryColor text-black text-xs rounded-full px-1">0</span>
                 </Link>
                 <FiSearch className="hover:text-secondaryColor" />
               </div>
@@ -90,7 +75,7 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
                 variant="filled"
                 size="large"
                 className="w-full text-xs uppercase"
-                onClick={() => handleNavigate('/reservation')}
+                onClick={() => handleNavigate('/booking')}
               >
                 Đặt Bàn
               </ButtonComponents>

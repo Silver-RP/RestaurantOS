@@ -1,8 +1,4 @@
 import React from 'react';
-import { useEffect, useState } from 'react';
-import { useTables } from '@/hooks/useTables';
-import { ITable } from '@/types/Table.type';
-import TableItem from './TableItem';
 import ButtonComponents from '@components/common/ButtonComponents';
 import { ReservationFormData } from '../../../types/Reservation.type';
 import GlobalModal from '@components/common/GlobalModal';
@@ -13,6 +9,19 @@ interface Step2SeatingProps {
   onBack: () => void;
 }
 
+const mockTables = [
+  { id: 't1', name: 'Bàn 01', x: 2, y: 1, status: 'available' },
+  { id: 't2', name: 'Bàn 02', x: 4, y: 1, status: 'reserved' },
+  { id: 't3', name: 'Bàn 03', x: 6, y: 1, status: 'available' },
+  { id: 't4', name: 'Bàn 04', x: 2, y: 3, status: 'available' },
+  { id: 't5', name: 'Bàn 05', x: 4, y: 3, status: 'available' },
+  { id: 't6', name: 'Bàn 06', x: 6, y: 3, status: 'reserved' },
+  { id: 't7', name: 'Bàn 07', x: 2, y: 5, status: 'available' },
+  { id: 't8', name: 'Bàn 08', x: 4, y: 5, status: 'available' },
+  { id: 't9', name: 'Bàn 09', x: 6, y: 5, status: 'available' },
+];
+
+// 💡 Điều chỉnh màu sắc, font, border và hiệu ứng khi hover/active
 const Step2Seating: React.FC<Step2SeatingProps> = ({
   formData,
   setFormData,

@@ -1,7 +1,8 @@
 import { Schema, model, Types } from 'mongoose';
 
 export interface IPayment extends Document {
-  orderId: Types.ObjectId;               
+  orderId: Types.ObjectId;         
+  reservationId: Types.ObjectId;         
   payment_method: 'CASH' | 'BANKING' | 'VNPAY' | 'MOMO' | 'MOMO_ATM' | 'CREDIT_CARD';
   payment_status: 'UNPAID' | 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED';
   amount: number;                       
@@ -26,8 +27,13 @@ const PaymentSchema = new Schema<IPayment>(
     orderId: {
       type: Schema.Types.ObjectId,
       ref: 'Order',
-      required: true,
+      required: false,
       index: true,
+    },
+    reservationId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Reservation',
+      required: false,
     },
     payment_method: {
       type: String,

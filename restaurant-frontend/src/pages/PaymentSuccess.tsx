@@ -6,6 +6,8 @@ import { AiOutlineCheckCircle } from 'react-icons/ai';
 import { motion } from 'framer-motion';
 import { FiDownload } from 'react-icons/fi';
 import React from 'react';
+import Cookies from 'js-cookie';
+
 const PaymentSuccess = () => {
   const navigate = useNavigate();
   const [bankingInfo, setBankingInfo] = useState<null | {
@@ -15,36 +17,59 @@ const PaymentSuccess = () => {
     qr_code: string;
     transfer_note: string;
   }>(null);
+
+  const [type, setType] = useState<'order' | 'reservation'>('order');
   const orderTotal = parseFloat(sessionStorage.getItem('orderTotal') || '0');
 
   const shortOrderId = bankingInfo?.transfer_note
     ? bankingInfo.transfer_note.slice(-6).toUpperCase()
     : '';
 
-    useEffect(() => {
-      const query = new URLSearchParams(window.location.search);
-      const paymentMethod = query.get('method'); 
-    
-      if (paymentMethod === 'vnpay' || paymentMethod === 'paypal' || paymentMethod === 'momo') {
-        sessionStorage.removeItem('recentBankingInfo');
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search);
+    const paymentMethod = query.get('method');
+    const typeParam = query.get('type') as 'order' | 'reservation';
+    if (typeParam === 'reservation') setType('reservation');
+
+    // Clear banking info if redirect from online payment
+    if (
+      paymentMethod === 'vnpay' ||
+      paymentMethod === 'paypal' ||
+      paymentMethod === 'momo'
+    ) {
+      sessionStorage.removeItem('recentBankingInfo');
+    }
+
+    const storedInfo = sessionStorage.getItem('recentBankingInfo');
+    if (storedInfo) {
+      setBankingInfo(JSON.parse(storedInfo));
+    }
+
+    const orderTotal = sessionStorage.getItem('orderTotal');
+    if (orderTotal) {
+      const total = parseFloat(orderTotal);
+      if (isNaN(total)) {
+        console.error('Invalid order total in sessionStorage');
       }
-    
-      const storedInfo = sessionStorage.getItem('recentBankingInfo');
-      if (storedInfo) {
-        setBankingInfo(JSON.parse(storedInfo));
-      }
-    
-      const orderTotal = sessionStorage.getItem('orderTotal');
-      if (orderTotal) {
-        const total = parseFloat(orderTotal);
-        if (isNaN(total)) {
-          console.error('Invalid order total in sessionStorage');
-        }
-      } else {
-        console.error('Order total not found in sessionStorage');
-      }
-    }, []);
-    
+    } else {
+      console.error('Order total not found in sessionStorage');
+    }
+  }, []);
+
+  const isReservation = type === 'reservation';
+  const userInfo = Cookies.get('userInfo');
+  const isLoggedIn = !!userInfo;
+
+  let buttonLabel = '';
+  let targetPath = '';
+
+  if (isReservation) {
+    buttonLabel = isLoggedIn ? 'Lịch sử đặt bàn' : 'Tra cứu đặt bàn';
+    targetPath = isLoggedIn ? '/profile/my-reservation' : '/reservation/lookup';
+  } else if (isLoggedIn) {
+    buttonLabel = 'Lịch sử đơn hàng';
+    targetPath = '/profile/orders';
+  }
 
   return (
     <>
@@ -69,20 +94,25 @@ const PaymentSuccess = () => {
           Thanh toán thành công!
         </h1>
         <p className="mb-6 text-gray-400 max-w-lg leading-relaxed">
-  Cảm ơn bạn đã đặt hàng. Đơn hàng đang được xử lý. Vui lòng kiểm tra
-  email hoặc trang lịch sử đơn hàng để theo dõi chi tiết đơn hàng.
-</p>
+          Cảm ơn bạn đã {isReservation ? 'đặt bàn' : 'đặt hàng'}.
+          {isReservation
+            ? ' Lịch sử đặt bàn của bạn đã được cập nhật.'
+            : ' Đơn hàng đang được xử lý.'}
+          Vui lòng kiểm tra email hoặc trang lịch sử để theo dõi chi tiết.
+        </p>
 
         <div className="flex flex-wrap gap-4 justify-center">
           <ButtonComponents onClick={() => navigate('/menu?sort=categoryAZ')}>
             Tiếp tục mua sắm
           </ButtonComponents>
-          <ButtonComponents
-            onClick={() => navigate('/profile/orders')}
-            className="bg-white text-gray-800 border border-gray-300 hover:bg-gray-100"
-          >
-            Lịch sử đơn hàng
-          </ButtonComponents>
+          {buttonLabel && (
+            <ButtonComponents
+              onClick={() => navigate(targetPath)}
+              className="bg-white text-gray-800 border border-gray-300 hover:bg-gray-100"
+            >
+              {buttonLabel}
+            </ButtonComponents>
+          )}
         </div>
       </motion.div>
 
@@ -104,7 +134,7 @@ const PaymentSuccess = () => {
                   <strong>Số tài khoản:</strong> {bankingInfo.account_number}
                 </p>
                 <p>
-                  <strong>Số tiền:</strong> 
+                  <strong>Số tiền:</strong>{' '}
                   <span className="ml-1 font-semibold text-green-300">
                     {orderTotal.toLocaleString('vi-VN', {
                       style: 'currency',
