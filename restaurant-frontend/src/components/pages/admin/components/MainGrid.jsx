@@ -102,7 +102,7 @@ export default function MainGrid() {
             </Grid>
           </Grid>
 
-          <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
+          {/* <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
             Details
           </Typography>
           <Grid container spacing={2} columns={12}>
@@ -118,7 +118,7 @@ export default function MainGrid() {
                 <ChartUserByCountry />
               </Stack>
             </Grid>
-          </Grid>
+          </Grid> */}
         </>
       ) : null}
       <Copyright sx={{ my: 4 }} />

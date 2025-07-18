@@ -45,6 +45,8 @@ export default {
         button: ['Poppins', ...defaultTheme.fontFamily.sans],
         body: ['Roboto', ...defaultTheme.fontFamily.sans],
         cormorant: ["'Cormorant Garamond'", 'serif'],
+        handwriting: ['"Passions Conflict"', 'cursive'],
+
       },
       animation: {
         'bounce-slow': 'bounce 2.5s infinite',

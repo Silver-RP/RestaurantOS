@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useRef, useEffect } from 'react';
 import Invoice from '../invoice/templateInvoice';
-
 import { useSearchParams } from 'react-router-dom';
 import {
   FaSort,
@@ -35,7 +34,7 @@ const OrderTable: React.FC = () => {
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const [showInvoice, setShowInvoice] = useState(false);
-  const [invoiceData, setInvoiceData] = useState<any>(null);
+  const [invoiceData, setInvoiceData] = useState<string | null>(null);
 
   const {
     data: orders,
@@ -121,24 +120,12 @@ const OrderTable: React.FC = () => {
     }
   };
 
-  // const getOrderTypeText = (type: string) => {
-  //   switch (type) {
-  //     case 'ONLINE':
-  //       return 'Online';
-  //     case 'OFFLINE':
-  //       return 'Tại cửa hàng';
-  //     default:
-  //       return type;
-  //   }
-  // };
-
   const getCustomerName = (order: AllOrder) => {
     if (order.address_id?.full_name) {
       const name = order.address_id?.full_name;
       return name;
     }
     if (order.receiver) {
-      console.log('Receiver:', order.receiver);
       return order.receiver;
     }
     return 'Chưa có tên khách hàng';
@@ -147,11 +134,9 @@ const OrderTable: React.FC = () => {
   const getCustomerPhone = (order: AllOrder) => {
     if (order.address_id?.phone) {
       const phone = order.address_id?.phone;
-      console.log('Customer phone:', phone);
       return phone;
     }
     if (order.receiver_phone) {
-      console.log('Receiver phone:', order.receiver_phone);
       return order.receiver_phone;
     }
     return 'Chưa có số điện thoại';
@@ -175,58 +160,59 @@ const OrderTable: React.FC = () => {
     setSelectedOrderId(null);
   };
 
-   useEffect(() => {
-     const handleClickOutside = (event: MouseEvent) => {
-       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-         handleMenuClose();
-       }
-     };
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        handleMenuClose();
+      }
+    };
 
-     if (menuOpenId) {
-       document.addEventListener('mousedown', handleClickOutside);
-     }
+    if (menuOpenId) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
 
-     return () => {
-       document.removeEventListener('mousedown', handleClickOutside);
-     };
-   }, [menuOpenId]);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [menuOpenId]);
 
-   const handleMenuToggle = (orderId: string) => {
-     if (menuOpenId === orderId) {
-       setMenuOpenId(null);
-       setMenuPosition(null);
-       return;
-     }
-     setTimeout(() => {
-       const btn = buttonRefs.current[orderId];
-       if (btn) {
-         const rect = btn.getBoundingClientRect();
-         const menuHeight = 160;
-         const spaceBelow = window.innerHeight - rect.bottom;
-         const spaceAbove = rect.top;
-         let top = 0;
-         let direction: 'down' | 'up' = 'down';
-         if (spaceBelow < menuHeight && spaceAbove > menuHeight) {
-           top = rect.top - menuHeight;
-           direction = 'up';
-         } else {
-           top = rect.bottom;
-           direction = 'down';
-         }
-         setMenuDirection(direction);
-         setMenuPosition({
-           top,
-           left: rect.right - 180,
-         });
-       }
-     }, 0);
-     setMenuOpenId(orderId);
-   };
-   const handleMenuClose = () => {
-     setMenuOpenId(null);
-     setMenuPosition(null);
-   };
-  
+  const handleMenuToggle = (orderId: string) => {
+    if (menuOpenId === orderId) {
+      setMenuOpenId(null);
+      setMenuPosition(null);
+      return;
+    }
+    setTimeout(() => {
+      const btn = buttonRefs.current[orderId];
+      if (btn) {
+        const rect = btn.getBoundingClientRect();
+        const menuHeight = 160;
+        const spaceBelow = window.innerHeight - rect.bottom;
+        const spaceAbove = rect.top;
+        let top = 0;
+        let direction: 'down' | 'up' = 'down';
+        if (spaceBelow < menuHeight && spaceAbove > menuHeight) {
+          top = rect.top - menuHeight;
+          direction = 'up';
+        } else {
+          top = rect.bottom;
+          direction = 'down';
+        }
+        setMenuDirection(direction);
+        setMenuPosition({
+          top,
+          left: rect.right - 180,
+        });
+      }
+    }, 0);
+    setMenuOpenId(orderId);
+  };
+
+  const handleMenuClose = () => {
+    setMenuOpenId(null);
+    setMenuPosition(null);
+  };
+
   return (
     <main className="!p-0 bg-white rounded-lg ">
       <div className="flex flex-wrap gap-4 mb-4 items-center justify-between">
@@ -314,7 +300,6 @@ const OrderTable: React.FC = () => {
             <thead>
               <tr className="bg-gray-100 text-left">
                 <th className="px-4 py-2">No.</th>
-                {/* <th className="px-4 py-2">Mã Đơn Hàng</th> */}
                 <th className="px-4 py-2">Tên khách hàng</th>
                 <th className="px-4 py-2">SĐT</th>
                 <th
@@ -367,9 +352,6 @@ const OrderTable: React.FC = () => {
                     <td className="px-4 py-2 text-center">
                       {index + 1 + (orders.currentPage - 1)}
                     </td>
-                    {/* <td className="px-4 py-2">
-                      {order._id.slice(-6).toUpperCase()}
-                    </td> */}
                     <td className="px-4 py-2">
                       <div className="font-medium">
                         {getCustomerName(order)}
@@ -445,7 +427,7 @@ const OrderTable: React.FC = () => {
                             <button
                               className="flex items-center gap-2 w-full text-left px-5 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
                               onClick={() => {
-                                setInvoiceData(order);
+                                setInvoiceData(order._id);
                                 setShowInvoice(true);
                                 handleMenuClose();
                               }}
@@ -503,18 +485,17 @@ const OrderTable: React.FC = () => {
         />
       )}
 
-
       {/* Popup hóa đơn */}
       {showInvoice && invoiceData && (
         <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black bg-opacity-40">
-          <div className="bg-white rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto relative">
+          <div className="bg-white rounded shadow-[0_0_10px_5px_rgba(0,0,0,0.2)] max-w-4xl w-full max-h-[90vh] overflow-y-auto relative">
             <button
               className="absolute top-2 right-2 text-2xl text-gray-500 hover:text-red-600 z-10"
               onClick={() => setShowInvoice(false)}
             >
-              &times;
+              ×
             </button>
-            <Invoice order={invoiceData} />
+            <Invoice orderId={invoiceData} />
           </div>
         </div>
       )}
@@ -531,4 +512,4 @@ const OrderTable: React.FC = () => {
   );
 };
 
-export default OrderTable;
+export default OrderTable;  
