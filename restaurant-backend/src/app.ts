@@ -8,6 +8,7 @@ import RoleRoutes from './routes/RoleRouter';
 import CateRoutes from './routes/CategoryRoutes';
 import ProfileRoutes from './routes/ProfileRoutes';
 import ReservationRoutes from './routes/ReservationRouter';
+import TablesRouters from './routes/TableRouters';
 import BannerRoutes from './routes/BannerRoutes';
 import PostsRoutes from './routes/PostsRoutes';
 import PostReportRoutes from './routes/PostReportRoutes';
@@ -37,7 +38,6 @@ import cors from 'cors';
 import path from 'path';
 import CronJobService from './services/CronJobService';
 
-
 import { scheduleLoyaltyYearlyJob } from './cron/loyaltyYearlyJob';
 
 const app = express();
@@ -50,7 +50,6 @@ import './swaggers/CartSwagger';
 import './swaggers/StaffSwagger';
 import './swaggers/UserSwagger';
 import './swaggers/CategorySwagger';
-
 
 dotenv.config();
 connectDB();
@@ -127,6 +126,7 @@ app.use('/api/permission', PermissionRoutes);
 app.use('/api/category', CateRoutes);
 app.use('/api/reservation', AuthMiddleWare.verifyToken, ReservationRoutes);
 app.use('/api/banner', BannerRoutes);
+app.use('/api/tables', TablesRouters);
 
 app.use(
   '/api/staff',
@@ -147,7 +147,7 @@ app.use('/api/address', AuthMiddleWare.verifyToken, AddressRouter);
 app.use('/api/payment', PaymentRoutes);
 app.use('/api/review', ReviewRoutes);
 app.use('/api/loyalty', LoyaltyRoutes);
-app.use('/api/review',  ReviewRoutes);
+app.use('/api/review', ReviewRoutes);
 
 app.use('/api/ingredients', AuthMiddleWare.verifyToken, IngredientsRouter);
 app.use('/api/inventory', AuthMiddleWare.verifyToken, InventoryRoutes);
