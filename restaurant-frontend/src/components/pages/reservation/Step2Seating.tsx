@@ -56,13 +56,19 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({
     if (table.type === 'vip') {
       if (selectedTables.length === 1 && selectedTables[0]._id === table._id) {
         setSelectedTables([]);
-        setFormData((prev) => ({ ...prev, table_type: '', seatingName: '' }));
+        setFormData((prev) => ({
+          ...prev,
+          table_type: '',
+          seatingName: '',
+          tableCategory: '',
+        }));
       } else {
         setSelectedTables([table]);
         setFormData((prev) => ({
           ...prev,
           table_type: table._id ?? table.code,
           seatingName: table.code,
+          tableCategory: table.type,
         }));
       }
       return;
@@ -86,9 +92,15 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({
             ...prev,
             table_type: newSelected.map((t) => t._id ?? t.code).join(','),
             seatingName: newSelected.map((t) => t.code).join(', '),
+            tableCategory: newSelected[0].type, // Lưu loại bàn của bàn đầu tiên
           }));
         } else {
-          setFormData((prev) => ({ ...prev, table_type: '', seatingName: '' }));
+          setFormData((prev) => ({
+            ...prev,
+            table_type: '',
+            seatingName: '',
+            tableCategory: '',
+          }));
         }
       } else {
         // Thêm bàn mới
@@ -98,6 +110,7 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({
           ...prev,
           table_type: newSelected.map((t) => t._id ?? t.code).join(','),
           seatingName: newSelected.map((t) => t.code).join(', '),
+          tableCategory: newSelected[0].type, // Lưu loại bàn của bàn đầu tiên
         }));
       }
     }
