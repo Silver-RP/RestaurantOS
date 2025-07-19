@@ -90,6 +90,9 @@ const ReservationTable: React.FC = () => {
                 <th className="px-4 py-2">Số người</th>
                 <th className="px-4 py-2">Trạng thái</th>
                 <th className="px-4 py-2">Ghi chú</th>
+                <th className="px-4 py-2">Phương thức</th>
+                <th className="px-4 py-2">Trạng thái thanh toán</th>
+                <th className="px-4 py-2">Số tiền cọc</th>
                 <th className="px-4 py-2">Hành động</th>
               </tr>
             </thead>
@@ -112,6 +115,45 @@ const ReservationTable: React.FC = () => {
                   <td className="px-4 py-2 text-gray-600 italic max-w-[200px] truncate">
                     {r.note || '-'}
                   </td>
+                  <td className="px-4 py-2">{r.payment_method || '-'}</td>
+                  <td className="px-4 py-2">
+                    {(() => {
+                      switch (r.payment_status) {
+                        case 'PAID':
+                          return (
+                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600">
+                              Đã thanh toán
+                            </span>
+                          );
+                        case 'UNPAID':
+                          return (
+                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-600">
+                              Chưa thanh toán
+                            </span>
+                          );
+                        case 'FAILED':
+                          return (
+                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600">
+                              Thất bại
+                            </span>
+                          );
+                        case 'REFUNDED':
+                          return (
+                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-600">
+                              Đã hoàn tiền
+                            </span>
+                          );
+                        default:
+                          return '-';
+                      }
+                    })()}
+                  </td>
+                  <td className="px-4 py-2">
+                    {r.deposit_amount
+                      ? r.deposit_amount.toLocaleString('vi-VN') + '₫'
+                      : '-'}
+                  </td>
+
                   <button
                     onClick={() => setSelectedReservationId(r._id)}
                     className="text-blue-600 hover:text-blue-800"

@@ -66,7 +66,7 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({
         setSelectedTables([table]);
         setFormData((prev) => ({
           ...prev,
-          table_type: table._id ?? table.code,
+          table_type: table.code,
           seatingName: table.code,
           tableCategory: table.type,
         }));
@@ -90,7 +90,7 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({
         if (newSelected.length > 0) {
           setFormData((prev) => ({
             ...prev,
-            table_type: newSelected.map((t) => t._id ?? t.code).join(','),
+            table_type: newSelected.map((t) => t.code).join(','),
             seatingName: newSelected.map((t) => t.code).join(', '),
             tableCategory: newSelected[0].type, // Lưu loại bàn của bàn đầu tiên
           }));
@@ -108,7 +108,7 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({
         setSelectedTables(newSelected);
         setFormData((prev) => ({
           ...prev,
-          table_type: newSelected.map((t) => t._id ?? t.code).join(','),
+          table_type: newSelected.map((t) => t.code).join(','),
           seatingName: newSelected.map((t) => t.code).join(', '),
           tableCategory: newSelected[0].type, // Lưu loại bàn của bàn đầu tiên
         }));

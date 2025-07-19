@@ -38,30 +38,27 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
 
   const { createReservation, confirmReservation } = useReservations();
 
-  // Hàm tính phí cọc theo mức giá trị món ăn
   const calculateFoodDeposit = (foodTotal: number): number => {
     if (foodTotal <= 0) return 0;
 
-    // Logic tính phí cọc theo mức giá trị
     if (foodTotal <= 1_000_000) {
-      return 0; // Dưới 1 triệu không cần cọc
+      return 0;
     } else if (foodTotal <= 2_000_000) {
-      return 200_000; // 1-2 triệu: cọc 200k
+      return 200_000;
     } else if (foodTotal <= 5_000_000) {
-      return 500_000; // 2-5 triệu: cọc 500k
+      return 500_000;
     } else if (foodTotal <= 10_000_000) {
-      return 1_000_000; // 5-10 triệu: cọc 1 triệu
+      return 1_000_000;
     } else if (foodTotal <= 20_000_000) {
-      return 2_000_000; // 10-20 triệu: cọc 2 triệu
+      return 2_000_000;
     } else {
-      return Math.floor(foodTotal * 0.15); // Trên 20 triệu: cọc 15%
+      return Math.floor(foodTotal * 0.15);
     }
   };
 
   useEffect(() => {
     const { number_of_people, selectedItems, tableCategory } = formData;
 
-    // Tính phí theo loại bàn dựa trên tableCategory
     let tableFee = 0;
     if (tableCategory) {
       const depositByTable: Record<string, number> = {
@@ -80,7 +77,6 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
     }, 0);
     const foodFee = calculateFoodDeposit(foodTotal);
 
-    // Cập nhật các phần chi tiết
     setTableDeposit(tableFee);
     setGuestDeposit(guestFee);
     setFoodDeposit(foodFee);
@@ -88,7 +84,6 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
     setDepositAmount(baseDeposit + tableFee + guestFee + foodFee);
   }, [formData]);
 
-  // Hàm helper để hiển thị tên loại bàn
   const getTableTypeDisplayName = (tableCategory?: string): string => {
     switch (tableCategory) {
       case 'vip':
@@ -113,7 +108,6 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
     setIsPaying(true);
 
     try {
-      // Gọi API giữ bàn trước khi tạo reservation
       await holdTableApi({
         table_code: formData.seatingName,
         heldBy: `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -137,7 +131,6 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
         deposit: depositAmount,
       };
 
-      // Gọi API tạo reservation
       const result = await createReservation(reservationData);
       console.log('result step5: ', result);
 
@@ -161,7 +154,6 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
 
   const filteredMethods = paymentMethods.filter((m) => m.value !== 'CASH');
 
-  // Tính tổng giá trị món ăn đã chọn
   const selectedFoodTotal = formData.selectedItems.reduce(
     (total, item) => total + item.price * item.quantity,
     0,
