@@ -63,10 +63,15 @@ const UserLoyaltyTier: React.FC = () => {
   };
 
   useEffect(() => {
-    Promise.all([getLoyaltyAccountInfo(), getActiveTiers()])
-      .then(([info, tiers]) => {
+    Promise.all([
+      getLoyaltyAccountInfo(),
+      getActiveTiers(),
+      getActiveMilestoneDefinitions()
+    ])
+      .then(([info, tiers, milestones]) => {
         setInfo(info);
         setTiers(tiers.sort((a: LoyaltyTier, b: LoyaltyTier) => a.min_spent - b.min_spent));
+        setMilestones(milestones);
       })
       .catch(() => setError('Không thể tải thông tin hạng thành viên!'))
       .finally(() => setLoading(false));
