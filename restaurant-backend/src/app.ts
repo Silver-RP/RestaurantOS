@@ -27,7 +27,7 @@ import AddressRouter from './routes/AddressRoutes';
 import PaymentRoutes from './routes/PaymentRoutes';
 import InventoryRoutes from './routes/InventoryRoutes';
 import DashboardRoutes from './routes/DashboardRoutes';
-import IngredientsRouter from './routes/IngredientsRouter';
+import IngredientsRouter from './routes/ingredientsRouter';
 import VoucherRoutes from './routes/VoucherRoutes';
 import ReviewRoutes from './routes/ReviewRoutes';
 import LoyaltyRoutes from './routes/LoyaltyRoutes';
