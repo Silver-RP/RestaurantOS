@@ -20,6 +20,7 @@ const tableSchema = new mongoose.Schema<ITable>(
 
     isQuietZone: { type: Boolean, default: false },
     isAvailable: { type: Boolean, default: true },
+    allowBooking: { type: Boolean, default: true }, // Trạng thái admin điều khiển
 
     description: { type: String, default: '' },
 

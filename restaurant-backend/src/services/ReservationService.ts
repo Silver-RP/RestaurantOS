@@ -7,7 +7,7 @@ import TableReservationService from './TableReservationService';
 import { IUser } from '../models/UserModel';
 import { Table } from '../models/TableModel';
 import { IReservation } from '../types/reservation.types';
-import Payment  from '../models/PaymentModel';
+import Payment from '../models/PaymentModel';
 import { createVNPayPaymentUrl } from '../services/payments/VnPayService';
 import { createMomoPaymentUrl } from '../services/payments/MomoService';
 import { createSimplePayPalOrder } from '../services/payments/PaypalService';
@@ -32,10 +32,12 @@ class ReservationService {
         room_type,
       } = data;
 
+      console.log('[ReservationService] Dữ liệu đầu vào:', JSON.stringify(data, null, 2));
+      console.log('[ReservationService] table_type nhận được:', table_type);
       console.log('[ReservationService] Bắt đầu tạo reservation với data:', data);
 
       const newReservation = new Reservation({
-        user_id: userId, // Có thể là null cho khách không đăng nhập
+        user_id: userId,
         full_name,
         phone,
         email,
@@ -48,10 +50,12 @@ class ReservationService {
         status: 'PENDING',
         deposit_amount: deposit || 0,
         room_type,
-        payment_method: data.payment_method 
+        payment_method: data.payment_method,
       });
 
-      let savedReservation: Document<unknown, {}, IReservation, {}> & IReservation & Required<{ _id: unknown; }> & { __v: number; };
+      let savedReservation: Document<unknown, IReservation> &
+        IReservation &
+        Required<{ _id: unknown }> & { __v: number };
       try {
         savedReservation = await newReservation.save();
         console.log('[ReservationService] Đã lưu reservation:', savedReservation);
@@ -167,15 +171,12 @@ class ReservationService {
     }
   }
 
-  async handleReservationPostPaymentLogic(
-    reservation: IReservation,
-    clientIp: string
-  ) {
+  async handleReservationPostPaymentLogic(reservation: IReservation, clientIp: string) {
     const payment_method = reservation.payment_method;
     const amount = reservation.deposit_amount || 0;
     let redirectUrl: string | null = null;
     let bankingInfo = null;
-  
+
     const newPayment = await Payment.create({
       reservationId: reservation._id,
       payment_method,
@@ -184,21 +185,21 @@ class ReservationService {
       transaction_code: null,
       bankingInfo: null,
     });
-  
+
     const paymentTransactionId = newPayment._id.toString();
     const transactionCode = `RSV-${payment_method}-${paymentTransactionId.slice(-6)}`;
-  
+
     await Payment.findByIdAndUpdate(paymentTransactionId, {
       transaction_code: transactionCode,
     });
-  
+
     if (payment_method === 'BANKING') {
       const bank_name = 'Vietcombank';
       const bank_code = '970436';
       const account_number = '0123456789';
       const account_name = 'Công ty TNHH BeefBeef';
       const transfer_note = `RESERVATION-${reservation._id}`;
-  
+
       const qrRes = await axios.post('https://api.vietqr.io/v2/generate', {
         accountNo: account_number,
         accountName: account_name,
@@ -207,9 +208,9 @@ class ReservationService {
         addInfo: transfer_note,
         format: 'base64',
       });
-  
+
       const qr_base64 = qrRes?.data?.data?.qrDataURL;
-  
+
       bankingInfo = {
         bank_name,
         account_number,
@@ -217,12 +218,12 @@ class ReservationService {
         qr_code: qr_base64,
         transfer_note,
       };
-  
+
       await Payment.findByIdAndUpdate(paymentTransactionId, { bankingInfo });
     }
-  
+
     const reservationId = (reservation._id as Types.ObjectId).toString();
-  
+
     switch (payment_method) {
       case 'MOMO':
         redirectUrl = await createMomoPaymentUrl({
@@ -233,7 +234,7 @@ class ReservationService {
           objectType: 'reservation',
         });
         break;
-  
+
       case 'MOMO_ATM':
         redirectUrl = await createMomoPaymentUrl({
           amount,
@@ -243,7 +244,7 @@ class ReservationService {
           objectType: 'reservation',
         });
         break;
-  
+
       case 'VNPAY':
         redirectUrl = createVNPayPaymentUrl({
           amount,
@@ -253,7 +254,7 @@ class ReservationService {
           objectType: 'reservation',
         });
         break;
-  
+
       case 'CREDIT_CARD':
         redirectUrl = await createSimplePayPalOrder({
           amount,
@@ -263,7 +264,7 @@ class ReservationService {
         });
         break;
     }
-  
+
     return {
       type: payment_method,
       redirectUrl,
@@ -272,15 +273,11 @@ class ReservationService {
     };
   }
 
-  async markPaymentPaid(
-    paymentId: string,
-    paidAmount: number,
-    userId: string | null,
-  ) {
+  async markPaymentPaid(paymentId: string, paidAmount: number, userId: string | null) {
     const payment = await Payment.findById(paymentId);
     if (!payment) throw new Error('Payment not found');
     console.log('Marking payment as paid:ReservationService.ts', paymentId, paidAmount, userId);
-    const allowedDifference = 1000; 
+    const allowedDifference = 1000;
 
     if (Math.abs((payment.amount || 0) - paidAmount) > allowedDifference) {
       throw new Error('Paid amount does not match expected payment amount');
@@ -327,10 +324,7 @@ class ReservationService {
     const reservation = await Reservation.findById(payment.reservationId);
     if (!reservation) throw new Error('Reservation not found');
 
-    await Reservation.updateOne(
-      { _id: reservation._id },
-      { $set: { payment_status: 'FAILED' } }
-    );
+    await Reservation.updateOne({ _id: reservation._id }, { $set: { payment_status: 'FAILED' } });
 
     return reservation;
   }
@@ -416,16 +410,14 @@ class ReservationService {
 
   async getReservationByCodeAndPhoneNumber(reservationCode: string, phoneNumber: string) {
     const reservations = await Reservation.find({ phone: phoneNumber }).lean();
-    const match = reservations.find((r) =>
-      r._id.toString().slice(-6) === reservationCode
-    );
-  
+    const match = reservations.find((r) => r._id.toString().slice(-6) === reservationCode);
+
     if (!match) {
       return { exists: false };
     }
-  
+
     const details = await ReservationDetail.find({ reservation_id: match._id }).lean();
-  
+
     const detailsWithImages = await Promise.all(
       details.map(async (item) => {
         let image: string | null = null;
@@ -438,18 +430,19 @@ class ReservationService {
         return { ...item, image };
       }),
     );
-  
+
     return {
       exists: true,
       reservation: {
         ...match,
-        order_items: detailsWithImages
-      }
+        order_items: detailsWithImages,
+      },
     };
   }
 
   async getAllReservations() {
-    return await Reservation.find().sort({ createdAt: -1 }).lean();
+    const reservations = await Reservation.find().sort({ createdAt: -1 }).lean();
+    return reservations;
   }
 
   async updateReservationStatus(
@@ -483,7 +476,7 @@ class ReservationService {
     if (!payment.reservationId) throw new Error('Order not found in payment');
 
     const reservation = await Reservation.findById(payment.reservationId).lean();
-    if (!reservation ) throw new Error('Reservation not found');
+    if (!reservation) throw new Error('Reservation not found');
 
     const userEmail = reservation.email;
 
@@ -501,14 +494,14 @@ class ReservationService {
     if (!reservationId || !newPaymentMethod) {
       throw new Error('Thiếu reservationId hoặc paymentMethod');
     }
-  
+
     const session = await mongoose.startSession();
     session.startTransaction();
-  
+
     try {
       const reservation = await Reservation.findById(reservationId).session(session);
       if (!reservation) throw new Error('Không tìm thấy đơn đặt bàn');
-  
+
       // 🛑 Kiểm tra trạng thái không hợp lệ
       const invalidStatuses = ['CANCELLED', 'PAID'];
       if (
@@ -517,12 +510,12 @@ class ReservationService {
       ) {
         throw new Error('Không thể thay đổi phương thức thanh toán ở trạng thái hiện tại');
       }
-  
+
       const validMethods = ['MOMO', 'MOMO_ATM', 'VNPAY', 'BANKING', 'CREDIT_CARD'];
       if (!validMethods.includes(newPaymentMethod)) {
         throw new Error('Phương thức thanh toán không hợp lệ');
       }
-  
+
       if (reservation.payment_method === newPaymentMethod) {
         await session.commitTransaction();
         session.endSession();
@@ -564,17 +557,17 @@ class ReservationService {
           { session },
         );
       }
-  
+
       reservation.payment_method = newPaymentMethod;
       reservation.payment_status = 'UNPAID';
       reservation.email = reservation.email || 'roppyhoangle@gmail.com';
 
-      console.log("[Reservation service]reservation: ", reservation);
+      console.log('[Reservation service]reservation: ', reservation);
       await reservation.save({ session });
-  
+
       await session.commitTransaction();
       session.endSession();
-  
+
       return reservation;
     } catch (error) {
       await session.abortTransaction();
@@ -582,7 +575,6 @@ class ReservationService {
       throw error;
     }
   }
-  
 }
 
 export default new ReservationService();

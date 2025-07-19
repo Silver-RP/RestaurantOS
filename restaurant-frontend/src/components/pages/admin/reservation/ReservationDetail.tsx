@@ -14,7 +14,7 @@ import {
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { useReservations } from '@/hooks/useReservations';
-import { ReservationStatus } from '@/types/reservation.type';
+import { ReservationStatus } from '@/types/Reservation.type';
 
 interface Props {
   reservationId: string;
@@ -150,6 +150,58 @@ const ReservationDetailModal: React.FC<Props> = ({
               <div className="font-medium">
                 {data.is_choose_later ? 'Có' : 'Không'}
               </div>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3 className="text-lg font-semibold mb-2">
+            Thông tin thanh toán & hệ thống
+          </h3>
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <span className="text-gray-500">Email</span>
+              <div className="font-medium">{data.email || '-'}</div>
+            </div>
+            <div>
+              <span className="text-gray-500">Loại phòng</span>
+              <div className="font-medium">{data.room_type || '-'}</div>
+            </div>
+            <div>
+              <span className="text-gray-500">Phương thức thanh toán</span>
+              <div className="font-medium">{data.payment_method || '-'}</div>
+            </div>
+            <div>
+              <span className="text-gray-500">Trạng thái thanh toán</span>
+              <div className="font-medium">{data.payment_status || '-'}</div>
+            </div>
+            <div>
+              <span className="text-gray-500">Số tiền cọc</span>
+              <div className="font-medium">
+                {data.deposit_amount ? formatPrice(data.deposit_amount) : '-'}
+              </div>
+            </div>
+            <div>
+              <span className="text-gray-500">Đã thanh toán lúc</span>
+              <div className="font-medium">
+                {data.paid_at ? formatDate(data.paid_at, '') : '-'}
+              </div>
+            </div>
+            <div>
+              <span className="text-gray-500">Ngày tạo</span>
+              <div className="font-medium">
+                {data.createdAt ? formatDate(data.createdAt, '') : '-'}
+              </div>
+            </div>
+            <div>
+              <span className="text-gray-500">Ngày cập nhật</span>
+              <div className="font-medium">
+                {data.updatedAt ? formatDate(data.updatedAt, '') : '-'}
+              </div>
+            </div>
+            <div>
+              <span className="text-gray-500">Mã người dùng</span>
+              <div className="font-medium">{data.user_id || '-'}</div>
             </div>
           </div>
         </section>

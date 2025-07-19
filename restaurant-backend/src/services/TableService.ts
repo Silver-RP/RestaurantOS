@@ -24,7 +24,8 @@ const TableService = {
       const reservationStatus = statusMap.get(table.code);
       return {
         ...table,
-        isAvailable: table.isAvailable && !reservationStatus, // Bàn không available nếu đang được giữ/đặt
+        allowBooking: table.allowBooking, // trạng thái admin điều khiển
+        isBooked: !!reservationStatus, // true nếu đang có khách đặt/giữ
         reservationStatus: reservationStatus
           ? {
               status: reservationStatus.status,
@@ -39,31 +40,44 @@ const TableService = {
     return tablesWithStatus;
   },
 
-  // Lấy thông tin bàn theo ngày và giờ cụ thể
   getTablesByDateTime: async (date: string, time: string) => {
     const tables = await Table.find().sort({ floor: 1, code: 1 }).lean();
 
-    // Lấy thông tin trạng thái booking/holding cho ngày và giờ cụ thể
+    const bookingStart = new Date(`${date}T${time}`);
+    const bookingEnd = new Date(bookingStart.getTime() + 3 * 60 * 60 * 1000);
+
     const tableCodes = tables.map((table) => table.code);
     const reservationStatuses = await TableReservationStatus.find({
       table_code: { $in: tableCodes },
       date: date,
-      time: time,
       expireAt: { $gt: new Date() },
+      $expr: {
+        $and: [
+          { $lt: [bookingStart, '$expireAt'] },
+          { $gt: [bookingEnd, { $toDate: { $concat: ['$date', 'T', '$time'] } }] },
+        ],
+      },
     }).lean();
 
-    // Tạo map để tra cứu nhanh
     const statusMap = new Map();
     reservationStatuses.forEach((status) => {
       statusMap.set(status.table_code, status);
     });
-
-    // Thêm thông tin trạng thái vào mỗi bàn
     const tablesWithStatus = tables.map((table) => {
+      if (table.allowBooking === false) {
+        return {
+          ...table,
+          isAvailable: false,
+          allowBooking: false,
+          isBooked: false,
+          reservationStatus: null,
+        };
+      }
       const reservationStatus = statusMap.get(table.code);
       return {
         ...table,
-        isAvailable: table.isAvailable && !reservationStatus,
+        allowBooking: true,
+        isBooked: !!reservationStatus,
         reservationStatus: reservationStatus
           ? {
               status: reservationStatus.status,
@@ -90,7 +104,8 @@ const TableService = {
 
     return {
       ...table,
-      isAvailable: table.isAvailable && !reservationStatus,
+      allowBooking: table.allowBooking,
+      isBooked: !!reservationStatus,
       reservationStatus: reservationStatus
         ? {
             status: reservationStatus.status,
@@ -117,7 +132,7 @@ const TableService = {
     const table = await Table.findOne({ code });
     if (!table) throw new Error('Table not found');
 
-    table.isAvailable = !table.isAvailable;
+    table.allowBooking = !table.allowBooking;
     return await table.save();
   },
 

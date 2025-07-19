@@ -46,14 +46,16 @@ export const ReservationController = {
       const reservation = await ReservationService.createReservation(data, userId);
 
       const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
-      const postPayment = await ReservationService.handleReservationPostPaymentLogic(reservation, clientIp.toString());
-  
+      const postPayment = await ReservationService.handleReservationPostPaymentLogic(
+        reservation,
+        clientIp.toString(),
+      );
+
       return res.status(201).json({
         message: 'Đặt bàn thành công',
         data: reservation,
         postPayment,
       });
-
     } catch (error: any) {
       console.error('❌ Create reservation error:', error);
       return res.status(error.statusCode || 500).json({
@@ -110,17 +112,17 @@ export const ReservationController = {
   getReservationByCodeAndPhoneNumber: async (req: Request, res: Response): Promise<void> => {
     try {
       const { reservationCode, phone } = req.query;
-  
+
       if (!reservationCode || !phone) {
         res.status(400).json({ message: 'Reservation code and phone number are required' });
         return;
       }
-  
+
       const { exists, reservation } = await ReservationService.getReservationByCodeAndPhoneNumber(
         String(reservationCode),
-        String(phone)
+        String(phone),
       );
-  
+
       if (!exists) {
         res.status(404).json({ message: 'Không tìm thấy đơn đặt bàn phù hợp' });
         return;

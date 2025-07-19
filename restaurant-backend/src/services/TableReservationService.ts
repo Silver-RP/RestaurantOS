@@ -12,17 +12,25 @@ const TableReservationService = {
     date: string,
     time: string,
   ) => {
-    const expireAt = new Date(Date.now() + 15 * 60 * 1000);
+    const expireAt = new Date(Date.now() + 60 * 60 * 1000);
+
+    const bookingStart = new Date(`${date}T${time}`);
+    const bookingEnd = new Date(bookingStart.getTime() + 3 * 60 * 60 * 1000);
 
     const overlapping = await TableReservationStatus.findOne({
       table_code,
       date: date,
-      time: time,
       expireAt: { $gt: new Date() },
+      $expr: {
+        $and: [
+          { $lt: [bookingStart, '$expireAt'] },
+          { $gt: [bookingEnd, { $toDate: { $concat: ['$date', 'T', '$time'] } }] },
+        ],
+      },
     });
 
     if (overlapping) {
-      console.error('[TableReservationService] Bàn đã bị giữ hoặc đặt:', {
+      console.error('[TableReservationService] Bàn đã bị giữ hoặc đặt (overlapping):', {
         table_code,
         date,
         time,
