@@ -19,11 +19,15 @@ export default class VoucherController {
         end_date,
         userIds,
       } = req.body;
+      
       if (type === 'private' && Array.isArray(userIds)) {
         if (quantity > 0 && userIds.length > quantity) {
-          return res.status(400).json({ error: 'Số lượng user nhận voucher không được vượt quá số lượng voucher!' });
+          return res
+            .status(400)
+            .json({ error: 'Số lượng user nhận voucher không được vượt quá số lượng voucher!' });
         }
       }
+      
       const voucher = await VoucherService.createVoucher({
         code,
         description,
@@ -36,10 +40,12 @@ export default class VoucherController {
         start_date,
         end_date,
       });
+      
       // Nếu là private, tạo UserVoucher và gửi email
       if (type === 'private' && Array.isArray(userIds) && userIds.length > 0) {
         await VoucherService.assignVoucherToUsers(voucher, userIds);
       }
+      
       res.status(201).json(voucher);
     } catch (err: any) {
       res.status(400).json({ error: err.message });
@@ -199,8 +205,8 @@ export default class VoucherController {
       if (voucher.status !== 'active') {
         return res.status(400).json({ error: 'Voucher is not active' });
       }
-      if (voucher.type !== 'public') {
-        return res.status(403).json({ error: 'This voucher is not available for public use' });
+      if (voucher.type !== 'public' && voucher.type !== 'gift') {
+        return res.status(403).json({ error: 'This voucher is not available for saving' });
       }
 
       // Save voucher for user

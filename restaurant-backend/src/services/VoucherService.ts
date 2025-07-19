@@ -12,7 +12,7 @@ interface VoucherFilterParams {
   search?: string;
   sort?: string;
   status?: 'active' | 'inactive' | 'expired' | 'out_of_stock';
-  type?: 'public' | 'private';
+  type?: 'public' | 'private' | 'gift';
   discount_type?: 'percent' | 'fixed';
   min_discount_value?: number;
   max_discount_value?: number;
@@ -243,7 +243,15 @@ export default class VoucherService {
     const voucher = await Voucher.findById(id);
     if (!voucher) throw new Error('Voucher not found');
     if (voucher.status !== 'deleted') throw new Error('Voucher is not deleted');
-    const newStatus = this.calcVoucherStatus(voucher.toObject());
+    const now = new Date();
+    let newStatus: 'active' | 'inactive' | 'expired' | 'out_of_stock';
+
+    if (voucher.end_date && now > new Date(voucher.end_date)) {
+      newStatus = 'expired';
+    } else {
+      newStatus = this.calcVoucherStatus(voucher.toObject());
+    }
+
     return Voucher.findByIdAndUpdate(id, { status: newStatus }, { new: true });
   }
 

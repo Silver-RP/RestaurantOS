@@ -9,11 +9,15 @@ import ProductInfo from '../components/pages/detail/ProductInfo';
 import ProductPolicies from '../components/pages/detail/ProductPolicies';
 import ProductTabs from '../components/pages/detail/ProductTabs';
 import ProductReviews from '..//components/pages/detail/ProductReviews';
+import { useLocation } from 'react-router-dom';
 
 const ProductDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
+  const location = useLocation();
   const { food, loading, error } = useFoodDetail(slug || '');
   const productId = food?._id || '';
+
+  const shouldOpenReviewTab = location.state?.openReview === true;
 
   useProductView(productId);
 
@@ -41,6 +45,7 @@ const ProductDetail: React.FC = () => {
           productName={food.name}
           averageRating={food.average_rating || 0}
           ratingCount={food.rating_count || 0}
+          scrollToForm={shouldOpenReviewTab}
         />
       ),
     },
@@ -108,7 +113,8 @@ const ProductDetail: React.FC = () => {
             </div>
           </div>
 
-          <ProductTabs tabs={tabs} />
+          {/* <ProductTabs tabs={tabs} /> */}
+          <ProductTabs tabs={tabs} defaultOpenTab={shouldOpenReviewTab ? 'reviews' : null} />
 
           <RelatedProductList
             categories={food.categories.map((c) =>

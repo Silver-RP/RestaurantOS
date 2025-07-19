@@ -11,7 +11,7 @@ export interface IReservation extends mongoose.Document {
   number_of_people: number;
   note?: string;
   is_choose_later: boolean;
-  status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'DONE';
+  status: 'PENDING' | 'BOOKED' | 'CANCELLED' | 'DONE';
   payment_method: 'MOMO' | 'MOMO_ATM' | 'VNPAY' | 'BANKING' | 'CREDIT_CARD';
   payment_status: 'UNPAID' | 'PAID' | 'FAILED' | 'REFUNDED';
   paid_at?: Date | null;
