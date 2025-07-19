@@ -9,10 +9,6 @@ const statusMap: Record<string, string> = {
   saved: 'Chưa sử dụng',
   used: 'Đã sử dụng',
   expired: 'Hết hạn',
-<<<<<<< Updated upstream
-  out_of_stock: 'Hết lượt',
-=======
->>>>>>> Stashed changes
   deleted: 'Đã bị thu hồi',
 };
 
@@ -42,26 +38,15 @@ const UserVoucherList: React.FC = () => {
               {vouchers.map((voucher) => {
                 const now = new Date();
                 const isOutOfStockButValid =
-<<<<<<< Updated upstream
-=======
                   voucher.type === 'public' &&
->>>>>>> Stashed changes
                   voucher.status === 'out_of_stock' &&
                   (!voucher.start_date || new Date(voucher.start_date) <= now) &&
                   (!voucher.end_date || now <= new Date(voucher.end_date));
                 const isDeleted = voucher.status === 'deleted';
-<<<<<<< Updated upstream
-                const isPrivateInactive = voucher.type === 'private' && voucher.status === 'inactive';
-                return (
-                  <div
-                    key={voucher.user_voucher_id || voucher._id}
-                    className={`rounded-xl bg-[#0A1F2C] text-white p-5 shadow-lg flex flex-col gap-2 h-[150px] justify-between ${isOutOfStockButValid || isDeleted || isPrivateInactive ? 'opacity-50 relative' : ''}`}
-=======
                 return (
                   <div
                     key={voucher.user_voucher_id || voucher._id}
                     className={`rounded-xl bg-[#0A1F2C] text-white p-5 shadow-lg flex flex-col gap-2 h-[150px] justify-between ${isOutOfStockButValid || isDeleted ? 'opacity-50 relative' : ''}`}
->>>>>>> Stashed changes
                   >
                     <div>
                       <div className="flex justify-between items-center mb-2">
@@ -90,19 +75,10 @@ const UserVoucherList: React.FC = () => {
                       <span className="font-semibold text-gray-300">HSD: </span>
                       {voucher.end_date ? new Date(voucher.end_date).toLocaleDateString() : 'Không giới hạn'}
                     </div>
-<<<<<<< Updated upstream
-                    {(isOutOfStockButValid || isDeleted || isPrivateInactive) && (
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        {isDeleted ? (
-                          <span className="bg-black bg-opacity-70 text-white text-xs px-3 py-1 rounded">Voucher này đã bị admin thu hồi và không còn hiệu lực</span>
-                        ) : isPrivateInactive ? (
-                          <span className="bg-black bg-opacity-70 text-white text-xs px-3 py-1 rounded">Chưa đến ngày sử dụng</span>
-=======
                     {(isOutOfStockButValid || isDeleted) && (
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                         {isDeleted ? (
                           <span className="bg-black bg-opacity-70 text-white text-xs px-3 py-1 rounded">Voucher này đã bị admin thu hồi và không còn hiệu lực</span>
->>>>>>> Stashed changes
                         ) : (
                           <span className="bg-black bg-opacity-70 text-white text-xs px-3 py-1 rounded">Đã hết lượt</span>
                         )}

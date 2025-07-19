@@ -15,10 +15,7 @@ export interface IPost extends mongoose.Document {
   createdAt: Date;
   updatedAt: Date;
   tags: string[];
-<<<<<<< Updated upstream
-  scheduledAt?: Date; // New field for scheduled publishing
-=======
->>>>>>> Stashed changes
+
 }
 
 const postSchema = new mongoose.Schema<IPost>({

@@ -1,14 +1,6 @@
 import React, { useState } from 'react';
-<<<<<<< Updated upstream
 import { ReservationFormData } from '@/types/Reservation.type';
 import ButtonComponents from '@/components/common/ButtonComponents';
-=======
-import Sidebar from './Sidebar';
-import Section from './Section';
-import ButtonComponents from '../../common/ButtonComponents';
-// import { useReservations } from '@/hooks/useReservations';
-import { ReservationFormData } from '@/types/reservation.type';
->>>>>>> Stashed changes
 import { toast } from 'react-toastify';
 import { motion } from 'framer-motion';
 import {
@@ -34,39 +26,11 @@ const Step4Review: React.FC<Step4ReviewProps> = ({
   onNext,
   onBack,
 }) => {
-<<<<<<< Updated upstream
-=======
-  // const { createReservation } = useReservations();
->>>>>>> Stashed changes
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleConfirmReservation = async () => {
     setIsSubmitting(true);
     try {
-<<<<<<< Updated upstream
-=======
-      // const reservationPayload = {
-      //   full_name: formData.full_name,
-      //   phone: formData.phone,
-      //   email: formData.email,
-      //   date: formData.date,
-      //   time: formData.time,
-      //   table_type: formData.table_type,
-      //   number_of_people: formData.number_of_people,
-      //   note: formData.note,
-      //   is_choose_later: formData.selectedItems.length === 0,
-      //   selectedItems: formData.selectedItems.map((item) => ({
-      //     id: item.id,
-      //     name: item.name,
-      //     category: item.category,
-      //     price: item.price,
-      //     quantity: item.quantity,
-      //     note: item.note,
-      //   })),
-      // };
-
-      // await createReservation(reservationPayload);
->>>>>>> Stashed changes
       localStorage.removeItem('reservation-data');
       onNext();
     } catch (error) {
@@ -118,31 +82,12 @@ const Step4Review: React.FC<Step4ReviewProps> = ({
           </p>
         </motion.div>
 
-<<<<<<< Updated upstream
         <div className="flex flex-col gap-8">
           {/* Thông tin đặt bàn */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-=======
-        <div className="flex flex-col lg:flex-row gap-6 items-start">
-          <div className="w-full lg:w-1/3">
-            <Sidebar formData={formData} />
-          </div>
-
-          <div className="w-full lg:w-2/3">
-            <Section menuItems={formData.selectedItems} />
-          </div>
-        </div>
-
-        <div className="flex justify-center mt-10 gap-6">
-          <ButtonComponents
-            variant="outline"
-            size="medium"
-            onClick={onBack}
-            className="px-8 py-3 text-sm sm:text-base border-2 border-secondaryColor hover:bg-secondaryColor hover:text-black transition"
->>>>>>> Stashed changes
           >
             <div className="bg-headerBackground/90 border border-secondaryColor/30 rounded-lg p-6 shadow-lg">
               <h2 className="text-xl font-bold text-secondaryColor mb-6 flex items-center gap-2">

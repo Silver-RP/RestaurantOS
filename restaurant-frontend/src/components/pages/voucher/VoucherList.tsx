@@ -92,25 +92,6 @@ const VoucherList: React.FC = () => {
                   );
                 })
               ) : (
-<<<<<<< Updated upstream
-                <div className="col-span-full flex justify-center items-center ">
-                  <p className="text-center text-xl font-light text-secondaryColor">
-                    Hiện chưa có voucher nào.
-                  </p>
-                </div>
-              )}
-            </div>
-            {vouchers.length > 0 && (
-              <Pagination
-                currentPage={page}
-                totalPages={totalPages}
-                onPageChange={setPage}
-                limit={limit}
-                onLimitChange={handleLimitChange}
-                showLimit={true}
-              />
-            )}
-=======
                 <p className="text-center text-xl font-light text-secondaryColor">
                   Hiện chưa có voucher nào.
                 </p>
@@ -124,7 +105,6 @@ const VoucherList: React.FC = () => {
               onLimitChange={handleLimitChange}
               showLimit={true}
             />
->>>>>>> Stashed changes
           </>
         )}
       </div>

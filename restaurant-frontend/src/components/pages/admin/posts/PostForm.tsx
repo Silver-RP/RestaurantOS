@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ImageUploadPreview from '../ImageUploadPreview';
@@ -6,16 +5,6 @@ import '@toast-ui/editor/dist/toastui-editor.css';
 import { Editor as ToastEditor } from '@toast-ui/react-editor';
 import PostPreviewModal from './PostPreviewModal';
 import { PostType } from '../../../types/PostType';
-=======
-import React, { useState} from 'react';
-import { useNavigate } from 'react-router-dom';
-import ImageUploadPreview from '../ImageUploadPreview';
-import '@toast-ui/editor/dist/toastui-editor.css'; 
-import { Editor } from '@toast-ui/react-editor';
-import { Editor as ToastEditor } from '@toast-ui/react-editor';
-import '@toast-ui/editor/dist/toastui-editor.css';
-import { useRef } from 'react';
->>>>>>> Stashed changes
 
 interface PostFormProps {
   initialData?: {
@@ -25,17 +14,11 @@ interface PostFormProps {
     categories_id: string;
     desc: string;
     status: string;
-<<<<<<< Updated upstream
     tags: string[];
     scheduledAt?: string;
   };
   onSubmit: (formData: FormData) => void;
   categories: { _id: string; Cate_name: string }[];
-=======
-  };
-  onSubmit: (formData: FormData) => void;
-  categories: { _id: string; Cate_name: string; }[];
->>>>>>> Stashed changes
   isSubmitting?: boolean;
 }
 
@@ -46,7 +29,6 @@ const TAG_OPTIONS = [
   'Món phụ và ăn kèm',
   'Nước uống',
   'Món tráng miệng',
-<<<<<<< Updated upstream
   'Đồ uống có cồn',
   'Tin tức',
 ];
@@ -55,21 +37,12 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
   const editorRef = useRef<ToastEditor>(null);
   const navigate = useNavigate();
 
-=======
-  'Đồ uống có cồn'
-];
-
-const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: PostFormProps) => {
-  const editorRef = useRef<Editor>(null);
-  const navigate = useNavigate();
->>>>>>> Stashed changes
   const [title, setTitle] = useState(initialData?.title || '');
   const [content, setContent] = useState(initialData?.content || '');
   const [category, setCategory] = useState(initialData?.categories_id || '');
   const [desc, setDesc] = useState(initialData?.desc || '');
   const [status, setStatus] = useState(initialData?.status || 'draft');
   const [images, setImages] = useState<(File | string)[]>(initialData?.images || []);
-<<<<<<< Updated upstream
   const [selectedTags, setSelectedTags] = useState<string[]>(initialData?.tags || []);
   const [scheduledAt, setScheduledAt] = useState<string>(initialData?.scheduledAt || '');
   const [showPreviewModal, setShowPreviewModal] = useState(false);
@@ -80,29 +53,12 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
       const imageFile = blob instanceof File ? blob : new File([blob], 'image.png', { type: blob.type });
       const imageUrl = URL.createObjectURL(imageFile);
       setImages(prev => [...prev, imageFile]);
-=======
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-
-  const onUploadImage = async (blob: Blob | File, callback: (url: string, altText: string) => void) => {
-    try {
-      // Convert blob to File if needed
-      const imageFile = blob instanceof File ? blob : new File([blob], 'image.png', { type: blob.type });
-      
-      // Create object URL for preview
-      const imageUrl = URL.createObjectURL(imageFile);
-      
-      // Add the file to images state
-      setImages(prev => [...prev, imageFile]);
-      
-      // Call the callback with the URL
->>>>>>> Stashed changes
       callback(imageUrl, 'Image');
     } catch (error) {
       console.error('Error uploading image:', error);
     }
   };
 
-<<<<<<< Updated upstream
   const handlePreview = () => {
     const tempImages: string[] = images.map(img => img instanceof File ? URL.createObjectURL(img) : img);
     const mockPost: PostType = {
@@ -134,29 +90,16 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
 
   const handleTagChange = (tag: string) => {
     setSelectedTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
-=======
-  const handleTagChange = (tag: string) => {
-    setSelectedTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-    );
->>>>>>> Stashed changes
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-<<<<<<< Updated upstream
 
-=======
->>>>>>> Stashed changes
     if (selectedTags.length === 0) {
       alert('Vui lòng chọn ít nhất một thẻ (tag) cho bài viết!');
       return;
     }
-<<<<<<< Updated upstream
 
-=======
-    console.log('Form submission started');
->>>>>>> Stashed changes
     const formData = new FormData();
     formData.append('title', title);
     formData.append('content', content);
@@ -164,20 +107,14 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
     formData.append('desc', desc);
     formData.append('status', status);
     formData.append('tags', JSON.stringify(selectedTags));
-<<<<<<< Updated upstream
     if (scheduledAt) {
       formData.append('scheduledAt', scheduledAt);
     }
 
-=======
-
-    // Xử lý hình ảnh mới (File objects)
->>>>>>> Stashed changes
     const newImages = images.filter(img => img instanceof File);
     newImages.forEach(image => {
       if (image instanceof File) {
         formData.append('images', image);
-<<<<<<< Updated upstream
       }
     });
 
@@ -186,23 +123,6 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
       formData.append('existingImages', JSON.stringify(existingImages));
     }
 
-=======
-        console.log('Adding image file:', image.name);
-      }
-    });
-    
-    // Xử lý hình ảnh hiện có (URLs) - chuyển thành JSON string
-    const existingImages = images
-      .filter(img => typeof img === 'string')
-      .map(img => img as string);
-    
-    if (existingImages.length > 0) {
-      formData.append('existingImages', JSON.stringify(existingImages));
-      console.log('Existing images:', existingImages);
-    }
-
-    console.log('Form data prepared, submitting...');
->>>>>>> Stashed changes
     try {
       onSubmit(formData);
     } catch (error) {
@@ -226,19 +146,10 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
     <div className="container mx-auto px-4 py-8">
       <form onSubmit={handleSubmit} className="max-w-6xl mx-auto space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-<<<<<<< Updated upstream
           {/* Left Column */}
           <div className="md:col-span-2 space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Tiêu đề <span className="text-red-500">*</span></label>
-=======
-          {/* Left Column - Main Info */}
-          <div className="md:col-span-2 space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Tiêu đề <span className="text-red-500">*</span>
-              </label>
->>>>>>> Stashed changes
               <input
                 type="text"
                 value={title}
@@ -249,13 +160,7 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
             </div>
 
             <div>
-<<<<<<< Updated upstream
               <label className="block text-sm font-medium text-gray-700 mb-1">Mô tả ngắn <span className="text-red-500">*</span></label>
-=======
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Mô tả ngắn <span className="text-red-500">*</span>
-              </label>
->>>>>>> Stashed changes
               <textarea
                 value={desc}
                 onChange={(e) => setDesc(e.target.value)}
@@ -263,23 +168,11 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
                 rows={4}
                 required
               />
-<<<<<<< Updated upstream
               <p className="mt-1 text-sm text-gray-500">Mô tả ngắn gọn về nội dung bài viết (tối đa 200 ký tự)</p>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Nội dung <span className="text-red-500">*</span></label>
-=======
-              <p className="mt-1 text-sm text-gray-500">
-                Mô tả ngắn gọn về nội dung bài viết (tối đa 200 ký tự)
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nội dung <span className="text-red-500">*</span>
-              </label>
->>>>>>> Stashed changes
               <div className="border border-gray-300 rounded-md">
                 <ToastEditor
                   initialValue={content || ''}
@@ -300,7 +193,6 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
             </div>
           </div>
 
-<<<<<<< Updated upstream
           {/* Right Column */}
           <div className="space-y-6">
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
@@ -322,17 +214,6 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Danh mục <span className="text-red-500">*</span></label>
-=======
-          {/* Right Column - Settings */}
-          <div className="space-y-6">
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Thông tin bài viết</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Danh mục <span className="text-red-500">*</span>
-                  </label>
->>>>>>> Stashed changes
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
@@ -341,26 +222,14 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
                   >
                     <option value="">-- Chọn danh mục --</option>
                     {categories.map((cat) => (
-<<<<<<< Updated upstream
                       <option key={cat._id} value={cat._id}>{cat.Cate_name}</option>
-=======
-                      <option key={cat._id} value={cat._id}>
-                        {cat.Cate_name}
-                      </option>
->>>>>>> Stashed changes
                     ))}
                   </select>
                 </div>
 
                 <div>
-<<<<<<< Updated upstream
                   <label className="block text-sm font-medium text-gray-700 mb-1">Trạng thái <span className="text-red-500">*</span></label>
                   <select
-=======
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Trạng thái <span className="text-red-500">*</span>
-                  </label>                <select
->>>>>>> Stashed changes
                     value={status}
                     onChange={(e) => setStatus(e.target.value)}
                     className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
@@ -372,7 +241,6 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
                 </div>
 
                 <div>
-<<<<<<< Updated upstream
                   <label className="block text-sm font-medium text-gray-700 mb-1">Lịch đăng bài (tùy chọn)</label>
                   <input
                     type="datetime-local"
@@ -384,11 +252,6 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Thẻ bài viết (Tag) <span className="text-red-500">*</span></label>
-=======
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Thẻ bài viết (Tag) <span className="text-red-500">*</span>
-                  </label>
->>>>>>> Stashed changes
                   <div className="flex flex-wrap gap-2">
                     {TAG_OPTIONS.map((tag) => (
                       <label key={tag} className="flex items-center gap-1 text-sm bg-gray-100 px-2 py-1 rounded cursor-pointer">
@@ -406,22 +269,8 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
                 </div>
 
                 <div>
-<<<<<<< Updated upstream
                   <label className="block text-sm font-medium text-gray-700 mb-1">Hình ảnh <span className="text-red-500">*</span></label>
                   <ImageUploadPreview images={images} onChange={handleImageChange} onRemove={handleRemoveImage} />
-=======
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Hình ảnh <span className="text-red-500">*</span>
-                  </label>
-                  <ImageUploadPreview 
-                    images={images}
-                    onChange={handleImageChange}
-                    onRemove={handleRemoveImage}
-                  />
-                  <p className="mt-1 text-sm text-gray-500">
-                    Có thể tải lên tối đa 5 hình ảnh cho bài viết
-                  </p>
->>>>>>> Stashed changes
                 </div>
               </div>
             </div>
@@ -430,11 +279,7 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
               <button
                 type="button"
                 onClick={() => navigate('/admin/posts')}
-<<<<<<< Updated upstream
                 className="px-4 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50"
-=======
-                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
->>>>>>> Stashed changes
                 disabled={isSubmitting}
               >
                 Huỷ
@@ -442,15 +287,9 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
               <button
                 type="submit"
                 disabled={isSubmitting}
-<<<<<<< Updated upstream
                 className={`px-4 py-2 rounded-md text-sm text-white ${
                   isSubmitting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
                 }`}
-=======
-                className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-                  isSubmitting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
-                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
->>>>>>> Stashed changes
               >
                 {isSubmitting ? 'Đang xử lý...' : initialData ? 'Cập nhật' : 'Thêm bài viết'}
               </button>
@@ -458,13 +297,10 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
           </div>
         </div>
       </form>
-<<<<<<< Updated upstream
 
       {showPreviewModal && previewPost && (
         <PostPreviewModal isOpen={showPreviewModal} onClose={() => setShowPreviewModal(false)} post={previewPost} />
       )}
-=======
->>>>>>> Stashed changes
     </div>
   );
 };

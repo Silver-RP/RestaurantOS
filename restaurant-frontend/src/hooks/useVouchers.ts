@@ -99,11 +99,6 @@ export const useVoucherById = (id: string) => {
     queryKey: ['voucher', id],
     queryFn: () => getVoucherById(id),
     enabled: !!id,
-<<<<<<< Updated upstream
-    refetchOnMount: true,
-    staleTime: 0,
-=======
->>>>>>> Stashed changes
   });
 };
 

@@ -102,11 +102,7 @@ export default function MainGrid() {
             </Grid>
           </Grid>
 
-<<<<<<< Updated upstream
-          {/* <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
-=======
           <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
->>>>>>> Stashed changes
             Details
           </Typography>
           <Grid container spacing={2} columns={12}>
@@ -122,11 +118,7 @@ export default function MainGrid() {
                 <ChartUserByCountry />
               </Stack>
             </Grid>
-<<<<<<< Updated upstream
-          </Grid> */}
-=======
           </Grid>
->>>>>>> Stashed changes
         </>
       ) : null}
       <Copyright sx={{ my: 4 }} />

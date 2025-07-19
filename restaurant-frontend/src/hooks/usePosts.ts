@@ -2,22 +2,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import PostsApi, { PostsResponse, PostsQueryParams } from '../api/PostsApi';
 import { toast } from 'react-toastify';
 import { useSearchParams } from 'react-router-dom';
-<<<<<<< Updated upstream
-import { PostType } from '../types/PostType';
-
-export const POSTS_QUERY_KEY = ['posts'];
-
-export const usePosts = (initialParams?: PostsQueryParams) => {
-  const queryClient = useQueryClient();
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  const page = Number(searchParams.get('page')) || initialParams?.page || 1;
-  const limit = Number(searchParams.get('limit')) || initialParams?.limit || 10;
-  const search = searchParams.get('search') || initialParams?.search || '';
-  const sortBy = searchParams.get('sortBy') || initialParams?.sortBy || 'createdAt';
-  const sortOrder = (searchParams.get('sortOrder') || initialParams?.sortOrder || 'desc') as 'asc' | 'desc';
-  const status = initialParams?.status !== undefined ? initialParams.status : searchParams.get('status') || undefined; // Prioritize initialParams for status
-=======
 
 export const POSTS_QUERY_KEY = ['posts'];
 
@@ -30,22 +14,14 @@ export const usePosts = () => {
   const search = searchParams.get('search') || '';
   const sortBy = searchParams.get('sortBy') || 'createdAt';
   const sortOrder = searchParams.get('sortOrder') || 'desc';
->>>>>>> Stashed changes
 
   const queryParams: PostsQueryParams = {
     page,
     limit,
     search,
     sortBy,
-<<<<<<< Updated upstream
-    sortOrder,
-    status,
-  };
-  console.log('Fetching posts with queryParams:', queryParams);
-=======
     sortOrder: sortOrder as 'asc' | 'desc'
   };
->>>>>>> Stashed changes
 
   const { data, isLoading: isLoadingPosts, error } = useQuery({
     queryKey: [...POSTS_QUERY_KEY, queryParams],

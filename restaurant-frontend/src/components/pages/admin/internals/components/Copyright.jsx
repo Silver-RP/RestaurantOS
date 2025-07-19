@@ -15,16 +15,8 @@ export default function Copyright(props) {
         ...(Array.isArray(props.sx) ? props.sx : [props.sx]),
       ]}
     >
-<<<<<<< Updated upstream
       {'Copyright © 2025 Beefbeef Restaurant'}
       
-=======
-      {'Copyright © '}
-      <Link color="inherit" href="https://mui.com/">
-        Sitemark
-      </Link>{' '}
-      {new Date().getFullYear()}
->>>>>>> Stashed changes
       {'.'}
     </Typography>
   );

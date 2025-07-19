@@ -24,6 +24,7 @@ import { LogoutUser } from '../redux/feature/auth/authActions';
 import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@/redux/hook';
+import { BsChatDots } from 'react-icons/bs';
 
 const AdminLayout: React.FC = () => {
   const { isSidebarOpen, toggleSidebarExtend } = useAdminSidebar();
@@ -164,6 +165,13 @@ const AdminLayout: React.FC = () => {
               label="Voucher"
               expanded={isSidebarOpen}
               currentPath={location.pathname}
+            />
+            <NavItem 
+            href="/admin/chatbox"
+            icon={<BsChatDots />}
+            label="Chatbox"
+            expanded={isSidebarOpen}
+            currentPath={location.pathname}
             />
 
           </nav>

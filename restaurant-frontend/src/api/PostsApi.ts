@@ -19,10 +19,6 @@ export interface PostsQueryParams {
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
-<<<<<<< Updated upstream
-  status?: string;
-=======
->>>>>>> Stashed changes
 }
 
 const PostsApi = {

@@ -17,16 +17,10 @@ const discountTypes = [
   { value: 'fixed', label: 'Số tiền cố định' },
 ];
 
-<<<<<<< Updated upstream
-const VoucherForm: React.FC<VoucherFormProps> = ({
-  initialData,
-  onSubmit,
-=======
 const VoucherForm: React.FC<VoucherFormProps & { onAddUsers?: (userIds: string[]) => void }> = ({
   initialData,
   onSubmit,
   onAddUsers,
->>>>>>> Stashed changes
 }) => {
   const navigate = useNavigate();
   const [code, setCode] = useState(initialData?.code || '');
@@ -52,17 +46,10 @@ const VoucherForm: React.FC<VoucherFormProps & { onAddUsers?: (userIds: string[]
     initialData?.end_date ? new Date(initialData.end_date).toISOString().split('T')[0] : '',
   );
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-<<<<<<< Updated upstream
-  const [userOptions, setUserOptions] = useState<User[]>([]);
-  const [addUsers, setAddUsers] = useState<string[]>([]);
-  const [loadingUsers, setLoadingUsers] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-=======
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [userOptions, setUserOptions] = useState<User[]>([]);
   const [addUsers, setAddUsers] = useState<string[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
->>>>>>> Stashed changes
 
   useEffect(() => {
     if (type === 'private') {
@@ -80,11 +67,7 @@ const VoucherForm: React.FC<VoucherFormProps & { onAddUsers?: (userIds: string[]
     }
   }, [initialData]);
 
-<<<<<<< Updated upstream
-  const handleSubmit = async (e: React.FormEvent) => {
-=======
   const handleSubmit = (e: React.FormEvent) => {
->>>>>>> Stashed changes
     e.preventDefault();
 
     if (!code && !initialData) {
@@ -115,11 +98,7 @@ const VoucherForm: React.FC<VoucherFormProps & { onAddUsers?: (userIds: string[]
 
     const dataToSend: Partial<Voucher> = {
       code,
-<<<<<<< Updated upstream
-      description: description,
-=======
       description: description || undefined,
->>>>>>> Stashed changes
       type,
       discount_type: discountType,
       discount_value: discountValue,
@@ -131,16 +110,7 @@ const VoucherForm: React.FC<VoucherFormProps & { onAddUsers?: (userIds: string[]
       ...(type === 'private' ? { userIds: allUserIds } : {}),
     };
 
-<<<<<<< Updated upstream
-    setIsSubmitting(true);
-    try {
-      await onSubmit(dataToSend);
-    } finally {
-      setIsSubmitting(false);
-    }
-=======
     onSubmit(dataToSend);
->>>>>>> Stashed changes
   };
 
   // Tạo danh sách user chưa sở hữu voucher
@@ -341,10 +311,6 @@ const VoucherForm: React.FC<VoucherFormProps & { onAddUsers?: (userIds: string[]
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
               className="border rounded px-4 py-2 w-full"
-<<<<<<< Updated upstream
-              min={new Date().toISOString().split('T')[0]}
-=======
->>>>>>> Stashed changes
             />
           </div>
 
@@ -357,10 +323,6 @@ const VoucherForm: React.FC<VoucherFormProps & { onAddUsers?: (userIds: string[]
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
               className="border rounded px-4 py-2 w-full"
-<<<<<<< Updated upstream
-              min={startDate || new Date().toISOString().split('T')[0]}
-=======
->>>>>>> Stashed changes
             />
           </div>
         </div>
@@ -376,14 +338,8 @@ const VoucherForm: React.FC<VoucherFormProps & { onAddUsers?: (userIds: string[]
           <button
             type="submit"
             className="px-4 py-2 bg-adminprimary text-white rounded hover:bg-blue-700"
-<<<<<<< Updated upstream
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? 'Đang lưu...' : (initialData ? 'Cập nhật Voucher' : 'Lưu Voucher')}
-=======
           >
             {initialData ? 'Cập nhật Voucher' : 'Lưu Voucher'}
->>>>>>> Stashed changes
           </button>
         </div>
       </form>

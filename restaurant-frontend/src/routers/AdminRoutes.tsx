@@ -37,6 +37,7 @@ import CreateVoucherPage from '../components/pages/admin/voucher/Create';
 import EditVoucherPage from '../components/pages/admin/voucher/Edit';
 import TrashVoucherPage from '../components/pages/admin/voucher/Trash';
 import AdminLoginPage from '@/components/pages/admin/login/Index';
+import ChatAdminPanel from "../components/pages/admin/chatbox/ChatAdminPanel";
 
 
 const adminRoutes = [
@@ -85,7 +86,7 @@ const adminRoutes = [
       { path: 'vouchers/edit/:id', element: <EditVoucherPage /> },
       { path: "vouchers/trash", element: <TrashVoucherPage /> },
       { path: "warehouse/transaction-view", element: <WarehouseTransactionViewPage /> },
-      
+      { path: "chatbox", element: <ChatAdminPanel /> },
 
       
       { path: "*", element: <Navigate to="/admin" /> },

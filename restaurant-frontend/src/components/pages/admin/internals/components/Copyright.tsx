@@ -15,11 +15,7 @@ export default function Copyright(props: any) {
         ...(Array.isArray(props.sx) ? props.sx : [props.sx]),
       ]}
     >
-<<<<<<< Updated upstream
-      {'Beefbeef © '}
-=======
       {'Copyright © '}
->>>>>>> Stashed changes
       <Link color="inherit" href="https://mui.com/">
         Sitemark
       </Link>{' '}

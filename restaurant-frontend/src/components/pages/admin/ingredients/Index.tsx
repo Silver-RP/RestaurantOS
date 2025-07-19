@@ -222,11 +222,7 @@ const MenuTable: React.FC = () => {
               {ingredientList.map((item, index) => (
                 <tr key={index} className="border-b hover:bg-gray-50">
                   <td className="px-4 py-2">{index + 1}</td>
-<<<<<<< Updated upstream
-                  <td className="px-4 py-2 font-medium">{item.name.charAt(0).toUpperCase() + item.name.slice(1)}</td>
-=======
                   <td className="px-4 py-2 font-medium">{item.name}</td>
->>>>>>> Stashed changes
                   <td className="px-4 py-2 font-medium">
                     {item.group || 'Chưa phân loại'}
                     {item.group && (

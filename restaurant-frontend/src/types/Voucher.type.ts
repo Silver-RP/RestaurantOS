@@ -20,11 +20,7 @@ export interface Voucher {
 }
 
 export interface UserVoucherDisplay extends Voucher {
-<<<<<<< Updated upstream
-  user_voucher_status: 'saved' | 'used' | 'expired' | 'out_of_stock';
-=======
   user_voucher_status: 'saved' | 'used' | 'expired';
->>>>>>> Stashed changes
   user_voucher_id: string;
   user_voucher_savedAt?: string;
   user_voucher_updatedAt?: string;
