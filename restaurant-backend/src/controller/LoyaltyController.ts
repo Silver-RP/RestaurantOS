@@ -71,8 +71,8 @@ const LoyaltyController = {
   // Tạo tier mới (cho admin)
   async createTier(req: Request, res: Response): Promise<void> {
     try {
-      const { tier_name, min_spent, discount, benefits, sort_order } = req.body;
-      if (!tier_name || !min_spent || !discount || !sort_order) {
+      const { tier_name, min_spent, discount, benefits } = req.body;
+      if (!tier_name || !min_spent || !discount) {
         res.status(400).json({ message: 'Thiếu thông tin bắt buộc' });
         return;
       }
@@ -80,8 +80,7 @@ const LoyaltyController = {
         tier_name,
         min_spent,
         discount,
-        benefits,
-        sort_order
+        benefits
       });
       res.status(201).json(tier);
     } catch (err: any) {
@@ -125,8 +124,8 @@ const LoyaltyController = {
   // Tạo định nghĩa milestone mới (cho admin)
   async createMilestoneDefinition(req: Request, res: Response): Promise<void> {
     try {
-      const { milestone_amount, milestone_name, description, voucher_id, sort_order } = req.body;
-      if (!milestone_amount || !milestone_name || !voucher_id || !sort_order) {
+      const { milestone_amount, milestone_name, description, voucher_id } = req.body;
+      if (!milestone_amount || !milestone_name || !voucher_id) {
         res.status(400).json({ message: 'Thiếu thông tin' });
         return;
       }
@@ -134,8 +133,7 @@ const LoyaltyController = {
         milestone_amount,
         milestone_name,
         description,
-        voucher_id,
-        sort_order
+        voucher_id
       });
       res.json(milestone);
     } catch (err: any) {
