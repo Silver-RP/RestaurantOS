@@ -6,8 +6,6 @@ import AuthRoutes from './routes/AuthRoutes';
 import UserRoutes from './routes/UserRoutes';
 import RoleRoutes from './routes/RoleRouter';
 import CateRoutes from './routes/CategoryRoutes';
-import ReservationContactRoutes from './routes/ReservationContactRoutes';
-import ReservationDetailContactRoutes from './routes/ReservationDetailContactRoutes';
 import ProfileRoutes from './routes/ProfileRoutes';
 import ReservationRoutes from './routes/ReservationRouter';
 import BannerRoutes from './routes/BannerRoutes';
@@ -129,8 +127,7 @@ app.use('/api/permission', PermissionRoutes);
 app.use('/api/category', CateRoutes);
 app.use('/api/reservation', AuthMiddleWare.verifyToken, ReservationRoutes);
 app.use('/api/banner', BannerRoutes);
-app.use('/api/reservationcontact', ReservationContactRoutes);
-app.use('/api/reservationdetailcontact', ReservationDetailContactRoutes);
+
 app.use(
   '/api/staff',
   AuthMiddleWare.verifyToken,
