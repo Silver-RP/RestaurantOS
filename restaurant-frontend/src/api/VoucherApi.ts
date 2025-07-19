@@ -7,7 +7,7 @@ interface VoucherFilterParams {
   search?: string;
   sort?: string;
   status?: 'active' | 'inactive' | 'expired' | 'out_of_stock';
-  type?: 'public' | 'private';
+  type?: 'public' | 'private' | 'gift';
   discount_type?: 'percent' | 'fixed';
   min_discount_value?: number;
   max_discount_value?: number;
@@ -73,7 +73,7 @@ export async function getPublicActiveVouchers(params?: { page?: number; limit?: 
 }
 
 export async function getUserVouchers() {
-  const res = await api.get<Voucher[]>('/voucher/user-vouchers');
+  const res = await api.get<UserVoucher[]>('/voucher/user-vouchers');
   return res.data;
 }
 

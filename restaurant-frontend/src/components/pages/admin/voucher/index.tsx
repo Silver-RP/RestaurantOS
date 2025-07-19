@@ -8,6 +8,12 @@ import AdminPagination from '../AdminPagination';
 
 const VoucherDetailModal = ({ open, onClose, voucher }: { open: boolean, onClose: () => void, voucher: any }) => {
   if (!open || !voucher) return null;
+  const getTypeLabel = (type: string) => {
+    if (type === 'public') return 'Công khai';
+    if (type === 'private') return 'Riêng tư';
+    if (type === 'gift') return 'Quà tặng';
+    return type;
+  };
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
       <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg relative">
@@ -15,7 +21,7 @@ const VoucherDetailModal = ({ open, onClose, voucher }: { open: boolean, onClose
         <h2 className="text-xl font-bold mb-4">Chi tiết Voucher</h2>
         <div className="space-y-2 text-sm">
           <div><b>Mã:</b> {voucher.code}</div>
-          <div><b>Loại:</b> {voucher.type === 'public' ? 'Công khai' : 'Riêng tư'}</div>
+          <div><b>Loại:</b> {getTypeLabel(voucher.type)}</div>
           <div><b>Mô tả:</b> {voucher.description || 'Không có'}</div>
           <div><b>Loại giảm giá:</b> {voucher.discount_type === 'percent' ? 'Phần trăm' : 'Số tiền cố định'}</div>
           <div><b>Giá trị giảm giá:</b> {voucher.discount_type === 'percent' ? `${voucher.discount_value}%` : `${voucher.discount_value?.toLocaleString()} VNĐ`}</div>
@@ -110,6 +116,13 @@ const VoucherList: React.FC = () => {
     return date.toLocaleDateString();
   };
 
+  const getTypeLabel = (type: string) => {
+    if (type === 'public') return 'Công khai';
+    if (type === 'private') return 'Riêng tư';
+    if (type === 'gift') return 'Quà tặng';
+    return type;
+  };
+
   return (
     <div >
       <div className="flex flex-wrap gap-4 mb-4 items-center justify-between">
@@ -201,9 +214,11 @@ const VoucherList: React.FC = () => {
                       <span className={`px-2 py-1 rounded text-sm ${
                         voucher.type === 'public' 
                           ? 'bg-green-100 text-green-800' 
-                          : 'bg-blue-100 text-blue-800'
+                          : voucher.type === 'gift'
+                            ? 'bg-purple-100 text-purple-800'
+                            : 'bg-blue-100 text-blue-800'
                       }`}>
-                        {voucher.type === 'public' ? 'Công khai' : 'Riêng tư'}
+                        {getTypeLabel(voucher.type)}
                       </span>
                     </td>
                     <td className="px-4 py-2">{voucher.description}</td>

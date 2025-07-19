@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { getAccountInfo, getAllTiers } from '@/api/LoyaltyApi';
-import { LoyaltyAccountInfo, LoyaltyTier } from '@/types/Loyalty.type';
+import { getLoyaltyAccountInfo, getActiveTiers, getActiveMilestoneDefinitions } from '@/api/LoyaltyApi';
+import { saveVoucherForUser } from '@/api/VoucherApi';
+import { LoyaltyAccountInfo, LoyaltyTier, MilestoneDefinition } from '@/types/Loyalty.type';
+import { FaGift } from 'react-icons/fa';
+import { toast } from 'react-toastify';
+import { useUserVouchers } from '@/hooks/useVouchers';
 
 // Hàm chuyển tier_name sang tiếng Việt
 const getTierNameVN = (tier_name: string) => {
@@ -19,12 +23,50 @@ const UserLoyaltyTier: React.FC = () => {
   const [tiers, setTiers] = useState<LoyaltyTier[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showMilestoneModal, setShowMilestoneModal] = useState(false);
+  const [milestones, setMilestones] = useState<MilestoneDefinition[]>([]);
+  const { data: userVouchers = [], refetch: refetchUserVouchers } = useUserVouchers();
+  const [milestoneLoading, setMilestoneLoading] = useState(false);
+  const [milestoneError, setMilestoneError] = useState('');
+  const [savingVoucherId, setSavingVoucherId] = useState<string | null>(null);
+
+  const fetchMilestonesAndVouchers = async () => {
+    setMilestoneLoading(true);
+    setMilestoneError('');
+    try {
+      const milestonesRes = await getActiveMilestoneDefinitions();
+      setMilestones(milestonesRes);
+    } catch {
+      setMilestoneError('Không thể tải mốc quà tặng hoặc voucher của bạn!');
+    } finally {
+      setMilestoneLoading(false);
+    }
+  };
+
+  const handleOpenMilestoneModal = () => {
+    setShowMilestoneModal(true);
+    fetchMilestonesAndVouchers();
+  };
+
+  const handleSaveVoucher = async (voucherId: string) => {
+    setSavingVoucherId(voucherId);
+    try {
+      await saveVoucherForUser(voucherId);
+      toast.success('Lưu mã thành công!');
+      await refetchUserVouchers();
+      await fetchMilestonesAndVouchers();
+    } catch {
+      alert('Lưu mã thất bại!');
+    } finally {
+      setSavingVoucherId(null);
+    }
+  };
 
   useEffect(() => {
-    Promise.all([getAccountInfo(), getAllTiers()])
+    Promise.all([getLoyaltyAccountInfo(), getActiveTiers()])
       .then(([info, tiers]) => {
         setInfo(info);
-        setTiers(tiers.sort((a, b) => a.min_spent - b.min_spent));
+        setTiers(tiers.sort((a: LoyaltyTier, b: LoyaltyTier) => a.min_spent - b.min_spent));
       })
       .catch(() => setError('Không thể tải thông tin hạng thành viên!'))
       .finally(() => setLoading(false));
@@ -105,8 +147,8 @@ const UserLoyaltyTier: React.FC = () => {
         </div>
         <div>
           <span className="block text-xs text-gray-400">Tổng chi tiêu năm nay</span>
-          <span className="lg:text-lg text-sm font-bold text-white">{currentSpent.toLocaleString()} VNĐ</span>
-        </div>
+          <span className="lg:text-lg text-sm font-bold text-white">{currentSpent.toLocaleString()} VNĐ</span>          
+        </div>      
         <div>
           <span className="block text-xs text-gray-400">Tổng chi tiêu tích lũy</span>
           <span className="lg:text-lg text-sm font-bold text-white">{info.total_spent?.toLocaleString()} VNĐ</span>
@@ -114,6 +156,11 @@ const UserLoyaltyTier: React.FC = () => {
         <div>
           <span className="block text-xs text-gray-400">Quyền lợi</span>
           <span className="text-sm text-white">{info.current_tier?.benefits ?? '---'}</span>
+        </div>
+        <div>
+          {milestones.length > 0 && (
+            <FaGift className="text-yellow-400 cursor-pointer text-4xl" title="Xem mốc quà tặng" onClick={handleOpenMilestoneModal} />
+          )}
         </div>
       </div>
       {/* Tổng chi tiêu từng năm */}
@@ -139,6 +186,66 @@ const UserLoyaltyTier: React.FC = () => {
            <div className="mt-2 text-xs text-yellow-300">
         <b>Lưu ý:</b> Mỗi năm, hạng thành viên sẽ được reset lại dựa trên tổng chi tiêu của năm đó. Bạn cần chi tiêu lại để duy trì hoặc nâng hạng.
       </div>
+      {/* Modal mốc quà tặng */}
+      {showMilestoneModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-bodyBackground rounded-lg shadow-lg p-6 w-full max-w-lg relative">
+            <button className="absolute top-2 right-2 text-gray-500 hover:text-gray-700" onClick={() => setShowMilestoneModal(false)}>&times;</button>
+            <h4 className="text-lg font-bold mb-4 text-secondaryColor">Các mốc quà tặng</h4>
+            {milestoneLoading ? (
+              <div>Đang tải...</div>
+            ) : milestoneError ? (
+              <div className="text-red-500">{milestoneError}</div>
+            ) : (
+              <div className="space-y-4 max-h-96 overflow-y-auto">
+                {milestones.map(milestone => {
+                  const enough = currentSpent >= milestone.milestone_amount;
+                  const getId = (id: unknown): string => {
+                    if (!id) return '';
+                    if (typeof id === 'string') return id;
+                    if (typeof id === 'object' && id !== null && '_id' in id) return (id as { _id: string })._id;
+                    return '';
+                  };
+                  const voucherId = getId(milestone.voucher_id);
+                    const userVoucherIds = userVouchers.map(v => v._id ? v._id.toString() : '');
+                  const alreadySaved = userVoucherIds.includes(voucherId);
+                  return (
+                    <div key={milestone._id} className="border border-secondaryColor rounded p-3 flex flex-col md:flex-row md:items-center justify-between gap-2">
+                      <div>
+                        <div className="font-semibold text-secondaryColor">{milestone.milestone_name}</div>
+                        <div className="text-xs text-white">Chi tiêu từ: {milestone.milestone_amount.toLocaleString()}đ</div>
+                        <div className="text-xs text-white">
+                          Voucher: <span className="font-mono text-secondaryColor">
+                            {milestone.voucher_id && typeof milestone.voucher_id === 'object' && 'code' in milestone.voucher_id
+                              ? (milestone.voucher_id as { code: string }).code
+                              : ''}
+                          </span>
+                        </div>
+                        {milestone.description && <div className="text-xs text-gray-400 mt-1">{milestone.description}</div>}
+                      </div>
+                      <div className="flex flex-col items-end gap-2 min-w-[120px]">
+                        {alreadySaved ? (
+                          <button className="px-3 py-1 rounded bg-gray-300 text-gray-600 cursor-not-allowed" disabled>Đã lưu</button>
+                        ) : enough ? (
+                          <button
+                            className="px-3 py-1 rounded bg-secondaryColor text-black font-semibold border-2 border-transparent transition-colors duration-150 hover:bg-transparent hover:text-secondaryColor hover:border-secondaryColor disabled:opacity-60"
+                            disabled={savingVoucherId === voucherId}
+                            onClick={() => handleSaveVoucher(voucherId)}
+                          >
+                            {savingVoucherId === voucherId ? 'Đang lưu...' : 'Lưu mã'}
+                          </button>
+                        ) : (
+                          <button className="px-3 py-1 rounded bg-gray-200 text-gray-400 cursor-not-allowed" disabled>Chưa đủ điều kiện</button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
