@@ -9,12 +9,12 @@ export const getAllFaqs = async () => {
 
 export const getAnswerByQuestion = async (question: string): Promise<IFaq | null> => {
   try {
-    const res = await axiosInstance.get(`/faq/getall`, {
-      params: { question },
-    });
-    return res.data;
+    const faqs: IFaq[] = await getAllFaqs();
+
+    return faqs.find((faq: IFaq) => faq.question.trim().toLowerCase() === question.trim().toLowerCase()) || null;
+    
   } catch (error) {
     console.error('Không tìm thấy câu trả lời:', error);
     return null;
   }
-};
+  }

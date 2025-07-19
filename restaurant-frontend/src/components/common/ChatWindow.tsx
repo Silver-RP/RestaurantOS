@@ -27,6 +27,7 @@ interface ChatWindowProps {
   onFAQClick: (question: string) => void;
   faqList: string[];
   currentUserId?: string;
+  faqs: { question: string; answer: string }[];
 }
 
 const ChatWindow: React.FC<ChatWindowProps> = ({
@@ -40,6 +41,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   onFAQClick,
   faqList,
   currentUserId,
+  faqs,
 }) => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -48,6 +50,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   const emojiButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const pickerRef = useRef<EmojiButton | null>(null);
   const currentMsgIdRef = useRef<string | null>(null);
+  const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
+  const [loadingFaq, setLoadingFaq] = useState<number | null>(null);
+  const [typingText, setTypingText] = useState<string>('');
+  const typingInterval = useRef<NodeJS.Timeout | null>(null);
+  const [faqAnswers, setFaqAnswers] = useState<{ [key: number]: string }>({});
 
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -92,6 +99,41 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       pickerRef.current.togglePicker(emojiButtonRefs.current[idx]!);
     }
   };
+
+  const handleFaqClick = (idx: number) => {
+    setExpandedFaq(null);
+    setLoadingFaq(idx);
+    setTypingText('');
+    if (typingInterval.current) clearInterval(typingInterval.current);
+    setTimeout(() => {
+      setExpandedFaq(idx);
+      setLoadingFaq(null);
+    }, 400); // 400ms loading effect
+  };
+
+  useEffect(() => {
+    if (expandedFaq !== null && !loadingFaq) {
+      const matched = faqs.find(f => f.question.trim().toLowerCase() === faqList[expandedFaq].trim().toLowerCase());
+      const answer = matched?.answer || 'Xin lỗi, tôi chưa có câu trả lời phù hợp.';
+      let i = 0;
+      setTypingText('');
+      if (typingInterval.current) clearInterval(typingInterval.current);
+      typingInterval.current = setInterval(() => {
+        setTypingText((prev) => {
+          if (i >= answer.length) {
+            if (typingInterval.current) clearInterval(typingInterval.current);
+            return answer;
+          }
+          const next = answer.slice(0, i + 1);
+          i++;
+          return next;
+        });
+      }, 18); // tốc độ chữ chạy
+      return () => {
+        if (typingInterval.current) clearInterval(typingInterval.current);
+      };
+    }
+  }, [expandedFaq, loadingFaq, faqs, faqList]);
   return (
     <div className="w-[420px] h-[620px] bg-[#0D1B2A] text-white border border-yellow-300 rounded-lg flex flex-col shadow-lg overflow-hidden relative">
       {/* Header */}
@@ -120,17 +162,45 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       {!showInput ? (
         <div className="p-4 space-y-3 text-sm">
           <p className="font-semibold text-yellow-300">
-            ❓ Câu hỏi thường gặp:
+            Câu hỏi thường gặp:
           </p>
-          {faqList.map((faq, idx) => (
-            <button
-              key={idx}
-              onClick={() => onFAQClick(faq)}
-              className="block text-left w-full bg-[#1B263B] text-white hover:bg-yellow-300 hover:text-black px-4 py-3 rounded transition"
-            >
-              {faq}
-            </button>
-          ))}
+          {faqList.map((faq, idx) => {
+            const matched = faqs.find(f => f.question.trim().toLowerCase() === faq.trim().toLowerCase());
+            return (
+              <div key={idx}>
+                <button
+                  onClick={() => handleFaqClick(idx)}
+                  className="block text-left w-full bg-[#1B263B] text-white hover:bg-yellow-300 hover:text-black px-4 py-3 rounded transition"
+                >
+                  <span className="text-xl mr-2">❓</span>{faq}
+                </button>
+                {loadingFaq === idx && (
+                  <div className="flex items-start mt-1">
+                    {/* Avatar bot */}
+                    <span className="text-2xl mr-3">🤖</span>
+                    {/* Bubble loading */}
+                    <div className="relative group max-w-[75%]">
+                      <div className="inline-block min-w-[80px] px-4 py-3 rounded-lg shadow bg-white text-black">
+                        <div className="flex items-center gap-2">
+                          <span className="typing-dots">
+                            <span className="dot bg-yellow-400 inline-block w-2 h-2 rounded-full mr-1 animate-bounce [animation-delay:0ms]"></span>
+                            <span className="dot bg-yellow-400 inline-block w-2 h-2 rounded-full mr-1 animate-bounce [animation-delay:150ms]"></span>
+                            <span className="dot bg-yellow-400 inline-block w-2 h-2 rounded-full animate-bounce [animation-delay:300ms]"></span>
+                          </span>
+                          <span className="text-gray-500 text-sm">Đang trả lời...</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {expandedFaq === idx && !loadingFaq && (
+                  <div className="bg-white text-black px-4 py-3 rounded-b shadow border-l-4 border-yellow-300 animate-fadeIn mt-1 min-h-[28px]">
+                    <span>{typingText}</span>
+                  </div>
+                )}
+              </div>
+            );
+          })}
           <button
             onClick={onShowInput}
             className="mt-4 text-sm underline hover:text-yellow-300 flex items-center gap-2"

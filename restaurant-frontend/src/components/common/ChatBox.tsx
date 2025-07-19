@@ -21,6 +21,8 @@ const Chatbox: React.FC = () => {
   } = useChatbox();
 
   const { faqs } = useFaq();
+  console.log('danh sach', faqs);
+  
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [unreadCount, setUnreadCount] = useState(3);
@@ -37,10 +39,10 @@ const Chatbox: React.FC = () => {
     setShowInput(false);
   };
 
-  const handleFAQClick = async (question: string) => {
-    if (!showInput) setShowInput(true);
-
-    const matched = await getAnswerByQuestion(question);
+  const handleFAQClick = (question: string) => {
+    console.log('đã click câu trả lời');
+    
+    const matched = faqs.find(faq => faq.question.trim().toLowerCase() === question.trim().toLowerCase());
     setMessages((prev) => [
       ...prev,
       { sender: 'user', text: question },
@@ -96,9 +98,7 @@ const Chatbox: React.FC = () => {
           onFAQClick={handleFAQClick}
           faqList={faqs.map((f) => f.question)}
           currentUserId={userId ?? undefined}
-          chatId={chatId ?? undefined}
-          messageReactions={messageReactions}
-          setMessageReactions={setMessageReactions}
+          faqs={faqs}
         />
       ) : (
         <ChatToggleButton unreadCount={unreadCount} onClick={toggleChat} />
