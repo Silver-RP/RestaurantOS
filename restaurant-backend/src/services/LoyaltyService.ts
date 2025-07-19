@@ -106,7 +106,11 @@ const LoyaltyService = {
     if (voucher.type !== 'gift') {
       throw new Error('Voucher phải có type là "gift"');
     }
-    
+    // Kiểm tra voucher đã được gán cho mốc nào khác chưa
+    const existingMilestone = await LoyaltyMilestoneDefinition.findOne({ voucher_id: data.voucher_id });
+    if (existingMilestone) {
+      throw new Error('Voucher này đã được gán cho một mốc khác');
+    }
     return LoyaltyMilestoneDefinition.create(data);
   },
 
@@ -116,6 +120,13 @@ const LoyaltyService = {
     const milestone = await LoyaltyMilestoneDefinition.findById(id);
     if (!milestone) {
       throw new Error('Không tìm thấy mốc quà tặng');
+    }
+    // Nếu có voucher_id mới và khác voucher_id cũ, kiểm tra đã gán cho mốc khác chưa
+    if (data.voucher_id && data.voucher_id !== milestone.voucher_id.toString()) {
+      const existingMilestone = await LoyaltyMilestoneDefinition.findOne({ voucher_id: data.voucher_id });
+      if (existingMilestone) {
+        throw new Error('Voucher này đã được gán cho một mốc khác');
+      }
     }
     // Kiểm tra đã áp dụng cho user chưa (dựa vào bảng UserVoucher)
     const hasApplied = await UserVoucher.exists({ voucher_id: milestone.voucher_id });
