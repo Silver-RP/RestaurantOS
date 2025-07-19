@@ -6,6 +6,7 @@ import TableItem from './TableItem';
 import ButtonComponents from '@components/common/ButtonComponents';
 import { ReservationFormData } from '../../../types/Reservation.type';
 import GlobalModal from '@components/common/GlobalModal';
+import TableTypeInfoModal from './TableTypeInfoModal';
 interface Step2SeatingProps {
   formData: ReservationFormData;
   setFormData: React.Dispatch<React.SetStateAction<ReservationFormData>>;
@@ -44,32 +45,6 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({
     fetchTables();
   }, [getAllTables, getTablesByDateTime, formData.date, formData.time]);
 
-  const TABLE_TYPE_INFO: Record<
-    string,
-    { image: string; label: string; desc: string }
-  > = {
-    group: {
-      image: 'table-group.jpeg',
-      label: 'Bàn nhóm',
-      desc: 'Bàn nhóm phù hợp cho các buổi họp mặt, sinh nhật, liên hoan hoặc nhóm bạn đông người. Không gian rộng rãi, vị trí thuận tiện cho việc trò chuyện và giao lưu. Được bố trí ở khu vực trung tâm, dễ dàng gọi phục vụ và di chuyển.',
-    },
-    standard: {
-      image: 'table-standard.jpg',
-      label: 'Bàn thường',
-      desc: 'Bàn tiêu chuẩn dành cho gia đình nhỏ hoặc nhóm bạn từ 2-4 người. Vị trí linh hoạt, gần khu vực phục vụ chính, phù hợp cho bữa ăn thân mật hoặc dùng bữa hàng ngày. Không gian thoải mái, dễ quan sát toàn cảnh nhà hàng.',
-    },
-    quiet: {
-      image: 'table-quiet.jpg',
-      label: 'Bàn yên tĩnh',
-      desc: 'Bàn yên tĩnh được bố trí ở góc riêng tư, ít tiếng ồn, lý tưởng cho các buổi gặp gỡ cần không gian riêng, trao đổi công việc hoặc hẹn hò. Trang trí nhẹ nhàng, ánh sáng dịu, tạo cảm giác thư giãn.',
-    },
-    vip: {
-      image: 'image.png',
-      label: 'Bàn VIP',
-      desc: 'Bàn VIP nằm ở khu vực sang trọng, riêng biệt, có rèm che hoặc vách ngăn. Phù hợp tiếp khách quan trọng, tổ chức tiệc nhỏ hoặc kỷ niệm đặc biệt. Dịch vụ ưu tiên, không gian đẳng cấp, trang trí tinh tế.',
-    },
-  };
-
   const handleSelect = (
     id: string,
     name: string,
@@ -81,13 +56,19 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({
     if (table.type === 'vip') {
       if (selectedTables.length === 1 && selectedTables[0]._id === table._id) {
         setSelectedTables([]);
-        setFormData((prev) => ({ ...prev, table_type: '', seatingName: '' }));
+        setFormData((prev) => ({
+          ...prev,
+          table_type: '',
+          seatingName: '',
+          tableCategory: '',
+        }));
       } else {
         setSelectedTables([table]);
         setFormData((prev) => ({
           ...prev,
           table_type: table._id ?? table.code,
           seatingName: table.code,
+          tableCategory: table.type,
         }));
       }
       return;
@@ -111,9 +92,15 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({
             ...prev,
             table_type: newSelected.map((t) => t._id ?? t.code).join(','),
             seatingName: newSelected.map((t) => t.code).join(', '),
+            tableCategory: newSelected[0].type, // Lưu loại bàn của bàn đầu tiên
           }));
         } else {
-          setFormData((prev) => ({ ...prev, table_type: '', seatingName: '' }));
+          setFormData((prev) => ({
+            ...prev,
+            table_type: '',
+            seatingName: '',
+            tableCategory: '',
+          }));
         }
       } else {
         // Thêm bàn mới
@@ -123,6 +110,7 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({
           ...prev,
           table_type: newSelected.map((t) => t._id ?? t.code).join(','),
           seatingName: newSelected.map((t) => t.code).join(', '),
+          tableCategory: newSelected[0].type, // Lưu loại bàn của bàn đầu tiên
         }));
       }
     }
@@ -257,72 +245,10 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({
             </ButtonComponents>
           </div>
         </div>
-        {showTypeInfo && (
-          <GlobalModal>
-            <div className="relative bg-[#1a2233] border-2 border-[#F9D783] rounded-2xl shadow-2xl w-full max-w-5xl p-0 overflow-hidden">
-              <button
-                className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center rounded-full bg-[#F9D783] text-[#1a2233] text-2xl font-bold shadow cursor-pointer transition z-10"
-                onClick={() => setShowTypeInfo(false)}
-                aria-label="Đóng"
-              >
-                ×
-              </button>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 p-8">
-                {['quiet', 'standard', 'group', 'vip'].map((type) => {
-                  const info = TABLE_TYPE_INFO[type];
-                  return (
-                    <div
-                      key={type}
-                      className={`
-                        bg-[#223344] rounded-2xl flex flex-col items-center border-2 shadow-lg transition
-                        ${type === 'group' ? 'border-green-400' : ''}
-                        ${type === 'standard' ? 'border-blue-400' : ''}
-                        ${type === 'quiet' ? 'border-purple-400' : ''}
-                        ${type === 'vip' ? 'border-yellow-400' : ''}
-                        min-h-[320px]
-                      `}
-                    >
-                      <img
-                        src={`/assets/images/reservation/${info.image}`}
-                        alt={info.label}
-                        className="w-full h-56 object-cover rounded-xl shadow mb-3"
-                        style={{ maxWidth: '100%' }}
-                      />
-                      <div className="text-[#F9D783] font-extrabold text-xl tracking-wide text-center drop-shadow">
-                        {info.label}
-                      </div>
-                      <div className="flex items-center gap-2 mb-2 justify-center">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth={1.5}
-                          stroke="#F9D783"
-                          className="w-5 h-5"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118A7.5 7.5 0 0112 17.25c2.042 0 3.899.763 5.318 2.018M18.75 6c0 2.485-2.014 4.5-4.5 4.5S9.75 8.485 9.75 6"
-                          />
-                        </svg>
-                        <span className="text-white text-xs">
-                          {type === 'group' && '8-10 người'}
-                          {type === 'standard' && '4 người'}
-                          {type === 'quiet' && '2 người'}
-                          {type === 'vip' && '10 người'}
-                        </span>
-                      </div>
-                      <div className="text-white text-sm text-center leading-relaxed line-clamp-5">
-                        {info.desc}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </GlobalModal>
-        )}
+        <TableTypeInfoModal
+          isOpen={showTypeInfo}
+          onClose={() => setShowTypeInfo(false)}
+        />
       </div>
       {/* Modal cảnh báo khi chưa chọn bàn */}
       {showWarningModal && (

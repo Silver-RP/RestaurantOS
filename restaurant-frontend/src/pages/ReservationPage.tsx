@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Step1BasicInfo from '@components/pages/reservation/Step1BasicInfo';
 import BreadcrumbComponent from '@components/common/BreadCrumbComponents';
-import ShowcaseSection from '@components/common/ShowcaseSection';
 import Step2Seating from '@components/pages/reservation/Step2Seating';
 import Step3Menu from '@components/pages/reservation/Step3Menu';
 import Step4Review from '@/components/pages/reservation/Step4Review';
@@ -25,8 +24,8 @@ const steps = [
 
 const ReservationPage: React.FC = () => {
   const navigate = useNavigate();
-  const [paymentMethod, setPaymentMethod] = useState<string>('');
-  
+  // const [paymentMethod, setPaymentMethod] = useState<string>('');
+  const [, setPaymentMethod] = useState<string>('');
   const getInitialFormData = (): ReservationFormData => {
     const saved = localStorage.getItem('reservation-data');
     if (saved) {
@@ -44,6 +43,7 @@ const ReservationPage: React.FC = () => {
       note: '',
       table_type: '',
       seatingName: '',
+      tableCategory: '',
       menu: '',
       selectedItems: [],
     };
@@ -113,6 +113,7 @@ const ReservationPage: React.FC = () => {
                       note: '',
                       table_type: '',
                       seatingName: '',
+                      tableCategory: '',
                       menu: '',
                       selectedItems: [],
                     });
@@ -244,7 +245,6 @@ const ReservationPage: React.FC = () => {
             </div>
           )}
         </div>
-        <ShowcaseSection />
       </div>
     </>
   );
