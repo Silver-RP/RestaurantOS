@@ -1,17 +1,34 @@
-import React from "react";
-import { FaPrint, FaEnvelope, FaFacebook, FaTwitter, FaInstagram } from "react-icons/fa";
-import { MdPayment } from "react-icons/md";
+import React from 'react';
+import {
+  FaPrint,
+  FaEnvelope,
+  FaFacebook,
+  FaTwitter,
+  FaInstagram,
+} from 'react-icons/fa';
+import { MdPayment } from 'react-icons/md';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { useOrderDetail } from '@/hooks/useOrder';
 import { Dialog, DialogContent } from '@mui/material';
-
 interface InvoiceProps {
   orderId: string;
+  onReady?: () => void;
 }
 
-const Invoice: React.FC<InvoiceProps> = ({ orderId }) => {
+const InvoiceExport: React.FC<InvoiceProps> = ({ orderId, onReady }) => {
   const { data: orderDetail, isLoading } = useOrderDetail(orderId);
+  const [notifiedReady, setNotifiedReady] = React.useState(false);
+
+  React.useEffect(() => {
+    if (orderDetail?.order && onReady && !notifiedReady) {
+      onReady();
+      setNotifiedReady(true);
+    }
+    if (!orderDetail?.order && notifiedReady) {
+      setNotifiedReady(false);
+    }
+  }, [orderDetail?.order, onReady, notifiedReady, orderId]);
 
   const restaurantInfo = {
     name: 'CÔNG TY TNHH BEEFBEEF',
@@ -41,7 +58,13 @@ const Invoice: React.FC<InvoiceProps> = ({ orderId }) => {
     return price.toLocaleString('vi-VN') + '₫';
   };
 
+  const handlePrint = () => {
+    window.print();
+  };
 
+  const handleEmail = (email: string, invoiceNumber: string) => {
+    window.location.href = `mailto:${email}?subject=Invoice ${invoiceNumber}`;
+  };
 
   if (isLoading) {
     return (
@@ -86,14 +109,15 @@ const Invoice: React.FC<InvoiceProps> = ({ orderId }) => {
     delivery: order.shipping_fee || 0,
     discount: order.discount || 0,
     total: order.total_price || 0,
-    paymentStatus: order.payment_status === 'PAID' ? 'Đã thanh toán' : 'Chưa thanh toán',
+    paymentStatus:
+      order.payment_status === 'PAID' ? 'Đã thanh toán' : 'Chưa thanh toán',
     paymentMethod: order.payment_method
       ? {
-        CASH: 'Tiền mặt',
-        CREDIT_CARD: 'Thẻ tín dụng',
-        MOMO: 'Ví MoMo',
-        VNPAY: 'VNPay',
-      }[order.payment_method] || order.payment_method
+          CASH: 'Tiền mặt',
+          CREDIT_CARD: 'Thẻ tín dụng',
+          MOMO: 'Ví MoMo',
+          VNPAY: 'VNPay',
+        }[order.payment_method] || order.payment_method
       : '',
   };
 
@@ -122,13 +146,19 @@ const Invoice: React.FC<InvoiceProps> = ({ orderId }) => {
           {/* Customer and Invoice Info */}
           <div className="grid mb-8 grid-cols-2 gap-8 mt-6">
             <div className="bg-[#F7FAFC] border border-[#E2E8F0] p-4 rounded">
-              <p className="font-semibold text-ld text-[#1F2937] mb-2">Thông tin khách hàng</p>
+              <p className="font-semibold text-ld text-[#1F2937] mb-2">
+                Thông tin khách hàng
+              </p>
               <p className="text-[#1F2937] mb-2">{invoiceData.customer.name}</p>
-              <p className="text-[#1F2937] mb-2">{invoiceData.customer.phone}</p>
+              <p className="text-[#1F2937] mb-2">
+                {invoiceData.customer.phone}
+              </p>
             </div>
             <div className="bg-[#F7FAFC] border border-[#E2E8F0] p-4 rounded">
               <div className="flex justify-between mb-2">
-                <span className="text-[#1F2937] font-semibold">Mã đơn hàng:</span>
+                <span className="text-[#1F2937] font-semibold">
+                  Mã đơn hàng:
+                </span>
                 <span className="text-[#1F2937]">
                   {invoiceData.number.slice(-6).toUpperCase()}
                 </span>
@@ -174,8 +204,12 @@ const Invoice: React.FC<InvoiceProps> = ({ orderId }) => {
                       )}
                     </td>
                     <td className="p-3 text-right">{item.quantity}</td>
-                    <td className="p-3 text-right">{formatPrice(item.unit_price)}</td>
-                    <td className="p-3 text-right">{formatPrice(item.total_amount)}</td>
+                    <td className="p-3 text-right">
+                      {formatPrice(item.unit_price)}
+                    </td>
+                    <td className="p-3 text-right">
+                      {formatPrice(item.total_amount)}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -235,4 +269,4 @@ const Invoice: React.FC<InvoiceProps> = ({ orderId }) => {
   );
 };
 
-export default Invoice;
+export default InvoiceExport;

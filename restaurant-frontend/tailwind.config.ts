@@ -15,6 +15,7 @@ export default {
         '15': 'repeat(15, minmax(0, 1fr))',
       },
       colors: {
+        mode: 'legacy',
         facebook: '#1877F2',
         headerBackground: '#021D2A',
         bodyBackground: '#012B40',
@@ -46,7 +47,6 @@ export default {
         body: ['Roboto', ...defaultTheme.fontFamily.sans],
         cormorant: ["'Cormorant Garamond'", 'serif'],
         handwriting: ['"Passions Conflict"', 'cursive'],
-
       },
       animation: {
         'bounce-slow': 'bounce 2.5s infinite',
