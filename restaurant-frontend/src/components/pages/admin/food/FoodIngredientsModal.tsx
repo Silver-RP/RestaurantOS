@@ -1,7 +1,7 @@
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import { DialogTitle, DialogContent, Dialog } from '@mui/material';
 import { useDishIngredient } from '@/hooks/useFoodsAdminLogic';
-import { ingredientUnits } from '../ingredients/ingredientUnits';
+import { ingredientUnits } from '../../../../types/ingredientUnitsType';
 import {
   Autocomplete,
   TextField,

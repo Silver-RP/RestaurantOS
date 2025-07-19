@@ -26,6 +26,8 @@ class CategoryService {
         categories.map(async (category) => {
           const foodCount = await Dish.countDocuments({
             categories: category._id,
+            status: { $ne: 'hidden' }, 
+            isDeleted: false,
           });
           return {
             ...category.toObject(),

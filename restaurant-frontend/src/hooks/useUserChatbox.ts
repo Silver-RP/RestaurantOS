@@ -50,6 +50,7 @@ export const useChatbox = () => {
     socket.on('typing', ({ userId, typing }) => {
       setTypingUserId(typing ? userId : null);
     });
+    
     socket.on('messageReactionUpdated', ({ messageId, reactions }) => {
       setMessages((prev) =>
         prev.map((msg) =>
@@ -57,11 +58,11 @@ export const useChatbox = () => {
         )
       );
     });
+    
     return () => {
       socket.off('message');
       socket.off('typing');
       socket.off('messageReactionUpdated'); // Cleanup
-
     };
   }, []);
 

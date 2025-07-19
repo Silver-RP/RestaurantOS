@@ -23,6 +23,7 @@ export interface ChatMessage {
   edited_at?: string;
   is_bot_reply?: boolean;
   message_type: 'text' | 'image' | 'file';
+  reactions?: { emoji: string; userId?: string }[];
 }
 
 export interface SendMessagePayload {

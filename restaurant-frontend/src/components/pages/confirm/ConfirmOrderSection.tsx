@@ -42,6 +42,8 @@ interface OrderData {
   vat_amount: number;
   total_price: number;
   total_quantity: number;
+  voucher_id?: string | null;
+  discount_amount?: number;
 }
 
 const OrderConfirmation = () => {
@@ -64,6 +66,7 @@ const OrderConfirmation = () => {
 
     try {
       const parsedOrderData = JSON.parse(storedOrderData) as OrderData;
+      console.log('orderData in Confirm:', parsedOrderData);
       setOrderData(parsedOrderData);
 
       if (storedCartItems) {
@@ -162,6 +165,8 @@ const OrderConfirmation = () => {
         shipping_fee: orderData.shipping_fee,
         receiver: orderData.receiver || '',
         receiver_phone: orderData.receiver_phone || '',
+        voucher_id: orderData.voucher_id || undefined,
+        discount_amount: orderData.discount_amount || 0,
       };
 
       // Add address if delivery type is DELIVERY
@@ -371,14 +376,14 @@ const OrderConfirmation = () => {
               ''
             )}
             {orderData.delivery_time_type !== 'SCHEDULED' &&
-            orderData.delivery_type === 'DELIVERY' ? (
-              <InfoItem
-                label="Thời gian giao hàng"
-                value="Trong 45-90 phút tính từ lúc đặt hàng."
-              />
-            ) : (
-              ''
-            )}
+              orderData.delivery_type === 'DELIVERY' ? (
+                <InfoItem
+                  label="Thời gian giao hàng"
+                  value="Trong 45-90 phút tính từ lúc đặt hàng."
+                />
+              ) : (
+                ''
+              )}
             {orderData.note && (
               <InfoItem label="Ghi chú" value={orderData.note} />
             )}
@@ -400,10 +405,16 @@ const OrderConfirmation = () => {
               <span>Phí giao hàng:</span>
               <span>{orderData.shipping_fee.toLocaleString()} VNĐ</span>
             </div>
+            {orderData.discount_amount && orderData.discount_amount > 0 && (
+              <div className="flex justify-between">
+                <span>Giảm giá voucher:</span>
+                <span className="text-green-400">- {orderData.discount_amount.toLocaleString()} VNĐ</span>
+              </div>
+            )}
             <div className="flex justify-between text-xl font-bold pt-4 border-t border-white/20">
               <span>Tổng cộng:</span>
               <span className="text-secondaryColor">
-                {orderData.total_price.toLocaleString()} VNĐ
+                {(orderData.total_price).toLocaleString()} VNĐ
               </span>
             </div>
           </div>

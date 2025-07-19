@@ -47,8 +47,8 @@ const ChatController = {
       const user = req.user as any;
 
       if (!user || !user.id) {
-         res.status(403).json({ message: 'Unauthorized' });
-         return;
+        res.status(403).json({ message: 'Unauthorized' });
+        return;
       }
 
       const userId = user.id;
@@ -158,7 +158,14 @@ const ChatController = {
     try {
       const { userId } = req.params;
       const cashierId = (req.user as any).id;
+
       console.log('getOrCreateUserChat called with userId:', userId, 'cashierId:', cashierId);
+
+      if (userId === cashierId) {
+        console.warn('[❌] Không thể tạo phiên chat với chính mình');
+        res.status(400).json({ message: 'Không thể tạo phiên chat với chính mình' });
+        return;
+      }
 
       const chat = await ChatService.getOrCreateChatWithUser(userId, cashierId);
 
@@ -168,6 +175,7 @@ const ChatController = {
       res.status(500).json({ message: 'Lỗi server khi tạo hoặc lấy phiên chat với user' });
     }
   },
+
 
   async getUnreadMessageCount(req: Request, res: Response): Promise<void> {
     try {

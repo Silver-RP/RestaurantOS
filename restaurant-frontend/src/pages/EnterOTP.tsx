@@ -18,6 +18,7 @@ const EnterOTP = () => {
 
   const [countdown, setCountdown] = useState(60); // ⏳ 60 giây đếm ngược
   const [resendLoading, setResendLoading] = useState(false);
+  const loginPath = location.state?.loginPath || '/login';
 
   const {
     control,
@@ -85,12 +86,15 @@ const EnterOTP = () => {
       const res = await verifyOtp(email, data.otp);
       if (res && res.message.includes('OTP verified')) {
         toast.success('Xác minh OTP thành công!');
-        navigate('/reset-password', { state: { email } });
+        navigate('/reset-password', { state: { email,  loginPath } });
       }
     } catch (err: any) {
       // Xử lý lỗi phía server đã được xử lý qua useEffect(error)
     }
   };
+
+  console.log('OTP component rendered: ', loginPath);
+
 
   return (
     <div className="flex justify-center items-center bg-[url('/assets/images/register/background.jpg')] bg-cover bg-center w-full h-screen">
@@ -148,7 +152,7 @@ const EnterOTP = () => {
 
         <div className="mt-6 text-sm text-white">
           <Link
-            to="/login"
+            to={loginPath}
             className="flex items-center justify-center text-white hover:text-secondaryColor"
           >
             <SlActionUndo className="mr-1 text-lg" />

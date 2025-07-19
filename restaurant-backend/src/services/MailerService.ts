@@ -4,6 +4,8 @@ import { IUser } from '../models/UserModel';
 import { IAddress } from '../models/AddressModel';
 import { IOrderDetail } from '../models/OrderDetailModel';
 import { IPayment } from '../models/PaymentModel';
+import { IVoucher } from '../models/VoucherModel';
+import { IReservation } from '../types/reservation.types';
 
 type MailTemplateParams = {
   to: string;
@@ -14,11 +16,11 @@ type MailTemplateParams = {
 
 const MailerService = {
   async sendTemplateEmail({ to, subject, template, context }: MailTemplateParams) {
-    console.log('📧 [MailerService] Starting to send template email');
-    console.log('📝 [MailerService] Template name:', template);
-    console.log('🔍 [MailerService] Template context:', JSON.stringify(context, null, 2));
-    console.log('📨 [MailerService] Email to:', to);
-    console.log('📌 [MailerService] Email subject:', subject);
+    // console.log('📧 [MailerService] Starting to send template email');
+    // console.log('📝 [MailerService] Template name:', template);
+    // console.log('🔍 [MailerService] Template context:', JSON.stringify(context, null, 2));
+    // console.log('📨 [MailerService] Email to:', to);
+    // console.log('📌 [MailerService] Email subject:', subject);
 
     try {
       await transporter.sendMail({
@@ -101,6 +103,26 @@ const MailerService = {
     });
   },
 
+  async sendVoucherNotification(params: { userEmail: string; voucher: IVoucher }) {
+    const { userEmail, voucher } = params;
+
+    await this.sendTemplateEmail({
+      to: userEmail,
+      subject: `Bạn đã nhận được một voucher mới từ BeefBeef Restaurant!`,
+      template: 'new-voucher-notification',
+      context: {
+        voucherCode: voucher.code,
+        voucherDescription: voucher.description,
+        discount:
+          voucher.discount_type === 'percent'
+            ? `${voucher.discount_value}%`
+            : `${voucher.discount_value.toLocaleString('vi-VN')}₫`,
+        expiryDate: voucher.end_date ? new Date(voucher.end_date).toLocaleDateString('vi-VN') : 'Không xác định',
+        voucherWalletUrl: `${process.env.CLIENT_BASE_URL || '#'}/profile/vouchers`,
+      },
+    });
+  },
+
   async sendReservationConfirmation(reservation: {
     _id: string;
     user: IUser;
@@ -111,6 +133,7 @@ const MailerService = {
     date: string;
     seating_type: string;
     table_count: number;
+    number_of_people: number;
     note?: string;
     items?: {
       name: string;
@@ -128,6 +151,7 @@ const MailerService = {
       date,
       seating_type,
       table_count,
+      number_of_people,
       note,
       items,
     } = reservation;
@@ -148,6 +172,7 @@ const MailerService = {
       }),
       seatingType: seating_type,
       tableCount: table_count,
+      number_of_people: number_of_people,
       note: note || 'Không có ghi chú',
       items:
         items?.map((item) => ({
@@ -163,6 +188,30 @@ const MailerService = {
       subject: `Xác nhận đặt bàn #${orderIdShort}`,
       template: 'reservation-confirmation',
       context: emailContext,
+    });
+  },
+
+  async sendReservationPaymentSuccess(params: { payment: IPayment; reservation: IReservation; userEmail: string }) {
+    const { payment, reservation, userEmail } = params;
+
+    await this.sendTemplateEmail({
+      to: userEmail,
+      subject: `Thanh toán thành công khoản cọc cho đơn đặt bàn tại nhà hàng BeefBeef`,
+      template: 'reservationPayment-success',
+      context: {
+        reservationId: (reservation as { _id: string })._id.toString().slice(-6).toUpperCase(),
+        transactionCode: payment.transaction_code?.toString().toUpperCase(),
+        paymentMethod: this.getPaymentMethodName(payment.payment_method).toString().toUpperCase(),
+        amount: payment.amount.toLocaleString('vi-VN') + '₫',
+        date: new Date(payment.created_at).toLocaleString('vi-VN', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+        reservationUrl: `${process.env.CLIENT_BASE_URL || '#'}/reservation/lookup-reservation`,
+      },
     });
   },
 

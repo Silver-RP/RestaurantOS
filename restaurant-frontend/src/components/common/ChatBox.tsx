@@ -8,6 +8,8 @@ import { useChatbox } from '@/hooks/useUserChatbox';
 interface Message {
   sender: 'user' | 'bot';
   text: string;
+  message_type?: 'text' | 'image' | 'file';
+  attachments?: string[];
 }
 
 const Chatbox: React.FC = () => {
@@ -25,6 +27,7 @@ const Chatbox: React.FC = () => {
   const [input, setInput] = useState('');
   const [showInput, setShowInput] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [messageReactions, setMessageReactions] = useState<{ [key: string]: string }>({});
 
   const isSending = useRef(false);
 
@@ -57,7 +60,7 @@ const Chatbox: React.FC = () => {
 
     try {
       if (showInput && chatId) {
-        await sendRealMessage(messageToSend); // real-time (có socket)
+        await sendRealMessage(messageToSend); 
       } else {
         const matched = await getAnswerByQuestion(messageToSend);
         setMessages((prev) => [
@@ -93,6 +96,9 @@ const Chatbox: React.FC = () => {
           onFAQClick={handleFAQClick}
           faqList={faqs.map((f) => f.question)}
           currentUserId={userId ?? undefined}
+          chatId={chatId ?? undefined}
+          messageReactions={messageReactions}
+          setMessageReactions={setMessageReactions}
         />
       ) : (
         <ChatToggleButton unreadCount={unreadCount} onClick={toggleChat} />

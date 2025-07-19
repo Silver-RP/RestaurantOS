@@ -89,7 +89,14 @@ interface User {
 }
 
 export interface Order {
-  postPayment: any;
+  postPayment: {
+    redirectUrl?: string;
+    bankingInfo?: {
+      accountNumber: string;
+      accountName: string;
+      bankName: string;
+    };
+  };
   _id: string;
   user_id: User; // Sửa từ string thành User
   address_id: {
@@ -133,6 +140,8 @@ export interface Order {
   updatedAt: string;
   order_items?: OrderItem[] | undefined;
   __v: number;
+  discount_amount?: number;
+  voucher_code?: string;
 }
 
 export interface OrdersResponse {
@@ -173,15 +182,14 @@ export interface CancelOrderRequest {
 }
 
 export interface OrderQueryParams {
+  filters?: Record<string, string | number | boolean>;
+  status?: Status[];
   page?: number;
   limit?: number;
-  status?: Status | Status[];
-  startDate?: string;
-  endDate?: string;
   sortBy?: string;
-  sort?: 'createdAt' | 'total_price' | 'updatedAt';
-  sortOrder?: 'asc' | 'desc';
-  filters: { [key: string]: string } | null;
+  sortOrder?: string;
+  searchTerm?: string;
+  sortType?: 'newest' | 'oldest';
 }
 
 export interface PlaceOrderRequest {
@@ -209,6 +217,7 @@ export interface PlaceOrderRequest {
     quantity: number;
     note?: string;
   }>;
+  discount_amount?: number;
 }
 
 export interface AllOrder {
@@ -254,6 +263,7 @@ export interface AllOrder {
   vat_amount: number;
   items_price: number;
   total_price: number;
+  discount?: number;
   total_quantity: number;
   paid_at: string | null;
   payment_status?: string; // Thêm trường payment_status (tùy chọn)

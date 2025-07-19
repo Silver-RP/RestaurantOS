@@ -40,18 +40,12 @@ const ChatAdminPanel: React.FC = () => {
     handleSend,
     messageEndRef,
   } = useAdminChatbox();
-  console.log('sessions', sessions);
-  console.log('currentChat', currentChat);
-  console.log('messages', messages);
-  
-
   const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null);
   const [input, setInput] = useState('');
   const [search, setSearch] = useState('');
   const [filterUnread, setFilterUnread] = useState<'all' | 'read' | 'unread'>('all');
   const [recording, setRecording] = useState(false);
   const [filteredSessions, setFilteredSessions] = useState(sessions);
-  console.log('filteredSessions', filteredSessions);
   const [reactionPicker, setReactionPicker] = useState<number | null>(null);
   const [messageReactions, setMessageReactions] = useState<{ [key: number]: string }>({});
   const emojiButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -88,11 +82,10 @@ const ChatAdminPanel: React.FC = () => {
 
   const onSend = () => {
     if (!input.trim() || !currentChat) return;
-    handleSend(input);  // Gửi tin nhắn
+    handleSend(input); 
     setInput('');
-    setReplyingTo(null); // reset sau khi gửi
+    setReplyingTo(null); 
   };
-  // Removed duplicate handleSend definition to fix redeclaration error
 
   const handleReaction = (emoji: string, idx: number) => {
     setMessageReactions((prev) => ({ ...prev, [idx]: emoji }));

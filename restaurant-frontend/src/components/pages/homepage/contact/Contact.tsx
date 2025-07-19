@@ -28,10 +28,10 @@ const ContactCard = () => {
 
             <p className="text-sm lg:text-lg font-restora mb-1">Đặt bàn</p>
             <a
-              href="tel:+39055123456"
+              href="tel:+390239991255"
               className="text-lg lg:text-3xl font-roboto font-light text-secondaryColor block mb-4"
             >
-              +39-055-123456
+              0239991255
             </a>
 
             <p className="text-sm lg:text-lg font-restora mb-1">Địa chỉ</p>
@@ -44,17 +44,15 @@ const ContactCard = () => {
             <div className="grid grid-cols-2 gap-6 text-left text-xs lg:text-sm text-gray-300">
               <div>
                 <h3 className="text-base lg:text-lg font-restora text-white mb-1">
-                  Bữa trưa
+                  Thứ 2 - Thứ 6
                 </h3>
-                <p className="whitespace-nowrap">Thứ 2 - Chủ Nhật</p>
-                <p className="whitespace-nowrap">10:30 - 15:00</p>
+                <p className="whitespace-nowrap">08:00 - 22:00</p>
               </div>
               <div>
                 <h3 className="text-base lg:text-lg font-restora text-white mb-1">
-                  Bữa tối
+                  Thứ 7 - Chủ Nhật
                 </h3>
-                <p className="whitespace-nowrap">Thứ 2 - Chủ Nhật</p>
-                <p className="whitespace-nowrap">17:30 - 23:00</p>
+                <p className="whitespace-nowrap">08:00 - 23:00</p>
               </div>
             </div>
           </div>

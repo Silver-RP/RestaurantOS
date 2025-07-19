@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { BsChevronDown } from 'react-icons/bs';
 import { FiFilter } from 'react-icons/fi';
 import { FiSearch } from 'react-icons/fi';
@@ -7,9 +8,14 @@ import Pagination from '@components/common/Pagination';
 import ButtonComponents from '@components/common/ButtonComponents';
 import ReservationMenuItemCard from '@/components/pages/reservation/ReservationMenuItemCard';
 import FilterSidebar from '@/components/pages/menu/FilterSidebar';
-import { ReservationFormData } from '../../../types/reservation.type';
+import { ReservationFormData } from '@/types/Reservation.type';
 import ReservationOrderSidebar from '@/components/pages/reservation/ReservationOrderSidebar';
 import AddReservationItemModal from './AddItemModal';
+import { useAppDispatch } from '@/redux/hook';
+import { openQuickView } from '@/redux/feature/quickView/quickViewSlice';
+import QuickViewModal from '@/components/pages/menu/QuickViewModal';
+import { FiEye } from 'react-icons/fi';
+import { FoodDetail } from '@/types/Dish.types';
 
 interface Step3MenuProps {
   formData: ReservationFormData;
@@ -39,6 +45,68 @@ const Step3Menu: React.FC<Step3MenuProps> = ({
   const [chooseLater, setChooseLater] = useState<boolean>(false);
   const { foods, loading, error, pagination, setSearchParams, setPagination } =
     useFoods();
+  const [showFilterSidebar, setShowFilterSidebar] = useState(false);
+  const [filterSidebarVisible, setFilterSidebarVisible] = useState(false);
+  const [searchInput, setSearchInput] = useState('');
+  const dispatch = useAppDispatch();
+
+  // Hàm chuyển đổi dữ liệu sang FoodDetail
+  const toFoodDetail = (item: FoodDetail): FoodDetail => ({
+    _id: item._id,
+    name: item.name,
+    slug: item.slug || '',
+    categories: item.categories || [],
+    status: item.status || 'available',
+    price: item.price,
+    discount_price: item.discount_price ?? item.price,
+    description: item.description || '',
+    shortDescription: item.description || '',
+    ingredients: '',
+    views: item.views ?? 0,
+    ordered_count: item.ordered_count ?? 0,
+    favorites_count: item.favorites_count ?? 0,
+    average_rating: item.average_rating ?? 0,
+    rating_count: item.rating_count ?? 0,
+    rating: item.rating ?? 0,
+    countInStock: 10,
+    images: item.images || [],
+    imagesPreview: item.images || [],
+    createdAt: item.createdAt ?? new Date().toISOString(),
+    isDeleted: false,
+    deletedAt: '',
+    isRecommend: item.isRecommend ?? false,
+    isDishNew: item.isDishNew ?? false,
+  });
+
+  // Debounce search input
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setSearchParams((prev) => {
+        const newParams = new URLSearchParams(prev);
+        if (searchInput) {
+          newParams.set('search', searchInput);
+        } else {
+          newParams.delete('search');
+        }
+        return newParams;
+      });
+    }, 400);
+    return () => clearTimeout(handler);
+  }, [searchInput, setSearchParams]);
+
+  useEffect(() => {
+    if (isFilterOpen) {
+      setShowFilterSidebar(true);
+      setTimeout(() => setFilterSidebarVisible(true), 10);
+    } else {
+      setFilterSidebarVisible(false);
+      setTimeout(() => setShowFilterSidebar(false), 300);
+    }
+  }, [isFilterOpen]);
+
+  const handleCloseFilter = () => {
+    setIsFilterOpen(false);
+  };
 
   const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const sortValue = e.target.value;
@@ -55,24 +123,29 @@ const Step3Menu: React.FC<Step3MenuProps> = ({
   };
 
   return (
-    <div className="px-4 md:px-8 flex gap-8 py-10 w-full max-w-[1500px] mx-auto text-white">
+    <div className="px-4 md:px-8 flex gap-8 w-full max-w-[1500px] mx-auto text-white">
       {chooseLater === false && (
         <>
-          {isFilterOpen && (
-            <div
-              className="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300"
-              onClick={toggleFilter}
-            />
-          )}
-          <div
-            className={`fixed top-0 left-0 w-80 bg-bodyBackground h-full z-50 transform ${
-              isFilterOpen ? 'translate-x-0' : '-translate-x-full'
-            } transition-transform duration-300 ease-in-out`}
-          >
-            <div className="p-6 overflow-y-auto h-full">
-              <FilterSidebar onClose={() => setIsFilterOpen(false)} />
-            </div>
-          </div>
+          {/* Filter Backdrop & Sidebar dùng Portal */}
+          {showFilterSidebar &&
+            createPortal(
+              <>
+                <div
+                  className={`fixed inset-0 bg-black bg-opacity-50 z-[199] transition-opacity duration-300 ${filterSidebarVisible ? 'opacity-100' : 'opacity-0'}`}
+                  onClick={handleCloseFilter}
+                />
+                <div
+                  className={`fixed top-0 left-0 w-80 bg-bodyBackground h-full z-[200] transform transition-transform duration-300 ease-in-out ${
+                    filterSidebarVisible ? 'translate-x-0' : '-translate-x-full'
+                  }`}
+                >
+                  <div className="p-6 overflow-y-auto h-full">
+                    <FilterSidebar onClose={handleCloseFilter} />
+                  </div>
+                </div>
+              </>,
+              document.body,
+            )}
 
           {/* Main content */}
           <main className="flex-1 space-y-8">
@@ -115,15 +188,8 @@ const Step3Menu: React.FC<Step3MenuProps> = ({
                     type="text"
                     placeholder="Tìm món ăn..."
                     className="bg-bodyBackground border border-gray-500 text-white placeholder:text-gray-400 rounded px-3 py-2 text-sm w-[180px] focus:outline-none focus:ring-2 focus:ring-secondaryColor"
-                    onChange={(e) => {
-                      const keyword = e.target.value;
-                      setSearchParams((prev) => {
-                        const newParams = new URLSearchParams(prev);
-                        newParams.set('search', keyword);
-                        newParams.set('page', '1');
-                        return newParams;
-                      });
-                    }}
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
                   />
                   <FiSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-secondaryColor w-4 h-4" />
                 </div>
@@ -171,7 +237,7 @@ const Step3Menu: React.FC<Step3MenuProps> = ({
                       formData.menu === item._id
                         ? 'border-secondaryColor'
                         : 'border-transparent'
-                    }`}
+                    } relative`}
                   >
                     <ReservationMenuItemCard
                       image={item.images?.[0]}
@@ -183,6 +249,24 @@ const Step3Menu: React.FC<Step3MenuProps> = ({
                         setModalOpen(true);
                       }}
                     />
+                    {/* Nút Quick View */}
+                    <button
+                      type="button"
+                      className="absolute top-3 right-3 bg-secondaryColor text-black rounded-full shadow p-2 transition-all duration-300 z-10"
+                      style={{
+                        width: 30,
+                        height: 30,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }} // giống nút "+"
+                      onClick={() =>
+                        dispatch(openQuickView(toFoodDetail(item)))
+                      }
+                      aria-label="Xem nhanh"
+                    >
+                      <FiEye size={20} />
+                    </button>
                   </div>
                 ))}
               </div>
@@ -227,17 +311,19 @@ const Step3Menu: React.FC<Step3MenuProps> = ({
                 Quay lại
               </ButtonComponents>
               <ButtonComponents
-  variant="filled"
-  size="small"
-  onClick={() => {
-    if (formData.selectedItems.length === 0) {
-      setChooseLater(true);
-    }
-    onNext();
-  }}
->
-  {formData.selectedItems.length === 0 ? 'Sẽ chọn tại nhà hàng' : 'Tiếp tục'}
-</ButtonComponents>
+                variant="filled"
+                size="small"
+                onClick={() => {
+                  if (formData.selectedItems.length === 0) {
+                    setChooseLater(true);
+                  }
+                  onNext();
+                }}
+              >
+                {formData.selectedItems.length === 0
+                  ? 'Sẽ chọn tại nhà hàng'
+                  : 'Tiếp tục'}
+              </ButtonComponents>
             </div>
           </main>
           {isSidebarOpen && (
@@ -247,22 +333,22 @@ const Step3Menu: React.FC<Step3MenuProps> = ({
             />
           )}
           <ReservationOrderSidebar
-  items={formData.selectedItems}
-  isOpen={isSidebarOpen}
-  onClose={() => setIsSidebarOpen(false)}
-  onCheckout={() => {
-    setIsSidebarOpen(false);
-    onNext();
-  }}
-  onRemoveItem={(id, note) => {
-    setFormData((prev) => ({
-      ...prev,
-      selectedItems: prev.selectedItems.filter(
-        (item) => !(item.id === id && item.note === note),
-      ),
-    }));
-  }}
-/>
+            items={formData.selectedItems}
+            isOpen={isSidebarOpen}
+            onClose={() => setIsSidebarOpen(false)}
+            onCheckout={() => {
+              setIsSidebarOpen(false);
+              onNext();
+            }}
+            onRemoveItem={(id, note) => {
+              setFormData((prev) => ({
+                ...prev,
+                selectedItems: prev.selectedItems.filter(
+                  (item) => !(item.id === id && item.note === note),
+                ),
+              }));
+            }}
+          />
           <AddReservationItemModal
             isOpen={modalOpen}
             onClose={() => setModalOpen(false)}
@@ -305,6 +391,7 @@ const Step3Menu: React.FC<Step3MenuProps> = ({
           />
         </>
       )}
+      <QuickViewModal />
     </div>
   );
 };

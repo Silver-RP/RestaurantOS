@@ -8,7 +8,6 @@ import {
   OrderDetailResponse,
   PlaceOrderRequest,
 } from '../types/Order.type';
-import { SearchParams } from '@/types/search.type';
 
 export async function getOrders(
   params?: OrderQueryParams,
@@ -50,17 +49,20 @@ export const placeDirectOrder = async (data: PlaceOrderRequest) => {
 };
 
 export async function getAllOrders(
-  params: SearchParams,
+  params: OrderQueryParams,
 ): Promise<OrdersResponse> {
   const res = await api.get('/order/all-orders', { params });
   return res.data;
 }
 
-export const getUserOrders = async (): Promise<OrdersResponse> => {
-  const res = await api.get('/order/user-orders');
+export const getUserOrders = async (params?: OrderQueryParams): Promise<OrdersResponse> => {
+  const queryParams = {
+    ...params,
+    sortType: params?.sortType || 'newest'
+  };
+  const res = await api.get('/order/user-orders', { params: queryParams });
   return res.data;
 };
-
 
 export const updateOrderStatus = async (orderId: string, status: string) => {
   const res = await api.put(`/order/order-status/${orderId}`, { status });
@@ -73,7 +75,6 @@ export const updatePaymentStatus = async (paymentId: string, paidAmount: number 
 }
 
 export const retryPayment = async (orderId: string) => {
-  console.log('Retrying payment for order:', orderId);
   const res = await api.post(`/payment/retry-payment/${orderId}`);
   return res.data;
 }

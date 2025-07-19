@@ -27,6 +27,11 @@ import FavoritePage from '@/pages/FavoritePage';
 import MyReservationsPage from '@/pages/MyReservationsPage';
 import PaymentSuccess from '@/pages/PaymentSuccess';
 import PaymentFailed from '@/pages/PaymentFailed';
+import PostsByTagPage from '../pages/PostsByTagPage';
+import VoucherPage from '../pages/VoucherPage';
+import UserVoucherList from '@/components/pages/voucher/UserVoucherList';
+import TrackingReservationPage from '@/pages/TrackingReservation';
+
 
 const PublicRoutes = [
   {
@@ -44,22 +49,28 @@ const PublicRoutes = [
       { path: 'verify-otp-email', element: <EnterOTPEmail /> },
       { path: 'profile', element: <ProfilePage /> },
       { path: 'profile/address', element: <AddressPage /> },
+      { path: 'profile/vouchers', element: <UserVoucherList /> },
       { path: 'menu', element: <MenuPage /> },
       { path: 'foods/:slug', element: <ProductDetail /> },
       { path: 'contact', element: <ContactUsPage /> },
       { path: 'profile/faqs', element: <FAQsCompoent /> },
       { path: 'posts', element: <PostPage /> },
+      { path: 'posts/tag/:tag', element: <PostsByTagPage /> },
       { path: 'profile/orders', element: <OrderPage /> },
       { path: 'cart', element: <CartPage /> },
       { path: 'checkout', element: <CheckoutPage /> },
       { path: 'reservation', element: <ReservationPage /> },
       { path: 'favorites', element: <FavoritePage /> },
+      { path: 'post-details/:id', element: <PostDetailsPage /> },
       { path: '*', element: <Navigate to="/" /> },
-      { path: '/post-details', element: <PostDetailsPage /> },
       { path: '/confirm', element: <ConfirmOrder /> },
       { path: '/profile/my-reservation', element: <MyReservationsPage /> },
       { path: '/payment-success', element: <PaymentSuccess /> },
       { path: '/payment-failed', element: <PaymentFailed /> },
+      { path: 'vouchers', element: <VoucherPage /> },
+      { path: '/profile/user-vouchers', element: <UserVoucherList /> },
+      { path: '/reservation/lookup-reservation', element: <TrackingReservationPage /> },
+
     ],
   },
 ];

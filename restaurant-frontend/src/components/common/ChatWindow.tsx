@@ -5,12 +5,15 @@ import { socket } from '@/utils/socket';
 import { EmojiButton } from '@joeattardi/emoji-button';
 
 type UnifiedMessage = {
-  sender_id?: 'user' | 'bot';
+  sender_id?: 'user' | 'bot' | string;
   text?: string;
   sender_role?: string;
   content?: string;
   sent_at?: string | number;
   reactions?: { emoji: string; userId?: string }[];
+  message_type?: 'text' | 'image' | 'file';
+  attachments?: string[];
+  _id?: string;
 };
 
 interface ChatWindowProps {
@@ -143,7 +146,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             {messages.map((msg, idx) => {
               const text = msg.text || msg.content || '';
               const senderId = msg.sender_id || '';
-              const isMine = senderId === currentUserId;
+              // Xử lý cả hai loại tin nhắn: Message và ChatMessage
+              const isMine = senderId === currentUserId || senderId === 'user';
+              const messageType = msg.message_type || 'text';
+              const attachments = msg.attachments || [];
 
               return (
                 <div key={idx} className={`flex items-start ${isMine ? 'justify-end' : 'justify-start'}`}>
@@ -166,7 +172,33 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                           ${isMine ? 'bg-yellow-300 text-black' : 'bg-white text-black'}
                         `}
                     >
+                      {/* Nội dung text */}
                       <p>{text}</p>
+                      
+                      {/* Hiển thị hình ảnh nếu có */}
+                      {messageType === 'image' && attachments.length > 0 && (
+                        <div className="mt-3 space-y-2">
+                          {attachments.map((imageUrl, imgIdx) => (
+                            <div key={imgIdx} className="relative">
+                              <img
+                                src={imageUrl}
+                                alt={`Hình ảnh ${imgIdx + 1}`}
+                                className="max-w-full h-auto rounded-lg border border-gray-200 cursor-pointer hover:opacity-90 transition-opacity"
+                                onClick={() => window.open(imageUrl, '_blank')}
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                }}
+                              />
+                              <div className="text-xs text-gray-500 mt-1">
+                                📸 Click để xem ảnh gốc
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Thời gian */}
                       <p className="text-xs text-gray-500 mt-1 text-right">
                         {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </p>
@@ -234,7 +266,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
 
           {/* Input */}
-          <div className="border-t border-yellow-300 p-2 bg-[#0D1B2A] flex items-center gap-2 relative">
+          <div className="border-t border-yellow-300 p-2 bg-[#0D1B2A] flex items-center gap-2 relative overflow-visible">
             <div className="flex items-center gap-1">
               <button
                 className="text-white hover:text-yellow-300 text-lg"
@@ -282,10 +314,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             >
               <FiSend size={18} />
             </button>
-
-            {/* ✅ EmojiPicker: hiển thị ngay trên input */}
             {showEmojiPicker && (
-              <div className="absolute bottom-full left-0 mb-2 z-50">
+              <div className="absolute bottom-[50px] left-0 z-50 max-w-[300px]">
                 <EmojiPicker
                   theme={Theme.DARK}
                   onEmojiClick={(e) => onInputChange(input + e.emoji)}

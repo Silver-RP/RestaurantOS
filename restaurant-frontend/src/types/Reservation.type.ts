@@ -4,6 +4,7 @@ export interface IReservation {
   _id?: string;
   full_name: string;
   phone: string;
+  email: string;
   date: string;
   time: string;
   table_type: string;
@@ -11,6 +12,12 @@ export interface IReservation {
   note?: string;
   is_choose_later: boolean;
   status: ReservationStatus;
+  deposit?: number;
+  deposit_amount?: number;
+  payment_status: string;
+  payment_method: string;
+  paid_at?: string;
+  order_items: IReservationDetail[];
   createdAt?: string;
   updatedAt?: string;
 }
@@ -41,15 +48,16 @@ export interface ReservationOrderItem {
 }
 
 export type ReservationFormData = {
-  full_name: string;       
+  full_name: string;
   phone: string;
   email: string;
   date: string;
   time: string;
   number_of_people: number;
   note: string;
-  table_type: string;      
+  table_type: string;
   seatingName: string;
+  tableCategory?: string; // Loại bàn thực tế: 'vip', 'group', 'standard', 'quiet'
   menu: string;
   selectedItems: ReservationOrderItem[];
 };

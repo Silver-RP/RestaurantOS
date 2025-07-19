@@ -1,5 +1,5 @@
 import api from './axiosInstance';
-import { IngredientResponse, IngredientFilterParams } from 'types/Ingredient';
+import { IngredientResponse, IngredientFilterParams } from '@/types/IngredientType';
 
 export const fetchAllIngredients = async ( params: IngredientFilterParams): Promise<IngredientResponse> => {
   const queryString = new URLSearchParams();
@@ -27,7 +27,10 @@ export const createIngredientApi = async (data: {
 name: string;
 slug: string;
 unit: string;
+group?: string;
+subGroup?: string;
 price_per_unit: number;
+lowStockThreshold?: number;
 }): Promise<void> => {
   try {
     const res = await api.post('/ingredients/create-ingredients', data);
@@ -52,7 +55,10 @@ export const updateIngredientApi = async (data: {
   name: string;
   slug: string;
   unit: string;
+  group?: string;
+  subGroup?: string;
   price_per_unit: number;
+  lowStockThreshold?: number;
   }, ingredientId: string): Promise<void> => {
   try {
     const res = await api.put(`/ingredients/update-ingredients/${ingredientId}`, data);

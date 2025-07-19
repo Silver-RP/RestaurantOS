@@ -3,6 +3,7 @@ import { FavoriteItem } from '@/types/Dish.types';
 import ButtonComponents from '@/components/common/ButtonComponents';
 import { useAddToCart } from '@/hooks/useCart';
 import { FiShoppingCart, FiTrash } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
 
 interface Props {
   item: FavoriteItem;
@@ -12,6 +13,7 @@ interface Props {
 const FavoriteItemCard: React.FC<Props> = ({ item, onRemove }) => {
   const dish = item.dishId;
   const { mutate: addToCart } = useAddToCart();
+  const navigate = useNavigate();
 
   if (!dish) return null;
 
@@ -21,13 +23,14 @@ const FavoriteItemCard: React.FC<Props> = ({ item, onRemove }) => {
         <img
           src={dish.images?.[0] || '/fallback-image.jpg'}
           alt={dish.name}
-          className="h-full w-full object-cover"
+          onClick={()=> navigate(`/foods/${dish.slug}`)}
+          className="h-full w-full object-cover cursor-pointer"
         />
       </div>
 
       <div className="flex-1 text-white flex flex-col justify-between h-full overflow-hidden">
         <div>
-          <h2 className="text-lg leading-tight line-clamp-2 h-[48px]">
+          <h2 className="text-lg leading-tight line-clamp-2 h-[48px] cursor-pointer"  onClick={()=> navigate(`/foods/${dish.slug}`)}>
             {dish.name}
           </h2>
 

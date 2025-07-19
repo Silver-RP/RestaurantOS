@@ -8,16 +8,32 @@ import {
   FaShoppingBag,
   FaUserAlt,
   FaSearch,
-  FaUserCheck
+  FaUserCheck,
 } from 'react-icons/fa';
 import { FiArrowRight } from 'react-icons/fi';
 import { MdInfo } from 'react-icons/md';
 import { useLocation, Link } from 'react-router-dom';
 import Cookies from 'js-cookie';
+import { useDispatch } from 'react-redux';
+import { openSearchModal } from '../../../redux/feature/modal/searchModalSlice';
 
 interface PrimarySidebarProps {
   toggleSidebar: () => void;
 }
+
+type MenuItemLink = {
+  icon: React.ReactElement;
+  label: string;
+  link: string;
+};
+
+type MenuItemAction = {
+  icon: React.ReactElement;
+  label: string;
+  onClick: () => void;
+};
+
+type MenuItem = MenuItemLink | MenuItemAction;
 
 const PrimarySidebar: React.FC<PrimarySidebarProps> = ({ toggleSidebar }) => {
   const location = useLocation();
@@ -32,19 +48,26 @@ const PrimarySidebar: React.FC<PrimarySidebarProps> = ({ toggleSidebar }) => {
 
   const userInfo = Cookies.get('userInfo');
   const user = userInfo ? JSON.parse(userInfo) : null;
+  const dispatch = useDispatch();
 
-  const menuItemsBottom = user
+  const searchItem = {
+    icon: <FaSearch />,
+    label: 'Tìm kiếm',
+    onClick: () => dispatch(openSearchModal()),
+  };
+
+  const menuItemsBottom: MenuItem[] = user
     ? [
         { icon: <FaHeart />, label: 'Yêu thích', link: '/favorites' },
         { icon: <FaShoppingBag />, label: 'Giỏ hàng', link: '/cart' },
         { icon: <FaUserCheck />, label: 'Tài khoản', link: '/profile' },
-        { icon: <FaSearch />, label: 'Tìm kiếm', link: '/search' },
+        searchItem,
       ]
     : [
         { icon: <FaHeart />, label: 'Yêu thích', link: '/favorites' },
         { icon: <FaShoppingBag />, label: 'Giỏ hàng', link: '/cart' },
         { icon: <FaUserAlt />, label: 'Tài khoản', link: '/login' },
-        { icon: <FaSearch />, label: 'Tìm kiếm', link: '/search' },
+        searchItem,
       ];
 
   return (
@@ -85,24 +108,36 @@ const PrimarySidebar: React.FC<PrimarySidebarProps> = ({ toggleSidebar }) => {
       </div>
 
       <div className="space-y-4 sm:space-y-6 mt-32">
-        {menuItemsBottom.map((item, index) => (
-          <Link
-            key={index}
-            to={item.link}
-            className={`relative h-1/4 flex items-center justify-center group transition ${
-              location.pathname === item.link
-                ? 'text-secondaryColor'
-                : 'text-white hover:text-secondaryColor'
-            }`}
-          >
-            <div className="text-xl">{item.icon}</div>
-            <span
-              className={`absolute left-10 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 translate-x-2 transition-all duration-300 bg-headerBackground text-secondaryColor uppercase text-xs md:text-sm px-4 py-2 shadow-lg whitespace-nowrap`}
+        {menuItemsBottom.map((item, index) =>
+          'link' in item ? (
+            <Link
+              key={index}
+              to={item.link}
+              className={`relative h-1/4 flex items-center justify-center group transition ${
+                location.pathname === item.link
+                  ? 'text-secondaryColor'
+                  : 'text-white hover:text-secondaryColor'
+              }`}
             >
-              {item.label}
-            </span>
-          </Link>
-        ))}
+              <div className="text-xl">{item.icon}</div>
+              <span className="absolute left-10 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 translate-x-2 transition-all duration-300 bg-headerBackground text-secondaryColor uppercase text-xs md:text-sm px-4 py-2 shadow-lg whitespace-nowrap">
+                {item.label}
+              </span>
+            </Link>
+          ) : (
+            <button
+              key={index}
+              onClick={item.onClick}
+              type="button"
+              className="relative h-1/4 flex items-center justify-center group transition text-white hover:text-secondaryColor"
+            >
+              <div className="text-xl">{item.icon}</div>
+              <span className="absolute left-10 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 translate-x-2 transition-all duration-300 bg-headerBackground text-secondaryColor uppercase text-xs md:text-sm px-4 py-2 shadow-lg whitespace-nowrap">
+                {item.label}
+              </span>
+            </button>
+          ),
+        )}
       </div>
     </div>
   );

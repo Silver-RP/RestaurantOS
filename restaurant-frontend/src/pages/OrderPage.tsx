@@ -17,14 +17,17 @@ const OrderPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('Tất cả đơn hàng');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(5);
+  const [sortType, setSortType] = useState<'newest' | 'oldest'>('newest');
+  const [searchTerm, setSearchTerm] = useState('');
 
   const statuses = statusMapping[activeTab]?.status;
 
   const { data, isLoading, isError } = useOrders({
-    filters: {},
     status: statuses as Status[] | undefined,
     page,
     limit,
+    sortType,
+    searchTerm,
   });
 
   const orders = data?.orders || [];
@@ -37,12 +40,21 @@ const OrderPage: React.FC = () => {
 
   useEffect(() => {
     setPage(1);
-  }, [activeTab]);
+  }, [activeTab, sortType, searchTerm]);
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setPage(newPage);
     }
+  };
+
+  const handleSort = (type: 'newest' | 'oldest') => {
+    setSortType(type);
+  };
+
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+    setPage(1);
   };
 
   return (
@@ -51,7 +63,14 @@ const OrderPage: React.FC = () => {
 
       <div className="flex py-10 bg-bodyBackground min-h-auto text-white flex-col">
         <div className="w-11/12 md:w-container95 min-h-[calc(100vh-668px)] lg:w-container95 xl:w-container95 2xl:w-mainContainer mx-auto space-y-6">
-          <NavigationOrder activeTab={activeTab} onTabChange={setActiveTab} />
+          <NavigationOrder 
+            activeTab={activeTab} 
+            onTabChange={setActiveTab}
+            onSort={handleSort}
+            currentSort={sortType}
+            onSearch={handleSearch}
+            searchTerm={searchTerm}
+          />
 
           {isLoading && <p>Đang tải đơn hàng...</p>}
 
@@ -123,23 +142,22 @@ const OrderPage: React.FC = () => {
           )}
         </div>
         <div className="w-11/12 md:w-container95 lg:w-container95 xl:w-container95 2xl:w-mainContainer mx-auto space-y-6">
-        {/* Moved this outside container to bottom */}
-        <div className="flex items-center gap-6 py-6 text-sm justify-start">
-          <a
-            href="/profile"
-            className="flex items-center gap-2 hover:underline text-white/70"
-          >
-            <FaUserCircle />
-            <span>Quay lại Tài khoản</span>
-          </a>
-          <a
-            href="/"
-            className="flex items-center gap-2 hover:underline text-white/70"
-          >
-            <FaHome />
-            <span>Trang chủ</span>
-          </a>
-        </div>
+          <div className="flex items-center gap-6 py-6 text-sm justify-start">
+            <a
+              href="/profile"
+              className="flex items-center gap-2 hover:underline text-white/70"
+            >
+              <FaUserCircle />
+              <span>Quay lại Tài khoản</span>
+            </a>
+            <a
+              href="/"
+              className="flex items-center gap-2 hover:underline text-white/70"
+            >
+              <FaHome />
+              <span>Trang chủ</span>
+            </a>
+          </div>
         </div>
       </div>
     </>

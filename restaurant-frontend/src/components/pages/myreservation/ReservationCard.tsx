@@ -1,5 +1,5 @@
 import React from 'react';
-import { IReservation } from '@/types/reservation.type';
+import { IReservation } from '@/types/Reservation.type';
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
 import { useDispatch } from 'react-redux';

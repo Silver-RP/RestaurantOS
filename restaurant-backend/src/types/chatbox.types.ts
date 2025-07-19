@@ -36,4 +36,5 @@ export interface ChatMessage {
   replyTo?: string;
   receiver_id: Types.ObjectId | string;
   sender_role: 'user' | 'cashier';
+  reactions?: { emoji: string; userId?: string }[];
 }

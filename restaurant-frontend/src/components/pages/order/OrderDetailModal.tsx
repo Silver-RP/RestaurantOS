@@ -8,7 +8,7 @@ import {
   useHandleChangePaymentMethod,
 } from '@/hooks/useOrder';
 import { Order, OrderItem } from '@/types/Order.type';
-import PaymentMethodSelector from '../checkout/PaymentMethodSelector';
+import PaymentMethodSelector, { paymentMethods } from '../checkout/PaymentMethodSelector';
 import { FiDownload } from 'react-icons/fi';
 
 interface OrderDetailModalProps {
@@ -48,7 +48,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
   }, [data?.order]);
 
   const handleRetryPayment = () => {
-    retryPaymentMutate({ orderId });
+    retryPaymentMutate({ type: 'order', id: orderId }); 
   };
   const handleChangePaymentMethod = () => {
     setShowSelector(true);
@@ -57,7 +57,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
   const handleConfirmChangePaymentMethod = () => {
     if (!selectedMethod || selectedMethod === data?.order?.payment_method)
       return;
-    changePaymentMethodMutate({ orderId, paymentMethod: selectedMethod });
+    changePaymentMethodMutate({ objectId: orderId, paymentMethod: selectedMethod, objectType: 'order' });
   };
 
   useEffect(() => {
@@ -177,6 +177,9 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
     typeof order?.address_id === 'object' && order?.address_id !== null
       ? order?.address_id
       : null;
+
+  const discountAmount = (order as any).discount_amount || 0;
+  const voucherCode = (order as any).voucher_code || (order as any).voucher_id?.code || '';
 
   return (
     <div
@@ -383,6 +386,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                             selectedMethod={selectedMethod}
                             onChange={setSelectedMethod}
                             size="sm"
+                            methods={paymentMethods}
                           />
                           <div className="flex gap-2 mt-2">
                             <button
@@ -626,6 +630,17 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                 <span>Thuế VAT:</span>{' '}
                 <span>{formatPrice(order.vat_amount)}</span>
               </div>
+              {/* Hiển thị giảm giá voucher nếu có */}
+              {discountAmount > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-white/80">
+                    Giảm giá{voucherCode ? ` (${voucherCode})` : ''}
+                  </span>
+                  <span className="text-green-400">
+                    -{discountAmount.toLocaleString()} VND
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between text-lg font-bold border-t pt-2 mt-2 text-secondaryColor">
                 <span>Tổng cộng:</span>{' '}
                 <span>{formatPrice(order.total_price)}</span>

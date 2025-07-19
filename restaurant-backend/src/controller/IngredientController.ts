@@ -9,6 +9,8 @@ class IngredientController {
                 maxPrice: req.query.maxPrice ? parseFloat(req.query.maxPrice as string) : undefined,
                 minPrice: req.query.minPrice ? parseFloat(req.query.minPrice as string) : undefined,
                 unit: typeof req.query.unit === 'string' ? req.query.unit : undefined,
+                group: typeof req.query.group === 'string' ? req.query.group : undefined,
+                stockStatus: (req.query.stockStatus === 'in_stock' || req.query.stockStatus === 'out_of_stock' || req.query.stockStatus === 'low_stock') ? req.query.stockStatus as 'in_stock' | 'out_of_stock' | 'low_stock' : undefined,
                 page: req.query.page ? parseInt(req.query.page as string, 10) : 1,
                 limit: req.query.limit ? parseInt(req.query.limit as string, 10) : 12,
                 search: req.query.search?.toString() || '',

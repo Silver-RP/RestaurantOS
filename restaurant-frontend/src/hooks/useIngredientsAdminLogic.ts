@@ -1,15 +1,18 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import slugify from 'slugify';
-import { Ingredient } from 'types/Ingredient';
+import { Ingredient } from '@/types/IngredientType';
 import { toast } from 'react-toastify';
 import { useCRUDIngredients } from './useCRUDIngredients';
 
 import { fetchAllIngredients } from '../api/IngredientsApi';
-import { IngredientResponse, IngredientFilterParams } from '../types/Ingredient';
+import { IngredientResponse, IngredientFilterParams } from '../types/IngredientType';
 import { useSearchParams } from 'react-router-dom';
+import { IngredientOption } from '../types/IngredientType';
+import { ingredientUnits } from '@/types/ingredientUnitsType';
 
-type SortField = 'name' | 'unit' | 'price' | 'deletedAt' | null;
+
+type SortField = 'name' | 'group' | 'unit' | 'price' | 'deletedAt' | 'currentStock' | 'stockStatus' | null;
 type SortDirection = 'asc' | 'desc';
 
 export function useIngredientsAdminLogic() {
@@ -24,8 +27,11 @@ export function useIngredientsAdminLogic() {
 
     const sortMapping: Record<string, { asc: string; desc: string }> = {
         name: { asc: 'nameAZ', desc: 'nameZA' },
+        group: { asc: 'groupAZ', desc: 'groupZA' },
+        currentStock: { asc: 'currentLow', desc: 'currentHigh' },
         unit: { asc: 'unitAZ', desc: 'unitZA' },
         price: { asc: 'priceLow', desc: 'priceHigh' },
+        stockStatus: { asc: 'stockStatusIn', desc: 'stockStatusOut' },
     };
 
     const handleSort = (field: string) => {
@@ -90,6 +96,34 @@ export function useIngredientsAdminLogic() {
         return null;
     };
 
+    const formatNumber = (num: number) => Number.isInteger(num) ? num.toString() : num.toFixed(1);
+
+    const formatQuantity = (count: number, unit: string): string => {
+        if (unit === 'mg') {
+            if (count >= 1_000_000) {
+                return `${formatNumber(count / 1_000_000)} Kilogram`;
+            }
+            if (count >= 1_000) {
+                return `${formatNumber(count / 1_000)} Gram`;
+            }
+        }
+
+        if (unit === 'gram') {
+            if (count >= 1_000) {
+                return `${formatNumber(count / 1_000)} Kilogram`;
+            }
+        }
+
+        if (unit === 'ml') {
+            if (count >= 1_000) {
+                return `${formatNumber(count / 1_000)} Lít`;
+            }
+        }
+
+        const unitLabel = ingredientUnits.find(u => u.value === unit)?.label || unit;
+        return `${formatNumber(count)} ${unitLabel}`;
+    };
+
     return {
         ingredients,
         loading,
@@ -108,6 +142,7 @@ export function useIngredientsAdminLogic() {
         handleEnter,
         handleClick,
         getSortIcon,
+        formatQuantity,
     };
 }
 
@@ -132,6 +167,8 @@ export const useIngredientsAdmin = () => {
             maxPrice: getNumber('maxPrice'),
             minPrice: getNumber('minPrice'),
             unit: params.get('unit') || undefined,
+            group: params.get('group') || undefined,
+            stockStatus: params.get('stockStatus') || undefined,
             isDeleted: params.get('isDeleted') === 'true' ? true : undefined,
         };
     };
@@ -182,7 +219,10 @@ interface UseIngredientFormProps {
         name: string;
         slug: string;
         unit: string;
+        group?: string;
+        subGroup?: string;
         price_per_unit: number;
+        lowStockThreshold?: number;
     }) => void;
 }
 
@@ -190,7 +230,10 @@ export function useIngredientLogic({ initialData, onSubmit }: UseIngredientFormP
     const [name, setName] = useState('');
     const [slug, setSlug] = useState('');
     const [unit, setUnit] = useState('');
+    const [group, setGroup] = useState('');
+    const [subGroup, setSubGroup] = useState('');
     const [pricePerUnit, setPricePerUnit] = useState(0);
+    const [lowStockThreshold, setLowStockThreshold] = useState(0);
     const [isDeleted, setIsDeleted] = useState(false);
     const [deletedAt, setDeletedAt] = useState<Date | null>(null);
 
@@ -203,7 +246,10 @@ export function useIngredientLogic({ initialData, onSubmit }: UseIngredientFormP
             setName(initialData.name);
             setSlug(initialData.slug);
             setUnit(initialData.unit || '');
+            setGroup(initialData.group || '');
+            setSubGroup(initialData.subGroup || '');
             setPricePerUnit(initialData.price_per_unit || 0);
+            setLowStockThreshold(initialData.lowStockThreshold || 0);
             setIsDeleted(initialData.isDeleted || false);
             setDeletedAt(initialData.deletedAt ? new Date(initialData.deletedAt) : null);
         }
@@ -233,6 +279,12 @@ export function useIngredientLogic({ initialData, onSubmit }: UseIngredientFormP
         if (trimmedUnit.length > 50) return toast.error('Đơn vị không được quá 50 ký tự');
 
         if (pricePerUnit <= 0) return toast.error('Giá trên đơn vị phải lớn hơn 0');
+        if (isNaN(pricePerUnit)) return toast.error('Giá trên đơn vị phải là một số hợp lệ');
+
+        if (lowStockThreshold < 0) return toast.error('Ngưỡng tồn kho thấp không được nhỏ hơn 0');
+        if (lowStockThreshold && isNaN(lowStockThreshold)) {
+            return toast.error('Ngưỡng tồn kho thấp phải là một số hợp lệ');
+        }
 
         if (isDeleted && !deletedAt) return toast.error('Vui lòng chọn ngày xóa món ăn');
         if (isDeleted && deletedAt && deletedAt > new Date()) {
@@ -244,6 +296,9 @@ export function useIngredientLogic({ initialData, onSubmit }: UseIngredientFormP
             slug: trimmedSlug,
             unit: trimmedUnit,
             price_per_unit: pricePerUnit,
+            group: group || undefined,
+            subGroup: subGroup || undefined,
+            lowStockThreshold: lowStockThreshold || 0,
         };
 
         onSubmit(data);
@@ -266,7 +321,10 @@ export function useIngredientLogic({ initialData, onSubmit }: UseIngredientFormP
 
     return {
         name, setName, slug, setSlug,
-        unit, setUnit, pricePerUnit, setPricePerUnit,
+        unit, setUnit, group, setGroup,
+        subGroup, setSubGroup,
+        pricePerUnit, setPricePerUnit,
+        lowStockThreshold, setLowStockThreshold,
         isDeleted, setIsDeleted, deletedAt, setDeletedAt,
         handleSubmit, generateSlug,
         handleDeleteClick, showConfirm, setShowConfirm, handleConfirmDelete,
@@ -281,7 +339,7 @@ export function useIngredientsTrashLogic() {
     const [error, setError] = useState<string | null>(null);
     const [searchParams, setSearchParams] = useSearchParams();
 
-    const [sortField, setSortField] = useState<'name' | 'unit' | 'price' | 'deletedAt' | null>(null);
+    const [sortField, setSortField] = useState<'name' | 'unit' | 'group' | 'price' | 'deletedAt' | null>(null);
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
     const [search, setSearch] = useState('');
     const [ingredientIdToRestore, setIngredientIdToRestore] = useState<string | null>(null);
@@ -324,6 +382,7 @@ export function useIngredientsTrashLogic() {
 
     const sortMapping: Record<string, { asc: string; desc: string }> = {
         name: { asc: 'nameAZ', desc: 'nameZA' },
+        group: { asc: 'groupAZ', desc: 'groupZA' },
         unit: { asc: 'unitAZ', desc: 'unitZA' },
         price: { asc: 'priceLow', desc: 'priceHigh' },
         deletedAt: { asc: 'deletedAtOld', desc: 'deletedAtNew' },
@@ -333,7 +392,7 @@ export function useIngredientsTrashLogic() {
         const direction =
             sortField === field ? (sortDirection === 'asc' ? 'desc' : 'asc') : 'asc';
 
-        setSortField(field as SortField);
+        setSortField(field as 'name' | 'unit' | 'price' | 'deletedAt' | null);
         setSortDirection(direction);
 
         const sortValue = sortMapping[field]?.[direction] || 'default';
@@ -449,3 +508,135 @@ export function useIngredientsTrashLogic() {
         handleConfirmPermanentDelete,
     };
 }
+
+/* 
+    Hook to manage warehouse logic
+*/
+export interface IngredientInputItem {
+    ingredientId: string;
+    quantity: string;
+    unit: string;
+    note: string;
+}
+
+export function useIngredientInput(initial: IngredientInputItem[] = []) {
+    const [items, setItems] = useState<IngredientInputItem[]>(initial);
+    const [ingredientOptions, setIngredientOptions] = useState<IngredientOption[]>([]);
+
+    useEffect(() => {
+        const fetchOptions = async () => {
+            const res = await fetchAllIngredients({ limit: 1000, sort: 'nameAZ' });
+            setIngredientOptions(res.docs.map((ingredient: Ingredient) => ({
+                id: ingredient._id,
+                name: ingredient.name,
+                unit: ingredient.unit,
+                currentStock: ingredient.currentStock,
+            })));
+        };
+        fetchOptions();
+    }, []);
+
+    const addNewItem = () => {
+        setItems(prev => [
+            ...prev,
+            { ingredientId: '', quantity: '', unit: '', note: '' }
+        ]);
+    };
+
+    const updateItem = (index: number, field: keyof IngredientInputItem, value: string) => {
+        const updated = [...items];
+        updated[index][field] = value;
+        setItems(updated);
+    };
+
+    const deleteItem = (index: number) => {
+        const updated = [...items];
+        updated.splice(index, 1);
+        setItems(updated);
+    };
+
+    const reset = () => setItems(initial);
+
+    return {
+        items,
+        ingredientOptions,
+        setItems,
+        addNewItem,
+        updateItem,
+        deleteItem,
+        reset,
+    };
+}
+
+export interface AuditItem {
+    ingredientId: string;
+    unit?: string;
+    estimatedQuantity: number;
+    actualQuantity: number;
+    reason?: string;
+    note?: string;
+}
+
+export function useInventoryAuditInput(initial: AuditItem[] = []) {
+    const [items, setItems] = useState<AuditItem[]>(initial);
+    const [ingredientOptions, setIngredientOptions] = useState<IngredientOption[]>([]);
+
+    useEffect(() => {
+        const fetchOptions = async () => {
+            const res = await fetchAllIngredients({ limit: 1000, sort: 'nameAZ' });
+            setIngredientOptions(
+                res.docs.map((ingredient: Ingredient) => ({
+                    id: ingredient._id,
+                    name: ingredient.name,
+                    unit: ingredient.unit,
+                    currentStock: ingredient.currentStock,
+
+                }))
+            );
+        };
+        fetchOptions();
+    }, []);
+
+    const addNewItem = () => {
+        setItems((prev) => [
+            ...prev,
+            {
+                ingredientId: '',
+                unit: '',
+                estimatedQuantity: 0,
+                actualQuantity: 0,
+                reason: '',
+                note: '',
+            },
+        ]);
+    };
+
+    const updateItem = (index: number, field: keyof AuditItem, value: string | number) => {
+        const updated = [...items];
+        if (field === 'estimatedQuantity' || field === 'actualQuantity') {
+            updated[index][field] = value as number;
+        } else {
+            updated[index][field] = value as string;
+        }
+        setItems(updated);
+    };
+
+    const deleteItem = (index: number) => {
+        const updated = [...items];
+        updated.splice(index, 1);
+        setItems(updated);
+    };
+
+    const reset = () => setItems(initial);
+
+    return {
+        items,
+        ingredientOptions,
+        setItems,
+        addNewItem,
+        updateItem,
+        deleteItem,
+        reset,
+    };
+}
+

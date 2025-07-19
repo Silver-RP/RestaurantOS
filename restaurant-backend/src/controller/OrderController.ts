@@ -4,6 +4,7 @@ import OrderService from '../services/OrderService';
 import { IUser } from '../models/UserModel';
 import { Types } from 'mongoose';
 import OrderValidate from '../validators/orderValidator';
+import VoucherService from '../services/VoucherService';
 
 class OrderController {
   async placeOrder(req: Request, res: Response): Promise<any> {
@@ -31,7 +32,18 @@ class OrderController {
         shipping_fee,
         receiver,
         receiver_phone,
+        voucher_id,
+        discount_amount,
       } = req.body;
+
+      if (voucher_id) {
+        await VoucherService.validateVoucherForOrder({
+          voucher_id,
+          user_id: userId.toString(),
+          items,
+          discount_amount,
+        });
+      }
 
       const order = await OrderService.placeOrder({
         userId,
@@ -47,7 +59,13 @@ class OrderController {
         shipping_fee,
         receiver,
         receiver_phone,
+        voucher_id,
+        discount_amount,
       });
+
+      if (voucher_id) {
+        await VoucherService.markVoucherUsed(userId.toString(), voucher_id);
+      }
 
       await OrderService.sendOrderConfirmationEmail(order._id);
 
@@ -107,8 +125,17 @@ class OrderController {
       const status = req.query.status as string | undefined;
       const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
       const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 5;
+      const sortType = (req.query.sortType as 'newest' | 'oldest') || 'newest';
+      const searchTerm = req.query.searchTerm as string | undefined;
 
-      const result = await OrderService.getUserOrders(userId, status, page, limit);
+      const result = await OrderService.getUserOrders(
+        userId, 
+        status, 
+        page, 
+        limit,
+        sortType,
+        searchTerm
+      );
 
       return res.status(200).json({
         message: 'Orders retrieved successfully',
@@ -215,23 +242,6 @@ class OrderController {
     }
   }
 
-  async requestCancel(req: Request, res: Response, next: NextFunction): Promise<any> {
-    try {
-      const orderId = new Types.ObjectId(req.params.id);
-      const { reason } = req.body;
-      const updatedOrder = await OrderService.requestCancel(orderId, reason);
-
-      return res.status(200).json({
-        message: 'Cancel requested successfully',
-        order: updatedOrder,
-      });
-    } catch (error: any) {
-      console.error('Error requesting cancel:', error.message);
-      return res
-        .status(error.statusCode || 500)
-        .json({ message: error.message || 'Internal Server Error' });
-    }
-  }
 }
 
 export default new OrderController();

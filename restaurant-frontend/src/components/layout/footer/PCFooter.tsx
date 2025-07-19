@@ -15,7 +15,7 @@ const Footer = () => {
                   />
             <div className="text-center xl:text-left space-y-4 px-6 xs:px-0">
               <p className="text-sm">Nhà Hàng BeefBeef, 161 đường Quốc Hương, Thảo Điền, Quận 2</p>
-              <p className="text-sm font-semibold text-white">+84 - 05512345, +84 - 06666999</p>
+              <p className="text-sm font-semibold text-white">+84 - 05512345, +84 - 0239991256</p>
               <p className="text-sm">beefbeef@gmail.com</p>
               <div className="flex justify-center xl:justify-start space-x-4">
                 {[FaFacebookF, FaTwitter, FaYoutube, FaPinterest, FaInstagram].map((Icon, index) => (
@@ -30,7 +30,7 @@ const Footer = () => {
             <h3 className="md:text-lg text:md font-bold mb-4 mt-5 text-white whitespace-nowrap">GIỜ HOẠT ĐỘNG</h3>
             <ul className="space-y-2 mt-0 xs:mt-7">
               <li><a href="#" className="text-sm hover:text-secondaryColor transition whitespace-nowrap"><FaClock className="inline-block mr-2" /> T2 - T6: 8:00 AM - 10:00 PM</a></li>
-              <li><a href="#" className="text-sm hover:text-secondaryColor transition whitespace-nowrap"><FaClock className="inline-block mr-2" /> T7 - CN: 9:00 AM - 11:00 PM</a></li>
+              <li><a href="#" className="text-sm hover:text-secondaryColor transition whitespace-nowrap"><FaClock className="inline-block mr-2" /> T7 - CN: 8:00 AM - 11:00 PM</a></li>
             </ul>
           </div>
           <div className="flex flex-col items-center xs:block col-span-8 xs:col-span-4 md:col-span-3 xl:col-span-4 pl-0 md:pl-10">
@@ -41,6 +41,7 @@ const Footer = () => {
               <li><Link to="profile/faqs" className="text-sm hover:text-secondaryColor transition">Chính sách giao hàng</Link></li>
               <li><Link to="profile/faqs" className="text-sm hover:text-secondaryColor transition">Điều khoản và điều kiện</Link></li>
               <li><Link to="contact" className="text-sm hover:text-secondaryColor transition">Khiếu nại và góp ý</Link></li>
+              <li><Link to="/reservation/lookup-reservation" className="text-sm hover:text-secondaryColor transition">Tra cứu đơn đặt bàn</Link></li>
             </ul>
           </div>
           <div className="flex flex-col items-center xs:block col-span-8 md:col-span-3 xl:col-span-4">

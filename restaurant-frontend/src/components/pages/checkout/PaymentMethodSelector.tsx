@@ -8,6 +8,8 @@ interface PaymentMethodSelectorProps {
   selectedMethod: string | null;
   onChange: (method: string) => void;
   size?: 'sm' | 'md';
+  methods: PaymentMethod[];
+  showTitle?: boolean; // Add this line
 }
 
 type IconType = React.ComponentType<{ className?: string }>;
@@ -15,17 +17,33 @@ type IconType = React.ComponentType<{ className?: string }>;
 interface PaymentMethod {
   value: string;
   label: string;
-  Icon?: IconType;   
-  iconUrl?: string; 
+  Icon?: IconType;
+  iconUrl?: string;
 }
 
-const paymentMethods: PaymentMethod[] = [
+export const paymentMethods: PaymentMethod[] = [
   { value: '', label: 'Chọn phương thức thanh toán' },
   { value: 'CASH', label: 'Tiền mặt khi nhận hàng', Icon: FiDollarSign },
-  { value: 'VNPAY', label: 'Thanh toán VNPay', iconUrl: '/assets/logos/vnpay-logo-inkythuatso-01-13-16-26-42.jpg' },
-  { value: 'CREDIT_CARD', label: 'Thẻ tín dụng (Paypal)', iconUrl: '/assets/logos/PayPal_Symbol_0.svg' },
-  { value: 'MOMO', label: 'Thanh toán Momo (QR)', iconUrl: '/assets/logos/momo.png' },
-  { value: 'MOMO_ATM', label: 'Thanh toán thẻ MoMo (ATM/Thẻ)', iconUrl: '/assets/logos/momo.png' },
+  {
+    value: 'VNPAY',
+    label: 'Thanh toán VNPay',
+    iconUrl: '/assets/logos/vnpay-logo-inkythuatso-01-13-16-26-42.jpg',
+  },
+  {
+    value: 'CREDIT_CARD',
+    label: 'Thẻ tín dụng (Paypal)',
+    iconUrl: '/assets/logos/PayPal_Symbol_0.svg',
+  },
+  {
+    value: 'MOMO',
+    label: 'Thanh toán Momo (QR)',
+    iconUrl: '/assets/logos/momo.png',
+  },
+  {
+    value: 'MOMO_ATM',
+    label: 'Thanh toán thẻ MoMo (ATM/Thẻ)',
+    iconUrl: '/assets/logos/momo.png',
+  },
   { value: 'BANKING', label: 'Chuyển khoản ngân hàng', Icon: FaUniversity },
 ];
 
@@ -33,7 +51,10 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
   selectedMethod,
   onChange,
   size = 'md',
+  methods,
+  showTitle = true, // Add this line
 }) => {
+  const availableMethods = methods || paymentMethods;
   const selected =
     paymentMethods.find((m) => m.value === selectedMethod) || paymentMethods[0];
 
@@ -43,9 +64,11 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
 
   return (
     <div className="mt-4">
-      <h3 className={`${textSize} text-white/70 mb-2`}>
-        Phương thức thanh toán:
-      </h3>
+      {showTitle && (
+        <h3 className={`${textSize} text-white/70 mb-2`}>
+          Phương thức thanh toán:
+        </h3>
+      )}
 
       <div className="relative w-full md:w-1/2 lg:w-2/3">
         <Listbox value={selectedMethod || ''} onChange={onChange}>
@@ -68,13 +91,15 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
             </Listbox.Button>
 
             <Listbox.Options className="absolute w-full mt-1 bg-bodyBackground border border-white/20 rounded-md shadow-lg z-10 max-h-80 overflow-auto">
-              {paymentMethods.map((method) => (
+              {availableMethods.map((method) => (
                 <Listbox.Option
                   key={method.value}
                   value={method.value}
                   className={({ active }) =>
                     `p-2 cursor-pointer rounded-md transition ${
-                      active || selectedMethod === method.value ? 'bg-white/10' : ''
+                      active || selectedMethod === method.value
+                        ? 'bg-white/10'
+                        : ''
                     }`
                   }
                 >
@@ -98,6 +123,5 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
     </div>
   );
 };
-
 
 export default PaymentMethodSelector;

@@ -1,8 +1,12 @@
 export type Ingredient = {
     _id: string;
     name: string;
+    group: string;
+    subGroup: string;
+    currentStock: number;
     slug: string;
     price_per_unit: number;
+    lowStockThreshold: number;
     unit: string;
     isDeleted: boolean;
     deletedAt?: Date | null;   
@@ -36,6 +40,8 @@ export type IngredientFilterParams = {
     maxPrice?: number;
     minPrice?: number;
     unit?: string;
+    group?: string;
+    stockStatus?: string;
     search?: string;
     sort?: string;
     sortField?: string;
@@ -43,3 +49,9 @@ export type IngredientFilterParams = {
     isDeleted?: boolean;
 };
 
+export type IngredientOption = {
+    id: string;
+    name: string;
+    unit: string;
+    currentStock: number;
+}

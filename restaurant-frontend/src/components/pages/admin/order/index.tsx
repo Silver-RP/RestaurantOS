@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import Invoice from '../invoice/templateInvoice';
 import { useSearchParams } from 'react-router-dom';
 import {
   FaSort,
@@ -7,6 +8,7 @@ import {
   FaArrowDown,
   FaSearch,
   FaEye,
+  FaEllipsisV,
 } from 'react-icons/fa';
 import { useAllOrders } from '@/hooks/useOrder';
 import AdminPagination from '../AdminPagination';
@@ -26,6 +28,13 @@ const OrderTable: React.FC = () => {
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [search, setSearch] = useState(searchParams.get('keyword') || '');
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+  const [menuDirection, setMenuDirection] = useState<'down' | 'up'>('down');
+  const [menuPosition, setMenuPosition] = useState<{top: number, left: number} | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const buttonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const [showInvoice, setShowInvoice] = useState(false);
+  const [invoiceData, setInvoiceData] = useState<string | null>(null);
 
   const {
     data: orders,
@@ -111,24 +120,12 @@ const OrderTable: React.FC = () => {
     }
   };
 
-  // const getOrderTypeText = (type: string) => {
-  //   switch (type) {
-  //     case 'ONLINE':
-  //       return 'Online';
-  //     case 'OFFLINE':
-  //       return 'Tại cửa hàng';
-  //     default:
-  //       return type;
-  //   }
-  // };
-
   const getCustomerName = (order: AllOrder) => {
     if (order.address_id?.full_name) {
       const name = order.address_id?.full_name;
       return name;
     }
     if (order.receiver) {
-      console.log('Receiver:', order.receiver);
       return order.receiver;
     }
     return 'Chưa có tên khách hàng';
@@ -137,11 +134,9 @@ const OrderTable: React.FC = () => {
   const getCustomerPhone = (order: AllOrder) => {
     if (order.address_id?.phone) {
       const phone = order.address_id?.phone;
-      console.log('Customer phone:', phone);
       return phone;
     }
     if (order.receiver_phone) {
-      console.log('Receiver phone:', order.receiver_phone);
       return order.receiver_phone;
     }
     return 'Chưa có số điện thoại';
@@ -163,6 +158,59 @@ const OrderTable: React.FC = () => {
 
   const handleCloseOrderDetail = () => {
     setSelectedOrderId(null);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        handleMenuClose();
+      }
+    };
+
+    if (menuOpenId) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [menuOpenId]);
+
+  const handleMenuToggle = (orderId: string) => {
+    if (menuOpenId === orderId) {
+      setMenuOpenId(null);
+      setMenuPosition(null);
+      return;
+    }
+    setTimeout(() => {
+      const btn = buttonRefs.current[orderId];
+      if (btn) {
+        const rect = btn.getBoundingClientRect();
+        const menuHeight = 160;
+        const spaceBelow = window.innerHeight - rect.bottom;
+        const spaceAbove = rect.top;
+        let top = 0;
+        let direction: 'down' | 'up' = 'down';
+        if (spaceBelow < menuHeight && spaceAbove > menuHeight) {
+          top = rect.top - menuHeight;
+          direction = 'up';
+        } else {
+          top = rect.bottom;
+          direction = 'down';
+        }
+        setMenuDirection(direction);
+        setMenuPosition({
+          top,
+          left: rect.right - 180,
+        });
+      }
+    }, 0);
+    setMenuOpenId(orderId);
+  };
+
+  const handleMenuClose = () => {
+    setMenuOpenId(null);
+    setMenuPosition(null);
   };
 
   return (
@@ -252,7 +300,6 @@ const OrderTable: React.FC = () => {
             <thead>
               <tr className="bg-gray-100 text-left">
                 <th className="px-4 py-2">No.</th>
-                {/* <th className="px-4 py-2">Mã Đơn Hàng</th> */}
                 <th className="px-4 py-2">Tên khách hàng</th>
                 <th className="px-4 py-2">SĐT</th>
                 <th
@@ -305,9 +352,6 @@ const OrderTable: React.FC = () => {
                     <td className="px-4 py-2 text-center">
                       {index + 1 + (orders.currentPage - 1)}
                     </td>
-                    {/* <td className="px-4 py-2">
-                      {order._id.slice(-6).toUpperCase()}
-                    </td> */}
                     <td className="px-4 py-2">
                       <div className="font-medium">
                         {getCustomerName(order)}
@@ -358,6 +402,59 @@ const OrderTable: React.FC = () => {
                       >
                         <FaEye size={18} />
                       </button>
+                      <div className="relative inline-block">
+                        <button
+                          ref={el => (buttonRefs.current[order._id] = el)}
+                          onClick={() => handleMenuToggle(order._id)}
+                          className="text-gray-600 hover:text-gray-900 p-1 rounded hover:bg-gray-100"
+                          title="Tùy chọn"
+                          type="button"
+                        >
+                          <FaEllipsisV size={16} />
+                        </button>
+                        {menuOpenId === order._id && menuPosition && (
+                          <div
+                            ref={menuRef}
+                            style={{
+                              position: 'fixed',
+                              top: menuPosition.top,
+                              left: menuPosition.left,
+                              zIndex: 9999,
+                              minWidth: 180
+                            }}
+                            className="bg-white border border-gray-200 rounded shadow-lg overflow-hidden animate-fade-in"
+                          >
+                            <button
+                              className="flex items-center gap-2 w-full text-left px-5 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                              onClick={() => {
+                                setInvoiceData(order._id);
+                                setShowInvoice(true);
+                                handleMenuClose();
+                              }}
+                            >
+                              Xem hóa đơn
+                            </button>
+                            <button
+                              className="flex items-center gap-2 w-full text-left px-5 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                              onClick={() => {
+                                // TODO: Thêm logic xuất PDF
+                                handleMenuClose();
+                              }}
+                            >
+                              Xuất file PDF
+                            </button>
+                            <button
+                              className="flex items-center gap-2 w-full text-left px-5 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                              onClick={() => {
+                                // TODO: Thêm logic gửi hóa đơn
+                                handleMenuClose();
+                              }}
+                            >
+                              Gửi hóa đơn
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ),
@@ -388,6 +485,23 @@ const OrderTable: React.FC = () => {
         />
       )}
 
+      {/* Popup hóa đơn */}
+      {showInvoice && invoiceData && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black bg-opacity-40">
+          <div className="relative max-w-4xl w-full">
+            <button
+              className="absolute top-2 right-6 text-3xl text-gray-500 hover:text-red-600 z-10 "
+              onClick={() => setShowInvoice(false)}
+            >
+              ×
+            </button>
+
+            <div className="bg-white rounded shadow-[0_0_10px_5px_rgba(0,0,0,0.2)] max-h-[90vh] overflow-y-auto">
+              <Invoice orderId={invoiceData} />
+            </div>
+          </div>
+        </div>
+      )}
       {selectedOrderId && (
         <OrderDetail
           orderId={selectedOrderId}
@@ -401,4 +515,4 @@ const OrderTable: React.FC = () => {
   );
 };
 
-export default OrderTable;
+export default OrderTable;  

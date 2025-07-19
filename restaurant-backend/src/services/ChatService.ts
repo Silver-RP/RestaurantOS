@@ -4,11 +4,10 @@ import { ChatSession, SendMessageDto, ChatMessage } from '../types/chatbox.types
 import ChatBoxModel from '../models/ChatBoxModel';
 import UserModel from '../models/UserModel';
 import { logger } from '../utils/logger';
-import { sendPushNotification } from '../utils/fcmUtils'; // đường dẫn tuỳ bạn
+import { sendPushNotification } from '../utils/fcmUtils';
 import FCMTokenModel from '../models/FCMTokenModel';
-// Use CommonJS require for compatibility with CommonJS output
-import { getUserSocketIds } from '../socket/socket'; // để gửi riêng bot cho user
-const delay = (ms: number) => new Promise((res) => setTimeout(res, ms)); // delay 2s
+import { getUserSocketIds } from '../socket/socket';
+const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 class ChatService {
   async getOrCreateChat(userId: string): Promise<ChatSession> {
     let chat = await ChatBoxModel.findOne({
@@ -17,25 +16,21 @@ class ChatService {
     });
 
     if (!chat) {
-      // Step 1: Lấy toàn bộ user + role
       const users = await UserModel.find().populate({
         path: 'roles',
         select: 'name',
       });
-
-      // Step 2: Tìm user có role 'cashier'
-      const defaultCashier = users.find((user) =>
-        user.roles?.some((role: any) => role.name === 'cashier'),
+      const defaultCashier = users.find(
+        (user) =>
+          user.roles?.some((role: any) => role.name === 'cashier') &&
+          user.id.toString() !== userId.toString()
       );
 
       if (!defaultCashier) {
         console.warn('[⚠️ Không tìm thấy cashier]');
         throw new Error('NO_CASHIER_AVAILABLE');
       }
-
       console.log('[✅ Tạo phiên mới + gán cashier]:', defaultCashier.username);
-
-      // Step 3: Tạo phiên
       chat = await ChatBoxModel.create({
         user_id: userId,
         cashier_user_id: defaultCashier._id,
@@ -82,6 +77,7 @@ class ChatService {
         : null,
     })) as ChatMessage[];
   }
+
   async getAvailableCashier(): Promise<string | null> {
     const cashier = await UserModel.findOne({ roles: 'cashier' });
     return cashier?._id?.toString() || null;
@@ -267,21 +263,32 @@ class ChatService {
     await message.save();
   }
 
-
-
   async sendMessage(data: SendMessageDto): Promise<ChatMessage> {
     const chat = await ChatBoxModel.findById(data.chatId);
     if (!chat) throw new Error('CHAT_NOT_FOUND');
 
-    const senderRole = data.role || 'user';
-    const receiverId =
-      senderRole === 'cashier' ? chat.user_id : chat.cashier_user_id;
+    let senderRole: 'user' | 'cashier';
+    let receiverId: mongoose.Types.ObjectId;
+
+    if (chat.user_id.toString() === data.senderId.toString()) {
+      senderRole = 'user';
+      if (!chat.cashier_user_id) {
+        throw new Error('CASHIER_NOT_ASSIGNED');
+      }
+      receiverId = chat.cashier_user_id;
+    } else if (chat.cashier_user_id?.toString() === data.senderId.toString()) {
+      senderRole = 'cashier';
+      receiverId = chat.user_id;
+    } else {
+      throw new Error('SENDER_NOT_PART_OF_CHAT');
+    }
 
     if (!receiverId) throw new Error('RECEIVER_NOT_FOUND');
-
+    if (receiverId.toString() === data.senderId.toString()) {
+      throw new Error('Không thể gửi tin nhắn cho chính mình');
+    }
     const isFirstMessage = !(await ChatMessageModel.exists({ chat_id: chat._id }));
 
-    // 👉 1. Ghi lại tin nhắn người dùng gửi
     const userMessage = await ChatMessageModel.create({
       chat_id: chat._id,
       sender_id: new mongoose.Types.ObjectId(data.senderId),
@@ -301,7 +308,6 @@ class ChatService {
     chat.updated_at = new Date();
     await chat.save();
 
-    // 📡 Emit socket cho tất cả
     globalThis.io?.to(data.chatId).emit('message', {
       ...userMessage.toObject(),
       _id: String(userMessage._id),
@@ -310,7 +316,6 @@ class ChatService {
       sender_role: senderRole,
     });
 
-    // 🔔 Push FCM
     try {
       const fcmTokens = await FCMTokenModel.find({ userId: receiverId }).lean();
       const tokens = fcmTokens.map((t) => t.token);
@@ -324,57 +329,102 @@ class ChatService {
       logger.error?.('FCM Notification Error', err);
     }
 
-    // 🤖 2. Nếu là user gửi và chưa có cashier, cho phép bot trả lời (chờ 2s kiểm tra)
-    if (senderRole === 'user' && !chat.cashier_user_id) {
-      await delay(2000);
+    // Bot reply logic - xử lý 2 trường hợp:
+    // 1. Không có cashier: Bot reply ngay sau 2s
+    // 2. Có cashier: Đợi 12s, nếu cashier không reply thì bot reply
+    if (senderRole === 'user') {
+      // Trường hợp 1: Không có cashier được gán -> Bot reply ngay
+      if (!chat.cashier_user_id) {
+        console.log('[🤖 BOT] Không có cashier, bot reply ngay');
+        await delay(2000);
+        
+        const { getBotReply } = require('../utils/openaiBot');
+        const botReply = await getBotReply(data.content);
 
-      const hasCashierReply = await ChatMessageModel.exists({
-        chat_id: chat._id,
-        sender_role: 'cashier',
-      });
+        // Kiểm tra xem bot reply có chứa link hình ảnh không
+        const imageUrls = this.extractImageUrls(botReply.content);
+        const messageType = (imageUrls.length > 0 || botReply.attachments.length > 0) ? 'image' : 'text';
+        const allAttachments = [...botReply.attachments, ...imageUrls];
 
-      if (hasCashierReply) {
-        console.log('[🤖 BOT BỊ HUỶ]: Đã có nhân viên phản hồi');
-        userMessage;
-        return {
-          ...userMessage.toObject(),
-          _id: String(userMessage._id),
-          sender_id: String(userMessage.sender_id),
-          receiver_id: String(userMessage.receiver_id),
-          sender_role: senderRole,
-        } as ChatMessage;
-
-      }
-
-      const { getBotReply } = require('../utils/openaiBot');
-      const botReply = await getBotReply(data.content);
-
-      const botMessage = await ChatMessageModel.create({
-        chat_id: chat._id,
-        sender_id: new mongoose.Types.ObjectId(process.env.BOT_ID || '000000000000000000000001'),
-        receiver_id: new mongoose.Types.ObjectId(data.senderId),
-        sender_role: 'bot',
-        content: botReply,
-        is_bot_reply: true,
-        message_type: 'text',
-        sent_at: new Date(),
-      });
-
-      // ❗ Chỉ gửi cho user
-      const userSockets = getUserSocketIds(data.senderId);
-      userSockets.forEach(socketId => {
-        globalThis.io?.to(socketId).emit('message', {
-          ...botMessage.toObject(),
-          _id: String(botMessage._id),
+        const botMessage = await ChatMessageModel.create({
+          chat_id: chat._id,
+          sender_id: new mongoose.Types.ObjectId(process.env.BOT_ID || '000000000000000000000001'),
+          receiver_id: new mongoose.Types.ObjectId(data.senderId),
+          sender_role: 'bot',
+          content: botReply.content,
+          is_bot_reply: true,
+          message_type: messageType,
+          attachments: allAttachments,
+          sent_at: new Date(),
         });
-      });
 
-      // cập nhật chat
-      chat.initiated_by = 'bot';
-      chat.status = 'open';
-      await chat.save();
+        const userSockets = getUserSocketIds(data.senderId);
+        userSockets.forEach(socketId => {
+          globalThis.io?.to(socketId).emit('message', {
+            ...botMessage.toObject(),
+            _id: String(botMessage._id),
+          });
+        });
 
-      console.log('[🤖 BOT REPLY]:', botReply);
+        chat.initiated_by = 'bot';
+        chat.status = 'open';
+        await chat.save();
+      } 
+      // Trường hợp 2: Có cashier được gán -> Đợi cashier reply, nếu không có thì bot reply
+      else {
+        console.log('[🤖 BOT] Có cashier, đợi 12s cho cashier reply');
+        // Sử dụng setTimeout để không block request
+        setTimeout(async () => {
+          try {
+            // Kiểm tra xem cashier có reply trong 1 giây vừa rồi không
+            const twelveSecondsAgo = new Date(Date.now() - 120000);
+            const hasCashierReply = await ChatMessageModel.exists({
+              chat_id: chat._id,
+              sender_role: 'cashier',
+              sent_at: { $gte: twelveSecondsAgo }
+            });
+
+            // Nếu cashier không reply trong 12s -> Bot reply
+            if (!hasCashierReply) {
+              console.log('[🤖 BOT] Cashier không reply trong 12s, bot reply');
+              const { getBotReply } = require('../utils/openaiBot');
+              const botReply = await getBotReply(data.content);
+
+              // Kiểm tra xem bot reply có chứa link hình ảnh không
+              const imageUrls = this.extractImageUrls(botReply.content);
+              const messageType = (imageUrls.length > 0 || botReply.attachments.length > 0) ? 'image' : 'text';
+              const allAttachments = [...botReply.attachments, ...imageUrls];
+
+              const botMessage = await ChatMessageModel.create({
+                chat_id: chat._id,
+                sender_id: new mongoose.Types.ObjectId(process.env.BOT_ID || '000000000000000000000001'),
+                receiver_id: new mongoose.Types.ObjectId(data.senderId),
+                sender_role: 'bot',
+                content: botReply.content,
+                is_bot_reply: true,
+                message_type: messageType,
+                attachments: allAttachments,
+                sent_at: new Date(),
+              });
+
+              const userSockets = getUserSocketIds(data.senderId);
+              userSockets.forEach(socketId => {
+                globalThis.io?.to(socketId).emit('message', {
+                  ...botMessage.toObject(),
+                  _id: String(botMessage._id),
+                });
+              });
+
+              // Cập nhật trạng thái chat
+              await ChatBoxModel.findByIdAndUpdate(chat._id, { status: 'open' });
+            } else {
+              console.log('[🤖 BOT] Cashier đã reply, không cần bot reply');
+            }
+          } catch (error) {
+            console.error('❌ Bot reply error:', error);
+          }
+        }, 12000); // Đợi 12 giây
+      }
     }
 
     return {
@@ -383,6 +433,16 @@ class ChatService {
     } as ChatMessage;
   }
 
+  // Trích xuất URL hình ảnh từ text
+  private extractImageUrls(text: string): string[] {
+    const imageUrls: string[] = [];
+    const urlRegex = /(https?:\/\/[^\s]+?\.(jpg|jpeg|png|gif|bmp|webp))/gi;
+    let match;
+    while ((match = urlRegex.exec(text)) !== null) {
+      imageUrls.push(match[0]);
+    }
+    return imageUrls;
+  }
 }
 
 export default new ChatService();

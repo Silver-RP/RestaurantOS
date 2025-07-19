@@ -10,6 +10,7 @@ interface ProductGridProps {
 }
 
 const ProductGrid: React.FC<ProductGridProps> = ({ viewMode, products }) => {
+  
   return (
     <div
       className={`grid ${

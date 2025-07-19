@@ -323,13 +323,21 @@ const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
           </button>
         )}
 
-        {order.status === 'DELIVERED' && (
-          <button
-            className="px-4 py-1.5 text-xs bg-transparent border border-secondaryColor text-white font-normal font-sans hover:bg-secondaryColor hover:text-headerBackground focus:ring-bodyBackground active:bg-secondaryColor/90 active:text-headerBackground"
-            onClick={() => openReasonModal('return')}
-          >
-            Yêu cầu hoàn trả
-          </button>
+        {order.status === 'DELIVERED' && order.delivered_at && (
+          (() => {
+            const deliveryTime = new Date(order.delivered_at);
+            const now = new Date();
+            const timeDiffInMinutes = (now.getTime() - deliveryTime.getTime()) / (1000 * 60);
+            
+            return timeDiffInMinutes <= 30 ? (
+              <button
+                className="px-4 py-1.5 text-xs bg-transparent border border-secondaryColor text-white font-normal font-sans hover:bg-secondaryColor hover:text-headerBackground focus:ring-bodyBackground active:bg-secondaryColor/90 active:text-headerBackground"
+                onClick={() => openReasonModal('return')}
+              >
+                Yêu cầu hoàn trả
+              </button>
+            ) : null;
+          })()
         )}
 
         {order.status === 'RETURN_REQUESTED' && (

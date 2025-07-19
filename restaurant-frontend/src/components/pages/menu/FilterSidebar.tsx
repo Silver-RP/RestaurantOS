@@ -24,7 +24,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onClose }) => {
     const currentSort = searchParams.get('sort') || 'default';
 
     const newParams = new URLSearchParams();
-    newParams.set('page', '1'); 
+    newParams.set('page', '1');
     newParams.set('sort', currentSort);
     if (currentCategory) newParams.set('category', currentCategory);
     newParams.set('priceMin', priceRange[0].toString());
@@ -36,18 +36,22 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onClose }) => {
 
   const handleCategoryFilter = (categorySlug: string) => {
     const currentSort = searchParams.get('sort') || 'default';
-  
+
     const newParams = new URLSearchParams();
     newParams.set('page', '1');
     newParams.set('sort', currentSort);
     newParams.set('category', categorySlug);
-  
+
     newParams.set('priceMin', priceRange[0].toString());
     newParams.set('priceMax', priceRange[1].toString());
-  
+
     setSearchParams(newParams);
     onClose();
   };
+
+  if (categories) {
+    console.log('FilterSidebar categories:', categories.data);
+  }
 
   return (
     <div className="space-y-10">
@@ -74,7 +78,10 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onClose }) => {
               }}
             >
               <span>Tất Cả</span>
-              <span>({categories?.data?.reduce((t, c) => t + (c.foodCount || 0), 0)})</span>
+              <span>
+                ({categories?.data?.reduce((t, c) => t + (c.foodCount || 0), 0)}
+                )
+              </span>
             </li>
             {categories?.data?.map((category) => (
               <li
@@ -107,8 +114,22 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onClose }) => {
             onChange={handlePriceChange}
             trackStyle={[{ backgroundColor: '#FFDEA0', height: 2 }]}
             handleStyle={[
-              { borderColor: '#FFDEA0', backgroundColor: '#FFF', width: 14, height: 14, borderWidth: 2, marginTop: -6 },
-              { borderColor: '#FFDEA0', backgroundColor: '#FFF', width: 14, height: 14, borderWidth: 2, marginTop: -6 },
+              {
+                borderColor: '#FFDEA0',
+                backgroundColor: '#FFF',
+                width: 14,
+                height: 14,
+                borderWidth: 2,
+                marginTop: -6,
+              },
+              {
+                borderColor: '#FFDEA0',
+                backgroundColor: '#FFF',
+                width: 14,
+                height: 14,
+                borderWidth: 2,
+                marginTop: -6,
+              },
             ]}
             railStyle={{ backgroundColor: '#e2e8f0', height: 2 }}
           />

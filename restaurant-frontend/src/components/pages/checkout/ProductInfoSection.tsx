@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import PaymentMethodSelector from './PaymentMethodSelector';
+import PaymentMethodSelector,  { paymentMethods } from './PaymentMethodSelector';
 import ButtonComponents from '@components/common/ButtonComponents';
-import VoucherSelector, { Voucher } from './VoucherSelector';
+import VoucherSelector from './VoucherSelector';
+import { UserVoucherDisplay } from '@/types/Voucher.type';
 
 interface Product {
   image: string;
@@ -21,10 +22,12 @@ interface ProductInfoProps {
   shippingFee?: number;
   paymentMethod: string | null;
   onPaymentMethodChange: (method: string | null) => void;
-  vouchers?: Voucher[];
+  vouchers?: UserVoucherDisplay[];
   onProceedToPayment?: () => void;
   onNoteChange?: (note: string) => void;
   onProductNoteChange?: (productIndex: number, note: string) => void;
+  onVoucherChange?: (voucher: UserVoucherDisplay | null) => void;
+  loyaltyDiscountPercent?: number; // Thêm props này
 }
 
 const ProductInfoSection = ({
@@ -37,8 +40,10 @@ const ProductInfoSection = ({
   onProceedToPayment,
   onNoteChange,
   onProductNoteChange,
+  onVoucherChange,
+  loyaltyDiscountPercent = 0, // default 0
 }: ProductInfoProps) => {
-  const [selectedVoucher, setSelectedVoucher] = useState<Voucher | null>(null);
+  const [selectedVoucher, setSelectedVoucher] = useState<UserVoucherDisplay | null>(null);
   const [discountAmount, setDiscountAmount] = useState(0);
   const [orderNote, setOrderNote] = useState(note || '');
 
@@ -65,19 +70,22 @@ const ProductInfoSection = ({
     0
   );
 
+  // Tính giảm giá loyalty
+  const loyaltyDiscount = Math.round(totalPrice * (loyaltyDiscountPercent / 100));
+
   const vatAmount = Math.round(totalPrice * 0.08);
+  const finalAmount = totalPrice + shippingFee + vatAmount - discountAmount - loyaltyDiscount;
 
-  const finalAmount = totalPrice + shippingFee + vatAmount - discountAmount;
-
-  const handleVoucherApply = (voucher: Voucher, discount: number) => {
-    if (!voucher.voucher_id) {
+  const handleVoucherApply = (voucher: UserVoucherDisplay, discount: number) => {
+    if (!voucher.user_voucher_id) {
       setSelectedVoucher(null);
       setDiscountAmount(0);
+      if (onVoucherChange) onVoucherChange(null);
       return;
     }
-
     setSelectedVoucher(voucher);
     setDiscountAmount(discount);
+    if (onVoucherChange) onVoucherChange(voucher);
   };
 
   const handleNoteChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -204,18 +212,17 @@ const ProductInfoSection = ({
           <PaymentMethodSelector
             selectedMethod={paymentMethod ?? ''}
             onChange={onPaymentMethodChange}
+            methods={paymentMethods}
           />
         </div>
         {/* Chọn mã giảm giá */}
-        {vouchers && vouchers.length > 0 && (
-          <div className="flex-1 mb-4 md:mb-0">
-            <VoucherSelector
-              vouchers={vouchers}
-              orderTotal={totalPrice}
-              onApply={handleVoucherApply}
-            />
-          </div>
-        )}
+        <div className="flex-1 mb-4 md:mb-0">
+          <VoucherSelector
+            vouchers={vouchers || []}
+            orderTotal={totalPrice}
+            onApply={handleVoucherApply}
+          />
+        </div>
       </div>
 
       {/* Tóm Tắt Đơn Hàng */}
@@ -258,6 +265,17 @@ const ProductInfoSection = ({
                 </span>
                 <span className="text-green-400">
                   -{discountAmount.toLocaleString()} VND
+                </span>
+              </div>
+            )}
+            {/* Loyalty discount */}
+            {loyaltyDiscountPercent > 0 && loyaltyDiscount > 0 && (
+              <div className="flex justify-between items-center">
+                <span className="text-white/80">
+                  Giảm giá thành viên ({loyaltyDiscountPercent}%)
+                </span>
+                <span className="text-green-400">
+                  -{loyaltyDiscount.toLocaleString()} VND
                 </span>
               </div>
             )}

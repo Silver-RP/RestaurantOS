@@ -145,7 +145,7 @@ const FavoritePage: React.FC = () => {
                 <ButtonComponents
                   variant="filled"
                   size="medium"
-                  onClick={() => navigate('/menu')}
+                  onClick={() => navigate('/menu?sort=categoryAZ')}
                   className="px-6 py-2"
                 >
                   Khám phá thực đơn
@@ -154,7 +154,7 @@ const FavoritePage: React.FC = () => {
             ) : (
               <>
                 <div className="border border-secondaryColor px-0 py-4 sm:p-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[calc(100vh-390px)] scrollbar-custom overflow-y-auto">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[calc(100vh-150px)] scrollbar-custom overflow-y-auto">
                     {filteredFavorites.map((item) => (
                       <FavoriteItemCard
                         key={item._id}
@@ -169,7 +169,7 @@ const FavoritePage: React.FC = () => {
                   <ButtonComponents
                     variant="filled"
                     size="medium"
-                    onClick={() => navigate('/menu')}
+                    onClick={() => navigate('/menu?sort=categoryAZ')}
                     className="px-4 py-2"
                   >
                     Tiếp tục mua hàng

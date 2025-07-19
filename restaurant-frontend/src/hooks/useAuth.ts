@@ -2,11 +2,24 @@
 import { useState } from 'react';
 import authApi from '../api/AuthApi';
 import { changePasswordProfile as changePasswordApi } from '@/api/AuthApi';
+import { useSelector } from 'react-redux';
+import { RootState } from '../redux/store';
+
 interface ChangePasswordPayload {
   oldPassword: string;
   newPassword: string;
   confirmPassword: string;
 }
+
+export const useAuth = () => {
+  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+  
+  return {
+    isAuthenticated,
+    user
+  };
+};
+
 export const useSendOtpEmail = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);

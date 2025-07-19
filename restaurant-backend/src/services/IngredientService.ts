@@ -4,71 +4,66 @@ import { ingredientSchema } from '../validators/ingredientValidator';
 import { IngredientInput } from '../validators/ingredientValidator';
 import { PaginateResult } from 'mongoose';
 
+import {
+  buildMatchQuery,
+  buildSortStage,
+  getTodayUTC,
+  buildIngredientAggregate,
+} from '../utils/IngredientUitl';
+
+interface IngredientFilterParams {
+  maxPrice?: number;
+  minPrice?: number;
+  unit?: string;
+  group?: string;
+  stockStatus?: 'in_stock' | 'out_of_stock' | 'low_stock';
+  page?: number;
+  limit?: number;
+  search?: string;
+  sort?: string;
+  isDeleted?: boolean;
+}
+
 class IngredientService {
-  async getAllIngredients(params: {
-    maxPrice?: number;
-    minPrice?: number;
-    unit?: string;
-    page?: number;
-    limit?: number;
-    search?: string;
-    sort?: string;
-    isDeleted?: boolean;
-  }): Promise<PaginateResult<IIngredient>> {
-    try {
-      const {
-        page = 1,
-        limit = 12,
-        search = '',
-        sort = '',
-        isDeleted = false,
-        unit,
-        minPrice,
-        maxPrice,
-      } = params;
 
-      const query: any = { isDeleted };
+  async getAllIngredients(params: IngredientFilterParams ): Promise<PaginateResult<any>> {
+    const {
+      page = 1,
+      limit = 12,
+      search = '',
+      sort = '',
+      isDeleted = false,
+      unit,
+      group,
+      stockStatus,
+      minPrice,
+      maxPrice,
+    } = params;
 
-      if (search) {
-        query.name = { $regex: search, $options: 'i' };
-      }
-
-      if (unit) {
-        query.unit = unit;
-      }
-
-      if (minPrice !== undefined || maxPrice !== undefined) {
-        query.price_per_unit = {};
-        if (minPrice !== undefined) {
-          query.price_per_unit.$gte = minPrice;
-        }
-        if (maxPrice !== undefined) {
-          query.price_per_unit.$lte = maxPrice;
-        }
-      }
-
-      const sortMapping: Record<string, Record<string, 1 | -1>> = {
-        nameAZ: { name: 1 },
-        nameZA: { name: -1 },
-        unitAZ: { unit: 1 },
-        unitZA: { unit: -1 },
-        priceLow: { price_per_unit: 1 },
-        priceHigh: { price_per_unit: -1 },
-      };
-
-      const sortOption = sortMapping[sort] || { createdAt: -1 };
-
-      const result = await Ingredient.paginate(query, {
-        page,
-        limit,
-        sort: sortOption,
-      });
-
-      return result;
-    } catch (error) {
-      console.error('Error fetching ingredients with filters:', error);
-      throw new Error('Failed to fetch ingredients');
-    }
+    const match = buildMatchQuery({ search, isDeleted, unit, group, minPrice, maxPrice });
+    const sortStage = buildSortStage(sort);
+    const todayUtc = getTodayUTC();
+  
+    const aggregate = buildIngredientAggregate({ match, sortStage, stockStatusFilter: stockStatus || undefined, page, limit, todayUtc });
+  
+    const [results, totalCount] = await Promise.all([
+      aggregate.exec(),
+      Ingredient.countDocuments(match),
+    ]);
+  
+    const offset = (page - 1) * limit;
+  
+    return {
+      docs: results,
+      totalDocs: totalCount,
+      page,
+      limit,
+      totalPages: Math.ceil(totalCount / limit),
+      hasNextPage: page * limit < totalCount,
+      hasPrevPage: page > 1,
+      offset,
+      pagingCounter: offset + 1,
+    };
   }
 
   async createIngredient(ingredientData: IngredientInput): Promise<IIngredient> {
@@ -82,8 +77,13 @@ class IngredientService {
         name: ingredientData.name,
         slug: ingredientData.slug,
         unit: ingredientData.unit,
+        group: ingredientData.group,
+        subGroup: ingredientData.subGroup,
         price_per_unit: ingredientData.price_per_unit,
+        lowStockThreshold: ingredientData.lowStockThreshold || 0,
       };
+
+      console.log('Creating ingredient with data:', allowedFields);
       const newIngredient = new Ingredient(allowedFields);
 
       return await newIngredient.save();
@@ -96,8 +96,6 @@ class IngredientService {
   async getIngredientBySlug(slug: string): Promise<IIngredient | null> {
     try {
       const ingredient = await Ingredient.findOne({ slug });
-      console.log('Ingredient found:', slug);
-      console.log(ingredient);
       if (!ingredient) {
         throw new Error('Ingredient not found');
       }
@@ -120,6 +118,9 @@ class IngredientService {
         slug: ingredientData.slug,
         unit: ingredientData.unit,
         price_per_unit: ingredientData.price_per_unit,
+        group: ingredientData.group,
+        subGroup: ingredientData.subGroup,
+        lowStockThreshold: ingredientData.lowStockThreshold || 0,
       };
 
       const updatedIngredient = await Ingredient.findByIdAndUpdate(id, allowedFields, {
@@ -168,10 +169,14 @@ class IngredientService {
       const sortMapping: Record<string, Record<string, 1 | -1>> = {
         nameAZ: { name: 1 },
         nameZA: { name: -1 },
+        groupAZ: { group: 1 },
+        groupZA: { group: -1 },
         unitAZ: { unit: 1 },
         unitZA: { unit: -1 },
         priceLow: { price_per_unit: 1 },
         priceHigh: { price_per_unit: -1 },
+        deletedAtNew: { deletedAt: -1 },
+        deletedAtOld: { deletedAt: 1 },
       };
 
       const sortOption = sortMapping[sort] || { createdAt: -1 };
