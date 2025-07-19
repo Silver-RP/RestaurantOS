@@ -49,6 +49,10 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onClose }) => {
     onClose();
   };
 
+  if (categories) {
+    console.log('FilterSidebar categories:', categories.data);
+  }
+
   return (
     <div className="space-y-10">
       <div>

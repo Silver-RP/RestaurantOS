@@ -1,11 +1,27 @@
 import React from 'react';
-import { ReservationFormData } from '@/types/reservation.type';
+import { ReservationFormData } from '@/types/Reservation.type';
 
 interface SidebarProps {
   formData: ReservationFormData;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ formData }) => {
+  // Hàm helper để hiển thị tên loại bàn
+  const getTableTypeDisplayName = (tableCategory?: string): string => {
+    switch (tableCategory) {
+      case 'vip':
+        return 'Bàn VIP';
+      case 'group':
+        return 'Bàn nhóm';
+      case 'quiet':
+        return 'Bàn yên tĩnh';
+      case 'standard':
+        return 'Bàn thường';
+      default:
+        return 'Không xác định';
+    }
+  };
+
   return (
     <div className="w-full">
       <div className="bg-[#012B40] border border-[#FFDEA0] p-6 min-h-[500px] flex flex-col justify-between">
@@ -28,7 +44,11 @@ const Sidebar: React.FC<SidebarProps> = ({ formData }) => {
           </div>
           <div className="flex mb-2 gap-0">
             <p className="w-[150px]">Loại bàn:</p>
-            <p>{formData.seatingName}</p>
+            <p>
+              {formData.tableCategory
+                ? getTableTypeDisplayName(formData.tableCategory)
+                : formData.seatingName}
+            </p>
           </div>
           <div className="flex mb-2 gap-0">
             <p className="w-[150px]">Số lượng người:</p>
