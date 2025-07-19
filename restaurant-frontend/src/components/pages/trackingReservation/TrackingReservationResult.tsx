@@ -5,11 +5,12 @@ import 'react-confirm-alert/src/react-confirm-alert.css';
 import { getReservationReservationcodeAndPhoneNumber } from '@/api/ReservationApi';
 import { IReservation } from '@/types/Reservation.type';
 import { useReservations } from '@/hooks/useReservations';
-import { reservationStatusMapping } from '@/components/pages/myreservation/NavigationReservation';
-
-interface Props {
-  onCancel: (reservationId: string) => void;
-}
+import {
+  useHandleRetryPayment,
+  useHandleChangePaymentMethod,
+} from '@/hooks/useOrder';
+import PaymentMethodSelector from '../checkout/PaymentMethodSelector';
+import { FaUniversity } from 'react-icons/fa';
 
 const statusColorMap: Record<IReservation['status'], string> = {
   PENDING: 'text-yellow-400 bg-yellow-400/10',
@@ -32,6 +33,24 @@ const seatingMap: Record<string, string> = {
   'random-table': 'Bàn ngẫu nhiên',
 };
 
+type IconType = React.ComponentType<{ className?: string }>;
+
+interface PaymentMethod {
+  value: string;
+  label: string;
+  Icon?: IconType;   
+  iconUrl?: string; 
+}
+
+export const paymentMethods: PaymentMethod[] = [
+  { value: '', label: 'Chọn phương thức thanh toán' },
+  { value: 'VNPAY', label: 'Thanh toán VNPay', iconUrl: '/assets/logos/vnpay-logo-inkythuatso-01-13-16-26-42.jpg' },
+  { value: 'CREDIT_CARD', label: 'Thẻ tín dụng (Paypal)', iconUrl: '/assets/logos/PayPal_Symbol_0.svg' },
+  { value: 'MOMO', label: 'Thanh toán Momo (QR)', iconUrl: '/assets/logos/momo.png' },
+  { value: 'MOMO_ATM', label: 'Thanh toán thẻ MoMo (ATM/Thẻ)', iconUrl: '/assets/logos/momo.png' },
+  { value: 'BANKING', label: 'Chuyển khoản ngân hàng', Icon: FaUniversity },
+];
+
 const ReservationCard = () => {
   const [searchParams] = useSearchParams();
   const [reservation, setReservation] = useState<IReservation | null>(null);
@@ -41,6 +60,18 @@ const ReservationCard = () => {
   const code = searchParams.get('reservationCode')?.toLocaleLowerCase() || '';
   const phone = searchParams.get('phone');
   const { updateReservationStatus } = useReservations();
+  const [showSelector, setShowSelector] = useState(false);
+  const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
+
+  const { mutate: retryPaymentMutate, isPending: retrying } =
+    useHandleRetryPayment();
+
+    const {
+      mutate: changePaymentMethodMutate,
+      isSuccess,
+      data: changeMethodResult,
+      isPending: changingMethod,
+    } = useHandleChangePaymentMethod();
 
   useEffect(() => {
     if (code && phone) {
@@ -66,16 +97,38 @@ const ReservationCard = () => {
     ? statusLabelMap[reservation.status] || reservation.status
     : '';
 
-    const handleCancel = async (reservationId: string) => {
-            setLoading(true);
-            await updateReservationStatus(reservationId, 'CANCELLED');
-            if (code && phone) {
-                const data = await getReservationReservationcodeAndPhoneNumber(code, phone);
-                setReservation(data.data);
-            }
-            setLoading(false);
-        };
-      
+  const handleCancel = async (reservationId: string) => {
+    setLoading(true);
+    await updateReservationStatus(reservationId, 'CANCELLED');
+    if (code && phone) {
+      const data = await getReservationReservationcodeAndPhoneNumber(
+        code,
+        phone,
+      );
+      setReservation(data.data);
+    }
+    setLoading(false);
+  };
+
+  const handleRetryPayment = () => {
+    retryPaymentMutate({ type: 'reservation', id: reservation?._id || '' });
+  };
+
+  const handleChangePaymentMethod = () => {
+    setShowSelector(true);
+  };
+
+  const handleConfirmChangePaymentMethod = () => {
+    if (!selectedMethod || selectedMethod === reservation?.payment_method) return;
+
+    if (reservation?._id) {
+      changePaymentMethodMutate({
+        objectId: reservation._id, 
+        paymentMethod: selectedMethod,
+        objectType: 'reservation', 
+      });
+    }
+  };
 
   const handleCancelClick = () => {
     confirmAlert({
@@ -222,6 +275,86 @@ const ReservationCard = () => {
               {reservation.deposit_amount?.toLocaleString('vi-VN')}đ
             </span>
           </div>
+        </div>
+      )}
+
+      {reservation.payment_status !== 'PAID' && (
+        <div className="pt-2">
+          <div className="mt-4 mb-4 text-sm text-white/80">
+            <div className="flex justify-between items-center border-t border-white/20 pt-4">
+              <span className="text-secondaryColor font-semibold">
+                Thanh toán
+              </span>
+              <span className="text-red-400 font-medium">Chưa thanh toán</span>
+            </div>
+            <div className="text-xs mt-1 text-white/50">
+              Phương thức: {reservation.payment_method.replace(/_/g, ' ')} ·{' '}
+            </div>
+            <div className="text-xs mt-1 text-white/50">
+              Tiền cọc đặt chỗ:{' '}
+              <span className="text-white/90 font-medium">
+                {reservation.deposit_amount?.toLocaleString('vi-VN')}đ
+              </span>
+            </div>
+          </div>
+          {reservation.payment_method !== 'CASH' && (
+            <div className="bg-yellow-100 text-yellow-800 text-xs rounded-md px-3 py-2 mb-3 max-w-md text-justify leading-relaxed">
+              Đặt bàn của bạn sẽ <strong>bị hủy sau 60 phút</strong> nếu thanh
+              toán không được hoàn tất. Hãy thanh toán sớm để
+              giữ chỗ.
+            </div>
+          )}
+          {!showSelector ? (
+            <div className="flex gap-2">
+              {reservation.payment_method !== 'CASH' && (
+                <button
+                  disabled={retrying}
+                  className="px-4 py-1.5 text-xs bg-secondaryColor border border-secondaryColor text-black font-normal font-sans hover:bg-bodyBackground hover:text-white focus:ring-bodyBackground active:bg-bodyBackground/90 active:text-headerBackground disabled:opacity-50"
+                  onClick={handleRetryPayment}
+                >
+                  {retrying ? 'Đang xử lý...' : 'Thanh toán lại'}
+                </button>
+              )}
+              <button
+                disabled={changingMethod}
+                className="px-4 py-1.5 text-xs bg-secondaryColor border border-secondaryColor text-black font-normal font-sans hover:bg-bodyBackground hover:text-white focus:ring-bodyBackground active:bg-bodyBackground/90 active:text-headerBackground disabled:opacity-50"
+                onClick={handleChangePaymentMethod}
+              >
+                {changingMethod ? 'Đang cập nhật...' : 'Thay đổi phương thức'}
+              </button>
+            </div>
+          ) : (
+            <>
+              <PaymentMethodSelector
+                selectedMethod={selectedMethod}
+                onChange={setSelectedMethod}
+                size="sm"
+                methods={paymentMethods}
+              />
+              <div className="flex gap-2 mt-2">
+                <button
+                  onClick={handleConfirmChangePaymentMethod}
+                  disabled={
+                    changingMethod ||
+                    !selectedMethod ||
+                    selectedMethod === reservation.payment_method
+                  }
+                  className="px-4 py-1.5 text-xs bg-secondaryColor border border-secondaryColor text-black font-normal font-sans hover:bg-bodyBackground hover:text-white focus:ring-bodyBackground active:bg-bodyBackground/90 active:text-headerBackground disabled:opacity-50"
+                >
+                  Xác nhận
+                </button>
+                <button
+                  onClick={() => {
+                    setShowSelector(false);
+                    setSelectedMethod(reservation.payment_method);
+                  }}
+                  className="px-4 py-1.5 text-xs bg-bodyBackground border border-secondaryColor text-white font-normal font-sans hover:bg-secondaryColor hover:text-black focus:ring-bodyBackground active:bg-bodyBackground/90 active:text-headerBackground disabled:opacity-50"
+                >
+                  Hủy
+                </button>
+              </div>
+            </>
+          )}
         </div>
       )}
 

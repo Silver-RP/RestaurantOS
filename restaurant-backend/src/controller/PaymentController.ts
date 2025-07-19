@@ -88,8 +88,8 @@ export const momoReturn = async (req: Request, res: Response): Promise<any> => {
         const transactionCode = req.query.transId as string;
 
         if (objectType === 'reservation') {
-            await ReservationService.markPaymentPaid(paymentId, paidAmount, transactionCode);
-            return res.redirect(`${CLIENT_BASE_URL}/payment-success?method=vnpay&type=reservation`);
+            await ReservationService.markPaymentPaid(paymentId, paidAmount, null);
+            return res.redirect(`${CLIENT_BASE_URL}/payment-success?method=momo&type=reservation`);
         } else {
             await OrderService.markPaymentPaid(paymentId, paidAmount, transactionCode, null);
             return res.redirect(`${CLIENT_BASE_URL}/payment-success?method=vnpay`);
@@ -128,27 +128,27 @@ export const paypalReturn = async (req: Request, res: Response): Promise<any> =>
 
         if (captureResult.status === 'COMPLETED') {
             if (payment.orderId) {
-              await OrderService.markPaymentPaid(payment.id, amountVND, captureResult.id, null);
+                await OrderService.markPaymentPaid(payment.id, amountVND, captureResult.id, null);
             } else if (payment.reservationId) {
-              await ReservationService.markPaymentPaid(payment.id, amountVND, null);
-              return res.redirect(`${CLIENT_BASE_URL}/payment-success?method=paypal&type=reservation`);
+                await ReservationService.markPaymentPaid(payment.id, amountVND, null);
+                return res.redirect(`${CLIENT_BASE_URL}/payment-success?method=paypal&type=reservation`);
             } else {
-              return res.status(400).send('Invalid payment object: missing both orderId and reservationId');
+                return res.status(400).send('Invalid payment object: missing both orderId and reservationId');
             }
-          
+
             return res.redirect(`${CLIENT_BASE_URL}/payment-success?method=paypal`);
-          } else {
+        } else {
             if (payment.orderId) {
-              await OrderService.markPaymentFailed(payment.id, `PayPal status: ${captureResult.status}`);
+                await OrderService.markPaymentFailed(payment.id, `PayPal status: ${captureResult.status}`);
             } else if (payment.reservationId) {
-              await ReservationService.markPaymentFailed(payment.id, `PayPal status: ${captureResult.status}`);
+                await ReservationService.markPaymentFailed(payment.id, `PayPal status: ${captureResult.status}`);
             } else {
-              return res.status(400).send('Invalid payment object: missing both orderId and reservationId');
+                return res.status(400).send('Invalid payment object: missing both orderId and reservationId');
             }
-          
+
             return res.redirect(`${CLIENT_BASE_URL}/payment-failed?orderId=${payment.orderId || ''}`);
-          }
-          
+        }
+
     } catch (error) {
         console.error('PayPal return error:', error);
         return res.status(500).send('Internal Server Error');
@@ -226,6 +226,39 @@ export const changePaymentMethod = async (req: Request, res: Response): Promise<
         console.error('Change payment method error:', error);
         return res.status(500).send('Internal Server Error');
     }
+}
+
+export const retryReservationPayment = async (req: Request, res: Response): Promise<any> => {
+    const { reservationId } = req.params;
+    if (!reservationId) return res.status(400).send('Missing reservationId');
+
+    const reservation = await ReservationService.getReservationById(reservationId.toString());
+    if (!reservation) return res.status(404).send('Reservation not found');
+
+    if (!['UNPAID', 'FAILED'].includes(reservation.payment_status)) {
+        return res.status(400).send('Reservation is not in a retryable state');
+    }
+
+    const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
+    const postPayment = await ReservationService.handleReservationPostPaymentLogic(reservation, clientIp.toString());
+
+    return res.status(200).json({ reservation, postPayment });
+};
+
+export const changeReservationPaymentMethod = async (req: Request, res: Response): Promise<any> => {
+    const { reservationId } = req.params;
+    const { paymentMethod } = req.body;
+
+    if (!reservationId || !paymentMethod) {
+        return res.status(400).send('Missing reservationId or paymentMethod');
+    }
+
+    const objectId = new Types.ObjectId(reservationId); // Convert to ObjectId
+    const updatedReservation = await ReservationService.changePaymentMethod(objectId, paymentMethod);
+    const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
+    const postPayment = await ReservationService.handleReservationPostPaymentLogic(updatedReservation, clientIp.toString());
+
+    return res.status(200).json({ updatedReservation, postPayment });
 }
 
 

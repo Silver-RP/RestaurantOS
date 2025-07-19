@@ -327,8 +327,10 @@ class ReservationService {
     const reservation = await Reservation.findById(payment.reservationId);
     if (!reservation) throw new Error('Reservation not found');
 
-    reservation.payment_status = 'FAILED';
-    await reservation.save();
+    await Reservation.updateOne(
+      { _id: reservation._id },
+      { $set: { payment_status: 'FAILED' } }
+    );
 
     return reservation;
   }
@@ -445,7 +447,6 @@ class ReservationService {
       }
     };
   }
-  
 
   async getAllReservations() {
     return await Reservation.find().sort({ createdAt: -1 }).lean();
@@ -492,6 +493,96 @@ class ReservationService {
       userEmail,
     });
   }
+
+  async changePaymentMethod(
+    reservationId: Types.ObjectId,
+    newPaymentMethod: 'MOMO' | 'MOMO_ATM' | 'VNPAY' | 'BANKING' | 'CREDIT_CARD',
+  ) {
+    if (!reservationId || !newPaymentMethod) {
+      throw new Error('Thiếu reservationId hoặc paymentMethod');
+    }
+  
+    const session = await mongoose.startSession();
+    session.startTransaction();
+  
+    try {
+      const reservation = await Reservation.findById(reservationId).session(session);
+      if (!reservation) throw new Error('Không tìm thấy đơn đặt bàn');
+  
+      // 🛑 Kiểm tra trạng thái không hợp lệ
+      const invalidStatuses = ['CANCELLED', 'PAID'];
+      if (
+        invalidStatuses.includes(reservation.status) ||
+        invalidStatuses.includes(reservation.payment_status)
+      ) {
+        throw new Error('Không thể thay đổi phương thức thanh toán ở trạng thái hiện tại');
+      }
+  
+      const validMethods = ['MOMO', 'MOMO_ATM', 'VNPAY', 'BANKING', 'CREDIT_CARD'];
+      if (!validMethods.includes(newPaymentMethod)) {
+        throw new Error('Phương thức thanh toán không hợp lệ');
+      }
+  
+      if (reservation.payment_method === newPaymentMethod) {
+        await session.commitTransaction();
+        session.endSession();
+        return reservation;
+      }
+
+      const payments = await Payment.find({
+        reservationId: reservationId,
+        payment_status: { $in: ['UNPAID', 'PENDING', 'FAILED'] },
+      }).session(session);
+
+      if (payments.length > 0) {
+        for (const payment of payments) {
+          payment.payment_method = newPaymentMethod as
+            | 'BANKING'
+            | 'VNPAY'
+            | 'MOMO'
+            | 'MOMO_ATM'
+            | 'CREDIT_CARD';
+          await payment.save({ session });
+        }
+      } else {
+        await Payment.create(
+          [
+            {
+              reservationId: reservation._id,
+              payment_method: newPaymentMethod as
+                | 'BANKING'
+                | 'VNPAY'
+                | 'MOMO'
+                | 'MOMO_ATM'
+                | 'CREDIT_CARD',
+              payment_status: 'UNPAID',
+              amount: reservation.deposit_amount || 0,
+              transaction_code: null,
+              bankingInfo: null,
+            },
+          ],
+          { session },
+        );
+      }
+  
+      reservation.payment_method = newPaymentMethod;
+      reservation.payment_status = 'UNPAID';
+      reservation.email = reservation.email || 'roppyhoangle@gmail.com';
+
+      console.log("[Reservation service]reservation: ", reservation);
+      await reservation.save({ session });
+  
+      await session.commitTransaction();
+      session.endSession();
+  
+      return reservation;
+    } catch (error) {
+      await session.abortTransaction();
+      session.endSession();
+      throw error;
+    }
+  }
+  
 }
 
 export default new ReservationService();
