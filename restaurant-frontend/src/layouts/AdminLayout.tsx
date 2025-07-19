@@ -14,6 +14,7 @@ import {
   FaImage,
   FaTicketAlt,
   FaBell,
+  FaCrown,
 } from 'react-icons/fa';
 import { GiHotMeal, GiWheat } from 'react-icons/gi';
 import { FaCalendarAlt } from 'react-icons/fa';
@@ -162,6 +163,14 @@ const AdminLayout: React.FC = () => {
               href="/admin/vouchers"
               icon={<FaTicketAlt />}
               label="Voucher"
+              expanded={isSidebarOpen}
+              currentPath={location.pathname}
+            />
+
+            <NavItem
+              href="/admin/loyalty"
+              icon={<FaCrown />}
+              label="Tích điểm"
               expanded={isSidebarOpen}
               currentPath={location.pathname}
             />

@@ -2,7 +2,7 @@ export interface Voucher {
   _id?: string;
   code: string;
   description?: string;
-  type: 'public' | 'private';
+  type: 'public' | 'private' | 'gift';
   discount_type: 'percent' | 'fixed';
   discount_value: number;
   max_discount_value?: number;
