@@ -15,7 +15,7 @@ const reservationSchema = new mongoose.Schema<IReservation>(
     is_choose_later: { type: Boolean, required: true },
     status: {
       type: String,
-      enum: ['PENDING', 'CONFIRMED', 'CANCELLED', 'DONE'],
+      enum: ['PENDING', 'BOOKED', 'CANCELLED', 'DONE'],
       default: 'PENDING',
     },
     deposit_amount: { type: Number, default: 0 },

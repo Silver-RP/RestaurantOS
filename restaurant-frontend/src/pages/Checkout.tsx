@@ -10,7 +10,7 @@ import { toast } from 'react-toastify';
 import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
 import { useUserVouchers } from '@/hooks/useVouchers';
 import { UserVoucherDisplay } from '@/types/Voucher.type';
-import { getAccountInfo } from '@/api/LoyaltyApi';
+import { getLoyaltyAccountInfo } from '@/api/LoyaltyApi';
 
 
 interface Product {
@@ -137,7 +137,7 @@ const CheckoutPage = () => {
 
   useEffect(() => {
     // Lấy loyalty discount percent
-    getAccountInfo().then((info) => {
+    getLoyaltyAccountInfo().then((info) => {
       setLoyaltyDiscountPercent(info?.current_tier?.discount || 0);
     }).catch(() => setLoyaltyDiscountPercent(0));
   }, []);

@@ -141,6 +141,7 @@ export interface Order {
   order_items?: OrderItem[] | undefined;
   __v: number;
   discount_amount?: number;
+  discount?: number;
   voucher_code?: string;
 }
 

@@ -14,6 +14,7 @@ import {
   FaImage,
   FaTicketAlt,
   FaBell,
+  FaCrown,
 } from 'react-icons/fa';
 import { GiHotMeal, GiWheat } from 'react-icons/gi';
 import { FaCalendarAlt } from 'react-icons/fa';
@@ -166,6 +167,14 @@ const AdminLayout: React.FC = () => {
               currentPath={location.pathname}
             />
 
+            <NavItem
+              href="/admin/loyalty"
+              icon={<FaCrown />}
+              label="Tích điểm"
+              expanded={isSidebarOpen}
+              currentPath={location.pathname}
+            />
+
           </nav>
         </div>
 
@@ -225,9 +234,7 @@ const NavItem: React.FC<NavItemProps> = ({
   const classes = classNames(
     'flex items-center px-4 py-2 rounded-lg transition-colors w-full',
     expanded ? 'justify-start gap-3' : 'justify-center',
-    isActive
-      ? 'bg-bodyBackground text-white '
-      : 'hover:bg-adminhover',
+    isActive ? '!bg-[#012B40] !text-[#ffffff] ' : 'hover:bg-adminhover',
     className,
   );
 

@@ -301,6 +301,7 @@ class ReservationService {
     if (reservation.payment_status !== 'PAID') {
       reservation.payment_status = 'PAID';
       reservation.paid_at = new Date();
+      reservation.status = 'BOOKED'; 
       await reservation.save();
     }
 
@@ -336,7 +337,7 @@ class ReservationService {
         throw new Error('Không tìm thấy reservation');
       }
 
-      reservation.status = 'CONFIRMED';
+      reservation.status = 'BOOKED';
       await reservation.save();
 
       if (reservation.table_type) {

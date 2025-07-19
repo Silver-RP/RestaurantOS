@@ -38,6 +38,7 @@ import CreateVoucherPage from '../components/pages/admin/voucher/Create';
 import EditVoucherPage from '../components/pages/admin/voucher/Edit';
 import TrashVoucherPage from '../components/pages/admin/voucher/Trash';
 import AdminLoginPage from '@/components/pages/admin/login/Index';
+import LoyaltyAdmin from '@/components/pages/admin/loyalty';
 
 const adminRoutes = [
   {
@@ -96,6 +97,7 @@ const adminRoutes = [
         path: 'warehouse/transaction-view',
         element: <WarehouseTransactionViewPage />,
       },
+      { path: 'loyalty', element: <LoyaltyAdmin /> },
 
       { path: '*', element: <Navigate to="/admin" /> },
     ],
