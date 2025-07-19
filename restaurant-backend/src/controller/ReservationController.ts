@@ -68,7 +68,7 @@ export const ReservationController = {
     try {
       const user = req.user as IUser;
       const userId = user?.id?.toString();
-
+      console.log(userId);
       if (!userId) {
         res.status(401).json({ message: 'Unauthorized - Please login to view your reservations' });
         return;
