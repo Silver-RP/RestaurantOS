@@ -158,3 +158,52 @@ Cấu trúc thư mục hợp lý:
   } test api => superadmin 
   -->
   
+<!-- 
+Cú pháp và các hàm socket.io 
+io.on('connection', fn) -> Bắt kết nối mới 
+
+socket.on('event', fn) -> Nhận dữ liệu từ client 
+
+socket.emit('event', data) -> Gửi dữ liệu từ server về client 
+
+io.emit(..) -> Gửi cho tất cả client 
+
+io.to(room).emit(...) -> Gửi cho mọi người trong một room 
+
+socket.join(room) -> Cho socket tham gia room 
+
+socket.leave(room) -> thoát room 
+
+socket.id -> ID của socket đang kết nối 
+
+socket.disconnect() -> Ngắt kết nối socket 
+
+io.sockets.adapter.rooms -> Danh sách tất cả room hiện tại 
+
+
+ -->
+ <!-- 
+ Các phương thức chính của map 
+ set(key, value) -> Thêm hoặc cập nhật giá trị với key 
+
+ get(key) -> Lấy giá trị theo key 
+
+ has(key) -> kiểm tra key có tồn tại hay không 
+
+ delete(key) -> kiểm tra key có tồn tại hay không 
+
+ clear() -> xóa toàn bộ map 
+
+ size -> Trả về số lượng cặp key-value 
+
+ keys() -> trả về iterator chứa tất cả key 
+
+ values() -> trả về iterator chứa tất cả value 
+ 
+ entries() -< Trả về iterator các cặp [key, value]
+
+ forEach(callback) -> Duyệt qua tất cả phần tử 
+
+ 
+ 
+  -->

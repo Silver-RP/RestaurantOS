@@ -17,9 +17,10 @@ const discountTypes = [
   { value: 'fixed', label: 'Số tiền cố định' },
 ];
 
-const VoucherForm: React.FC<VoucherFormProps> = ({
+const VoucherForm: React.FC<VoucherFormProps & { onAddUsers?: (userIds: string[]) => void }> = ({
   initialData,
   onSubmit,
+  onAddUsers,
 }) => {
   const navigate = useNavigate();
   const [code, setCode] = useState(initialData?.code || '');
@@ -45,10 +46,10 @@ const VoucherForm: React.FC<VoucherFormProps> = ({
     initialData?.end_date ? new Date(initialData.end_date).toISOString().split('T')[0] : '',
   );
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [userOptions, setUserOptions] = useState<User[]>([]);
   const [addUsers, setAddUsers] = useState<string[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (type === 'private') {
@@ -75,7 +76,7 @@ const VoucherForm: React.FC<VoucherFormProps> = ({
     }
   }, [initialData]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!code && !initialData) {
@@ -110,7 +111,7 @@ const VoucherForm: React.FC<VoucherFormProps> = ({
 
     const dataToSend: Partial<Voucher> = {
       code,
-      description: description,
+      description: description || undefined,
       type,
       discount_type: discountType,
       discount_value: discountValue,
@@ -122,12 +123,7 @@ const VoucherForm: React.FC<VoucherFormProps> = ({
       ...(type === 'private' ? { userIds: [...selectedUsers, ...addUsers] } : {}),
     };
 
-    setIsSubmitting(true);
-    try {
-      await onSubmit(dataToSend);
-    } finally {
-      setIsSubmitting(false);
-    }
+    onSubmit(dataToSend);
   };
 
   // Tạo danh sách user chưa sở hữu voucher
@@ -381,9 +377,8 @@ const VoucherForm: React.FC<VoucherFormProps> = ({
           <button
             type="submit"
             className="px-4 py-2 bg-adminprimary text-white rounded hover:bg-blue-700"
-            disabled={isSubmitting}
           >
-            {isSubmitting ? 'Đang lưu...' : (initialData ? 'Cập nhật Voucher' : 'Lưu Voucher')}
+            {initialData ? 'Cập nhật Voucher' : 'Lưu Voucher'}
           </button>
         </div>
       </form>

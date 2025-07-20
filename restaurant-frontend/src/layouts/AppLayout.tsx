@@ -5,10 +5,10 @@ import ExtendSidebar from '../components/layout/sidebar/ExtendSidebar';
 import PrimarySidebar from '../components/layout/sidebar/PrimarySidebar';
 import MobileSidebar from '../components/layout/sidebar/MobileSidebar';
 import { SidebarProvider, useSidebar } from '../contexts/SidebarContext';
-import { useFetchFavorites } from '@/hooks/useFetchFavorites'; 
+import { useFetchFavorites } from '@/hooks/useFetchFavorites';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
-
+import Chatbox from '@/components/common/ChatBox';
 
 const LayoutContent: React.FC = () => {
   const location = useLocation();
@@ -19,13 +19,15 @@ const LayoutContent: React.FC = () => {
       fetchFavorites();
     }
   }, [currentUser?._id, fetchFavorites]);
-  const hideSidebarFooter = [
-    '/login',
-    '/register',
-    '/reset-password',
-    '/verify-otp',
-    '/forgot-password',
-  ].some((path) => location.pathname.startsWith(path)) || location.pathname.startsWith('/admin');
+  const hideSidebarFooter =
+    [
+      '/login',
+      '/register',
+      '/reset-password',
+      '/verify-otp',
+      '/forgot-password',
+    ].some((path) => location.pathname.startsWith(path)) ||
+    location.pathname.startsWith('/admin');
 
   const {
     isSidebarOpen,
@@ -45,7 +47,9 @@ const LayoutContent: React.FC = () => {
           <div className="hidden xl:block">
             <div
               className={`fixed top-0 left-0 z-[100] h-full w-16 transition-transform duration-300 ${
-                isSidebarOpen && !isExtended ? 'translate-x-0' : '-translate-x-16'
+                isSidebarOpen && !isExtended
+                  ? 'translate-x-0'
+                  : '-translate-x-16'
               }`}
             >
               <PrimarySidebar toggleSidebar={toggleSidebarExtend} />
@@ -53,10 +57,15 @@ const LayoutContent: React.FC = () => {
 
             <div
               className={`fixed top-0 left-0 z-[100] h-full transition-transform duration-300 ${
-                isSidebarOpen && isExtended ? 'translate-x-0' : '-translate-x-72'
+                isSidebarOpen && isExtended
+                  ? 'translate-x-0'
+                  : '-translate-x-72'
               } ${height >= 600 ? 'w-72' : 'w-64'}`}
             >
-              <ExtendSidebar isOpen={isExtended} toggleSidebar={toggleSidebarExtend} />
+              <ExtendSidebar
+                isOpen={isExtended}
+                toggleSidebar={toggleSidebarExtend}
+              />
             </div>
           </div>
 
@@ -87,8 +96,17 @@ const LayoutContent: React.FC = () => {
                   <span className="block w-6 h-0.5 bg-black"></span>
                 </>
               ) : (
-                <svg className="h-6 w-6 text-black" fill="none" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="h-6 w-6 text-black"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               )}
             </button>
@@ -111,14 +129,18 @@ const LayoutContent: React.FC = () => {
         }`}
       >
         <Outlet />
-        {!hideSidebarFooter && <Footer />}
+        {!hideSidebarFooter && (
+          <>
+            <Footer />
+            <Chatbox />
+          </>
+        )}
       </div>
     </div>
   );
 };
 
 const AppLayout: React.FC = () => (
-  
   <SidebarProvider>
     <LayoutContent />
   </SidebarProvider>

@@ -9,9 +9,7 @@ class PostsController {
       const search = req.query.search as string || '';
       const sortBy = req.query.sortBy as string || 'createdAt';
       const sortOrder = req.query.sortOrder as 'asc' | 'desc' || 'desc';
-      const status = req.query.status as string || undefined;
-
-      const posts = await PostsService.getAllPosts(page, limit, search, sortBy, sortOrder, status);
+      const posts = await PostsService.getAllPosts(page, limit, search, sortBy, sortOrder);
       res.status(200).json({
         success: true,
         ...posts

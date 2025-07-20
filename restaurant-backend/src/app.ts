@@ -29,7 +29,7 @@ import IngredientsRouter from './routes/IngredientsRouter';
 import VoucherRoutes from './routes/VoucherRoutes';
 import ReviewRoutes from './routes/ReviewRoutes';
 import LoyaltyRoutes from './routes/LoyaltyRoutes';
-
+import FaqRoutes from './routes/FaqRoutes'; 
 import dotenv from 'dotenv';
 import connectDB from './config/db';
 import cookieParser from 'cookie-parser';
@@ -156,6 +156,7 @@ app.use('/api/review', ReviewRoutes);
 app.use('/api/ingredients', AuthMiddleWare.verifyToken, IngredientsRouter);
 app.use('/api/inventory', AuthMiddleWare.verifyToken, InventoryRoutes);
 app.use('/api/voucher', VoucherRoutes);
+app.use('/api/faq', AuthMiddleWare.verifyToken, FaqRoutes); 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
   console.log('Mongo URI:', process.env.MONGO_URI);

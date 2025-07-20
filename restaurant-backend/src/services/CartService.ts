@@ -71,7 +71,7 @@ class CartService {
           dishId: new mongoose.Types.ObjectId(dishId),
           quantity,
           price: dish.discount_price == null ? dish.price : dish.discount_price,
-          note: null
+          note: null,
         });
       }
 
@@ -122,7 +122,7 @@ class CartService {
         dishId: new mongoose.Types.ObjectId(dishId),
         quantity,
         price: dish.price,
-        note: null
+        note: null,
       });
     }
     // Cập nhật lại tổng tiền
