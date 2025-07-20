@@ -79,8 +79,13 @@ const MilestoneDefinitions: React.FC = () => {
       setShowVoucherWarning(false);
       resetForm();
       loadData();
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Có lỗi xảy ra';
+    } catch (error: any) {
+      let errorMessage = 'Có lỗi xảy ra';
+      if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
       toast.error(errorMessage);
     }
   };
@@ -131,10 +136,18 @@ const MilestoneDefinitions: React.FC = () => {
     setShowVoucherWarning(false);
   };
 
-  const voucherOptions = vouchers.map(voucher => ({
-    value: voucher._id,
-    label: `${voucher.code} - ${voucher.description}`
-  }));
+  // Lấy danh sách voucher đã được gán cho mốc khác (trừ voucher của milestone đang sửa)
+  const usedVoucherIds = milestones
+    .filter(m => !editingMilestone || m._id !== editingMilestone._id)
+    .map(m => typeof m.voucher_id === 'string' ? m.voucher_id : (m.voucher_id && typeof m.voucher_id === 'object' && '_id' in m.voucher_id ? m.voucher_id._id : ''))
+    .filter((id): id is string => !!id);
+  const voucherOptions = vouchers
+    .filter(voucher => !!voucher._id)
+    .map(voucher => ({
+      value: voucher._id!,
+      label: `${voucher.code} - ${voucher.description}`,
+      isDisabled: usedVoucherIds.includes(voucher._id!) && (!editingMilestone || voucher._id !== formData.voucher_id)
+    }));
 
   if (loading) {
     return (
@@ -353,6 +366,7 @@ const MilestoneDefinitions: React.FC = () => {
                     onChange={(opt) => setFormData({...formData, voucher_id: opt?.value || ''})}
                     placeholder="Chọn voucher..."
                     className="mt-1"
+                    isOptionDisabled={(option) => option.isDisabled}
                   />
                   <p className="mt-1 text-xs text-gray-500">
                     Chỉ voucher có type &quot;gift&quot; mới được hiển thị

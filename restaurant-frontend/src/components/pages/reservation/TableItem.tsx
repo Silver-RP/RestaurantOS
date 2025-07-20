@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type TableStatus = 'available' | 'reserved' | 'selected';
+export type TableStatus = 'available' | 'reserved' | 'selected' | 'booked';
 export type TableType =
   | 'standard'
   | 'group'

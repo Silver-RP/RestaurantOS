@@ -184,11 +184,21 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({
               // Nếu đã chọn bàn thường, chỉ cho chọn cùng loại
               const selectedType = selectedTables[0]?.type;
               let isAvailable = !!t.isAvailable;
+              // Nếu bàn đã bị giữ/đặt thì không cho chọn
+              if (t.isBooked) {
+                isAvailable = false;
+              }
               if (hasVip) {
                 isAvailable = t.type === 'vip' && isAvailable;
               } else if (selectedTables.length > 0) {
                 isAvailable = t.type === selectedType && isAvailable;
               }
+              // Hiển thị trạng thái bàn: nếu isBooked thì show "Đã giữ/Đặt" hoặc màu khác
+              let status: 'selected' | 'available' | 'reserved' | 'booked' =
+                'available';
+              if (isSelected) status = 'selected';
+              else if (t.isBooked) status = 'booked';
+              else if (!isAvailable) status = 'reserved';
               return (
                 <div
                   key={tableId}
@@ -203,18 +213,13 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({
                     id={tableId}
                     name={t.code}
                     type={t.type}
-                    status={
-                      isSelected
-                        ? 'selected'
-                        : isAvailable
-                          ? 'available'
-                          : 'reserved'
-                    }
+                    status={status}
                     onClick={() =>
                       handleSelect(tableId, t.code, isAvailable, t)
                     }
                     capacity={t.capacity}
                     disabled={!isAvailable && !isSelected}
+                    reservationStatus={t.reservationStatus}
                   />
                 </div>
               );

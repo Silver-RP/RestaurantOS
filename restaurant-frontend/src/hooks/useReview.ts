@@ -12,14 +12,15 @@ import {
 } from '@/api/ReviewApi';
 import { IReview } from '@/types/Review.types';
 import { toast } from 'react-toastify';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/redux/store';
+import Cookie from 'js-cookie';
+
 export const useReview = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const currentUser = useSelector((state: RootState) => state.user.user); 
+ 
   const createReview = async (data: ReviewPayload): Promise<IReview | null> => {
-    if (!currentUser?._id) {
+    const userInfo = Cookie.get('userInfo');
+    if (!userInfo) {
       toast.error('Vui lòng đăng nhập để gửi đánh giá');
       return null;
     }
