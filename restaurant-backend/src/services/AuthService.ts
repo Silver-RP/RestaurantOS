@@ -111,6 +111,14 @@ class AuthService {
       throw new Error('Mật khẩu không đúng');
     }
 
+    let isBirthday = false;
+    if (user.birthday) {
+      const today = new Date();
+      const birthday = new Date(user.birthday);
+      isBirthday =
+        today.getDate() === birthday.getDate() && today.getMonth() === birthday.getMonth();
+    }
+
     const accessTokenExpiresIn = rememberMe ? 60 * 60 * 2 : 60 * 60;
     const refreshTokenExpiresIn = rememberMe ? 21 * 24 * 60 * 60 : 2 * 24 * 60 * 60;
 
@@ -134,7 +142,7 @@ class AuthService {
       ipAddress: req.ip,
     });
 
-    return { token, refresh_token, user, refreshTokenExpiresIn };
+    return { token, refresh_token, user, isBirthday, refreshTokenExpiresIn };
   }
 
   async refreshAccessToken(refreshTokenFromClient: string, req: any) {
@@ -193,35 +201,35 @@ class AuthService {
   async googleLogin(googleUser: GoogleUser & { rememberMe: boolean }, req: any) {
     try {
       const { email, googleId, username, avatar, rememberMe } = googleUser;
-  
+
       let user = await User.findOne({ email });
-  
+
       const userRole = await Role.findOne({ name: 'user' });
       if (!userRole) {
         throw new Error('Role "user" không tồn tại trong hệ thống.');
       }
-  
+
       if (!user) {
         user = new User({
           email,
           username: username || '',
           avatar: avatar || '',
           googleId,
-          roles: [userRole._id], 
+          roles: [userRole._id],
         });
         await user.save();
       } else if (!user.roles || user.roles.length === 0) {
-        user.roles = [userRole._id as ObjectId]; 
+        user.roles = [userRole._id as ObjectId];
         await user.save();
       }
-  
+
       const accessTokenExpiresIn = rememberMe ? 60 * 60 * 2 : 60 * 60;
       const refreshTokenExpiresIn = rememberMe ? 21 * 24 * 60 * 60 : 2 * 24 * 60 * 60;
-  
+
       const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN || '', {
         expiresIn: accessTokenExpiresIn,
       });
-  
+
       const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN || '', {
         expiresIn: refreshTokenExpiresIn,
       });
@@ -233,7 +241,7 @@ class AuthService {
         userAgent: req?.get?.('User-Agent') || 'unknown',
         ipAddress: req?.ip || 'unknown',
       });
-  
+
       return {
         user,
         accessToken,
