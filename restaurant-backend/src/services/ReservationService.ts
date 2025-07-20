@@ -301,7 +301,7 @@ class ReservationService {
     if (reservation.payment_status !== 'PAID') {
       reservation.payment_status = 'PAID';
       reservation.paid_at = new Date();
-      reservation.status = 'BOOKED'; 
+      reservation.status = 'BOOKED';
       await reservation.save();
     }
 
@@ -472,11 +472,11 @@ class ReservationService {
   }
 
   async sendReservationPaymentSuccessEmail(paymentId: Types.ObjectId) {
-    const payment = await Payment.findById(paymentId).populate('reservationId').lean();
+    const payment = await Payment.findById(paymentId).populate('reservationId');
     if (!payment) throw new Error('Payment not found');
     if (!payment.reservationId) throw new Error('Order not found in payment');
 
-    const reservation = await Reservation.findById(payment.reservationId).lean();
+    const reservation = await Reservation.findById(payment.reservationId);
     if (!reservation) throw new Error('Reservation not found');
 
     const userEmail = reservation.email;
@@ -503,7 +503,6 @@ class ReservationService {
       const reservation = await Reservation.findById(reservationId).session(session);
       if (!reservation) throw new Error('Không tìm thấy đơn đặt bàn');
 
-      // 🛑 Kiểm tra trạng thái không hợp lệ
       const invalidStatuses = ['CANCELLED', 'PAID'];
       if (
         invalidStatuses.includes(reservation.status) ||

@@ -25,7 +25,7 @@ import AddressRouter from './routes/AddressRoutes';
 import PaymentRoutes from './routes/PaymentRoutes';
 import InventoryRoutes from './routes/InventoryRoutes';
 import DashboardRoutes from './routes/DashboardRoutes';
-import IngredientsRouter from './routes/ingredientsRouter';
+import IngredientsRouter from './routes/IngredientsRouter';
 import VoucherRoutes from './routes/VoucherRoutes';
 import ReviewRoutes from './routes/ReviewRoutes';
 import LoyaltyRoutes from './routes/LoyaltyRoutes';
@@ -37,7 +37,6 @@ import passport from 'passport';
 import cors from 'cors';
 import path from 'path';
 import CronJobService from './services/CronJobService';
-
 
 import { scheduleLoyaltyYearlyJob } from './cron/loyaltyYearlyJob';
 
@@ -52,7 +51,6 @@ import './swaggers/StaffSwagger';
 import './swaggers/UserSwagger';
 import './swaggers/CategorySwagger';
 import TableReservationRouter from './routes/TableReservationRouter';
-
 
 dotenv.config();
 connectDB();
@@ -153,7 +151,7 @@ app.use('/api/address', AuthMiddleWare.verifyToken, AddressRouter);
 app.use('/api/payment', PaymentRoutes);
 app.use('/api/review', ReviewRoutes);
 app.use('/api/loyalty', LoyaltyRoutes);
-app.use('/api/review',  ReviewRoutes);
+app.use('/api/review', ReviewRoutes);
 
 app.use('/api/ingredients', AuthMiddleWare.verifyToken, IngredientsRouter);
 app.use('/api/inventory', AuthMiddleWare.verifyToken, InventoryRoutes);

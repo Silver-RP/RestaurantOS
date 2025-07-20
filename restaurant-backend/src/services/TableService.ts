@@ -59,12 +59,15 @@ const TableService = {
       },
     }).lean();
 
+    // Tạo map để tra cứu nhanh trạng thái đặt/giữ
     const statusMap = new Map();
     reservationStatuses.forEach((status) => {
       statusMap.set(status.table_code, status);
     });
+
     const tablesWithStatus = tables.map((table) => {
       if (table.allowBooking === false) {
+        // Admin không cho phép đặt
         return {
           ...table,
           isAvailable: false,
@@ -74,10 +77,14 @@ const TableService = {
         };
       }
       const reservationStatus = statusMap.get(table.code);
+      const isBookedOrHolding =
+        !!reservationStatus &&
+        (reservationStatus.status === 'booked' || reservationStatus.status === 'holding');
       return {
         ...table,
         allowBooking: true,
-        isBooked: !!reservationStatus,
+        isAvailable: !isBookedOrHolding,
+        isBooked: isBookedOrHolding,
         reservationStatus: reservationStatus
           ? {
               status: reservationStatus.status,
