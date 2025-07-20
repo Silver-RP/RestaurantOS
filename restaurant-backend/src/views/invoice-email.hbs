@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hóa đơn</title>
+  </head>
+  <body style="background-color: #ffffff; color: #2C3E50; font-family: sans-serif;">
+    <div style="max-width: 64rem; margin: 0 auto; padding: 1rem; padding-left: 2rem; padding-right: 2rem;">
+      
+      <!-- Header -->
+      <div style="display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; border-bottom: 1px solid #E2E8F0; padding-bottom: 1.5rem;">
+        <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+          <img src="{{restaurant.logo}}" alt="Restaurant Logo" style="height: 133px; border-radius: 9999px; margin-right: 1rem;" />
+          <div>
+            <h1 style="font-size: 1.5rem; font-weight: bold; color: #2C5282;">{{restaurant.name}}</h1>
+            <p style="color: #4A5568;">{{restaurant.address}}</p>
+            <p style="color: #4A5568;">{{restaurant.phone}}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Customer & Order Info -->
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-top: 24px; margin-bottom: 32px;">
+        <tr>
+          <!-- Hàng 1 -->
+          <td width="50%"  height="110px" valign="top" style="padding: 8px;">
+            <div style="background-color: #F7FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 16px;">
+              <p style="font-weight: 600; font-size: 18px; color: #1F2937; margin: 0 0 8px 0;">Thông tin khách hàng</p>
+              <p style="color: #1F2937; margin: 0 0 8px 0;">{{customer.name}}</p>
+              <p style="color: #1F2937; margin: 0;">{{customer.phone}}</p>
+            </div>
+          </td>
+          <td width="50%" height="110px" valign="top" style="padding: 8px;">
+            <div style="background-color: #F7FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 16px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="font-weight: 600; color: #1F2937; padding-bottom: 11px;">Mã đơn hàng:</td>
+                  <td style="text-align: right; color: #1F2937; padding-bottom: 11px;">{{order.id}}</td>
+                </tr>
+                <tr>
+                  <td style="font-weight: 600; color: #1F2937; padding-bottom: 11px;">Giờ:</td>
+                  <td style="text-align: right; color: #1F2937; padding-bottom: 11px;">{{formatHour order.createdAt}}</td>
+                </tr>
+                <tr>
+                  <td style="font-weight: 600; color: #1F2937;">Ngày:</td>
+                  <td style="text-align: right; color: #1F2937;">{{formatDate order.createdAt}}</td>
+                </tr>
+              </table>
+            </div>
+          </td>
+        </tr>
+      </table>
+
+
+
+
+      <!-- Product List -->
+      <div style="overflow-x: auto; margin-bottom: 2rem;">
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead style="background-color: #F7FAFC; color: #1F2937; border: 1px solid #E2E8F0;">
+            <tr>
+              <th style="padding: 0.75rem; text-align: left;">Sản phẩm</th>
+              <th style="padding: 0.75rem; text-align: right;">Số lượng</th>
+              <th style="padding: 0.75rem; text-align: right;">Giá</th>
+              <th style="padding: 0.75rem; text-align: right;">Thành tiền</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each order.items}}
+            <tr style="border-bottom: 1px solid #E2E8F0;">
+              <td style="padding: 0.75rem;">
+                {{this.dish_name}}
+                {{#if this.note}}
+                <div style="font-size: 0.875rem; color: #718096;">Ghi chú: {{this.note}}</div>
+                {{/if}}
+              </td>
+              <td style="padding: 0.75rem; text-align: right;">{{this.quantity}}</td>
+              <td style="padding: 0.75rem; text-align: right;">{{formatPrice this.unit_price}}</td>
+              <td style="padding: 0.75rem; text-align: right;">{{formatPrice this.total_amount}}</td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Payment Summary -->
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 16px;">
+        <tr>
+          <td align="right">
+            <table cellpadding="0" cellspacing="0" style="max-width: 360px; width: 100%; background-color: #F7FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 16px;">
+              <tr>
+                <td style="padding: 8px;">Tạm tính</td>
+                <td style="padding: 8px; text-align: right;">{{formatPrice order.subtotal}}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px;">VAT (8%)</td>
+                <td style="padding: 8px; text-align: right;">{{formatPrice order.vat}}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px;">Phí giao hàng</td>
+                <td style="padding: 8px; text-align: right;">{{formatPrice order.shipping}}</td>
+              </tr>
+              {{#if order.discount}}
+              <tr>
+                <td style="padding: 8px; color: #dc2626;">Giảm giá</td>
+                <td style="padding: 8px; text-align: right; color: #dc2626;">-{{formatPrice order.discount}}</td>
+              </tr>
+              {{/if}}
+              {{#if order.voucher_code}}
+              <tr>
+                <td style="padding: 8px;">Mã giảm giá</td>
+                <td style="padding: 8px; text-align: right;">{{order.voucher_code}}</td>
+              </tr>
+              {{/if}}
+              <tr>
+                <td colspan="2" style="border-top: 1px solid #CBD5E0; padding-top: 8px;"></td>
+              </tr>
+              <tr>
+                <td style="padding: 8px; font-weight: bold; font-size: 18px; color: #1F2937;">Tổng cộng</td>
+                <td style="padding: 8px; text-align: right; font-weight: bold; font-size: 18px; color: #1F2937;">{{formatPrice order.total}}</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+
+
+      <!-- Thank You -->
+      <div style="text-align: center; margin-top: 4rem; margin-bottom: 1rem;">
+        <p style="font-size: 3rem; color: #1F2937; font-family: cursive;">Thank you!</p>
+      </div>
+
+      <!-- Footer -->
+      <div style="text-align: center; font-size: 0.875rem; color: #718096; margin-top: 1.5rem;">
+        <p>© 2025 {{restaurant.name}}. All rights reserved.</p>
+        <p>{{restaurant.address}} | {{restaurant.phone}} | {{restaurant.email}}</p>
+      </div>
+    </div>
+  </body>
+</html>
