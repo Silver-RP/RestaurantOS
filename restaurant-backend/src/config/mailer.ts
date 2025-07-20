@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 import nodemailer from 'nodemailer';
 import path from 'path';
-// import hbs from 'nodemailer-express-handlebars';
+import { format } from 'date-fns';
+import { vi } from 'date-fns/locale';
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -21,6 +22,20 @@ const initializeHandlebars = async () => {
           extname: '.hbs',
           partialsDir: path.resolve(__dirname, '../views'),
           defaultLayout: false,
+          helpers: {
+            formatDate: function (date: string) {
+              if (!date) return '';
+              return format(new Date(date), 'dd/MM/yyyy', { locale: vi });
+            },
+            formatHour: function (date: string) {
+              if (!date) return '';
+              return format(new Date(date), 'HH:mm', { locale: vi });
+            },
+            formatPrice: function (price: number) {
+              if (typeof price !== 'number') return '0₫';
+              return price.toLocaleString('vi-VN') + '₫';
+            },
+          },
         },
         viewPath: path.resolve(__dirname, '../views'),
         extName: '.hbs',
@@ -47,4 +62,3 @@ initializeHandlebars().catch((err) =>
 );
 
 export default transporter;
-

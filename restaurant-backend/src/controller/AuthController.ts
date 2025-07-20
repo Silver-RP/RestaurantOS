@@ -26,7 +26,7 @@ class AuthController {
     try {
       const { email, password, rememberMe } = req.body;
 
-      const { token, refresh_token, user, refreshTokenExpiresIn } = await AuthService.login(
+      const { token, refresh_token, user, isBirthday, refreshTokenExpiresIn } = await AuthService.login(
         { email, password, rememberMe },
         req,
       );
@@ -43,6 +43,7 @@ class AuthController {
       res.status(200).json({
         message: 'User logged in successfully',
         user,
+        isBirthday,
         accessToken: token,
         refreshToken: refresh_token, // for testing
       });
