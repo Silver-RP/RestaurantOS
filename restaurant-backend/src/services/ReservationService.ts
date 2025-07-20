@@ -305,6 +305,40 @@ class ReservationService {
       await reservation.save();
     }
 
+    if (reservation.table_type) {
+      try {
+        const table_code = reservation.table_type;
+
+        // Tìm trạng thái holding hiện tại của bàn
+        const currentHolding = await TableReservationService.getTableStatus(
+          table_code,
+          reservation.date,
+          reservation.time,
+        );
+
+        if (currentHolding && currentHolding.status === 'holding' && currentHolding.heldBy) {
+          await TableReservationService.bookTable(
+            table_code,
+            currentHolding.heldBy,
+            reservation._id as Types.ObjectId,
+            reservation.date,
+            reservation.time,
+          );
+          console.log(
+            '[ReservationService] Đã chuyển bàn từ holding sang booked khi thanh toán:',
+            table_code,
+          );
+        } else {
+          console.log(
+            '[ReservationService] Không tìm thấy trạng thái holding cho bàn:',
+            table_code,
+          );
+        }
+      } catch (bookErr) {
+        console.error('[ReservationService] Lỗi khi chuyển bàn từ holding sang booked:', bookErr);
+      }
+    }
+
     await this.sendReservationPaymentSuccessEmail(payment._id);
 
     console.log('Payment marked as paid: OK');

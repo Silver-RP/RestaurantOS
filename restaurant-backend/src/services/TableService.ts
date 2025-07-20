@@ -43,26 +43,43 @@ const TableService = {
   getTablesByDateTime: async (date: string, time: string) => {
     const tables = await Table.find().sort({ floor: 1, code: 1 }).lean();
 
-    const bookingStart = new Date(`${date}T${time}`);
-    const bookingEnd = new Date(bookingStart.getTime() + 3 * 60 * 60 * 1000);
-
     const tableCodes = tables.map((table) => table.code);
+
+    // Tính toán khoảng thời gian cho booking mới
+    const newBookingStart = new Date(`${date}T${time}`);
+    const newBookingEnd = new Date(newBookingStart.getTime() + 3 * 60 * 60 * 1000); // +3 giờ
+
+    // Tìm tất cả trạng thái bàn có thể overlap với thời gian mới
+    const now = new Date();
+
     const reservationStatuses = await TableReservationStatus.find({
       table_code: { $in: tableCodes },
       date: date,
-      expireAt: { $gt: new Date() },
-      $expr: {
-        $and: [
-          { $lt: [bookingStart, '$expireAt'] },
-          { $gt: [bookingEnd, { $toDate: { $concat: ['$date', 'T', '$time'] } }] },
-        ],
-      },
-    }).lean();
+      expireAt: { $gt: now },
+    })
+      .sort({ updatedAt: -1 })
+      .lean();
 
-    // Tạo map để tra cứu nhanh trạng thái đặt/giữ
+    // Tạo map để tra cứu nhanh trạng thái đặt/giữ và kiểm tra overlap
     const statusMap = new Map();
     reservationStatuses.forEach((status) => {
-      statusMap.set(status.table_code, status);
+      // Tính toán khoảng thời gian của booking hiện tại
+      const existingBookingStart = new Date(`${status.date}T${status.time}`);
+      const existingBookingEnd = new Date(existingBookingStart.getTime() + 3 * 60 * 60 * 1000); // +3 giờ
+
+      // Kiểm tra overlap
+      const hasOverlap =
+        newBookingStart < existingBookingEnd && newBookingEnd > existingBookingStart;
+
+      // Chỉ lưu trạng thái nếu có overlap và là trạng thái mới nhất
+      if (hasOverlap) {
+        if (
+          !statusMap.has(status.table_code) ||
+          (statusMap.get(status.table_code).updatedAt || 0) < (status.updatedAt || 0)
+        ) {
+          statusMap.set(status.table_code, status);
+        }
+      }
     });
 
     const tablesWithStatus = tables.map((table) => {
@@ -80,6 +97,7 @@ const TableService = {
       const isBookedOrHolding =
         !!reservationStatus &&
         (reservationStatus.status === 'booked' || reservationStatus.status === 'holding');
+
       return {
         ...table,
         allowBooking: true,
