@@ -2,7 +2,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   getOrderById,
-  sendInvoiceEmail,
   createOrder,
   cancelOrder,
   placeDirectOrder,
@@ -114,21 +113,6 @@ export const useRequestReturn = () => {
     }
   });
 };
-
-export const useSendInvoiceEmail = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ orderId, email }: { orderId: string; email?: string }) =>
-      sendInvoiceEmail(orderId, email),
-    onSuccess: () => {
-      toast.success('Gửi hóa đơn thành công');
-      queryClient.invalidateQueries({ queryKey: ['order'] });
-    },
-    onError: (error: AxiosError<{ message: string }>) => {
-      toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi gửi hóa đơn');
-    }
-  });
-}
 
 export const useUpdateOrderStatus = () => {
   const queryClient = useQueryClient();

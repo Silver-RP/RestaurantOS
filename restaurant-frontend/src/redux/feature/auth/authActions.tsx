@@ -1,9 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-// import { useState } from 'react';
 import axios from 'axios';
 import { RegisterPayload, LoginPayload } from './authTypes';
 import Cookies from 'js-cookie';
-import BirthdayAnimation from '@/components/BirthdayAnimation';
 import {
   setAccessToken,
   setRefreshToken,
@@ -11,7 +9,6 @@ import {
 } from '../../../utils/tokenHelpers';
 
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
-// const [showBirthdayAnimation, setShowBirthdayAnimation] = useState(false);
 
 const apiRequest = async (
   url: string,
@@ -83,12 +80,6 @@ export const LoginUser = createAsyncThunk(
     }
   },
 );
-
-{/* <BirthdayAnimation
-  username={user?.username || ''}
-  isVisible={showBirthdayAnimation}
-  onComplete={() => setShowBirthdayAnimation(false)}
-/>; */}
 
 export const LogoutUser = createAsyncThunk(
   'auth/logout',
