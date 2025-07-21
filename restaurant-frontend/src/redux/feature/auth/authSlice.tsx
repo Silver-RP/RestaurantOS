@@ -11,6 +11,7 @@ const initialState: AuthState = {
   success: null,
   message: null,
   token: null,
+  isBirthday: false,
 };
 
 const authSlice: Slice<AuthState> = createSlice({
@@ -21,6 +22,7 @@ const authSlice: Slice<AuthState> = createSlice({
       state.userInfo = null;
       state.token = null;
       state.isAuthenticated = false;
+      state.isBirthday = false;
       localStorage.removeItem('userInfo');
       localStorage.removeItem('accessToken');
       sessionStorage.removeItem('userInfo');
@@ -67,13 +69,14 @@ const authSlice: Slice<AuthState> = createSlice({
       })
       .addCase(
         LoginUser.fulfilled,
-        (state, action: PayloadAction<{ user: User; token: string; message: string }>) => {
-          const { user, token, message } = action.payload;
+        (state, action: PayloadAction<{ user: User; token: string; message: string; isBirthday: boolean }>) => {
+          const { user, token, message, isBirthday } = action.payload;
           state.loading = false;
           state.userInfo = user;
           state.token = token;
           state.isAuthenticated = Boolean(token);
           state.message = message;
+          state.isBirthday = isBirthday;
         }
       )
       .addCase(LoginUser.rejected, (state, action) => {
@@ -124,6 +127,7 @@ const authSlice: Slice<AuthState> = createSlice({
         state.userInfo = null;
         state.token = null;
         state.isAuthenticated = false;
+        state.isBirthday = false;
         Cookies.remove('accessToken');
         Cookies.remove('refreshToken');
         Cookies.remove('userInfo');

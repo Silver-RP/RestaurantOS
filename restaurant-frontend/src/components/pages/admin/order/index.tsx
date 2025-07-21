@@ -10,8 +10,9 @@ import {
   FaEye,
   FaEllipsisV,
 } from 'react-icons/fa';
-import { BsDownload } from 'react-icons/bs';
+import { BsDownload, BsSend } from 'react-icons/bs';
 import { useAllOrders } from '@/hooks/useOrder';
+import SendInvoiceModal from '../invoice/SendInvoiceModal';
 import AdminPagination from '../AdminPagination';
 import OrderFilterPanel from './OrderFilterPanel';
 import OrderDetail from './OrderDetail';
@@ -25,7 +26,6 @@ import {
 } from '@/components/pages/admin/order/OrderCommon';
 import html2pdf from 'html2pdf.js';
 import html2canvasPro from 'html2canvas-pro';
-
 
 const forceBasicColors = (element: HTMLElement) => {
   try {
@@ -64,10 +64,14 @@ const OrderTable: React.FC = () => {
   const buttonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const [showInvoice, setShowInvoice] = useState(false);
   const [invoiceData, setInvoiceData] = useState<string | null>(null);
-  const [invoiceDataExport, setInvoiceDataExport] = useState<string | null>(null);
+  const [invoiceDataExport, setInvoiceDataExport] = useState<string | null>(
+    null,
+  );
   const invoiceRef = useRef<HTMLDivElement>(null);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [invoiceReadyForPDF, setInvoiceReadyForPDF] = useState(false);
+  const [selectedOrderForEmail, setSelectedOrderForEmail] =
+    useState<AllOrder | null>(null);
 
   const handleInvoiceReady = () => {
     setInvoiceReadyForPDF(true);
@@ -177,7 +181,6 @@ const OrderTable: React.FC = () => {
       }
     }
   };
-
 
   const handleExportPDF = async (orderId: string) => {
     try {
@@ -357,6 +360,11 @@ const OrderTable: React.FC = () => {
   const handleMenuClose = () => {
     setMenuOpenId(null);
     setMenuPosition(null);
+  };
+
+  const handleOpenSendInvoiceModal = (order: AllOrder) => {
+    setSelectedOrderForEmail(order);
+    handleMenuClose();
   };
 
   return (
@@ -583,21 +591,22 @@ const OrderTable: React.FC = () => {
                             </button>
                             <button
                               className="flex items-center gap-2 w-full text-left px-5 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
-                              onClick={() => handleExportPDF(order._id)} 
+                              onClick={() => handleExportPDF(order._id)}
                               disabled={isGeneratingPDF}
                             >
                               <BsDownload className="text-gray-500" />
-                              {isGeneratingPDF ? 'Đang xuất PDF...' : 'Xuất file PDF'}
+                              {isGeneratingPDF
+                                ? 'Đang xuất PDF...'
+                                : 'Xuất file PDF'}
                             </button>
                             <button
                               className="flex items-center gap-2 w-full text-left px-5 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
-                              onClick={() => {
-                                // TODO: Thêm logic gửi hóa đơn
-                                handleMenuClose();
-                              }}
+                              onClick={() => handleOpenSendInvoiceModal(order)}
                             >
-                              Gửi hóa đơn
+                              <BsSend className="text-gray-500" />
+                              Gửi hóa đơn 
                             </button>
+
                           </div>
                         )}
                       </div>
@@ -680,6 +689,13 @@ const OrderTable: React.FC = () => {
           onClose={handleCloseOrderDetail}
         />
       )}
+
+      <SendInvoiceModal
+        orderId={selectedOrderForEmail?._id || ''}
+        isOpen={!!selectedOrderForEmail}
+        onClose={() => setSelectedOrderForEmail(null)}
+        defaultEmail={selectedOrderForEmail?.user_id?.email || ''}
+      />
 
       <ToastConfigAdmin />
     </main>
