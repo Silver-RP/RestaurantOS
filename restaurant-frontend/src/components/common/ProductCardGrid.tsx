@@ -99,11 +99,6 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
               NEW
             </span>
           )}
-          {rest.status === 'soldout' && (
-            <span className="bg-white text-red-700 text-[10px] font-semibold px-2 py-1 rounded-sm">
-              Sold Out
-            </span>
-          )}
         </div>
         <div className="absolute top-2 right-2 flex flex-col items-end gap-1 z-10">
           <div className="relative group/tooltip inline-flex">

@@ -16,11 +16,13 @@ interface ProductReviewsProps {
   productName: string;
   averageRating: number;
   ratingCount: number;
+  scrollToForm?: boolean;
 }
 
 const ProductReviews: React.FC<ProductReviewsProps> = ({
   productId,
   productName,
+  scrollToForm
 }) => {
   const { createReview, fetchReviews, updateReview, deleteReview, loading } =
     useReview();
@@ -65,6 +67,13 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({
       reviewFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    if (scrollToForm && reviewFormRef.current) {
+      reviewFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [scrollToForm]);
+
 
   const getRatingDistribution = () => {
     const distribution = [0, 0, 0, 0, 0];
