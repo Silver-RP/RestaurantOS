@@ -21,22 +21,26 @@ export const ReviewService = {
       throw new Error('Bạn đã đánh giá sản phẩm này rồi.');
     }
 
-    const completedOrders = await Order.find({ user_id: userId, status: 'COMPLETED' }).select(
-      '_id',
-    );
-    const orderIds = completedOrders.map((order) => order._id);
+    // Chỉ lấy các đơn hàng đã giao thành công (DELIVERED)
+    const deliveredOrders = await Order.find({ user_id: userId, status: 'DELIVERED' }).select('_id');
+    const orderIds = deliveredOrders.map((order) => order._id);
 
+    // Kiểm tra xem trong các đơn hàng đã giao có món ăn này không
     const hasPurchased = await OrderDetail.findOne({
       order_id: { $in: orderIds },
-      dish_id: productId, // chú ý nếu productId là dish_id
+      dish_id: productId, // productId là dish_id
     });
+
+    if (!hasPurchased) {
+      throw new Error('Bạn chỉ có thể đánh giá món ăn đã mua và đã được giao thành công.');
+    }
 
     const review = new ReviewModel({
       productId,
       userId,
       rating,
       comment,
-      isVerifiedPurchase: !!hasPurchased,
+      isVerifiedPurchase: true,
     });
 
     return review.save();
