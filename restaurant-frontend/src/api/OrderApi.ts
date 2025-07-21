@@ -23,6 +23,13 @@ export async function getOrderById(
   return res.data;
 }
 
+export async function sendInvoiceEmail(
+  orderId: string, email?: string
+): Promise<void> {
+ const res = await api.post(`/order/send-invoice/${orderId}`, { email });
+ return res.data;
+}
+
 export async function createOrder(data: CreateOrderRequest) {
   const res = await api.post('/order', data);
   return res.data;

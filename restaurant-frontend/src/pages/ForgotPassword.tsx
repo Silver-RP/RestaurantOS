@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import InputComponent from '../components/pages/Login/InputComponents';
-import ButtonComponent from '../components/pages/Login/ButtonComponents';
-import { Link, useLocation } from 'react-router-dom';
-import { SlActionUndo } from 'react-icons/sl';
-import { toast } from 'react-toastify';
-import { useSendOtpEmail } from '../hooks/useAuth';
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { forgotPasswordSchema, ForgotPasswordSchema } from '../types/Auth.type';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React from "react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import InputComponent from "../components/pages/login/InputComponents";
+import ButtonComponent from "../components/pages/login/ButtonComponents";
+import { Link, useLocation } from "react-router-dom";
+import { SlActionUndo } from "react-icons/sl";
+import { toast } from "react-toastify";
+import { useSendOtpEmail } from "../hooks/useAuth";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { forgotPasswordSchema, ForgotPasswordSchema } from "../types/Auth.type";
 
 const ForgotPassword = () => {
   const {
@@ -20,49 +21,46 @@ const ForgotPassword = () => {
   } = useForm<ForgotPasswordSchema>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: {
-      email: '',
+      email: "",
     },
   });
 
   const { sendOtpEmail, loading, error } = useSendOtpEmail();
 
-  const emailValue = watch('email');
+  const emailValue = watch("email");
   const navigate = useNavigate();
 
   useEffect(() => {
     if (error) {
-      if (error === 'User not found') {
-        toast.error('Email chưa được đăng ký trong hệ thống!');
+      if (error === "User not found") {
+        toast.error("Email chưa được đăng ký trong hệ thống!");
       } else if (
         error ===
-        'You have exceeded the limit for sending OTPs. Please try again later'
+        "You have exceeded the limit for sending OTPs. Please try again later"
       ) {
-        toast.error('Bạn đã vượt quá giới hạn gửi OTP. Vui lòng thử lại sau!');
+        toast.error("Bạn đã vượt quá giới hạn gửi OTP. Vui lòng thử lại sau!");
       } else {
-        toast.error(error || 'Đã xảy ra lỗi khi gửi OTP!');
+        toast.error(error || "Đã xảy ra lỗi khi gửi OTP!");
       }
     }
   }, [error]);
 
-
   const location = useLocation();
-  const loginPath = location.state?.loginPath || '/login';
+  const loginPath = location.state?.loginPath || "/login";
 
   const onSubmit = async (data: ForgotPasswordSchema) => {
-
     try {
       const res = await sendOtpEmail(data.email);
-      if (res && res.message === 'OTP sent successfully') {
-        toast.success('Đã gửi OTP đến email của bạn!');
-        navigate('/verify-otp', { state: { email: data.email, loginPath } }); 
-      } 
+      if (res && res.message === "OTP sent successfully") {
+        toast.success("Đã gửi OTP đến email của bạn!");
+        navigate("/verify-otp", { state: { email: data.email, loginPath } });
+      }
     } catch (err: any) {
-      console.log('API error:', err?.response?.data);
+      console.log("API error:", err?.response?.data);
     }
   };
 
-  console.log('ForgotPassword component rendered: ', loginPath);
-
+  console.log("ForgotPassword component rendered: ", loginPath);
 
   return (
     <div className="flex justify-center items-center bg-[url('/assets/images/register/background.jpg')] bg-cover bg-center w-full h-screen">
@@ -97,7 +95,7 @@ const ForgotPassword = () => {
 
           <ButtonComponent
             htmlType="submit"
-            text={loading ? 'Đang gửi...' : 'Gửi Yêu Cầu'}
+            text={loading ? "Đang gửi..." : "Gửi Yêu Cầu"}
             disabled={loading || !emailValue}
           />
         </form>

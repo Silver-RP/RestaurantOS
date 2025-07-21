@@ -301,8 +301,42 @@ class ReservationService {
     if (reservation.payment_status !== 'PAID') {
       reservation.payment_status = 'PAID';
       reservation.paid_at = new Date();
-      reservation.status = 'BOOKED'; 
+      reservation.status = 'BOOKED';
       await reservation.save();
+    }
+
+    if (reservation.table_type) {
+      try {
+        const table_code = reservation.table_type;
+
+        // Tìm trạng thái holding hiện tại của bàn
+        const currentHolding = await TableReservationService.getTableStatus(
+          table_code,
+          reservation.date,
+          reservation.time,
+        );
+
+        if (currentHolding && currentHolding.status === 'holding' && currentHolding.heldBy) {
+          await TableReservationService.bookTable(
+            table_code,
+            currentHolding.heldBy,
+            reservation._id as Types.ObjectId,
+            reservation.date,
+            reservation.time,
+          );
+          console.log(
+            '[ReservationService] Đã chuyển bàn từ holding sang booked khi thanh toán:',
+            table_code,
+          );
+        } else {
+          console.log(
+            '[ReservationService] Không tìm thấy trạng thái holding cho bàn:',
+            table_code,
+          );
+        }
+      } catch (bookErr) {
+        console.error('[ReservationService] Lỗi khi chuyển bàn từ holding sang booked:', bookErr);
+      }
     }
 
     await this.sendReservationPaymentSuccessEmail(payment._id);
@@ -472,11 +506,11 @@ class ReservationService {
   }
 
   async sendReservationPaymentSuccessEmail(paymentId: Types.ObjectId) {
-    const payment = await Payment.findById(paymentId).populate('reservationId').lean();
+    const payment = await Payment.findById(paymentId).populate('reservationId');
     if (!payment) throw new Error('Payment not found');
     if (!payment.reservationId) throw new Error('Order not found in payment');
 
-    const reservation = await Reservation.findById(payment.reservationId).lean();
+    const reservation = await Reservation.findById(payment.reservationId);
     if (!reservation) throw new Error('Reservation not found');
 
     const userEmail = reservation.email;
@@ -503,7 +537,6 @@ class ReservationService {
       const reservation = await Reservation.findById(reservationId).session(session);
       if (!reservation) throw new Error('Không tìm thấy đơn đặt bàn');
 
-      // 🛑 Kiểm tra trạng thái không hợp lệ
       const invalidStatuses = ['CANCELLED', 'PAID'];
       if (
         invalidStatuses.includes(reservation.status) ||

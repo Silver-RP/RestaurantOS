@@ -9,18 +9,18 @@ import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
+
 interface ProductReviewsProps {
   productId: string;
   productName: string;
   averageRating: number;
   ratingCount: number;
-  scrollToForm?: boolean;
 }
 
 const ProductReviews: React.FC<ProductReviewsProps> = ({
   productId,
   productName,
-  scrollToForm,
 }) => {
   const { createReview, fetchReviews, updateReview, deleteReview, loading } =
     useReview();
@@ -40,6 +40,8 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({
   const [editingReview, setEditingReview] = useState<IReview | null>(null);
 
   const reviewFormRef = useRef<HTMLDivElement>(null);
+  const [searchParams] = useSearchParams();
+
   useEffect(() => {
     const loadReviews = async () => {
       const result = await fetchReviews({
@@ -59,10 +61,10 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({
   }, [productId, currentPage, filter]);
 
   useEffect(() => {
-    if (scrollToForm && reviewFormRef.current) {
+    if (searchParams.get('review') === 'true' && reviewFormRef.current) {
       reviewFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  }, [scrollToForm]);
+  }, [searchParams]);
 
   const getRatingDistribution = () => {
     const distribution = [0, 0, 0, 0, 0];

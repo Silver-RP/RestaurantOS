@@ -4,7 +4,7 @@ import ReservationService from '../services/ReservationService';
 import { Types } from 'mongoose';
 
 export const ReservationController = {
-  create: async (req: Request, res: Response): Promise<Response> => {
+  create: async (req: Request, res: Response): Promise<void> => {
     try {
       const user = req.user as IUser;
       const userId = user?.id || null; // Cho phép null nếu không đăng nhập
@@ -51,14 +51,14 @@ export const ReservationController = {
         clientIp.toString(),
       );
 
-      return res.status(201).json({
+      res.status(201).json({
         message: 'Đặt bàn thành công',
         data: reservation,
         postPayment,
       });
     } catch (error: any) {
       console.error('❌ Create reservation error:', error);
-      return res.status(error.statusCode || 500).json({
+      res.status(error.statusCode || 500).json({
         message: error?.message || 'Đã xảy ra lỗi khi tạo đơn đặt bàn',
       });
     }
@@ -145,7 +145,7 @@ export const ReservationController = {
     }
   },
 
-  confirmReservation: async (req: Request, res: Response): Promise<Response> => {
+  confirmReservation: async (req: Request, res: Response): Promise<void> => {
     try {
       const { reservationId } = req.params;
       const user = req.user as IUser;
@@ -156,13 +156,13 @@ export const ReservationController = {
         userId,
       );
 
-      return res.status(200).json({
+      res.status(200).json({
         message: 'Xác nhận đặt bàn thành công',
         data: reservation,
       });
     } catch (error: any) {
       console.error('❌ Confirm reservation error:', error);
-      return res.status(error.statusCode || 500).json({
+      res.status(error.statusCode || 500).json({
         message: error?.message || 'Đã xảy ra lỗi khi xác nhận đặt bàn',
       });
     }

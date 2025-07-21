@@ -785,7 +785,10 @@ class OrderService {
 
   async getOrderById(orderId: mongoose.Types.ObjectId) {
     try {
-      const order = await Order.findById(orderId).populate('address_id').lean();
+      const order = await Order.findById(orderId)
+        .populate('address_id')
+        .populate('user_id', 'email')
+        .lean();
 
       if (!order) {
         throw { statusCode: 404, message: 'Order not found' };
