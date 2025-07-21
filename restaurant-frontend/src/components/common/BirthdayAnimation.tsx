@@ -112,9 +112,21 @@ const BirthdayAnimation = ({ username, onComplete, isVisible }: BirthdayAnimatio
                 >
                   {username}
                   <p className="mt-2 text-lg text-secondaryColor">
-                   Chúc {username} một ngày sinh nhật thật ý nghĩa,
+                    Cảm ơn {username} đã đồng hành cùng BeefBeef Restaurant!
                     <br />
-                    tràn đầy hạnh phúc và thành công trong cuộc sống!
+                    Nhân dịp sinh nhật, chúng tôi xin gửi đến bạn lời chúc tốt
+                    đẹp nhất.
+                    <br />
+                    Chúc bạn luôn mạnh khỏe, hạnh phúc và thành công !
+                    <br />
+                    <br />
+                  </p>
+
+                  <p className="mt-2 text-[14px] text-[#ffe6b6] text-opacity-75">
+                    🎁 BeefBeef đã gửi tặng bạn một món quà nhỏ – hãy kiểm tra
+                    phần
+                    <br />
+                    Voucher trong mục Hồ sơ cá nhân để sử dụng ngay hôm nay nhé”
                   </p>
                 </motion.div>
                 <motion.button
