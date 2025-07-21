@@ -17,6 +17,7 @@ import ToastSwitcher from "@components/common/ToastSwitcher";
 import FullScreenOverlayLoading from "./components/common/FullScreenOverlayLoading";
 import GlobalReservationModal from "./components/common/modals/GlobalReservationModal";
 import GlobalOrderModal from "./components/common/modals/GlobalOrderModal";
+import UseBirthdayAnimation from "./components/layout/UseBirthdayAnimation";
 
 const queryClient = new QueryClient();
 
@@ -26,7 +27,8 @@ const App = () => {
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
-      <AuthInitializer /> 
+        <AuthInitializer /> 
+        <UseBirthdayAnimation />
         <Router>
         <FullScreenOverlayLoading />
           <ScrollToTop />

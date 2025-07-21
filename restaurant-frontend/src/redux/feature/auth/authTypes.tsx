@@ -19,6 +19,7 @@ export interface AuthState {
   success: string | null;
   message: string | null;
   token: string | null;
+  isBirthday: boolean;
 }
 
 export interface LoginPayload {

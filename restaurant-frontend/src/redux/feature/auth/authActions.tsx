@@ -3,7 +3,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { RegisterPayload, LoginPayload } from './authTypes';
 import Cookies from 'js-cookie';
-import BirthdayAnimation from '@/components/BirthdayAnimation';
+import BirthdayAnimation from '@/components/layout/BirthdayAnimation';
 import {
   setAccessToken,
   setRefreshToken,
@@ -49,7 +49,7 @@ export const RegisterUser = createAsyncThunk(
     } catch (error: unknown) {
       return rejectWithValue(
         (error as { message: string })?.message ||
-          'An unexpected error occurred',
+        'An unexpected error occurred',
       );
     }
   },
@@ -60,7 +60,7 @@ export const LoginUser = createAsyncThunk(
   async (payload: LoginPayload, { rejectWithValue }) => {
     try {
       const data = await apiRequest(`${BASE_URL}/auth/login`, payload, 'POST');
-      const { accessToken, refreshToken, user, message } = data;
+      const { accessToken, refreshToken, user, message, isBirthday } = data;
 
       if (!accessToken) {
         console.warn('⚠️ accessToken is missing in API response');
@@ -74,21 +74,16 @@ export const LoginUser = createAsyncThunk(
         secure: import.meta.env.PROD,
       });
 
-      return { token: accessToken, user, message };
+      return { token: accessToken, user, message, isBirthday };
     } catch (error: unknown) {
       return rejectWithValue(
         (error as { message: string })?.message ||
-          'An unexpected error occurred',
+        'An unexpected error occurred',
       );
     }
   },
 );
 
-{/* <BirthdayAnimation
-  username={user?.username || ''}
-  isVisible={showBirthdayAnimation}
-  onComplete={() => setShowBirthdayAnimation(false)}
-/>; */}
 
 export const LogoutUser = createAsyncThunk(
   'auth/logout',
