@@ -38,7 +38,6 @@ import cors from 'cors';
 import path from 'path';
 import CronJobService from './services/CronJobService';
 
-
 import { scheduleLoyaltyYearlyJob } from './cron/loyaltyYearlyJob';
 
 const app = express();
@@ -53,22 +52,23 @@ import './swaggers/UserSwagger';
 import './swaggers/CategorySwagger';
 import TableReservationRouter from './routes/TableReservationRouter';
 
-
 dotenv.config();
 connectDB();
 
-// Khởi động cron-job loyalty
 scheduleLoyaltyYearlyJob();
 
-CronJobService.start(); // Start cron jobs after DB connection
+CronJobService.start();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
-    origin: 'http://localhost:5173',
+    origin: [
+      'https://beefbeefrestaurant.io.vn',   
+      'http://localhost:5173',         
+    ],
     credentials: true,
-  }),
+  })
 );
 app.engine('.hbs', engine({ extname: '.hbs', defaultLayout: false }));
 app.set('view engine', '.hbs');
@@ -86,8 +86,12 @@ const swaggerDefinition = {
   },
   servers: [
     {
+      url: 'https://api-beefbeef-restaurant.onrender.com/api',
+      description: 'Production server (Render)',
+    },
+    {
       url: `http://localhost:${port}/api`,
-      description: 'Development server',
+      description: 'Local development server',
     },
   ],
   components: {

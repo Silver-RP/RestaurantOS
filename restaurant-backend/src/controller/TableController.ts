@@ -1,4 +1,3 @@
-// controller/TableController.ts
 import { Request, Response } from 'express';
 import TableService from '../services/TableService';
 

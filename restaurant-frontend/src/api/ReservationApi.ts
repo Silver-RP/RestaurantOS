@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import axiosInstance from './axiosInstance';
 import { IReservation, IReservationDetail } from '@/types/Reservation.type';
 
@@ -30,8 +31,13 @@ export const getReservationByIdApi = async (id: string) => {
   return response.data.data;
 };
 
-export const getReservationReservationcodeAndPhoneNumber = async (reservationCode: string, phoneNumber: string) => {
-  const response = await axiosInstance.get(`/reservation/validate?reservationCode=${reservationCode}&phone=${phoneNumber}`);
+export const getReservationReservationcodeAndPhoneNumber = async (
+  reservationCode: string,
+  phoneNumber: string,
+) => {
+  const response = await axiosInstance.get(
+    `/reservation/validate?reservationCode=${reservationCode}&phone=${phoneNumber}`,
+  );
   return response.data;
 };
 
@@ -83,11 +89,19 @@ export const getMyReservationsApi = async (params?: {
 };
 
 export const retryReservationPayment = async (reservationId: string) => {
-  const response = await axiosInstance.post(`/payment/retry-reservation/${reservationId}`);
+  const response = await axiosInstance.post(
+    `/payment/retry-reservation/${reservationId}`,
+  );
   return response.data;
-}
+};
 
-export const changeReservationPaymentMethod = async (reservationId: string, paymentMethod: string) => {
-  const response = await axiosInstance.put(`/payment/change-reservation-payment/${reservationId}`, { paymentMethod });
+export const changeReservationPaymentMethod = async (
+  reservationId: string,
+  paymentMethod: string,
+) => {
+  const response = await axiosInstance.put(
+    `/payment/change-reservation-payment/${reservationId}`,
+    { paymentMethod },
+  );
   return response.data;
-}
+};

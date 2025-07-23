@@ -1,5 +1,5 @@
 import transporter from '../config/mailer';
-import { IOrder } from '../models/OrderModel';
+import { IOrder, IOrderPopulated } from '../models/OrderModel';
 import { IUser } from '../models/UserModel';
 import { IAddress } from '../models/AddressModel';
 import { IOrderDetail } from '../models/OrderDetailModel';
@@ -293,6 +293,46 @@ const MailerService = {
     }
 
     return 'Chưa xác định thời gian giao hàng';
+  },
+
+  async sendInvoiceEmail(order: any, email: string) {
+    try {
+      const restaurantInfo = {
+        name: 'CÔNG TY TNHH BEEFBEEF',
+        address: '161 Quốc Hương, P. Thảo Điền, Quận 2, Tp. HCM',
+        phone: '0239991255',
+        email: 'beefbeef@gmail.com',
+        logo: 'https://res.cloudinary.com/dw8c7oz6q/image/upload/v1748798728/logo_tmawjo.png',
+      };
+
+      await this.sendTemplateEmail({
+        to: email,
+        subject: `Hóa đơn cho đơn hàng #${order._id.toString().slice(-6).toUpperCase()}`,
+        template: 'invoice-email',
+        context: {
+          restaurant: restaurantInfo,
+          order: {
+            id: order._id.toString().slice(-6).toUpperCase(),
+            items: order.order_items,
+            subtotal: order.items_price,
+            shipping: order.shipping_fee,
+            vat: order.vat_amount,
+            discount: order.discount_amount,
+            total: order.total_price,
+            createdAt: order.createdAt,
+          },
+          customer: {
+            name: order.address_id?.full_name || order.receiver || 'Khách vãng lai',
+            address: order.address_id
+              ? `${order.address_id.street_address}, ${order.address_id.ward}, ${order.address_id.district}, ${order.address_id.province}`
+              : '',
+            phone: order.address_id?.phone || order.receiver_phone || '',
+          },
+        },
+      });
+    } catch (error) {
+      console.error('Error sending invoice email:', error);
+    }
   },
 };
 

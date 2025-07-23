@@ -22,7 +22,10 @@ export const ReviewController = {
 
       res.status(201).json({ success: true, data: review });
     } catch (error: any) {
-      if (error.message === 'Bạn đã đánh giá sản phẩm này rồi.') {
+      if (
+        error.message === 'Bạn đã đánh giá sản phẩm này rồi.' ||
+        error.message === 'Bạn chỉ có thể đánh giá món ăn đã mua và đã được giao thành công.'
+      ) {
         res.status(409).json({ message: error.message });
       } else {
         console.error('Create review error:', error);

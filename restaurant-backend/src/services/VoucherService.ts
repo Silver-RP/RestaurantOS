@@ -323,14 +323,30 @@ export default class VoucherService {
   static async getUserVouchers(userId: string) {
     if (!Types.ObjectId.isValid(userId)) throw new Error('Invalid user id');
     
-    const userVouchers = await UserVoucher.find({ user_id: userId })
-                                          .populate<{ voucher_id: IVoucherDocument }>('voucher_id')
-                                          .lean(); // Use lean for better performance
+    const now = new Date();
 
+    // Lấy tất cả user vouchers của user và populate thông tin voucher
+    const userVouchers = await UserVoucher.find({ 
+      user_id: userId,
+      status: 'saved' // Chỉ lấy những voucher chưa sử dụng
+    })
+    .populate({
+      path: 'voucher_id',
+      match: {
+        // Điều kiện cho voucher
+        status: { $nin: ['deleted', 'expired', 'out_of_stock'] }, // Không lấy voucher đã xóa, hết hạn hoặc hết lượt
+        $or: [
+          { end_date: { $gt: now } }, // Còn hạn sử dụng
+          { end_date: null } // Hoặc không có ngày hết hạn
+        ]
+      }
+    })
+    .lean();
+
+    // Lọc bỏ những voucher không thỏa mãn điều kiện populate
     return userVouchers
-      .filter((uv) => uv.voucher_id)
+      .filter((uv) => uv.voucher_id) // Chỉ lấy những voucher còn tồn tại và thỏa điều kiện
       .map((uv) => {
-        // Since we used .lean(), uv is a plain object, not a Mongoose document
         const { voucher_id, ...uvData } = uv;
         return {
           ...voucher_id,

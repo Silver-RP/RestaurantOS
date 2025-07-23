@@ -52,67 +52,23 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({
     table?: ITable,
   ) => {
     if (!isAvailable || !table) return;
-    // Nếu là VIP, chỉ cho chọn 1 bàn
-    if (table.type === 'vip') {
-      if (selectedTables.length === 1 && selectedTables[0]._id === table._id) {
-        setSelectedTables([]);
-        setFormData((prev) => ({
-          ...prev,
-          table_type: '',
-          seatingName: '',
-          tableCategory: '',
-        }));
-      } else {
-        setSelectedTables([table]);
-        setFormData((prev) => ({
-          ...prev,
-          table_type: table.code,
-          seatingName: table.code,
-          tableCategory: table.type,
-        }));
-      }
-      return;
-    }
-    // Nếu đã chọn bàn VIP, không cho chọn thêm
-    if (selectedTables.length === 1 && selectedTables[0].type === 'vip') return;
-    // Nếu chưa chọn bàn nào, hoặc cùng loại
-    if (selectedTables.length === 0 || selectedTables[0].type === table.type) {
-      // Nếu đã chọn, thì bỏ chọn
-      const exists = selectedTables.find(
-        (t) => (t._id ?? t.code) === (table._id ?? table.code),
-      );
-      if (exists) {
-        const newSelected = selectedTables.filter(
-          (t) => (t._id ?? t.code) !== (table._id ?? table.code),
-        );
-        setSelectedTables(newSelected);
-        // Nếu còn bàn, cập nhật formData với bàn đầu tiên, nếu không thì clear
-        if (newSelected.length > 0) {
-          setFormData((prev) => ({
-            ...prev,
-            table_type: newSelected.map((t) => t.code).join(','),
-            seatingName: newSelected.map((t) => t.code).join(', '),
-            tableCategory: newSelected[0].type, // Lưu loại bàn của bàn đầu tiên
-          }));
-        } else {
-          setFormData((prev) => ({
-            ...prev,
-            table_type: '',
-            seatingName: '',
-            tableCategory: '',
-          }));
-        }
-      } else {
-        // Thêm bàn mới
-        const newSelected = [...selectedTables, table];
-        setSelectedTables(newSelected);
-        setFormData((prev) => ({
-          ...prev,
-          table_type: newSelected.map((t) => t.code).join(','),
-          seatingName: newSelected.map((t) => t.code).join(', '),
-          tableCategory: newSelected[0].type, // Lưu loại bàn của bàn đầu tiên
-        }));
-      }
+    // Chỉ cho chọn 1 bàn duy nhất
+    if (selectedTables.length === 1 && selectedTables[0]._id === table._id) {
+      setSelectedTables([]);
+      setFormData((prev) => ({
+        ...prev,
+        table_type: '',
+        seatingName: '',
+        tableCategory: '',
+      }));
+    } else {
+      setSelectedTables([table]);
+      setFormData((prev) => ({
+        ...prev,
+        table_type: table.code,
+        seatingName: table.code,
+        tableCategory: table.type,
+      }));
     }
   };
 
@@ -121,25 +77,19 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({
       setShowWarningModal(true);
       return;
     }
-    // Nếu là VIP, chỉ cần 1 bàn
     if (selectedTables.length === 1 && selectedTables[0].type === 'vip') {
       onNext();
       return;
     }
-    // Tổng sức chứa các bàn đã chọn
     const totalCapacity = selectedTables.reduce(
       (sum, t) => sum + t.capacity,
       0,
     );
-    // Số người cần phục vụ
     const people = formData.number_of_people || 1;
-    // Nếu chưa đủ chỗ
     if (totalCapacity < people) {
       setShowCapacityWarningModal(true);
       return;
     }
-    // Nếu chọn quá nhiều bàn dư thừa (ví dụ 3 bàn 8 cho 12 người)
-    // Chỉ cho phép tổng capacity không vượt quá số người + capacity của 1 bàn (tức là chỉ dư tối đa 1 bàn)
     const minCapacity = Math.min(
       ...tables
         .filter((t) => t.type === selectedTables[0].type)
@@ -179,16 +129,39 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({
               const isSelected = selectedTables.some(
                 (sel) => (sel._id ?? sel.code) === tableId,
               );
-              // Nếu đã chọn bàn VIP, disable các bàn khác
               const hasVip = selectedTables.some((sel) => sel.type === 'vip');
-              // Nếu đã chọn bàn thường, chỉ cho chọn cùng loại
               const selectedType = selectedTables[0]?.type;
+              const isCapacityNotEnough =
+                t.type === 'vip'
+                  ? false
+                  : t.type === 'group'
+                    ? (formData.number_of_people || 1) > 10
+                    : t.capacity < (formData.number_of_people || 1);
               let isAvailable = !!t.isAvailable;
+              if (t.isBooked) {
+                isAvailable = false;
+              }
               if (hasVip) {
                 isAvailable = t.type === 'vip' && isAvailable;
               } else if (selectedTables.length > 0) {
                 isAvailable = t.type === selectedType && isAvailable;
               }
+              // Disable bàn nhóm nếu 2 người
+              if (t.type === 'group' && formData.number_of_people === 2) {
+                isAvailable = false;
+              }
+              // Disable bàn 2 nếu 4 người trở lên
+              if (t.capacity === 2 && formData.number_of_people >= 4) {
+                isAvailable = false;
+              }
+              if (isCapacityNotEnough) {
+                isAvailable = false;
+              }
+              let status: 'selected' | 'available' | 'reserved' | 'booked' =
+                'available';
+              if (isSelected) status = 'selected';
+              else if (t.isBooked) status = 'booked';
+              else if (!isAvailable) status = 'reserved';
               return (
                 <div
                   key={tableId}
@@ -203,16 +176,14 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({
                     id={tableId}
                     name={t.code}
                     type={t.type}
-                    status={
-                      isSelected
-                        ? 'selected'
-                        : isAvailable
-                          ? 'available'
-                          : 'reserved'
-                    }
-                    onClick={() =>
-                      handleSelect(tableId, t.code, isAvailable, t)
-                    }
+                    status={status}
+                    onClick={() => {
+                      if (isCapacityNotEnough) {
+                        setShowCapacityWarningModal(true);
+                        return;
+                      }
+                      handleSelect(tableId, t.code, isAvailable, t);
+                    }}
                     capacity={t.capacity}
                     disabled={!isAvailable && !isSelected}
                   />
@@ -220,7 +191,7 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({
               );
             })}
         </div>
-        {/* Legend giữ nguyên */}
+        {/* Legend */}
         <div className="flex gap-6 justify-center mt-4 text-white">
           <div className="flex items-center gap-2">
             <span className="w-6 h-6 rounded bg-[#1abc9c] border-2 border-[#F9D783] inline-block" />
@@ -228,7 +199,7 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({
           </div>
           <div className="flex items-center gap-2">
             <span className="w-6 h-6 rounded bg-[#e74c3c] border-2 border-[#F9D783] inline-block" />
-            <span>Đã đặt</span>
+            <span>Không khả dụng</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-6 h-6 rounded bg-[#F9D783] border-2 border-[#F9D783] inline-block" />
