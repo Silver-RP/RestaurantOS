@@ -24,6 +24,8 @@ export interface IUser extends Document {
   otpSentCount: number;
   lastOtpSentAt: Date;
   otpVerifiedForChangePassword: boolean;
+  isOnline: boolean;
+
 }
 
 const userSchema = new mongoose.Schema(
@@ -56,6 +58,8 @@ const userSchema = new mongoose.Schema(
     expireAt: { type: Date },
     otpSentCount: { type: Number, default: 0 },
     lastOtpSentAt: { type: Date, default: Date.now },
+    isOnline: { type: Boolean, default: false },
+
   },
   {
     timestamps: true,

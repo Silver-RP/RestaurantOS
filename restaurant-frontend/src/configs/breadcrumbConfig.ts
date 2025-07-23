@@ -22,5 +22,6 @@ export const breadcrumbConfig: Record<string, string> = {
     "/vouchers": "Chương trình khuyến mãi",    
     "/profile/my-reservation": "Lịch sử đặt bàn",
     "/reservation/lookup-reservation": "Tra cứu đặt bàn",
+    "/foods": "Thực đơn",
   };
   

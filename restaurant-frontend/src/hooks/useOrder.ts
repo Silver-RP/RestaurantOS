@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   getOrderById,
+  sendInvoiceEmail,
   createOrder,
   cancelOrder,
   placeDirectOrder,
@@ -13,6 +14,7 @@ import {
   changePaymentMethod,
   getUserOrders,
 } from '@/api/OrderApi';
+import { retryReservationPayment, changeReservationPaymentMethod } from '@/api/ReservationApi';
 import { checkIsLoggedIn } from './useCart';
 import {
   OrderQueryParams,
@@ -22,6 +24,13 @@ import {
 } from '../types/Order.type';
 import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
+
+interface ChangePaymentMethodPayload {
+  objectId: string;
+  paymentMethod: string;
+  objectType: 'order' | 'reservation';
+}
+
 
 export const useOrders = (params: OrderQueryParams) => {
   return useQuery({
@@ -106,6 +115,21 @@ export const useRequestReturn = () => {
   });
 };
 
+export const useSendInvoiceEmail = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ orderId, email }: { orderId: string; email?: string }) =>
+      sendInvoiceEmail(orderId, email),
+    onSuccess: () => {
+      toast.success('Gửi hóa đơn thành công');
+      queryClient.invalidateQueries({ queryKey: ['order'] });
+    },
+    onError: (error: AxiosError<{ message: string }>) => {
+      toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi gửi hóa đơn');
+    }
+  });
+}
+
 export const useUpdateOrderStatus = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -154,47 +178,70 @@ export const useHandleRetryPayment = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ orderId }: { orderId: string; }) =>
-      retryPayment(orderId),
+    mutationFn: async ({ type, id }: { type: 'order' | 'reservation'; id: string }) => {
+      if (type === 'order') {
+        return retryPayment(id);
+      } else if (type === 'reservation') {
+        return retryReservationPayment(id);
+      } else {
+        throw new Error('Loại thanh toán không hợp lệ');
+      }
+    },
     onSuccess: (res) => {
       if (res.postPayment?.redirectUrl) {
         window.location.href = res.postPayment.redirectUrl;
         return;
       }
+      toast.success('Thanh toán lại thành công');
       queryClient.invalidateQueries({ queryKey: ['orders'] });
-      queryClient.invalidateQueries({ queryKey: ['all-orders'] });
-      queryClient.invalidateQueries({ queryKey: ['order'] });
-      toast.success('Thanh toán thành công');
+      queryClient.invalidateQueries({ queryKey: ['reservations'] });
     },
     onError: (error: any) => {
       const errorMessage =
-        error.response?.data?.message ||
-        'Có lỗi xảy ra khi thanh toán';
+        error.response?.data?.message || 'Có lỗi xảy ra khi thanh toán lại';
       toast.error(errorMessage);
     },
   });
-}
+};
 
 export const useHandleChangePaymentMethod = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
-    mutationFn: ({ orderId, paymentMethod }: { orderId: string; paymentMethod: string }) =>
-      changePaymentMethod(orderId, paymentMethod),
-    onSuccess: (res) => {
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
-      queryClient.invalidateQueries({ queryKey: ['all-orders'] });
-      queryClient.invalidateQueries({ queryKey: ['order'] });
+    mutationFn: async ({ objectType, objectId, paymentMethod }: ChangePaymentMethodPayload) => {
+      console.log('Changing payment method:', { objectType, objectId, paymentMethod });
+      if (objectType === 'order') {
+        return changePaymentMethod(objectId, paymentMethod); 
+      } else if (objectType === 'reservation') {
+        return changeReservationPaymentMethod(objectId, paymentMethod); 
+      } else {
+        throw new Error('Loại thanh toán không hợp lệ');
+      }
+    },
+
+    onSuccess: (res, variables) => {
+      const { objectType } = variables;
+
+      if (objectType === 'order') {
+        queryClient.invalidateQueries({ queryKey: ['orders'] });
+        queryClient.invalidateQueries({ queryKey: ['all-orders'] });
+        queryClient.invalidateQueries({ queryKey: ['order'] });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ['reservations'] });
+        queryClient.invalidateQueries({ queryKey: ['all-reservations'] });
+        queryClient.invalidateQueries({ queryKey: ['reservation'] });
+      }
+
       toast.success('Thay đổi phương thức thanh toán thành công');
       console.log('Change payment method response:', res);
-      console.log('Change Bankingresponse:', res.postPayment?.bankingInfo);
+      console.log('Banking info:', res.postPayment?.bankingInfo);
 
       setTimeout(() => {
-      if (res.postPayment?.redirectUrl) {
-        window.location.href = res.postPayment.redirectUrl;
-        return;
-      }
-    }, 2000)},
+        if (res.postPayment?.redirectUrl) {
+          window.location.href = res.postPayment.redirectUrl;
+        }
+      }, 2000);
+    },
+
     onError: (error: any) => {
       const errorMessage =
         error.response?.data?.message ||
@@ -202,4 +249,4 @@ export const useHandleChangePaymentMethod = () => {
       toast.error(errorMessage);
     },
   });
-}
+};

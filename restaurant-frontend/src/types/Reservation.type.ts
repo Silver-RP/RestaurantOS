@@ -48,15 +48,16 @@ export interface ReservationOrderItem {
 }
 
 export type ReservationFormData = {
-  full_name: string;       
+  full_name: string;
   phone: string;
   email: string;
   date: string;
   time: string;
   number_of_people: number;
   note: string;
-  table_type: string;      
+  table_type: string;
   seatingName: string;
+  tableCategory?: string; // Loại bàn thực tế: 'vip', 'group', 'standard', 'quiet'
   menu: string;
   selectedItems: ReservationOrderItem[];
 };

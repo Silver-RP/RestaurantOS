@@ -18,6 +18,7 @@ export interface ITable extends mongoose.Document {
 
   isQuietZone?: boolean;
   isAvailable: boolean;
+  allowBooking: boolean; // Trạng thái admin điều khiển
 
   description?: string;
   position?: {

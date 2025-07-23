@@ -48,7 +48,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
   }, [data?.order]);
 
   const handleRetryPayment = () => {
-    retryPaymentMutate({ orderId });
+    retryPaymentMutate({ type: 'order', id: orderId }); 
   };
   const handleChangePaymentMethod = () => {
     setShowSelector(true);
@@ -57,7 +57,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
   const handleConfirmChangePaymentMethod = () => {
     if (!selectedMethod || selectedMethod === data?.order?.payment_method)
       return;
-    changePaymentMethodMutate({ orderId, paymentMethod: selectedMethod });
+    changePaymentMethodMutate({ objectId: orderId, paymentMethod: selectedMethod, objectType: 'order' });
   };
 
   useEffect(() => {
@@ -148,6 +148,12 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
     onClose();
     navigate(`/foods/${slug}`);
   };
+
+  const handleNavigateToDetails = (slug: string, state?: any) => {
+    onClose();
+    navigate(`/foods/${slug}`, { state });
+  };
+  
 
   if (isLoading || retrying || changingMethod)
     return (
@@ -588,10 +594,21 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                               <span className="font-semibold">Số lượng:</span>{' '}
                               {item.quantity}
                             </p>
-                            <p>
-                              <span className="font-semibold">Tổng:</span>{' '}
-                              {formatPrice(item.total_amount)}
-                            </p>
+                            <div className="flex justify-between items-center">
+                              <p>
+                                <span className="font-semibold">Tổng:</span>{' '}
+                                {formatPrice(item.total_amount)}
+                              </p>
+                              <button
+                                className="ml-64 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium px-4 py-1 rounded"
+                                onClick={() =>
+                                  handleNavigateToDetails(item.dish_id?.slug || '', { openReview: true })
+                                }
+                              >
+                                Đánh giá
+                              </button>
+                            </div>
+
                           </div>
                           <div className="space-y-1 md:text-right flex-1">
                             {item.note && (

@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type TableStatus = 'available' | 'reserved' | 'selected';
+export type TableStatus = 'available' | 'reserved' | 'selected' | 'booked';
 export type TableType =
   | 'standard'
   | 'group'
@@ -23,12 +23,14 @@ interface TableItemProps {
 
 const getBorderColor = (status: TableStatus) => {
   if (status === 'selected') return 'border-yellow-400';
+  if (status === 'booked') return 'border-red-500';
   if (status === 'reserved') return 'border-red-500';
   return 'border-green-500';
 };
 
 const getChairColor = (status: TableStatus) => {
   if (status === 'selected') return 'bg-yellow-400';
+  if (status === 'booked') return 'bg-red-400';
   if (status === 'reserved') return 'bg-red-400';
   return 'bg-green-400';
 };

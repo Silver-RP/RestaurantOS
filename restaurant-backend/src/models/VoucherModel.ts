@@ -4,7 +4,7 @@ import mongoosePaginate from 'mongoose-paginate-v2';
 export interface IVoucher extends Document {
   code: string;
   description?: string;
-  type: 'public' | 'private';
+  type: 'public' | 'private' | 'gift';
   discount_type: 'percent' | 'fixed';
   discount_value: number;
   max_discount_value?: number;
@@ -14,8 +14,8 @@ export interface IVoucher extends Document {
   start_date?: Date;
   end_date?: Date;
   status: 'active' | 'inactive' | 'expired' | 'out_of_stock' | 'deleted';
-  created_at?: Date;
-  updated_at?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface IVoucherDocument extends IVoucher {}
@@ -27,7 +27,7 @@ const VoucherSchema = new Schema<IVoucher>(
     type: { 
       type: String, 
       required: true, 
-      enum: ['public', 'private'],
+      enum: ['public', 'private', 'gift'],
       default: 'public'
     },
     discount_type: { type: String, required: true, enum: ['percent', 'fixed'] },

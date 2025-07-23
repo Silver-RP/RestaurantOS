@@ -9,15 +9,14 @@ import Cookies from 'js-cookie';
 const PaymentFailed = () => {
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(window.location.search);
-  const orderId = searchParams.get('orderId');
-  const type = searchParams.get('type') || 'order'; 
+  const id = new URLSearchParams(window.location.search).get('id') || '';
+  const type = (searchParams.get('type') || 'order') as 'order' | 'reservation'; 
 
   const { mutate: retryPaymentMutate, isPending: retrying } =
     useHandleRetryPayment();
 
   const handleRetryPayment = () => {
-    console.log('Retrying payment for:', orderId);
-    retryPaymentMutate({ orderId: orderId || '' });
+    retryPaymentMutate({ type, id });
   };
 
   const isReservation = type === 'reservation';
@@ -84,7 +83,7 @@ const PaymentFailed = () => {
               const userInfo = Cookies.get('userInfo');
               const targetPath = isReservation
                 ? userInfo
-                  ? '/profile/reservations'
+                  ? '/profile/my-reservation'
                   : '/reservation/lookup-reservation'
                 : userInfo
                   ? '/profile/orders'

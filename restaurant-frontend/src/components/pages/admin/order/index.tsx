@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useRef, useEffect } from 'react';
 import Invoice from '../invoice/templateInvoice';
+import InvoiceExport from '../invoice/templateExport';
 import { useSearchParams } from 'react-router-dom';
 import {
   FaSort,
@@ -10,7 +10,9 @@ import {
   FaEye,
   FaEllipsisV,
 } from 'react-icons/fa';
+import { BsDownload, BsSend } from 'react-icons/bs';
 import { useAllOrders } from '@/hooks/useOrder';
+import SendInvoiceModal from '../invoice/SendInvoiceModal';
 import AdminPagination from '../AdminPagination';
 import OrderFilterPanel from './OrderFilterPanel';
 import OrderDetail from './OrderDetail';
@@ -22,6 +24,30 @@ import {
   getStatusText,
   getStatusColor,
 } from '@/components/pages/admin/order/OrderCommon';
+import html2pdf from 'html2pdf.js';
+import html2canvasPro from 'html2canvas-pro';
+
+const forceBasicColors = (element: HTMLElement) => {
+  try {
+    const basicColorStyles = document.createElement('style');
+    basicColorStyles.id = 'basic-colors-override';
+    basicColorStyles.textContent = `
+      * {
+        color: auto;
+        background: transparent !important;
+      
+      }
+
+    `;
+
+    element.appendChild(basicColorStyles);
+
+    return basicColorStyles;
+  } catch (error) {
+    console.error('Error forcing basic colors:', error);
+    return null;
+  }
+};
 
 const OrderTable: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -30,11 +56,26 @@ const OrderTable: React.FC = () => {
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
   const [menuDirection, setMenuDirection] = useState<'down' | 'up'>('down');
-  const [menuPosition, setMenuPosition] = useState<{top: number, left: number} | null>(null);
+  const [menuPosition, setMenuPosition] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const [showInvoice, setShowInvoice] = useState(false);
   const [invoiceData, setInvoiceData] = useState<string | null>(null);
+  const [invoiceDataExport, setInvoiceDataExport] = useState<string | null>(
+    null,
+  );
+  const invoiceRef = useRef<HTMLDivElement>(null);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [invoiceReadyForPDF, setInvoiceReadyForPDF] = useState(false);
+  const [selectedOrderForEmail, setSelectedOrderForEmail] =
+    useState<AllOrder | null>(null);
+
+  const handleInvoiceReady = () => {
+    setInvoiceReadyForPDF(true);
+  };
 
   const {
     data: orders,
@@ -49,6 +90,114 @@ const OrderTable: React.FC = () => {
       searchParams as any as Iterable<[string, string]>,
     ),
   });
+
+  const exportPDF = async () => {
+    if (!invoiceRef.current || !invoiceDataExport) {
+      console.error('Invoice ref or data not found');
+      return;
+    }
+
+    try {
+      setIsGeneratingPDF(true);
+
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      const element = invoiceRef.current;
+
+      if (!element.innerHTML.trim()) {
+        console.error('Invoice content is empty');
+        return;
+      }
+      const clonedElement = element.cloneNode(true) as HTMLElement;
+
+      clonedElement.style.position = 'absolute';
+      clonedElement.style.left = '10px';
+      clonedElement.style.top = '0px';
+      clonedElement.style.width = '210mm';
+      clonedElement.style.minHeight = '297mm';
+      clonedElement.style.backgroundColor = 'white';
+      clonedElement.style.visibility = 'visible';
+      clonedElement.style.zIndex = '-1000';
+
+      document.body.appendChild(clonedElement);
+
+      const styleSheet = forceBasicColors(clonedElement);
+
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      const opt = {
+        margin: [0.5, 0.5, 0.5, 0.5],
+        filename: `invoice-${invoiceDataExport}.pdf`,
+        image: {
+          type: 'jpeg',
+          quality: 0.95,
+        },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          logging: false,
+          width: clonedElement.offsetWidth,
+          height: clonedElement.offsetHeight,
+          scrollX: 0,
+          scrollY: 0,
+          html2canvas: html2canvasPro || undefined,
+        },
+        jsPDF: {
+          unit: 'in',
+          format: 'a4',
+          orientation: 'portrait',
+          compress: true,
+        },
+        pagebreak: {
+          mode: ['avoid-all', 'css', 'legacy'],
+        },
+      };
+
+      await html2pdf().set(opt).from(clonedElement).save();
+      if (styleSheet && styleSheet.parentNode) {
+        styleSheet.parentNode.removeChild(styleSheet);
+      }
+      if (clonedElement.parentNode) {
+        clonedElement.parentNode.removeChild(clonedElement);
+      }
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      if (errorMessage.includes('oklch') || errorMessage.includes('color')) {
+        console.log('Có lỗi với màu sắc khi xuất PDF');
+      } else {
+        alert(`Có lỗi xảy ra khi xuất PDF: ${errorMessage}`);
+      }
+    } finally {
+      setIsGeneratingPDF(false);
+
+      const remainingStyles = document.getElementById('basic-colors-override');
+      if (remainingStyles) {
+        remainingStyles.remove();
+      }
+    }
+  };
+
+  const handleExportPDF = async (orderId: string) => {
+    try {
+      setInvoiceDataExport(orderId); // Sử dụng state riêng cho export
+      setInvoiceReadyForPDF(true);
+      handleMenuClose();
+    } catch (error) {
+      console.error('Error preparing PDF export:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (invoiceReadyForPDF && invoiceDataExport && invoiceRef.current) {
+      exportPDF();
+      setInvoiceReadyForPDF(false);
+    }
+  }, [invoiceReadyForPDF, invoiceDataExport]);
 
   const handleEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -211,6 +360,11 @@ const OrderTable: React.FC = () => {
   const handleMenuClose = () => {
     setMenuOpenId(null);
     setMenuPosition(null);
+  };
+
+  const handleOpenSendInvoiceModal = (order: AllOrder) => {
+    setSelectedOrderForEmail(order);
+    handleMenuClose();
   };
 
   return (
@@ -404,7 +558,7 @@ const OrderTable: React.FC = () => {
                       </button>
                       <div className="relative inline-block">
                         <button
-                          ref={el => (buttonRefs.current[order._id] = el)}
+                          ref={(el) => (buttonRefs.current[order._id] = el)}
                           onClick={() => handleMenuToggle(order._id)}
                           className="text-gray-600 hover:text-gray-900 p-1 rounded hover:bg-gray-100"
                           title="Tùy chọn"
@@ -420,38 +574,39 @@ const OrderTable: React.FC = () => {
                               top: menuPosition.top,
                               left: menuPosition.left,
                               zIndex: 9999,
-                              minWidth: 180
+                              minWidth: 180,
                             }}
                             className="bg-white border border-gray-200 rounded shadow-lg overflow-hidden animate-fade-in"
                           >
                             <button
                               className="flex items-center gap-2 w-full text-left px-5 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
                               onClick={() => {
+                                setInvoiceReadyForPDF(false);
                                 setInvoiceData(order._id);
                                 setShowInvoice(true);
                                 handleMenuClose();
                               }}
                             >
-                              Xem hóa đơn
+                              <FaEye className="text-gray-500" /> Xem hóa đơn
                             </button>
                             <button
                               className="flex items-center gap-2 w-full text-left px-5 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
-                              onClick={() => {
-                                // TODO: Thêm logic xuất PDF
-                                handleMenuClose();
-                              }}
+                              onClick={() => handleExportPDF(order._id)}
+                              disabled={isGeneratingPDF}
                             >
-                              Xuất file PDF
+                              <BsDownload className="text-gray-500" />
+                              {isGeneratingPDF
+                                ? 'Đang xuất PDF...'
+                                : 'Xuất file PDF'}
                             </button>
                             <button
                               className="flex items-center gap-2 w-full text-left px-5 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
-                              onClick={() => {
-                                // TODO: Thêm logic gửi hóa đơn
-                                handleMenuClose();
-                              }}
+                              onClick={() => handleOpenSendInvoiceModal(order)}
                             >
-                              Gửi hóa đơn
+                              <BsSend className="text-gray-500" />
+                              Gửi hóa đơn 
                             </button>
+
                           </div>
                         )}
                       </div>
@@ -488,17 +643,45 @@ const OrderTable: React.FC = () => {
       {/* Popup hóa đơn */}
       {showInvoice && invoiceData && (
         <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black bg-opacity-40">
-          <div className="bg-white rounded shadow-[0_0_10px_5px_rgba(0,0,0,0.2)] max-w-4xl w-full max-h-[90vh] overflow-y-auto relative">
+          <div className="relative max-w-4xl w-full">
             <button
-              className="absolute top-2 right-2 text-2xl text-gray-500 hover:text-red-600 z-10"
+              className="absolute top-2 right-6 text-3xl text-gray-500 hover:text-red-600 z-10 "
               onClick={() => setShowInvoice(false)}
             >
               ×
             </button>
-            <Invoice orderId={invoiceData} />
+
+            <div className="bg-white rounded shadow-[0_0_10px_5px_rgba(0,0,0,0.2)] max-h-[90vh] overflow-y-auto">
+              <Invoice orderId={invoiceData} />
+            </div>
           </div>
         </div>
       )}
+
+      {/* Ẩn Invoice để export PDF */}
+      <div
+        style={{
+          position: 'absolute',
+          left: '-9999px',
+          top: '-9999px',
+          width: '210mm',
+          backgroundColor: 'white',
+          visibility: 'hidden',
+        }}
+      >
+        {invoiceDataExport && (
+          <div
+            ref={invoiceRef}
+            style={{ color: 'black', backgroundColor: 'white' }}
+          >
+            <InvoiceExport
+              orderId={invoiceDataExport}
+              onReady={handleInvoiceReady}
+            />
+          </div>
+        )}
+      </div>
+
       {selectedOrderId && (
         <OrderDetail
           orderId={selectedOrderId}
@@ -507,9 +690,16 @@ const OrderTable: React.FC = () => {
         />
       )}
 
+      <SendInvoiceModal
+        orderId={selectedOrderForEmail?._id || ''}
+        isOpen={!!selectedOrderForEmail}
+        onClose={() => setSelectedOrderForEmail(null)}
+        defaultEmail={selectedOrderForEmail?.user_id?.email || ''}
+      />
+
       <ToastConfigAdmin />
     </main>
   );
 };
 
-export default OrderTable;  
+export default OrderTable;

@@ -17,10 +17,11 @@ export interface ITable {
   floor: number;
   zone: TableZone;
   isAvailable: boolean;
+  allowBooking: boolean;
+  isBooked: boolean;
   position: {
     x: number;
     y: number;
   };
-  // Thông tin trạng thái booking/holding từ backend
   reservationStatus?: ITableReservationStatus | null;
 }

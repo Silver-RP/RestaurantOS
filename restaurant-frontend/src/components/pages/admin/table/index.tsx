@@ -21,8 +21,8 @@ const TableManagement: React.FC = () => {
   const [confirmModal, setConfirmModal] = useState<{
     open: boolean;
     code: string | null;
-    isAvailable: boolean | null;
-  }>({ open: false, code: null, isAvailable: null });
+    allowBooking: boolean | null;
+  }>({ open: false, code: null, allowBooking: null });
 
   useEffect(() => {
     fetchTables({ search, sortBy, sortOrder, page });
@@ -49,20 +49,20 @@ const TableManagement: React.FC = () => {
 
   const handleRequestToggleAvailability = (
     code: string,
-    isAvailable: boolean,
+    allowBooking: boolean,
   ) => {
-    setConfirmModal({ open: true, code, isAvailable });
+    setConfirmModal({ open: true, code, allowBooking });
   };
 
   const handleConfirmToggle = () => {
     if (confirmModal.code) {
       toggleAvailability(confirmModal.code);
     }
-    setConfirmModal({ open: false, code: null, isAvailable: null });
+    setConfirmModal({ open: false, code: null, allowBooking: null });
   };
 
   const handleCancelToggle = () => {
-    setConfirmModal({ open: false, code: null, isAvailable: null });
+    setConfirmModal({ open: false, code: null, allowBooking: null });
   };
 
   return (
@@ -168,10 +168,18 @@ const TableManagement: React.FC = () => {
                 </th>
                 <th
                   className="px-4 py-2 cursor-pointer whitespace-nowrap"
-                  onClick={() => handleSort('isAvailable')}
+                  onClick={() => handleSort('allowBooking')}
                 >
                   <span className="flex items-center gap-1">
-                    Trạng thái {getSortIcon('isAvailable')}
+                    Cho phép đặt {getSortIcon('allowBooking')}
+                  </span>
+                </th>
+                <th
+                  className="px-4 py-2 cursor-pointer whitespace-nowrap"
+                  onClick={() => handleSort('isBooked')}
+                >
+                  <span className="flex items-center gap-1">
+                    Đang có khách đặt {getSortIcon('isBooked')}
                   </span>
                 </th>
                 <th className="px-4 py-2">Hành động</th>
@@ -190,15 +198,28 @@ const TableManagement: React.FC = () => {
                   <td className="px-4 py-2">{table.floor}</td>
                   <td className="px-4 py-2">{table.zone}</td>
                   <td className="px-4 py-2">
-                    {table.isAvailable ? (
+                    {table.allowBooking ? (
                       <span className="px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 flex items-center gap-1">
                         <FaCheck size={12} />
-                        Được đặt
+                        Cho phép đặt
                       </span>
                     ) : (
-                      <span className="px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 flex items-center gap-1">
+                      <span className="px-2 py-1 rounded-full text-xs font-semibold bg-gray-200 text-gray-800 flex items-center gap-1">
                         <FaTimes size={12} />
-                        Không đặt được
+                        Không cho đặt
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-2">
+                    {table.isBooked ? (
+                      <span className="px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 flex items-center gap-1">
+                        <FaCheck size={12} />
+                        Đang có khách đặt
+                      </span>
+                    ) : (
+                      <span className="px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 flex items-center gap-1">
+                        <FaTimes size={12} />
+                        Trống
                       </span>
                     )}
                   </td>
@@ -216,13 +237,13 @@ const TableManagement: React.FC = () => {
                       onClick={() =>
                         handleRequestToggleAvailability(
                           table.code,
-                          table.isAvailable,
+                          table.allowBooking,
                         )
                       }
                       className={`relative group px-3 py-1 rounded text-xs font-semibold focus:outline-none transition-colors
-                        ${table.isAvailable ? 'bg-green-500 text-white hover:bg-green-600' : 'bg-gray-400 text-white hover:bg-gray-500'}`}
+                        ${table.allowBooking ? 'bg-green-500 text-white hover:bg-green-600' : 'bg-gray-400 text-white hover:bg-gray-500'}`}
                     >
-                      {table.isAvailable ? (
+                      {table.allowBooking ? (
                         <>
                           <FaTimes className="inline mr-1" /> Không cho đặt
                         </>
@@ -232,7 +253,7 @@ const TableManagement: React.FC = () => {
                         </>
                       )}
                       <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 normal-case">
-                        {table.isAvailable
+                        {table.allowBooking
                           ? 'Chuyển sang không cho đặt'
                           : 'Chuyển sang cho phép đặt'}
                       </span>
@@ -248,10 +269,10 @@ const TableManagement: React.FC = () => {
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm">
             <h2 className="text-lg font-semibold mb-4 text-gray-800">
-              Xác nhận thay đổi trạng thái đặt bàn
+              Xác nhận thay đổi trạng thái cho phép đặt bàn
             </h2>
             <p className="mb-6 text-gray-700">
-              {confirmModal.isAvailable
+              {confirmModal.allowBooking
                 ? 'Bạn có chắc chắn muốn chuyển bàn này sang trạng thái KHÔNG cho phép đặt?'
                 : 'Bạn có chắc chắn muốn chuyển bàn này sang trạng thái CHO PHÉP ĐẶT?'}
             </p>
@@ -264,7 +285,7 @@ const TableManagement: React.FC = () => {
               </button>
               <button
                 onClick={handleConfirmToggle}
-                className={`px-4 py-2 rounded text-white ${confirmModal.isAvailable ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'}`}
+                className={`px-4 py-2 rounded text-white ${confirmModal.allowBooking ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'}`}
               >
                 Xác nhận
               </button>

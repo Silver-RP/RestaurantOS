@@ -12,7 +12,7 @@ interface VoucherFilterParams {
   search?: string;
   sort?: string;
   status?: 'active' | 'inactive' | 'expired' | 'out_of_stock';
-  type?: 'public' | 'private';
+  type?: 'public' | 'private' | 'gift';
   discount_type?: 'percent' | 'fixed';
   min_discount_value?: number;
   max_discount_value?: number;
@@ -108,15 +108,6 @@ export default class VoucherService {
       sort: sortOption,
     });
 
-    // Tính lại status cho từng voucher
-    await Promise.all(result.docs.map(async (voucher) => {
-      const newStatus = this.calcVoucherStatus(voucher.toObject());
-      if (voucher.status !== newStatus) {
-        voucher.status = newStatus;
-        await voucher.save();
-      }
-    }));
-
     return result;
   }
 
@@ -194,15 +185,6 @@ export default class VoucherService {
       sort: sortOption,
     });
 
-    // Tính lại status cho từng voucher
-    await Promise.all(result.docs.map(async (voucher) => {
-      const newStatus = this.calcVoucherStatus(voucher.toObject());
-      if (voucher.status !== newStatus) {
-        voucher.status = newStatus;
-        await voucher.save();
-      }
-    }));
-
     return result;
   }
 
@@ -210,13 +192,6 @@ export default class VoucherService {
     if (!Types.ObjectId.isValid(id)) throw new Error('Invalid voucher id');
     const voucher = await Voucher.findById(id);
     if (!voucher) return null;
-
-    // Tính lại status
-    const newStatus = this.calcVoucherStatus(voucher.toObject());
-    if (voucher.status !== newStatus) {
-      voucher.status = newStatus;
-      await voucher.save();
-    }
 
     const voucherObject: VoucherWithUsers = voucher.toObject();
 
@@ -268,7 +243,15 @@ export default class VoucherService {
     const voucher = await Voucher.findById(id);
     if (!voucher) throw new Error('Voucher not found');
     if (voucher.status !== 'deleted') throw new Error('Voucher is not deleted');
-    const newStatus = this.calcVoucherStatus(voucher.toObject());
+    const now = new Date();
+    let newStatus: 'active' | 'inactive' | 'expired' | 'out_of_stock';
+
+    if (voucher.end_date && now > new Date(voucher.end_date)) {
+      newStatus = 'expired';
+    } else {
+      newStatus = this.calcVoucherStatus(voucher.toObject());
+    }
+
     return Voucher.findByIdAndUpdate(id, { status: newStatus }, { new: true });
   }
 
@@ -293,9 +276,7 @@ export default class VoucherService {
     }
   }
 
-  // Hàm tính toán status theo model
-  static calcVoucherStatus(data: Partial<IVoucher>): 'active' | 'inactive' | 'expired' | 'out_of_stock' | 'deleted' {
-    if (data.status === 'deleted') return 'deleted';
+  static calcVoucherStatus(data: Partial<IVoucher>): 'active' | 'inactive' | 'expired' | 'out_of_stock' {
     const now = new Date();
     if (
       typeof data.quantity === 'number' &&
@@ -315,40 +296,9 @@ export default class VoucherService {
   }
 
   static async getPublicActiveVouchers(page = 1, limit = 12) {
-    const now = new Date();
-    const query: any = {
-      type: 'public',
-      status: { $in: ['active', 'out_of_stock'] },
-      $and: [
-        {
-          $or: [
-            { start_date: { $exists: false } },
-            { start_date: { $lte: now } },
-            { start_date: null },
-          ],
-        },
-        {
-          $or: [
-            { end_date: { $exists: false } },
-            { end_date: { $gte: now } },
-            { end_date: null },
-          ],
-        },
-      ],
-    };
+    const query = { type: 'public', status: { $in: ['active', 'out_of_stock'] } };
     const sortOption = { createdAt: -1 };
-    const result = await (Voucher as mongoose.PaginateModel<IVoucherDocument>).paginate(query, { page, limit, sort: sortOption });
-
-    // Tính lại status cho từng voucher
-    await Promise.all(result.docs.map(async (voucher) => {
-      const newStatus = this.calcVoucherStatus(voucher.toObject());
-      if (voucher.status !== newStatus) {
-        voucher.status = newStatus;
-        await voucher.save();
-      }
-    }));
-
-    return result;
+    return await (Voucher as mongoose.PaginateModel<IVoucherDocument>).paginate(query, { page, limit, sort: sortOption });
   }
 
   static async saveVoucherForUser(userId: string, voucherId: string): Promise<IUserVoucher> {
@@ -372,57 +322,32 @@ export default class VoucherService {
 
   static async getUserVouchers(userId: string) {
     if (!Types.ObjectId.isValid(userId)) throw new Error('Invalid user id');
-    const userVouchers = await UserVoucher.find({ user_id: userId })
-      .populate<{ voucher_id: IVoucherDocument }>('voucher_id')
-      .lean(); // Use lean for better performance
-
-    // Tính lại status cho từng voucher và cập nhật user_voucher nếu cần
-    await Promise.all(userVouchers.map(async (uv) => {
-      if (uv.voucher_id) {
-        const newStatus = this.calcVoucherStatus(uv.voucher_id);
-        let userVoucherStatus = uv.status;
-        if (newStatus === 'expired' && uv.status !== 'used' && uv.status !== 'expired') {
-          // Nếu voucher hết hạn và user chưa dùng thì user_voucher thành expired
-          await UserVoucher.updateOne({ _id: uv._id }, { status: 'expired' });
-          uv.status = 'expired';
-        } else if (newStatus === 'out_of_stock' && uv.status !== 'used' && uv.status !== 'out_of_stock') {
-          // Nếu voucher hết lượt và user chưa dùng thì user_voucher thành out_of_stock
-          await UserVoucher.updateOne({ _id: uv._id }, { status: 'out_of_stock' });
-          uv.status = 'out_of_stock';
-        } else if ((newStatus === 'active' || newStatus === 'inactive') && (uv.status === 'expired' || uv.status === 'out_of_stock')) {
-          // Nếu voucher còn hạn/lượt mà user_voucher đang là expired/out_of_stock thì chuyển về saved
-          await UserVoucher.updateOne({ _id: uv._id }, { status: 'saved' });
-          uv.status = 'saved';
-        }
-        // Đồng bộ trạng thái voucher
-        if (uv.voucher_id.status !== newStatus) {
-          await Voucher.findByIdAndUpdate(uv.voucher_id._id, { status: newStatus });
-          uv.voucher_id.status = newStatus;
-        }
-      }
-    }));
-
+    
     const now = new Date();
+
+    // Lấy tất cả user vouchers của user và populate thông tin voucher
+    const userVouchers = await UserVoucher.find({ 
+      user_id: userId,
+      status: 'saved' // Chỉ lấy những voucher chưa sử dụng
+    })
+    .populate({
+      path: 'voucher_id',
+      match: {
+        // Điều kiện cho voucher
+        status: { $nin: ['deleted', 'expired', 'out_of_stock'] }, // Không lấy voucher đã xóa, hết hạn hoặc hết lượt
+        $or: [
+          { end_date: { $gt: now } }, // Còn hạn sử dụng
+          { end_date: null } // Hoặc không có ngày hết hạn
+        ]
+      }
+    })
+    .lean();
+
+    // Lọc bỏ những voucher không thỏa mãn điều kiện populate
     return userVouchers
-      .filter((uv) => {
-        if (!uv.voucher_id) return false;
-        const v = uv.voucher_id;
-        // Nếu là private và inactive thì vẫn trả về
-        if (v.type === 'private' && v.status === 'inactive') return true;
-        if (v.status === 'active') return true;
-        if (v.status === 'out_of_stock') {
-          // Chỉ hiện nếu trong khoảng ngày hợp lệ
-          const start = v.start_date ? new Date(v.start_date) : null;
-          const end = v.end_date ? new Date(v.end_date) : null;
-          if ((start && now < start) || (end && now > end)) return false;
-          return true;
-        }
-        // Ẩn các trạng thái khác
-        return false;
-      })
+      .filter((uv) => uv.voucher_id) // Chỉ lấy những voucher còn tồn tại và thỏa điều kiện
       .map((uv) => {
-        const { voucher_id, ...uvDataRaw } = uv;
-        const uvData = uvDataRaw as { createdAt?: Date; updatedAt?: Date; status: string; _id: any };
+        const { voucher_id, ...uvData } = uv;
         return {
           ...voucher_id,
           user_voucher_status: uvData.status,
@@ -436,7 +361,7 @@ export default class VoucherService {
   static async assignVoucherToUsers(voucher: IVoucherDocument, userIds: string[]) {
     if (!voucher || !Array.isArray(userIds) || userIds.length === 0) return;
 
-    await this.createUserVouchersForVoucher((voucher._id as any).toString(), userIds);
+    await this.createUserVouchersForVoucher(voucher._id.toString(), userIds);
 
     const users = await User.find({ _id: { $in: userIds } }).select('email').lean();
     if (!users || users.length === 0) return;

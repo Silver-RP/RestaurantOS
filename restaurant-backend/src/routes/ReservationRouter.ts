@@ -21,5 +21,4 @@ router.patch('/:id/restore', ReservationController.restore);
 
 router.patch('/:reservationId/confirm', ReservationController.confirmReservation);
 
-
 export default router;

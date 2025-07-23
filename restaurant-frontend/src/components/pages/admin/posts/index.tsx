@@ -14,7 +14,6 @@ const PostsPage = () => {
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [sortField, setSortField] = useState(searchParams.get('sortBy') || '');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>(searchParams.get('sortOrder') as 'asc' | 'desc' || 'asc');
-  const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || '');
   
   const { mutate: deletePost, isPending: isDeleting } = useMutation({
     mutationFn: PostsApi.deletePost,
@@ -50,17 +49,12 @@ const PostsPage = () => {
       } else {
         newParams.delete('search');
       }
-      if (statusFilter) {
-        newParams.set('status', statusFilter);
-      } else {
-        newParams.delete('status');
-      }
       newParams.set('page', '1');
       setSearchParams(newParams);
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [searchTerm, statusFilter, searchParams, setSearchParams]);
+  }, [searchTerm, searchParams, setSearchParams]);
 
   const handleSort = (field: string) => {
     const newOrder = sortField === field && sortOrder === 'asc' ? 'desc' : 'asc';
@@ -117,23 +111,14 @@ const PostsPage = () => {
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto">
         <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <h2 className="text-2xl font-bold text-gray-900">Tổng quan</h2>
-          <div className="flex items-center gap-2">
-            <Link
-              to="/admin/posts/create"
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-            >
-              <FiPlus className="mr-2" />
-              Thêm bài viết mới
-            </Link>
-            <Link
-              to="/admin/posts/report"
-              className="inline-flex items-center px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-400 transition-colors"
-              style={{ marginLeft: 8 }}
-            >
-              Báo cáo bài viết
-            </Link>
-          </div>
+          <h2 className="text-2xl font-bold text-gray-900">Quản lý Bài viết</h2>
+          <Link
+            to="/admin/posts/create"
+            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+          >
+            <FiPlus className="mr-2" />
+            Thêm bài viết mới
+          </Link>
         </div>
 
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -157,15 +142,6 @@ const PostsPage = () => {
                     <FiSearch size={18} />
                   </button>
                 </div>
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="px-4 py-2 border rounded-md"
-                >
-                  <option value="">Tất cả trạng thái</option>
-                  <option value="published">Đã đăng</option>
-                  <option value="draft">Nháp</option>
-                </select>
               </div>
             </div>
           </div>

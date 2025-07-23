@@ -1,9 +1,20 @@
 import { Schema, model, Document, Types, PaginateModel } from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
+import { IAddress } from './AddressModel';
+import { IOrderDetail } from './OrderDetailModel';
+
+export interface IOrderPopulated extends Omit<IOrder, 'address_id'> {
+  address_id: IAddress | null | undefined;
+  order_items: IOrderDetail[];
+}
 
 export interface IOrder extends Document {
   _id: Types.ObjectId;
-  user_id: Types.ObjectId;
+  user_id: {
+    _id: Types.ObjectId;
+    email: string;
+    name?: string;
+  };
   cashier_order_id?: Types.ObjectId | null;
   address_id: Types.ObjectId | null | undefined;
   payment_method: 'CASH' | 'BANKING' | 'VNPAY' | 'MOMO' | 'MOMO_ATM' | 'CREDIT_CARD';

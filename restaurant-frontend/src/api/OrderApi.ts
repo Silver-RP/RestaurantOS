@@ -8,7 +8,6 @@ import {
   OrderDetailResponse,
   PlaceOrderRequest,
 } from '../types/Order.type';
-import { SearchParams } from '@/types/search.type';
 
 export async function getOrders(
   params?: OrderQueryParams,
@@ -22,6 +21,13 @@ export async function getOrderById(
 ): Promise<OrderDetailResponse> {
   const res = await api.get(`/order/${orderId}`);
   return res.data;
+}
+
+export async function sendInvoiceEmail(
+  orderId: string, email?: string
+): Promise<void> {
+ const res = await api.post(`/order/send-invoice/${orderId}`, { email });
+ return res.data;
 }
 
 export async function createOrder(data: CreateOrderRequest) {
