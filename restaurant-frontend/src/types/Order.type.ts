@@ -90,7 +90,7 @@ interface User {
 
 export interface Order {
   postPayment: {
-    paymentId: string;
+    paymentId?: string;
     redirectUrl?: string;
     bankingInfo?: {
       accountNumber: string;
