@@ -6,7 +6,7 @@ import Payment from '../models/PaymentModel';
 import { capturePayPalOrder } from '../services/payments/PaypalService';
 import ReservationService from '../services/ReservationService';
 import { IUser } from '../models/UserModel';
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 
 const CLIENT_BASE_URL = process.env.CLIENT_BASE_URL || 'http://localhost:5173';
 
@@ -156,12 +156,16 @@ export const paypalReturn = async (req: Request, res: Response): Promise<any> =>
 
 export const updatePaymentStatus = async (req: Request, res: Response): Promise<any> => {
   try {
+
+    console.log('Update payment status request body:', req.body);
+    console.log('Update payment status request params:', req.params);
+
     const { paymentId } = req.params;
     const { paidAmount, transactionCode } = req.body;
     const userId = (req.user as IUser).id as Types.ObjectId;
 
-    if (!paymentId || !paidAmount) {
-      return res.status(400).send('Missing paymentId or paidAmount');
+    if (!paymentId || !mongoose.Types.ObjectId.isValid(paymentId) || !paidAmount ) {
+      throw new Error(`Invalid paymentId: ${paymentId}`);
     }
 
     const updated = await OrderService.markPaymentPaid(
