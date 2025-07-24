@@ -285,67 +285,6 @@ const LoyaltyService = {
       .populate('current_tier');
   },
 
-  // Kiểm tra và tạo voucher quà tặng khi đạt mốc chi tiêu hàng năm
-  async checkAndCreateGiftVouchers(userId: string, yearlySpending: number) {
-    const userObjectId = new Types.ObjectId(userId);
-    const currentYear = new Date().getFullYear().toString();
-    
-    // Lấy các định nghĩa milestone từ database (có populate voucher)
-    const milestoneDefinitions = await LoyaltyMilestoneDefinition.find({ is_active: true })
-      .populate('voucher_id')
-      .sort({ milestone_amount: 1 });
-    
-    // Tìm các mốc đã đạt được
-    const achievedMilestones = milestoneDefinitions.filter(milestone => 
-      yearlySpending >= milestone.milestone_amount && milestone.voucher_id
-    );
-
-    if (achievedMilestones.length === 0) return;
-
-    for (const milestone of achievedMilestones) {
-      // Kiểm tra xem user đã đạt mốc này trong năm này chưa
-      const existingMilestone = await LoyaltyMilestone.findOne({
-        user_id: userObjectId,
-        year: currentYear,
-        milestone_amount: milestone.milestone_amount
-      });
-
-      if (existingMilestone) {
-        // Đã đạt mốc này rồi, kiểm tra xem đã tạo voucher chưa
-        if (existingMilestone.voucher_created) continue;
-        
-        // Gán voucher cho user (voucher đã tồn tại, chỉ cần assign)
-        await VoucherService.assignVoucherToUsers(milestone.voucher_id, [userId]);
-        
-        // Cập nhật milestone đã tạo voucher
-        existingMilestone.voucher_created = true;
-        existingMilestone.voucher_id = milestone.voucher_id._id;
-        await existingMilestone.save();
-        
-        console.log(`[LOYALTY] Đã gán voucher ${milestone.voucher_id.code} cho user ${userId} khi đạt mốc ${milestone.milestone_amount}đ`);
-      } else {
-        // Lần đầu đạt mốc này, tạo milestone record
-        const newMilestone = await LoyaltyMilestone.create({
-          user_id: userObjectId,
-          year: currentYear,
-          milestone_amount: milestone.milestone_amount,
-          achieved_at: new Date(),
-          voucher_created: false
-        });
-
-        // Gán voucher cho user (voucher đã tồn tại, chỉ cần assign)
-        await VoucherService.assignVoucherToUsers(milestone.voucher_id, [userId]);
-        
-        // Cập nhật milestone đã tạo voucher
-        newMilestone.voucher_created = true;
-        newMilestone.voucher_id = milestone.voucher_id._id;
-        await newMilestone.save();
-        
-        console.log(`[LOYALTY] Đã gán voucher ${milestone.voucher_id.code} cho user ${userId} khi đạt mốc ${milestone.milestone_amount}đ`);
-      }
-    }
-  },
-
   // Lấy lịch sử các mốc đã đạt được của user
   async getUserMilestones(userId: string) {
     const userObjectId = new Types.ObjectId(userId);
@@ -393,11 +332,6 @@ const LoyaltyService = {
     }
     account.current_tier = newTier;
     await account.save();
-    
-    // Kiểm tra và tạo voucher quà tặng dựa trên chi tiêu năm hiện tại
-    const yearlySpending = account.yearly_spending[currentYear];
-    await this.checkAndCreateGiftVouchers(userId, yearlySpending);
-    
     // Ghi nhận transaction
     await LoyaltyTransaction.create({
       account_id: account._id,
