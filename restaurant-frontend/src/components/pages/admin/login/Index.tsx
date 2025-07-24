@@ -75,10 +75,17 @@ const AdminLoginPage = () => {
           navigate('/admin');
         });
     } catch (error) {
-      if (error instanceof AxiosError && error?.response?.data?.message) {
-        toast.error(error.response.data.message);
+      let message = 'Có lỗi xảy ra';
+      if (error instanceof AxiosError) {
+        message = error.response?.data?.message || message;
+      } else if (typeof error === 'string') {
+        message = error;
+      } else if (error && typeof error === 'object' && 'message' in error) {
+        message = (error as any).message;
       }
-    } finally {
+      toast.error(message);
+    }
+    finally {
       setIsSubmitting(false);
     }
   };
