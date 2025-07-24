@@ -99,7 +99,7 @@ class AuthController {
           username: name,
           avatar,
           rememberMe,
-        });
+        }, req);
 
       res.cookie('refreshToken', refreshToken, {
         httpOnly: true,

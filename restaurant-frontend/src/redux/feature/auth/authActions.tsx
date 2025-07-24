@@ -86,7 +86,6 @@ export const LogoutUser = createAsyncThunk(
   'auth/logout',
   async (_, { rejectWithValue }) => {
     try {
-      console.log('LogoutUser called action');
       const data = await apiRequest(`${BASE_URL}/auth/logout`, {}, 'POST');
       clearAuthCookies();
       return data;
