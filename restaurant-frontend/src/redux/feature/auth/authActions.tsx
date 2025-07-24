@@ -7,6 +7,7 @@ import {
   setRefreshToken,
   clearAuthCookies,
 } from '../../../utils/tokenHelpers';
+import { clearFavorites } from '../favorite/favoriteSlice';
 
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -81,12 +82,12 @@ export const LoginUser = createAsyncThunk(
   },
 );
 
-
 export const LogoutUser = createAsyncThunk(
   'auth/logout',
-  async (_, { rejectWithValue }) => {
+  async (_, { dispatch, rejectWithValue }) => {
     try {
       const data = await apiRequest(`${BASE_URL}/auth/logout`, {}, 'POST');
+      dispatch(clearFavorites());
       clearAuthCookies();
       return data;
     } catch (error: unknown) {
@@ -99,6 +100,7 @@ export const LogoutUser = createAsyncThunk(
     }
   },
 );
+
 
 export const LoginWithGoogle = createAsyncThunk(
   'auth/loginGoogle',
