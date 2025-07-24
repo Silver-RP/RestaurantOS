@@ -5,7 +5,7 @@ import { refreshAccessToken } from './AuthApi';
 import { toast } from 'react-toastify';
 
 const axiosInstance = axios.create({
-  baseURL: 'https://api-beefbeef-restaurant.onrender.com/api',
+  baseURL: 'http://localhost:4000/api',
   withCredentials: true,
 });
 

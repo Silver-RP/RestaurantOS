@@ -214,8 +214,8 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
                   title="Xem trước bài viết"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-indigo-600" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 4.5C7.305 4.5 3.302 7.918 2 12c1.302 4.082 5.305 7.5 10 7.5s8.698-3.418 10-7.5c-1.302-4.082-5.305-7.5-10-7.5zm0 12a4.5 4.5 0 110-9 4.5 4.5 0 010 9z"/>
-                    <circle cx="12" cy="12" r="2.5"/>
+                    <path d="M12 4.5C7.305 4.5 3.302 7.918 2 12c1.302 4.082 5.305 7.5 10 7.5s8.698-3.418 10-7.5c-1.302-4.082-5.305-7.5-10-7.5zm0 12a4.5 4.5 0 110-9 4.5 4.5 0 010 9z" />
+                    <circle cx="12" cy="12" r="2.5" />
                   </svg>
                 </button>
               </div>
@@ -301,9 +301,8 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`px-4 py-2 rounded-md text-sm text-white ${
-                  isSubmitting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
-                }`}
+                className={`px-4 py-2 rounded-md text-sm text-white ${isSubmitting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+                  }`}
               >
                 {isSubmitting ? 'Đang xử lý...' : initialData ? 'Cập nhật' : 'Thêm bài viết'}
               </button>
