@@ -153,7 +153,7 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <form onSubmit={handleSubmit} className="max-w-6xl mx-auto space-y-8">
+      <form onSubmit={handleSubmit} className=" space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Left Column */}
           <div className="md:col-span-2 space-y-6">
@@ -163,8 +163,9 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                className="w-full h-[40px] p-3 border border-gray-300 rounded shadow-sm focus:ring-blue-500 focus:border-blue-500"
                 required
+                placeholder='Nhập tiêu đề'
               />
             </div>
 
@@ -173,9 +174,10 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
               <textarea
                 value={desc}
                 onChange={(e) => setDesc(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                rows={4}
+                className="w-full p-3 border border-gray-300 rounded shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                rows={3}
                 required
+                placeholder='Nhâp mô tả'
               />
               <p className="mt-1 text-sm text-gray-500">Mô tả ngắn gọn về nội dung bài viết (tối đa 200 ký tự)</p>
             </div>
@@ -283,7 +285,6 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Hình ảnh <span className="text-red-500">*</span></label>
                   <ImageUploadPreview images={images} onChange={handleImageChange} onRemove={handleRemoveImage} />
                 </div>
               </div>
