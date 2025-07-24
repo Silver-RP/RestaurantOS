@@ -100,7 +100,7 @@ class AuthService {
 
     const user = await User.findOne({ email }).populate('roles', 'name');
     if (!user) {
-      throw new Error('Email not registered');
+      throw new Error('Email chưa đăng ký');
     }
     if (user.status === 'block') {
       throw new Error('Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.');
