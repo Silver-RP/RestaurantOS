@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import InputComponent from '@/components/pages/login/InputComponents';
-import ButtonComponent from '@/components/pages/login/ButtonComponents';
+import InputComponent from '@/components/pages/Login/InputComponents';
+import ButtonComponent from '@/components/pages/Login/ButtonComponents';
 
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../../../../redux/hook';
@@ -17,6 +17,8 @@ const AdminLoginPage = () => {
   const [formError, setFormError] = useState('');
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+
 
   useEffect(() => {
     emailRef.current?.focus();
@@ -42,10 +44,6 @@ const AdminLoginPage = () => {
     return passwordRegex.test(password);
   };
 
-  const isFormValid = (): boolean => {
-    return isEmailValid(formData.email) && isPasswordValid(formData.password);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
@@ -53,15 +51,19 @@ const AdminLoginPage = () => {
     const { email, password } = formData;
     const rememberMe = false;
 
+    let newErrors: { email?: string; password?: string } = {};
+  
     if (!isEmailValid(email)) {
-      setFormError('Email không hợp lệ');
-      return;
+      newErrors.email = 'Email không hợp lệ';
     }
-
+  
     if (!isPasswordValid(password)) {
-      setFormError(
-        'Mật khẩu cần ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt',
-      );
+      newErrors.password =
+        'Mật khẩu cần ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số';
+    }
+  
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
@@ -106,7 +108,7 @@ const AdminLoginPage = () => {
         <h1 className="text-white font-bold text-3xl mb-6">Đăng nhập</h1>
         <form onSubmit={handleSubmit}>
           <InputComponent
-            type="email"
+            type="text"
             value={formData.email}
             placeholder="Email"
             name="email"
@@ -116,6 +118,9 @@ const AdminLoginPage = () => {
               handleKeyDown(e, passwordRef)
             }
           />
+          {errors.email && (
+            <div className="text-red-500 text-sm text-left mt-1">{errors.email}</div>
+          )}
           <InputComponent
             type="password"
             value={formData.password}
@@ -127,11 +132,8 @@ const AdminLoginPage = () => {
               handleKeyDown(e, null)
             }
           />
-
-          {formError && (
-            <div className="text-red-500 text-sm text-left mt-2">
-              {formError}
-            </div>
+          {errors.password && (
+            <div className="text-red-500 text-sm text-left mt-1">{errors.password}</div>
           )}
 
           <div className="flex justify-between items-center mt-4 mb-3">
@@ -151,7 +153,7 @@ const AdminLoginPage = () => {
           <ButtonComponent
             htmlType="submit"
             text="Đăng nhập"
-            disabled={isSubmitting || !isFormValid()}
+            disabled={isSubmitting}
           />
         </form>
       </div>
