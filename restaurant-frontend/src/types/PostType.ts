@@ -29,7 +29,7 @@ export interface PostType {
   updatedAt: string;
   status: 'draft' | 'published';
   tags?: string[];
-  scheduledAt?: string; // Add scheduledAt field
+  scheduledAt?: Date; // Add scheduledAt field
 }
 
 export interface PostFormData {

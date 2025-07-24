@@ -16,23 +16,23 @@ export interface IOrder extends Document {
     name?: string;
   };
   cashier_order_id?: Types.ObjectId | null;
-  address_id: Types.ObjectId | null | undefined;
+  address_id: Types.ObjectId | IAddress | null | undefined;
   payment_method: 'CASH' | 'BANKING' | 'VNPAY' | 'MOMO' | 'MOMO_ATM' | 'CREDIT_CARD';
   delivery_type: 'DELIVERY' | 'PICKUP';
 
   status:
-    | 'ORDER_PLACED'
-    | 'ORDER_CONFIRMED'
-    | 'PENDING_PICKUP'
-    | 'PICKED_UP'
-    | 'IN_TRANSIT'
-    | 'DELIVERED'
-    | 'DELIVERY_FAILED'
-    | 'RETURN_REQUESTED'
-    | 'RETURN_APPROVED'
-    | 'RETURN_REJECTED'
-    | 'RETURNED'
-    | 'CANCELLED';
+  | 'ORDER_PLACED'
+  | 'ORDER_CONFIRMED'
+  | 'PENDING_PICKUP'
+  | 'PICKED_UP'
+  | 'IN_TRANSIT'
+  | 'DELIVERED'
+  | 'DELIVERY_FAILED'
+  | 'RETURN_REQUESTED'
+  | 'RETURN_APPROVED'
+  | 'RETURN_REJECTED'
+  | 'RETURNED'
+  | 'CANCELLED';
   shipping_fee: number;
   vat_amount: number;
   items_price: number;

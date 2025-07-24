@@ -37,12 +37,32 @@ import passport from 'passport';
 import cors from 'cors';
 import path from 'path';
 import CronJobService from './services/CronJobService';
-
+import { createServer} from 'http'; 
+import { Server } from 'socket.io'; 
+import { initSocket } from './socket/socket';
+import ChatRoutes from './routes/ChatRoutes'; 
 import { scheduleLoyaltyYearlyJob } from './cron/loyaltyYearlyJob';
 
 const app = express();
+const server = createServer(app);
 
-// Import file authSwagger để đăng ký metadata
+// Cấu hình Socket.io
+const io = new Server(server, {
+  cors: {
+    origin: [
+      "https://beefbeefrestaurant.io.vn", 
+      "http://localhost:5173",
+     
+    ],
+    credentials: true,
+    methods: ["GET", "POST"]
+  }
+});
+
+initSocket(io); 
+app.set('io', io); 
+
+
 import './swaggers/AuthSwagger';
 import './swaggers/OrderSwagger';
 import './swaggers/FoodSwagger';
@@ -65,11 +85,13 @@ app.use(
   cors({
     origin: [
       'https://beefbeefrestaurant.io.vn',   
-      'http://localhost:5173',         
+      'http://localhost:5173',
+      'http://localhost:3000'         
     ],
     credentials: true,
   })
 );
+app.use(cookieParser());
 app.engine('.hbs', engine({ extname: '.hbs', defaultLayout: false }));
 app.set('view engine', '.hbs');
 app.set('views', path.join(__dirname, 'views'));
@@ -112,9 +134,6 @@ const swaggerSpec = generateSwaggerSpec(allRoutes, swaggerDefinition);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use(passport.initialize());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
 
 app.get('/', (req, res) => {
   res.send('API is running...');
@@ -157,14 +176,15 @@ app.use('/api/address', AuthMiddleWare.verifyToken, AddressRouter);
 app.use('/api/payment', PaymentRoutes);
 app.use('/api/review', ReviewRoutes);
 app.use('/api/loyalty', LoyaltyRoutes);
-app.use('/api/review', ReviewRoutes);
-
+app.use('/api/chat', AuthMiddleWare.verifyToken, ChatRoutes);
 app.use('/api/ingredients', AuthMiddleWare.verifyToken, IngredientsRouter);
 app.use('/api/inventory', AuthMiddleWare.verifyToken, InventoryRoutes);
 app.use('/api/voucher', VoucherRoutes);
 app.use('/api/faq', AuthMiddleWare.verifyToken, FaqRoutes);
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
-  console.log('Mongo URI:', process.env.MONGO_URI);
+  console.log(`Mongo URI: ${process.env.MONGO_URI ? 'Connected' : 'Not configured'}`);
   console.log(`Swagger UI available at http://localhost:${port}/api-docs`);
+  console.log(`Socket.io server initialized`);
+  console.log(`Chat API available at http://localhost:${port}/api/chat`);
 });

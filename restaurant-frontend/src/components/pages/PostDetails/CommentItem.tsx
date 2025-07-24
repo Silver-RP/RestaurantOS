@@ -135,7 +135,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
             </form>
           ) : (
             <div className="mt-3 border border-[#034a6a] rounded-lg p-3 bg-transparent">
-              <p className="text-white text-base leading-relaxed">{comment.content}</p>
+              <p className="text-white text-base leading-relaxed break-words">{comment.content}</p>
             </div>
           )}
         </div>

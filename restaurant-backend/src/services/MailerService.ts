@@ -334,6 +334,57 @@ const MailerService = {
       console.error('Error sending invoice email:', error);
     }
   },
+
+  async sendOrderCancellation(params: { order: IOrderPopulated; userEmail: string; reason: string }) {
+    const { order, userEmail, reason } = params;
+
+    // Lấy thông tin khách hàng từ address_id (đã populate) hoặc fallback
+    const name = order.address_id && typeof order.address_id === 'object' && 'full_name' in order.address_id
+      ? (order.address_id as IAddress).full_name
+      : order.receiver || 'Khách vãng lai';
+    const phone = order.address_id && typeof order.address_id === 'object' && 'phone' in order.address_id
+      ? (order.address_id as IAddress).phone
+      : order.receiver_phone || '';
+    const address = order.address_id && typeof order.address_id === 'object' && 'street_address' in order.address_id
+      ? `${(order.address_id as IAddress).street_address}, ${(order.address_id as IAddress).ward}, ${(order.address_id as IAddress).district}, ${(order.address_id as IAddress).province}`
+      : '';
+
+    await this.sendTemplateEmail({
+      to: userEmail,
+      subject: `Đơn hàng #${order._id.toString().slice(-6).toUpperCase()} đã bị hủy`,
+      template: 'order-cancellation',
+      context: {
+        orderId: order._id.toString().slice(-6).toUpperCase(),
+        reason,
+        name,
+        phone,
+        address,
+        items: 'order_items' in order ? (order as IOrderPopulated).order_items.map(item => ({
+          name: item.dish_name,
+          quantity: item.quantity,
+          unit_price: item.unit_price.toLocaleString('vi-VN') + '₫',
+          total_amount: item.total_amount.toLocaleString('vi-VN') + '₫',
+        })) : [],
+        note: order.note || 'Không có',
+        subtotal: order.items_price.toLocaleString('vi-VN') + '₫',
+        vat: order.vat_amount.toLocaleString('vi-VN') + '₫',
+        shippingFee: order.shipping_fee.toLocaleString('vi-VN') + '₫',
+        discount: order.discount_amount ? order.discount_amount.toLocaleString('vi-VN') + '₫' : '0₫',
+        total: (order.total_price ?? order.items_price + order.vat_amount + order.shipping_fee).toLocaleString('vi-VN') + '₫',
+        createdAt: order.createdAt ? new Date(order.createdAt).toLocaleString('vi-VN', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        }) : '',
+        orderDetailUrl: `${process.env.CLIENT_BASE_URL || '#'}\/profile\/orders?orderId=${order._id}`,
+      },
+    });
+  },
+
 };
+
+
 
 export default MailerService;

@@ -7,10 +7,12 @@ interface PostListSectionProps {
 }
 
 const PostListSection: React.FC<PostListSectionProps> = ({ posts }) => {
+  const publishedPosts = posts.filter(post => post.status === 'published');
   return (
     <section className="bg-bodyBackground text-white lg:py-16">
       <div className="w-full mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">          {posts.map((post) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+          {publishedPosts.map((post) => (
             <Post key={post._id} post={post} />
           ))}
         </div>

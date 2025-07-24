@@ -1,18 +1,19 @@
 import mongoose from 'mongoose';
 import { Order, IOrder } from '../models/OrderModel';
-import { Payment, IPayment } from '../models/PaymentModel';
+import Payment, { IPayment } from '../models/PaymentModel';
 import cron from 'node-cron';
 import MailerService from './MailerService';
 import User from '../models/UserModel';
-import PostsService from './PostsServices'; // Import PostsService
+import PostsService from './PostsServices'; 
+import { OrderDetail } from '../models/OrderDetailModel';
 
 class CronJobService {
-  private readonly ONLINE_PAYMENT_METHODS = ['VNPAY', 'MOMO', 'MOMO_ATM', 'CREDIT_CARD', 'BANKING'];
+
   private cancelOrderTask: any;
-  private publishPostTask: any; // Task for publishing scheduled posts
+  private publishPostTask: any; 
 
   constructor() {
-    // Cron job for cancelling unpaid orders
+    // Cron job hủy đơn hàng chưa thanh toán trong 30 phút
     this.cancelOrderTask = cron.schedule('* * * * *', async () => {
       console.log('Chạy cron job kiểm tra đơn hàng chưa thanh toán...');
       await this.cancelUnpaidOrders();
@@ -38,11 +39,11 @@ class CronJobService {
   // Hàm kiểm tra và hủy đơn hàng chưa thanh toán
   private async cancelUnpaidOrders() {
     try {
-      const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000); // 30 phút trước
+      const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000); 
 
       // Tìm các đơn hàng chưa thanh toán với phương thức thanh toán online
       const unpaidOrders = await Order.find({
-        payment_method: { $in: this.ONLINE_PAYMENT_METHODS },
+        payment_method: { $ne: 'CASH' },
         payment_status: 'UNPAID',
         status: 'ORDER_PLACED',
         order_type: 'ONLINE',
@@ -60,7 +61,7 @@ class CronJobService {
           order.cancelled_at = new Date();
           order.cancelled_reason = 'Đơn hàng bị hủy do không thanh toán trong 30 phút';
           await order.save({ session }); // Cập nhật trạng thái thanh toán sang FAILED
-          const payment = await Payment.findOne<IPayment>({ orderId: order._id }).session(session);
+          const payment = await Payment.findOne({ orderId: order._id }).session(session);
           if (payment) {
             payment.payment_status = 'FAILED';
             payment.failure_reason = 'Hết thời gian thanh toán';
@@ -95,8 +96,14 @@ class CronJobService {
         return;
       }
 
+      // Populate address_id và lấy order_items
+      const populatedOrder = await Order.findById(order._id)
+        .populate('address_id')
+        .lean();
+      const order_items = await OrderDetail.find({ order_id: order._id }).lean();
+
       await MailerService.sendOrderCancellation({
-        order,
+        order: { ...populatedOrder, order_items } as any, // ép kiểu cho đúng IOrderPopulated
         userEmail: user.email,
         reason: order.cancelled_reason || 'Không thanh toán trong thời gian quy định',
       });

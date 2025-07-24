@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import PostReportApi, { PostReportType } from '../../../../api/PostReportApi';
+import PostsApi from '../../../../api/PostsApi';
 import { FiTrash2 } from 'react-icons/fi';
 
 const ReportPostsPage = () => {
@@ -33,10 +34,29 @@ const ReportPostsPage = () => {
     }
   };
 
+  const handleDeletePost = async (postId: string) => {
+    if (!window.confirm('Bạn có chắc chắn muốn xóa bài viết này?')) return;
+    try {
+      await PostsApi.deletePost(postId);
+      // Xóa tất cả báo cáo liên quan đến bài viết vừa xóa
+      setReports(reports.filter(r => r.post_id?._id !== postId));
+    } catch (err) {
+      setError('Xóa bài viết thất bại');
+    }
+  };
+
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-4xl mx-auto">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Báo cáo bài viết</h2>
+    <div className="max-w-4xl mx-auto">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">Báo cáo bài viết</h2>
+          <button
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+            onClick={() => window.location.href = '/admin/posts'}
+          >
+            Tổng quan
+          </button>
+        </div>
         <div className="bg-white rounded-lg shadow p-6">
           {loading ? (
             <div className="text-gray-600">Đang tải dữ liệu...</div>
@@ -68,13 +88,21 @@ const ReportPostsPage = () => {
                     </td>
                     <td className="px-4 py-2">{report.reason}</td>
                     <td className="px-4 py-2">{new Date(report.createdAt).toLocaleString('vi-VN')}</td>
-                    <td className="px-4 py-2 text-center">
+                    <td className="px-4 py-2 text-center flex gap-2 justify-center">
                       <button
                         className="text-red-600 hover:text-red-900"
                         title="Xóa báo cáo"
                         onClick={() => handleDeleteReport(report._id)}
                       >
                         <FiTrash2 className="inline-block w-5 h-5" />
+                      </button>
+                      <button
+                        className="text-orange-600 hover:text-orange-900"
+                        title="Xóa bài viết"
+                        onClick={() => handleDeletePost(report.post_id?._id)}
+                        disabled={!report.post_id?._id}
+                      >
+                        <span className="inline-block w-5 h-5">🗑️</span>
                       </button>
                     </td>
                   </tr>
