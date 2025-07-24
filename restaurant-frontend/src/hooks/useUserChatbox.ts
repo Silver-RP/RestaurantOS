@@ -17,7 +17,16 @@ export const useChatbox = () => {
   useEffect(() => {
     const init = async () => {
       try {
+        console.log('🔄 Đang khởi tạo chat session...');
+        console.log('🔍 API Base URL:', 'https://api-beefbeef-restaurant.onrender.com/api');
+        
+        // Kiểm tra token trước khi gọi API
+        const token = document.cookie.split('; ').find(row => row.startsWith('accessToken='));
+        console.log('🔑 Token exists:', !!token);
+        
         const chat = await getChatSession();
+        console.log('✅ Chat session created:', chat);
+        
         setChatId(chat._id);
         setUserId(chat.user_id);
 
@@ -29,8 +38,28 @@ export const useChatbox = () => {
           roles: 'user',
         });
 
+        console.log('🔄 Đang tải tin nhắn...');
         const fetchedMessages = await getMessages(chat._id);
+        console.log('✅ Messages loaded:', fetchedMessages.length);
         setMessages(fetchedMessages);
+      } catch (error: any) {
+        console.error('❌ Lỗi khởi tạo chat:', error);
+        console.error('❌ Error details:', {
+          status: error?.response?.status,
+          statusText: error?.response?.statusText,
+          message: error?.message,
+          url: error?.config?.url,
+          method: error?.config?.method,
+        });
+        
+        // Kiểm tra các lỗi phổ biến
+        if (error?.response?.status === 404) {
+          console.error('❌ API endpoint không tồn tại hoặc server chưa chạy');
+        } else if (error?.response?.status === 401) {
+          console.error('❌ Token không hợp lệ hoặc hết hạn');
+        } else if (error?.code === 'NETWORK_ERROR') {
+          console.error('❌ Không thể kết nối đến server');
+        }
       } finally {
         setLoading(false);
       }
@@ -62,7 +91,7 @@ export const useChatbox = () => {
     return () => {
       socket.off('message');
       socket.off('typing');
-      socket.off('messageReactionUpdated'); // Cleanup
+      socket.off('messageReactionUpdated'); 
     };
   }, []);
 

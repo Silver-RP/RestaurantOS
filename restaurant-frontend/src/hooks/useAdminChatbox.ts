@@ -53,7 +53,14 @@ export const useAdminChatbox = () => {
 
   const handleSend = async (content: string) => {
     if (!currentChat || !content.trim()) return;
-    await sendMessage({ chatId: currentChat._id, content });
+
+    try {
+      await sendMessage({ chatId: currentChat._id, content });
+    } catch (err: any) {
+      const errorMsg = err?.response?.data?.message || 'Đã xảy ra lỗi khi gửi tin nhắn';
+      alert(errorMsg); // hoặc toast.error(errorMsg)
+      console.error('[LỖI GỬI TIN NHẮN]', err);
+    }
   };
 
   const selectChat = async (userId: string) => {

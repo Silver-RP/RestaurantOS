@@ -40,6 +40,11 @@ const ChatAdminPanel: React.FC = () => {
     handleSend,
     messageEndRef,
   } = useAdminChatbox();
+  console.log('[DEBUG] Current chat:', currentChat);
+  console.log('[DEBUG] Messages:', messages);
+  console.log('[DEBUG] Sessions:', sessions);
+  
+    
   const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null);
   const [input, setInput] = useState('');
   const [search, setSearch] = useState('');
@@ -149,7 +154,9 @@ const ChatAdminPanel: React.FC = () => {
           {filteredSessions.length === 0 ? (
             <div className="text-center text-sm text-gray-400 mt-6">No chats available</div>
           ) : (
-            filteredSessions.map((s) => {
+            filteredSessions
+              .filter(s => s.user_id) // Lọc ra những chat có user_id
+              .map((s) => {
               const lastMsg = s.lastMessage || 'Không có tin nhắn nào';
               const lastDate = s.lastMessageTime
                 ? new Date(s.lastMessageTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -158,17 +165,19 @@ const ChatAdminPanel: React.FC = () => {
               return (
                 <div
                   key={s._id}
-                  onClick={() => selectChat(s.user_id._id)}
+                  onClick={() => s.user_id?._id && selectChat(s.user_id._id)}
                   className={`relative flex gap-3 items-center p-2 rounded-lg cursor-pointer transition-all duration-150 ${currentChat?._id === s._id ? 'bg-[#dce9fa]' : 'hover:bg-[#f0f3f7]'
                     }`}
                 >
                   {/* Avatar + Status Dot */}
                   <div className="relative w-10 h-10">
                     <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-white text-sm font-semibold">
-                      {s.user_id.username.charAt(0).toUpperCase()}
+                      {typeof s.user_id === 'object' && s.user_id.username
+                        ? s.user_id.username.charAt(0).toUpperCase()
+                        : ''}
                     </div>
                     <span
-                      className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${s.user_id.isOnline ? 'bg-green-400' : 'bg-red-500'
+                      className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${typeof s.user_id === 'object' && s.user_id?.isOnline ? 'bg-green-400' : 'bg-red-500'
                         }`}
                     />
                   </div>
@@ -177,7 +186,9 @@ const ChatAdminPanel: React.FC = () => {
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-center">
                       <div className="truncate text-sm text-gray-800 font-medium">
-                        {s.user_id.username}
+                        {typeof s.user_id === 'object' && s.user_id.username
+                          ? s.user_id.username
+                          : ''}
                       </div>
                       <div className="text-[10px] text-gray-400 ml-2 whitespace-nowrap">
                         {lastDate}
