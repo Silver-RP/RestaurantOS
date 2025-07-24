@@ -19,6 +19,8 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import ReportModal from '../../../components/common/modals/ReportModal';
 import PostReportApi from '../../../api/PostReportApi';
+import Cookies from 'js-cookie'; 
+
 
 interface PostContentProps {
   post: PostType;
@@ -34,8 +36,13 @@ const DEFAULT_TAGS = [
   'Đồ uống có cồn'
 ];
 
+export const isAuthenticated = (): boolean => {
+  const userInfo = Cookies.get('userInfo');
+  return !!userInfo;
+};
+
 const PostContent: React.FC<PostContentProps> = ({ post }) => {
-  const { isAuthenticated } = useAuth();
+  // const { isAuthenticated } = useAuth();
   const { isLiked, likesCount, toggleLike } = usePostById(post._id);
   const navigate = useNavigate();
   const [showReportModal, setShowReportModal] = useState(false); // State for report modal
