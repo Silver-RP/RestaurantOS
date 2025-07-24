@@ -798,8 +798,6 @@ class OrderService {
       const payments = await Payment.find({ orderId }).sort({ createdAt: -1 }).lean();
       const payment = payments[0];
 
-      console.log('getOrderById orderItems payment:', payment);
-
       let postPayment = null;
       if (payment?.payment_method === 'BANKING' && payment?.bankingInfo) {
         postPayment = {
@@ -825,8 +823,6 @@ class OrderService {
           voucher_code = voucher.code;
         }
       }
-
-      console.log('getOrderById postPayment:', postPayment);
 
       return {
         ...order,
