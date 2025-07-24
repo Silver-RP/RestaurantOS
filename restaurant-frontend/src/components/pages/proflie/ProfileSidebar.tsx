@@ -68,7 +68,7 @@ const ProfileSidebar = () => {
       console.error('Logout failed:', err);
     } finally {
       setTimeout(() => {
-        navigate('/login');
+        window.location.href = '/login'; 
       }, 100);
     }
   };
