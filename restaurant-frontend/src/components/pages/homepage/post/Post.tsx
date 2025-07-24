@@ -17,7 +17,7 @@ const Postcomponent = () => {
     return <div className="text-red-500 text-center">Lỗi khi tải bài viết: {error.message}</div>;
   }
 
-  const articlesToDisplay = postsData?.docs || [];
+  const articlesToDisplay = (postsData?.docs || []).slice(0, 3);
 
   return (
     <div className="bg-[#012B40] text-white py-10 h-auto flex flex-col justify-center items-center">

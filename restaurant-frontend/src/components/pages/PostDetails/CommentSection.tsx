@@ -11,15 +11,21 @@ import CommentItem from './CommentItem';
 import ButtonComponents from '../../common/ButtonComponents';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../redux/store';
+import Cookies from 'js-cookie'; 
+
 
 interface CommentSectionProps {
   postId: string;
 }
+export const isAuthenticated = (): boolean => {
+  const userInfo = Cookies.get('userInfo');
+  return !!userInfo;
+};
 
 const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
   const [commentContent, setCommentContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { isAuthenticated, userInfo } = useSelector((state: RootState) => state.auth);
+  const { userInfo } = useSelector((state: RootState) => state.auth);
 
   const {
     comments,

@@ -24,7 +24,20 @@ const PostPage: React.FC = () => {
           <div className="flex flex-col lg:flex-row gap-10 px-4 py-10">
             <div className="lg:w-1/4 w-full relative">
               <div className="w-full h-[calc(100vh-2rem)]">
-                <PostSidebar />
+                <PostSidebar
+                  onSearch={(value) => {
+                    setSearchParams((prev) => {
+                      const newParams = new URLSearchParams(prev);
+                      if (value) {
+                        newParams.set('search', value);
+                      } else {
+                        newParams.delete('search');
+                      }
+                      newParams.delete('page');
+                      return newParams;
+                    });
+                  }}
+                />
               </div>
             </div>
             <div className="w-full lg:w-3/4">

@@ -4,7 +4,7 @@ import ImageUploadPreview from '../ImageUploadPreview';
 import '@toast-ui/editor/dist/toastui-editor.css';
 import { Editor as ToastEditor } from '@toast-ui/react-editor';
 import PostPreviewModal from './PostPreviewModal';
-import { PostType } from '../../../types/PostType';
+import { PostType } from '@/types/PostType';
 
 interface PostFormProps {
   initialData?: {
@@ -41,10 +41,18 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
   const [content, setContent] = useState(initialData?.content || '');
   const [category, setCategory] = useState(initialData?.categories_id || '');
   const [desc, setDesc] = useState(initialData?.desc || '');
-  const [status, setStatus] = useState(initialData?.status || 'draft');
+  const [status, setStatus] = useState(() => {
+    // Nếu là bài đang chờ đăng và đã tới giờ thì chuyển sang đã đăng
+    if (initialData?.status === 'pending' && initialData?.scheduledAt) {
+      const now = new Date();
+      const scheduledDate = new Date(initialData.scheduledAt);
+      if (scheduledDate <= now) return 'published';
+    }
+    return initialData?.status || 'draft';
+  });
   const [images, setImages] = useState<(File | string)[]>(initialData?.images || []);
   const [selectedTags, setSelectedTags] = useState<string[]>(initialData?.tags || []);
-  const [scheduledAt, setScheduledAt] = useState<string>(initialData?.scheduledAt || '');
+  const [scheduledAt, setScheduledAt] = useState(initialData?.scheduledAt || '');
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [previewPost, setPreviewPost] = useState<any>(null);
 
@@ -70,6 +78,7 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
       images: tempImages,
       categories_id: categories.find(cat => cat._id === category) || {
         _id: '',
+
         Cate_name: 'Chưa chọn danh mục',
         Cate_slug: '',
         Cate_img: '',
@@ -205,8 +214,8 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
                   title="Xem trước bài viết"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-indigo-600" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 4.5C7.305 4.5 3.302 7.918 2 12c1.302 4.082 5.305 7.5 10 7.5s8.698-3.418 10-7.5c-1.302-4.082-5.305-7.5-10-7.5zm0 12a4.5 4.5 0 110-9 4.5 4.5 0 010 9z"/>
-                    <circle cx="12" cy="12" r="2.5"/>
+                    <path d="M12 4.5C7.305 4.5 3.302 7.918 2 12c1.302 4.082 5.305 7.5 10 7.5s8.698-3.418 10-7.5c-1.302-4.082-5.305-7.5-10-7.5zm0 12a4.5 4.5 0 110-9 4.5 4.5 0 010 9z" />
+                    <circle cx="12" cy="12" r="2.5" />
                   </svg>
                 </button>
               </div>
@@ -237,6 +246,8 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
                   >
                     <option value="published">Đã đăng</option>
                     <option value="draft">Nháp</option>
+                    <option value="pending">Đang chờ đăng</option>
+
                   </select>
                 </div>
 
@@ -245,7 +256,10 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
                   <input
                     type="datetime-local"
                     value={scheduledAt}
-                    onChange={(e) => setScheduledAt(e.target.value)}
+                    onChange={(e) => {
+                      setScheduledAt(e.target.value);
+                      if (e.target.value) setStatus('pending');
+                    }}
                     className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -287,9 +301,8 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`px-4 py-2 rounded-md text-sm text-white ${
-                  isSubmitting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
-                }`}
+                className={`px-4 py-2 rounded-md text-sm text-white ${isSubmitting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+                  }`}
               >
                 {isSubmitting ? 'Đang xử lý...' : initialData ? 'Cập nhật' : 'Thêm bài viết'}
               </button>
