@@ -84,7 +84,10 @@ const UserLoyaltyTier: React.FC = () => {
   // Tìm tier hiện tại và tier tiếp theo
   const currentYear = new Date().getFullYear().toString();
   const currentSpent = info.yearly_spending?.[currentYear] ?? 0;
-  const currentTierIdx = tiers.findIndex(t => t._id === info.current_tier?._id);
+  // Nếu chưa có tier, mặc định là tier đầu tiên (new)
+  const currentTierIdx = info.current_tier && tiers.length > 0
+    ? tiers.findIndex(t => t._id === info.current_tier?._id)
+    : 0;
   const nextTier = tiers[currentTierIdx + 1];
 
   // Tính phần trăm tiến trình đến mốc tiếp theo
@@ -119,6 +122,9 @@ const UserLoyaltyTier: React.FC = () => {
         {/* Các mốc: tên hạng, chấm tròn, số tiền */}
         {tiers.map((tier, idx) => {
           const left = (idx / (tiers.length - 1)) * 100;
+          // Nếu là tier đầu tiên (new) và user chưa có tier, luôn làm nổi bật
+          const isCurrent = idx === currentTierIdx;
+          const isDefaultNew = !info.current_tier && idx === 0;
           return (
             <div
               key={tier._id}
@@ -126,14 +132,14 @@ const UserLoyaltyTier: React.FC = () => {
               style={{ left: `${left}%`, width: 80, transform: 'translateX(-50%)', zIndex: 2 }}
             >
               {/* Tên hạng */}
-              <div className={`text-sm font-bold mb-1 text-center ${idx === currentTierIdx ? 'text-yellow-400' : 'text-gray-300'}`}
+              <div className={`text-sm font-bold mb-1 text-center ${isCurrent || isDefaultNew ? 'text-yellow-400' : 'text-gray-300'}`}
                    style={{ minHeight: 20 }}>
                 {getTierNameVN(tier.tier_name)}
               </div>
               {/* Chấm tròn */}
               <div
                 className={`w-5 h-5 rounded-full border-2 z-10 mx-auto mb-1
-                  ${idx < currentTierIdx ? 'bg-yellow-400 border-yellow-400' : idx === currentTierIdx ? 'bg-orange-400 border-yellow-400' : 'bg-gray-400 border-gray-400'}
+                  ${isCurrent || isDefaultNew ? 'bg-orange-400 border-yellow-400' : idx < currentTierIdx ? 'bg-yellow-400 border-yellow-400' : 'bg-gray-400 border-gray-400'}
                 `}
                 style={{ marginTop: BAR_TOP - 27, marginBottom: 4 }}
               />
