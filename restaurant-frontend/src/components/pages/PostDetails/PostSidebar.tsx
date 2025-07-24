@@ -1,29 +1,56 @@
 import React, { useState } from 'react';
 
 interface PostSidebarProps {
-  className?: string;  
+  className?: string;
+  onSearch?: (value: string) => void;
 }
 
-const PostSidebar: React.FC<PostSidebarProps> = ({ className }) => {
+const PostSidebar: React.FC<PostSidebarProps> = ({ className, onSearch }) => {
   const [showPosts, setShowPosts] = useState(false);
   const [showCategories, setShowCategories] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchValue(e.target.value);
+  };
+
+  const handleSearch = () => {
+    if (onSearch) onSearch(searchValue);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
 
   return (
-    <aside className={`w-full space-y-6 text-white lg:space-y-10 ${className} 
-      lg:relative fixed top-0 left-0 bg-[#012B40] lg:bg-transparent z-50 lg:w-[220px] xl:w-[250px]`}>
+    <aside className={`w-full space-y-6 text-white lg:space-y-10 ${className}`}>
       {/* Tìm kiếm */}
       <div>
         <h3 className="text-xl font-semibold mb-2">Tìm kiếm blog</h3>
-        <input
-          type="text"
-          placeholder="Tìm Kiếm..."
-          className="lg:w-full md:w-1/2 lg:px-4 w-full py-2 bg-transparent border border-hr text-white placeholder-slate-500 focus:outline-none"
-        />
+        <div className="flex gap-2 items-center">
+          <input
+            type="text"
+            placeholder="Tìm Kiếm..."
+            value={searchValue}
+            onChange={handleSearchChange}
+            onKeyDown={handleKeyDown}
+            className="w-[140px] lg:w-[180px] px-2 py-1 text-sm bg-transparent border border-hr text-white placeholder-slate-500 focus:outline-none"
+          />
+          <button
+            className="px-2 py-1 text-sm bg-secondaryColor text-white rounded hover:bg-secondaryColor/80"
+            onClick={handleSearch}
+          >
+            Tìm kiếm
+          </button>
+        </div>
       </div>
       <hr className="border border-hr" />
+      
       {/* Bài viết */}
       <div>
-        <div 
+        <div
           className="flex justify-between items-center cursor-pointer"
           onClick={() => setShowPosts(!showPosts)}
         >
@@ -37,9 +64,10 @@ const PostSidebar: React.FC<PostSidebarProps> = ({ className }) => {
         </ul>
       </div>
       <hr className="border border-hr" />
+
       {/* Thể loại blog */}
       <div>
-        <div 
+        <div
           className="flex justify-between items-center cursor-pointer"
           onClick={() => setShowCategories(!showCategories)}
         >

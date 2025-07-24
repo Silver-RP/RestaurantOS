@@ -29,29 +29,35 @@ const Post: React.FC<PostProps> = ({ post }) => {
           year: 'numeric',
         })}
       </p>
-      <p className="text-sm mt-2">
-        Đăng bởi:<span className="text-secondaryColor">{post.user_id.username}</span> In:{' '}
-        <span className="text-secondaryColor">{post.categories_id.Cate_name}</span>
-      </p>
-      <div className="flex gap-2 mt-2">
-        <button className="bg-white text-black px-2 py-1 text-xs flex items-center gap-1">
-          <FaShareAlt /> Share
-        </button>
-        <button
-          className="bg-white text-black px-2 py-1 text-xs flex items-center gap-1"
-          onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`${window.location.origin}/post-details/${post._id}`)}`, '_blank')}
-        >
-          <FaFacebookF /> Facebook
-        </button>
-        <button
-          className="bg-white text-black px-2 py-1 text-xs flex items-center gap-1"
-          onClick={() => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(`${window.location.origin}/post-details/${post._id}`)}`, '_blank')}
-        >
-          <FaTwitter /> Twitter
-        </button>
+      <div className="flex flex-col gap-2 mt-4 mb-2">
+        <div className="flex flex-wrap gap-4 items-center">
+          <span className="text-sm">
+            Đăng bởi: <span className="text-secondaryColor font-semibold">{post.user_id.username}</span>
+          </span>
+          <span className="text-sm">
+            In: <span className="text-secondaryColor font-semibold">{post.categories_id.Cate_name}</span>
+          </span>
+        </div>
+        <div className="flex gap-2 mt-2">
+          <button className="bg-white text-black px-2 py-1 text-xs flex items-center gap-1">
+            <FaShareAlt /> Share
+          </button>
+          <button
+            className="bg-white text-black px-2 py-1 text-xs flex items-center gap-1"
+            onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`${window.location.origin}/post-details/${post._id}`)}`, '_blank')}
+          >
+            <FaFacebookF /> Facebook
+          </button>
+          <button
+            className="bg-white text-black px-2 py-1 text-xs flex items-center gap-1"
+            onClick={() => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(`${window.location.origin}/post-details/${post._id}`)}`, '_blank')}
+          >
+            <FaTwitter /> Twitter
+          </button>
+        </div>
       </div>
-      <h3 className="text-xl font-bold mt-3 break-words">{post.title}</h3>
-      <p className="text-sm mt-2 break-words">{post.desc}</p>
+      <h3 className="text-xl font-bold mt-6 mb-2 break-words">{post.title}</h3>
+      <p className="text-sm mt-2 mb-4 break-words leading-relaxed">{post.desc}</p>
       <ButtonComponents variant="filled" size="small" onClick={handlePostClick}>
         Đọc thêm
       </ButtonComponents>

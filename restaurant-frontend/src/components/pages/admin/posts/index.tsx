@@ -112,13 +112,22 @@ const PostsPage = () => {
       <div className="max-w-7xl mx-auto">
         <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <h2 className="text-2xl font-bold text-gray-900">Quản lý Bài viết</h2>
-          <Link
-            to="/admin/posts/create"
-            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-          >
-            <FiPlus className="mr-2" />
-            Thêm bài viết mới
-          </Link>
+          <div className="flex gap-4">
+            <Link
+              to="/admin/posts/create"
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+            >
+              <FiPlus className="mr-2" />
+              Thêm bài viết mới
+            </Link>
+            <Link
+              to="/admin/posts/report"
+              className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+            >
+              <span className="mr-2">🚩</span>
+              Bài viết bị báo cáo
+            </Link>
+          </div>
         </div>
 
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">

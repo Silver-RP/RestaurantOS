@@ -154,7 +154,7 @@ const PostContent: React.FC<PostContentProps> = ({ post }) => {
         </div>
 
         {/* Nội dung */}
-        <div className="prose prose-sm sm:prose-lg prose-invert max-w-none mb-12 overflow-hidden break-words">
+        <div className="text-base sm:text-lg max-w-none mb-12 overflow-hidden break-words whitespace-pre-line">
           <div dangerouslySetInnerHTML={{ __html: post.content }} />
         </div>
 
