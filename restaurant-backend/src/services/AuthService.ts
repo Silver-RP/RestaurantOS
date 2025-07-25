@@ -140,6 +140,7 @@ class AuthService {
       expiresAt: new Date(Date.now() + refreshTokenExpiresIn * 1000),
       userAgent: req.get('User-Agent'),
       ipAddress: req.ip,
+      rememberMe,
     });
 
     return { token, refresh_token, user, isBirthday, refreshTokenExpiresIn };
@@ -167,7 +168,10 @@ class AuthService {
       const remainingSeconds = Math.floor(remainingMs / 1000);
 
       // Nếu thời gian còn lại quá ít (< 1h), cấp lại full thời hạn (có thể tùy chỉnh logic)
-      const newRefreshTokenExpiresIn = remainingSeconds > 3600 ? remainingSeconds : 48 * 60 * 60;
+      const newRefreshTokenExpiresIn = remainingSeconds > 3600 ? 
+      remainingSeconds : oldToken.rememberMe
+      ? 21 * 24 * 60 * 60   
+      : 2 * 24 * 60 * 60;
 
       const newAccessToken = accessToken(
         { id: user._id, roles: user.roles },
@@ -190,9 +194,10 @@ class AuthService {
         ipAddress: req.ip,
         userAgent: req.get('User-Agent'),
         expiresAt: new Date(Date.now() + newRefreshTokenExpiresIn * 1000),
+        rememberMe: oldToken.rememberMe,
       });
 
-      return { newAccessToken, newRefreshToken };
+      return { newAccessToken, newRefreshToken, rememberMe: oldToken.rememberMe };
     } catch (error: any) {
       throw new Error(error.message);
     }
@@ -240,6 +245,7 @@ class AuthService {
         expiresAt: new Date(Date.now() + refreshTokenExpiresIn * 1000),
         userAgent: req?.get?.('User-Agent') || 'unknown',
         ipAddress: req?.ip || 'unknown',
+        rememberMe,
       });
 
       return {

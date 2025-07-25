@@ -55,7 +55,7 @@ class AuthController {
   async refreshAccessToken(req: Request, res: Response): Promise<any> {
     try {
       const { refreshToken } = req.cookies;
-      const { newAccessToken, newRefreshToken } = await AuthService.refreshAccessToken(
+      const { newAccessToken, newRefreshToken, rememberMe } = await AuthService.refreshAccessToken(
         refreshToken,
         req,
       );
@@ -67,11 +67,15 @@ class AuthController {
         maxAge: 60 * 60 * 1000,
       });
 
+      const maxAge = rememberMe
+        ? 21 * 24 * 60 * 60 * 1000
+        : 2 * 24 * 60 * 60 * 1000;
+
       res.cookie('refreshToken', newRefreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-        maxAge: 21 * 24 * 60 * 60 * 1000,
+        maxAge
       });
 
       res.status(200).json({ accessToken: newAccessToken });
