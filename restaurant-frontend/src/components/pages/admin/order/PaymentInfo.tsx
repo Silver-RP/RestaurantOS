@@ -19,6 +19,9 @@ const PaymentInfo: React.FC<PaymentInfoProps> = ({
     setLoading(true);
     setError(null);
     try {
+      if (!order.postPayment.paymentId) {
+        throw new Error('Payment ID is required');
+      }
       const data: { order: Order } = await updatePaymentStatus({ paymentId: order.postPayment.paymentId, paidAmount: order.total_price }) as unknown as { order: Order };
       onPaymentConfirmed(data.order);
     } catch (err: any) {

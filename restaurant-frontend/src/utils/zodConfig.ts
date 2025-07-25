@@ -39,11 +39,11 @@ export const peopleSchema = z
   .min(1, 'Phải có ít nhất 1 người')
   .max(30, 'Không được vượt quá 30 người');
 
-export const CateTypeEnum = z.enum(['dish', 'drink']);
+export const CateTypeEnum = z.enum(['dish', 'drink', 'new']);
 
 export const createCategorySchema = z.object({
   Cate_name: z.string().min(1, 'Tên danh mục không được để trống'),
   Cate_slug: z.string().min(1, 'Slug không được để trống'),
   Cate_type: CateTypeEnum,
-  parentCate: z.string().optional(), 
+  parentCate: z.string().optional(),
 });

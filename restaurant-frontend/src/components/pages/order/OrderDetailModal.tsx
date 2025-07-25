@@ -599,6 +599,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                                 <span className="font-semibold">Tổng:</span>{' '}
                                 {formatPrice(item.total_amount)}
                               </p>
+                              {order.status === 'DELIVERED' && (
                               <button
                                 className="ml-64 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium px-4 py-1 rounded"
                                 onClick={() =>
@@ -607,6 +608,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                               >
                                 Đánh giá
                               </button>
+                              )}
                             </div>
 
                           </div>

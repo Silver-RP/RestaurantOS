@@ -14,7 +14,7 @@ const PostsPage = () => {
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [sortField, setSortField] = useState(searchParams.get('sortBy') || '');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>(searchParams.get('sortOrder') as 'asc' | 'desc' || 'asc');
-  
+
   const { mutate: deletePost, isPending: isDeleting } = useMutation({
     mutationFn: PostsApi.deletePost,
     onSuccess: (data) => {
@@ -60,7 +60,7 @@ const PostsPage = () => {
     const newOrder = sortField === field && sortOrder === 'asc' ? 'desc' : 'asc';
     setSortField(field);
     setSortOrder(newOrder);
-    
+
     const newParams = new URLSearchParams(searchParams.toString());
     newParams.set('sortBy', field);
     newParams.set('sortOrder', newOrder);
@@ -74,10 +74,9 @@ const PostsPage = () => {
 
   if (isLoading || isDeleting) {
     return (
-      <div className="p-6 bg-gray-50 min-h-screen flex items-center justify-center">
-        <div className="text-xl text-gray-600">
-          {isDeleting ? 'Đang xóa bài viết...' : 'Đang tải dữ liệu...'}
-        </div>
+      <div className="flex justify-center items-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span className="ml-2"> {isDeleting ? 'Đang xóa bài viết...' : 'Đang tải dữ liệu...'}</span>
       </div>
     );
   }
@@ -108,8 +107,8 @@ const PostsPage = () => {
   };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto">
+    <main className="!p-0 bg-white rounded-lg ">
+      <div>
         <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <h2 className="text-2xl font-bold text-gray-900">Quản lý Bài viết</h2>
           <div className="flex gap-4">
@@ -223,12 +222,17 @@ const PostsPage = () => {
                       {new Date(post.createdAt).toLocaleDateString('vi-VN')}
                     </td>
                     <td className="px-4 py-2">
-                      <span className={`px-2 py-1 text-xs rounded-full ${
-                        post.status === 'published' 
-                          ? 'bg-green-100 text-green-800'
+                      <span className={`px-2 py-1 text-xs rounded-full ${post.status === 'published'
+                        ? 'bg-green-100 text-green-800'
+                        : post.status === 'pending'
+                          ? 'bg-blue-100 text-blue-800'
                           : 'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {post.status === 'published' ? 'Đã đăng' : 'Nháp'}
+                        }`}>
+                        {post.status === 'published'
+                          ? 'Đã đăng'
+                          : post.status === 'pending'
+                            ? 'Lên lịch đăng'
+                            : 'Nháp'}
                       </span>
                     </td>
                     <td className="px-4 py-2 space-x-2">
@@ -251,7 +255,7 @@ const PostsPage = () => {
               </tbody>
             </table>
           </div>
-          
+
           {/* Pagination */}
           {postsData && (
             <AdminPagination
@@ -264,7 +268,7 @@ const PostsPage = () => {
           )}
         </div>
       </div>
-    </div>
+    </main>
   );
 };
 

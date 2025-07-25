@@ -7,7 +7,7 @@ import Cart from '../models/CartModel';
 import { Dish } from '../models/DishModel';
 import DishIngredient from '../models/DishIngredientModel';
 import { InventoryTransaction } from '../models/InventoryTransactionModel';
-import Payment from '../models/PaymentModel';
+import Payment, { IPayment } from '../models/PaymentModel';
 import SearchService from './SearchService';
 import { createVNPayPaymentUrl } from '../services/payments/VnPayService';
 import { createMomoPaymentUrl } from '../services/payments/MomoService';
@@ -1035,7 +1035,7 @@ class OrderService {
   }
 
   async sendOrderPaymentSuccessEmail(paymentId: Types.ObjectId) {
-    const payment = await Payment.findById(paymentId).populate('orderId').lean();
+    const payment = await Payment.findById(paymentId).populate('orderId').lean() as IPayment;
     if (!payment) throw new Error('Payment not found');
     if (!payment.orderId) throw new Error('Order not found in payment');
 
@@ -1046,7 +1046,7 @@ class OrderService {
     if (!user || !user.email) throw new Error('User or email not found');
 
     await MailerService.sendOrderPaymentSuccess({
-      payment,
+      payment: payment as IPayment,
       order,
       userEmail: user.email,
     });

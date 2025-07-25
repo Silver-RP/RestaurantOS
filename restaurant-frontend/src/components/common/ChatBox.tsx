@@ -21,7 +21,6 @@ const Chatbox: React.FC = () => {
   } = useChatbox();
 
   const { faqs } = useFaq();
-  console.log('danh sach', faqs);
   
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);

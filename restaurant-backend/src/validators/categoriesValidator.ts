@@ -3,7 +3,7 @@ import z from 'zod';
 export const categorySchema = z.object({
   Cate_name: z.string().min(1, 'Tên danh mục là bắt buộc'),
   Cate_slug: z.string().min(1, 'Slug là bắt buộc'),
-  Cate_type: z.enum(['dish', 'drink'], {
+  Cate_type: z.enum(['dish', 'drink', 'new'], {
     required_error: 'Loại danh mục là bắt buộc',
   }),
   parentCate: z.string().optional().nullable(),

@@ -3,8 +3,8 @@ import React, { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import InputComponent from "../components/pages/login/InputComponents";
-import ButtonComponent from "../components/pages/login/ButtonComponents";
+import InputComponent from "../components/pages/Login/InputComponents";
+import ButtonComponent from "../components/pages/Login/ButtonComponents";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { SlActionUndo } from "react-icons/sl";
 import { toast } from "react-toastify";
