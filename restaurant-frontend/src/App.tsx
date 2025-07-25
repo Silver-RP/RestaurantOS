@@ -6,6 +6,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import 'react-confirm-alert/src/react-confirm-alert.css';
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { AuthListener } from "@components/common/AuthListener";
 
 import ScrollToTop from "@components/common/ScrollToTop";
 import QuickViewModal from "@components/pages/menu/QuickViewModal";
@@ -26,6 +27,7 @@ const App = () => {
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
     <Provider store={store}>
+    <AuthListener>
       <QueryClientProvider client={queryClient}>
         <AuthInitializer /> 
         <UseBirthdayAnimation />
@@ -40,6 +42,7 @@ const App = () => {
           <GlobalOrderModal/>
         </Router>
       </QueryClientProvider>
+      </AuthListener>
     </Provider>
     </GoogleOAuthProvider>
   );

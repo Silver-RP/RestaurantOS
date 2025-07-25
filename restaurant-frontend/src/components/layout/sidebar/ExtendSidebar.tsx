@@ -35,11 +35,6 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
   const favoriteCount = useSelector(
     (state: RootState) => state.favorite.items.length,
   );
-  const favoriteCount1 = useSelector(
-    (state: RootState) => state.favorite,
-  );
-
-  console.log('ExtendSidebar rendered: ', favoriteCount1);
   const dispatch = useDispatch();
   useEffect(() => {
     const handleResize = () => {
