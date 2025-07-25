@@ -16,6 +16,7 @@ const axiosInstance = axios.create({
 
 let isRefreshing = false;
 let failedQueue: any[] = [];
+let checkCallHandleAuthFailure = false;
 
 interface QueueItem {
   resolve: (token: string | null) => void;
@@ -35,11 +36,15 @@ const processQueue = (error: any, token: string | null = null) => {
 
 const handleAuthFailure = (reason: string = 'Token expired') => {
   if (window.location.pathname === '/login') return;
+  if (checkCallHandleAuthFailure) return;
   
-  // console.log(`🔒 Auth failure: ${reason}`);
-  // store.dispatch(forceLogout(reason));
-  // clearAuthCookies();
+  console.log(`🔒 Auth failure: ${reason}`);
+  store.dispatch(forceLogout(reason));
+  clearAuthCookies();
   // toast.error('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.');
+  toast.warning('Hãy đăng nhập để trải nghiệm dịch vụ một cách trọn vẹn ♨️.');
+
+  checkCallHandleAuthFailure = true;
   
   // setTimeout(() => {
   //   window.location.href = '/login';
