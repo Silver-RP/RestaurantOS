@@ -18,7 +18,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ initialData, onSubmit, subm
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
-  const [type, setType] = useState<'dish' | 'drink'>('dish');
+  const [type, setType] = useState<'dish' | 'drink' | 'new'>('dish');
   const [image, setImage] = useState<File | string | null>(null);
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -27,7 +27,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ initialData, onSubmit, subm
     if (initialData) {
       setName(initialData.Cate_name);
       setSlug(initialData.Cate_slug);
-      setType(initialData.Cate_type as 'dish' | 'drink');
+      setType(initialData.Cate_type as 'dish' | 'drink' | 'new');
       setImage(initialData.Cate_img || null);
     }
   }, [initialData]);
@@ -42,8 +42,8 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ initialData, onSubmit, subm
   const validate = (): boolean => {
     const newErrors: { [key: string]: string } = {};
 
-     if (!name.trim()) {
-    newErrors.name = 'Tên danh mục không được để trống';
+    if (!name.trim()) {
+      newErrors.name = 'Tên danh mục không được để trống';
     } else if (name.trim().length < 3) {
       newErrors.name = 'Tên danh mục phải có ít nhất 3 ký tự';
     }
@@ -121,11 +121,13 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ initialData, onSubmit, subm
           <label className="block mb-1 text-sm font-medium text-admintext">Loại</label>
           <select
             value={type}
-            onChange={(e) => setType(e.target.value.trim() as 'dish' | 'drink')}
+            onChange={(e) => setType(e.target.value.trim() as 'dish' | 'drink' | 'new')}
             className="border rounded px-4 py-2 w-full"
           >
             <option value="dish">Món ăn</option>
             <option value="drink">Đồ uống</option>
+            <option value="new">Tin tức</option>
+
           </select>
         </div>
 
@@ -133,7 +135,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ initialData, onSubmit, subm
           images={image ? [image] : []}
           onChange={handleImageChange} onRemove={function (index: number): void {
             throw new Error('Function not implemented.');
-          } }        />
+          }} />
         {errors.image && <p className="text-red-500 text-sm mt-1">{errors.image}</p>}
 
         <div className="flex justify-end gap-2">

@@ -64,6 +64,10 @@ class CategoryController {
   async PaginateCate(req: Request, res: Response): Promise<void> {
     await PaginateService.paginate(Category, req, res);
   }
+
+  async GetAllNewCategory(req: Request, res: Response): Promise<void> {
+    await CategoryService.GetAllNewCategory(req, res);
+  }
 }
 
 export default new CategoryController();
