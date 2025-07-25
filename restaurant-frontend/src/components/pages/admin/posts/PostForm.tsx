@@ -41,20 +41,13 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
   const [content, setContent] = useState(initialData?.content || '');
   const [category, setCategory] = useState(initialData?.categories_id || '');
   const [desc, setDesc] = useState(initialData?.desc || '');
-  const [status, setStatus] = useState(() => {
-    // Nếu là bài đang chờ đăng và đã tới giờ thì chuyển sang đã đăng
-    if (initialData?.status === 'pending' && initialData?.scheduledAt) {
-      const now = new Date();
-      const scheduledDate = new Date(initialData.scheduledAt);
-      if (scheduledDate <= now) return 'published';
-    }
-    return initialData?.status || 'draft';
-  });
+  const [status, setStatus] = useState(initialData?.status || 'draft');
   const [images, setImages] = useState<(File | string)[]>(initialData?.images || []);
   const [selectedTags, setSelectedTags] = useState<string[]>(initialData?.tags || []);
   const [scheduledAt, setScheduledAt] = useState(initialData?.scheduledAt || '');
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [previewPost, setPreviewPost] = useState<any>(null);
+  const [tagInput, setTagInput] = useState('');
 
   const onUploadImage = async (blob: Blob | File, callback: (url: string, altText: string) => void) => {
     try {
@@ -78,7 +71,6 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
       images: tempImages,
       categories_id: categories.find(cat => cat._id === category) || {
         _id: '',
-
         Cate_name: 'Chưa chọn danh mục',
         Cate_slug: '',
         Cate_img: '',
@@ -101,11 +93,33 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
     setSelectedTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
   };
 
+  const handleTagInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTagInput(e.target.value);
+  };
+
+  const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === ',' || e.key === 'Enter') {
+      e.preventDefault();
+      const tags = tagInput.split(',').map(t => t.trim()).filter(Boolean);
+      setSelectedTags(prev => Array.from(new Set([...prev, ...tags])));
+      setTagInput('');
+    }
+  };
+
+  const handleRemoveTag = (tag: string) => {
+    setSelectedTags(prev => prev.filter(t => t !== tag));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (selectedTags.length === 0) {
-      alert('Vui lòng chọn ít nhất một thẻ (tag) cho bài viết!');
+    // Gom tagInput vào mảng tạm thời, không dùng setState ở đây
+    let tagsToSubmit = selectedTags;
+    if (tagInput.trim()) {
+      const tags = tagInput.split(',').map(t => t.trim()).filter(Boolean);
+      tagsToSubmit = Array.from(new Set([...selectedTags, ...tags]));
+    }
+    if (tagsToSubmit.length === 0) {
+      alert('Vui lòng nhập ít nhất một thẻ (tag) cho bài viết!');
       return;
     }
 
@@ -115,7 +129,7 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
     formData.append('categories_id', category);
     formData.append('desc', desc);
     formData.append('status', status);
-    formData.append('tags', JSON.stringify(selectedTags));
+    formData.append('tags', tagsToSubmit.join(','));
     if (scheduledAt) {
       formData.append('scheduledAt', scheduledAt);
     }
@@ -228,7 +242,7 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-2 border border-gray-300 rounded shadow-sm focus:ring-blue-500 focus:border-blue-500"
                     required
                   >
                     <option value="">-- Chọn danh mục --</option>
@@ -243,43 +257,47 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
                   <select
                     value={status}
                     onChange={(e) => setStatus(e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-2 border border-gray-300 rounded shadow-sm focus:ring-blue-500 focus:border-blue-500"
                     required
                   >
-                    <option value="published">Đã đăng</option>
+                    <option value="published">Xuất bản</option>
                     <option value="draft">Nháp</option>
-                    <option value="pending">Đang chờ đăng</option>
-
+                    <option value="pending">Lên lịch đăng bài</option>
                   </select>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Lịch đăng bài (tùy chọn)</label>
-                  <input
-                    type="datetime-local"
-                    value={scheduledAt}
-                    onChange={(e) => {
-                      setScheduledAt(e.target.value);
-                      if (e.target.value) setStatus('pending');
-                    }}
-                    className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
+                {status === 'pending' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Thời gian xuất bản</label>
+                    <input
+                      type="datetime-local"
+                      value={scheduledAt}
+                      onChange={(e) => {
+                        setScheduledAt(e.target.value);
+                        if (e.target.value) setStatus('pending');
+                      }}
+                      className="w-full p-2 border border-gray-300 rounded shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                )}
 
+                {/* Thẻ bài viết (Tag) */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Thẻ bài viết (Tag) <span className="text-red-500">*</span></label>
-                  <div className="flex flex-wrap gap-2">
-                    {TAG_OPTIONS.map((tag) => (
-                      <label key={tag} className="flex items-center gap-1 text-sm bg-gray-100 px-2 py-1 rounded cursor-pointer">
-                        <input
-                          type="checkbox"
-                          value={tag}
-                          checked={selectedTags.includes(tag)}
-                          onChange={() => handleTagChange(tag)}
-                          className="accent-blue-500"
-                        />
+                  <input
+                    type="text"
+                    value={tagInput}
+                    onChange={handleTagInputChange}
+                    onKeyDown={handleTagInputKeyDown}
+                    placeholder="Nhập tag, ngăn cách bằng dấu phẩy (,)"
+                    className="w-full p-2 border border-gray-300 rounded shadow-sm focus:ring-gray-500 focus:border-blue-500"
+                  />
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {selectedTags.map((tag) => (
+                      <span key={tag} className="bg-blue-100 text-blue-700 px-2 py-1 rounded flex items-center gap-1">
                         {tag}
-                      </label>
+                        <button type="button" onClick={() => handleRemoveTag(tag)} className="ml-1 text-red-500">×</button>
+                      </span>
                     ))}
                   </div>
                 </div>

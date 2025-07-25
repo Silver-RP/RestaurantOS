@@ -3,7 +3,7 @@ export interface Category {
     _id: string;
     Cate_name: string;
     Cate_slug: string;
-    Cate_type: 'dish' | 'drink'; 
+    Cate_type: 'dish' | 'drink' | 'new'; 
     Cate_img: string | null;
     parentCate: string | null;
   }
@@ -18,7 +18,7 @@ export interface CategoryResponse {
 export interface CategoryCreatePayload {
   Cate_name: string;
   Cate_slug: string;
-  Cate_type: 'dish' | 'drink'; 
+  Cate_type: 'dish' | 'drink' | 'new'; 
   Cate_img?: File;
   parentCate?: string;
   message?: string | null;

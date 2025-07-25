@@ -480,10 +480,7 @@ class ReservationService {
     return reservations;
   }
 
-  async updateReservationStatus(
-    id: string,
-    status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'DONE',
-  ) {
+  async updateReservationStatus(id: string, status: 'PENDING' | 'BOOKED' | 'CANCELLED' | 'DONE') {
     const updated = await Reservation.findByIdAndUpdate(id, { status }, { new: true });
     if (!updated) throw new Error('Không tìm thấy đơn đặt bàn để cập nhật');
     return updated;

@@ -7,6 +7,8 @@ import AdminPagination from '../AdminPagination';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import ReservationDetailModal from './ReservationDetail';
+import { Link } from 'react-router-dom';
+import { Button } from '@mui/material';
 
 const ReservationTable: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -71,6 +73,11 @@ const ReservationTable: React.FC = () => {
             <FaSearch />
           </button>
         </div>
+        <Link to="/admin/tables" style={{ textDecoration: 'none' }}>
+          <Button variant="outlined" color="primary" size="small">
+            Quản lý bàn
+          </Button>
+        </Link>
       </div>
 
       {isLoading ? (
@@ -86,13 +93,8 @@ const ReservationTable: React.FC = () => {
                 <th className="px-4 py-2">Tên khách</th>
                 <th className="px-4 py-2">SĐT</th>
                 <th className="px-4 py-2">Ngày giờ</th>
-                <th className="px-4 py-2">Loại bàn</th>
-                <th className="px-4 py-2">Số người</th>
                 <th className="px-4 py-2">Trạng thái</th>
-                <th className="px-4 py-2">Ghi chú</th>
-                <th className="px-4 py-2">Phương thức</th>
                 <th className="px-4 py-2">Trạng thái thanh toán</th>
-                <th className="px-4 py-2">Số tiền cọc</th>
                 <th className="px-4 py-2">Hành động</th>
               </tr>
             </thead>
@@ -103,19 +105,36 @@ const ReservationTable: React.FC = () => {
                   <td className="px-4 py-2">{r.full_name}</td>
                   <td className="px-4 py-2">{r.phone}</td>
                   <td className="px-4 py-2">{formatDate(r.date, r.time)}</td>
-                  <td className="px-4 py-2">{r.table_type}</td>
-                  <td className="px-4 py-2">{r.number_of_people}</td>
                   <td className="px-4 py-2">
                     <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${r.status === 'CANCELLED' ? 'bg-red-100 text-red-600' : r.status === 'CONFIRMED' ? 'bg-green-100 text-green-600' : 'bg-yellow-100 text-yellow-600'}`}
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        r.status === 'CANCELLED'
+                          ? 'bg-red-100 text-red-600'
+                          : r.status === 'DONE'
+                            ? 'bg-green-100 text-green-600'
+                            : r.status === 'BOOKED'
+                              ? 'bg-orange-100 text-orange-600'
+                              : r.status === 'PENDING'
+                                ? 'bg-yellow-100 text-yellow-600'
+                                : ''
+                      }`}
                     >
-                      {r.status}
+                      {(() => {
+                        switch (r.status) {
+                          case 'PENDING':
+                            return 'Chờ xác nhận';
+                          case 'BOOKED':
+                            return 'Đã đặt bàn';
+                          case 'CANCELLED':
+                            return 'Đã hủy';
+                          case 'DONE':
+                            return 'Hoàn thành';
+                          default:
+                            return r.status;
+                        }
+                      })()}
                     </span>
                   </td>
-                  <td className="px-4 py-2 text-gray-600 italic max-w-[200px] truncate">
-                    {r.note || '-'}
-                  </td>
-                  <td className="px-4 py-2">{r.payment_method || '-'}</td>
                   <td className="px-4 py-2">
                     {(() => {
                       switch (r.payment_status) {
@@ -148,18 +167,19 @@ const ReservationTable: React.FC = () => {
                       }
                     })()}
                   </td>
-                  <td className="px-4 py-2">
-                    {r.deposit_amount
-                      ? r.deposit_amount.toLocaleString('vi-VN') + '₫'
-                      : '-'}
+                  <td className="px-4 py-2 text-left">
+                    <Button
+                      variant="outlined"
+                      color="info"
+                      size="small"
+                      onClick={() => setSelectedReservationId(r._id)}
+                      style={{ minWidth: 36, padding: 6, borderRadius: '50%' }}
+                    >
+                      <span title="Xem chi tiết">
+                        <FaEye />
+                      </span>
+                    </Button>
                   </td>
-
-                  <button
-                    onClick={() => setSelectedReservationId(r._id)}
-                    className="text-blue-600 hover:text-blue-800"
-                  >
-                    <FaEye />
-                  </button>
                 </tr>
               ))}
             </tbody>

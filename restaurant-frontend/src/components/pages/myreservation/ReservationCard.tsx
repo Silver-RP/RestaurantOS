@@ -12,14 +12,14 @@ interface Props {
 
 const statusColorMap: Record<IReservation['status'], string> = {
   PENDING: 'text-yellow-400 bg-yellow-400/10',
-  CONFIRMED: 'text-green-400 bg-green-400/10',
+  BOOKED: 'text-green-400 bg-green-400/10',
   CANCELLED: 'text-red-400 bg-red-400/10',
   DONE: 'text-gray-400 bg-gray-400/10',
 };
 
 const statusLabelMap: Record<IReservation['status'], string> = {
   PENDING: 'Chờ xác nhận',
-  CONFIRMED: 'Đã xác nhận',
+  BOOKED: 'Đã đặt bàn',
   CANCELLED: 'Đã hủy',
   DONE: 'Hoàn tất',
 };
@@ -44,33 +44,43 @@ const ReservationCard: React.FC<Props> = ({ reservation, onCancel }) => {
   const handleCancelClick = () => {
     confirmAlert({
       overlayClassName: 'custom-overlay',
-      customUI: ({ onClose }) => (
-        <div className="custom-ui bg-headerBackground text-white p-6 rounded shadow-md max-w-md mx-auto text-center">
-          <h2 className="text-xl mb-4 text-red-400 font-semibold">
-            Xác nhận hủy
-          </h2>
-          <p className="mb-6">
-            Bạn có chắc chắn muốn hủy đơn đặt bàn này không?
-          </p>
-          <div className="flex justify-center gap-4">
-            <button
-              className="bg-gray-500 hover:bg-gray-600 px-4 py-2 rounded"
-              onClick={onClose}
-            >
-              Không
-            </button>
-            <button
-              className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded"
-              onClick={() => {
-                onCancel(reservation._id!);
-                onClose();
-              }}
-            >
-              Có, hủy đơn
-            </button>
+      customUI: ({ onClose }) => {
+        let reason = '';
+        return (
+          <div className="custom-ui bg-headerBackground border border-secondaryColor text-white p-6 rounded-md max-w-md mx-auto text-center shadow-lg">
+            <h2 className="text-xl mb-4 text-red-400 font-semibold uppercase">
+              Xác nhận hủy
+            </h2>
+            <p className="mb-4">
+              Bạn có chắc chắn muốn hủy đơn đặt bàn này không?
+            </p>
+            <textarea
+              placeholder="Lý do bạn muốn hủy..."
+              onChange={(e) => (reason = e.target.value)}
+              className="w-full rounded border border-white/10 bg-transparent p-2 text-sm text-white placeholder-white/40 focus:outline-none focus:ring-1 focus:ring-secondaryColor mb-6"
+              rows={3}
+            />
+            <div className="flex justify-center gap-4">
+              <button
+                className="px-4 py-2 text-sm rounded-md bg-white/10 text-white hover:bg-white/20"
+                onClick={onClose}
+              >
+                KHÔNG
+              </button>
+              <button
+                className="px-4 py-2 text-sm rounded-md bg-red-600 hover:bg-red-700 text-white"
+                onClick={() => {
+                  console.log('Lý do hủy:', reason);
+                  onCancel(reservation._id!);
+                  onClose();
+                }}
+              >
+                CÓ, HỦY ĐƠN
+              </button>
+            </div>
           </div>
-        </div>
-      ),
+        );
+      },
     });
   };
 
@@ -96,8 +106,8 @@ const ReservationCard: React.FC<Props> = ({ reservation, onCancel }) => {
       </div>
 
       {/* Nội dung đặt bàn */}
-      <div className="border-y border-white/20 py-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
+      <div className="border-y border-white/20 py-4 grid grid-cols-1 md:grid-cols-2 md:gap-x-12 md:gap-y-3">
+        <div className="space-y-2 md:space-y-3">
           <p className="text-sm flex items-center gap-2">
             <span className="text-secondaryColor uppercase font-semibold">
               Khách:
@@ -116,9 +126,21 @@ const ReservationCard: React.FC<Props> = ({ reservation, onCancel }) => {
             </span>
             <span className="text-white/90">{reservation.time}</span>
           </p>
+          <p className="text-sm flex items-center gap-2">
+            <span className="text-secondaryColor uppercase font-semibold">
+              Số điện thoại:
+            </span>
+            <span className="text-white/90">{reservation.phone || '—'}</span>
+          </p>
+          <p className="text-sm flex items-center gap-2">
+            <span className="text-secondaryColor uppercase font-semibold">
+              Email:
+            </span>
+            <span className="text-white/90">{reservation.email || '—'}</span>
+          </p>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-2 md:space-y-3">
           <p className="text-sm flex items-center gap-2">
             <span className="text-secondaryColor uppercase font-semibold">
               Bàn:
@@ -133,12 +155,38 @@ const ReservationCard: React.FC<Props> = ({ reservation, onCancel }) => {
               {reservation.number_of_people}
             </span>
           </p>
-          <p className="text-sm flex items-start gap-2">
+          <p className="text-sm flex items-center gap-2">
             <span className="text-secondaryColor uppercase font-semibold">
               Ghi chú:
             </span>
             <span className="text-white/80 italic">
               {reservation.note?.trim() || '—'}
+            </span>
+          </p>
+          <p className="text-sm flex items-center gap-2">
+            <span className="text-secondaryColor uppercase font-semibold">
+              Phương thức thanh toán:
+            </span>
+            <span className="text-white/90">
+              {reservation.payment_method || '—'}
+            </span>
+          </p>
+          <p className="text-sm flex items-center gap-2">
+            <span className="text-secondaryColor uppercase font-semibold">
+              Trạng thái thanh toán:
+            </span>
+            <span className="text-white/90">
+              {reservation.payment_status || '—'}
+            </span>
+          </p>
+          <p className="text-sm flex items-center gap-2">
+            <span className="text-secondaryColor uppercase font-semibold">
+              Số tiền cọc:
+            </span>
+            <span className="text-white/90">
+              {reservation.deposit_amount
+                ? `${reservation.deposit_amount.toLocaleString()}₫`
+                : '—'}
             </span>
           </p>
         </div>
@@ -155,7 +203,7 @@ const ReservationCard: React.FC<Props> = ({ reservation, onCancel }) => {
           </button>
         )}
 
-        {reservation.status === 'CONFIRMED' && (
+        {reservation.status === 'BOOKED' && (
           <button
             className="px-4 py-1.5 text-xs bg-transparent border border-secondaryColor text-white font-normal font-sans"
             disabled

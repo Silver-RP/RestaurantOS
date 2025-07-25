@@ -4,7 +4,7 @@ export interface ICategory extends mongoose.Document {
   Cate_name: string;
   Cate_slug: string;
   Cate_img: string | null;
-  Cate_type: 'dish' | 'drink';
+  Cate_type: 'dish' | 'drink' | 'new';
   parentCate: string | null;
 }
 
@@ -29,7 +29,7 @@ const categorySchema = new mongoose.Schema<ICategory>(
     Cate_type: {
       type: String,
       required: true,
-      enum: ['dish', 'drink'],
+      enum: ['dish', 'drink', 'new'],
     },
     parentCate: {
       type: String,

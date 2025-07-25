@@ -26,7 +26,7 @@ class CategoryService {
         categories.map(async (category) => {
           const foodCount = await Dish.countDocuments({
             categories: category._id,
-            status: { $ne: 'hidden' }, 
+            status: { $ne: 'hidden' },
             isDeleted: false,
           });
           return {
@@ -53,7 +53,7 @@ class CategoryService {
     const { Cate_name, Cate_slug, Cate_type, parentCate } = req.body;
     const type = Cate_type?.trim().toLowerCase();
 
-    if (!['dish', 'drink'].includes(type)) {
+    if (!['dish', 'drink', 'new'].includes(type)) {
       throw new Error('Cate_type không hợp lệ!');
     }
     const existingCategory = await Category.findOne({ Cate_name });
@@ -116,7 +116,7 @@ class CategoryService {
     const { Cate_name, Cate_slug, Cate_type, parentCate } = req.body;
 
     const type = Cate_type?.trim().toLowerCase();
-    if (!['dish', 'drink'].includes(type)) {
+    if (!['dish', 'drink', 'new'].includes(type)) {
       throw new Error('Cate_type không hợp lệ!');
     }
 
@@ -189,6 +189,22 @@ class CategoryService {
       return res.status(200).json({ message: 'Đã xoá danh mục thành công!' });
     } catch (error) {
       return res.status(500).json({ message: 'Lỗi khi xoá danh mục', error });
+    }
+  }
+
+  async GetAllNewCategory(req: Request, res: Response): Promise<any> {
+    try {
+      const categories = await Category.find({ Cate_type: 'new' });
+      if (categories.length === 0) {
+        return res.status(404).json({ message: 'No new categories found!' });
+      }
+      return res.status(200).json({
+        total: categories.length,
+        data: categories,
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: 'An error occurred', error });
     }
   }
 

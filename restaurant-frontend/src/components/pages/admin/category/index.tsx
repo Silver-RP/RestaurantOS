@@ -42,8 +42,28 @@ const CategoriesPage: React.FC = () => {
 
     if (sortField) {
       data = [...data].sort((a, b) => {
-        const aField = a[sortField]?.toString().toLowerCase() ?? '';
-        const bField = b[sortField]?.toString().toLowerCase() ?? '';
+        let aField = '';
+        let bField = '';
+        switch (sortField) {
+          case 'Cate_name':
+            aField = a.Cate_name.toLowerCase();
+            bField = b.Cate_name.toLowerCase();
+            break;
+          case 'Cate_slug':
+            aField = a.Cate_slug.toLowerCase();
+            bField = b.Cate_slug.toLowerCase();
+            break;
+          case 'Cate_type':
+            aField = a.Cate_type.toLowerCase();
+            bField = b.Cate_type.toLowerCase();
+            break;
+          case 'foodCount':
+            aField = a.foodCount?.toString() || '';
+            bField = b.foodCount?.toString() || '';
+            break;
+          default:
+            break;
+        }
         return order === 'asc'
           ? aField.localeCompare(bField)
           : bField.localeCompare(aField);
@@ -255,7 +275,13 @@ const CategoriesPage: React.FC = () => {
                   <td className="p-3 font-medium">{cate.Cate_name}</td>
                   <td className="p-3">{cate.Cate_slug}</td>
                   <td className="p-3">
-                    {cate.Cate_type === 'dish' ? 'Món ăn' : 'Đồ uống'}
+                    {cate.Cate_type === 'dish'
+                      ? 'Món ăn'
+                      : cate.Cate_type === 'drink'
+                        ? 'Đồ uống'
+                        : cate.Cate_type === 'new'
+                          ? 'Tin tức'
+                          : cate.Cate_type}
                   </td>
                   <td className="p-3">{cate.foodCount || 0}</td>
                   <td className="p-3 space-x-2">

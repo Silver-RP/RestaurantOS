@@ -1,12 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import PostForm from './PostForm';
-import { useCategories } from '@/hooks/useCategories';
+import { useCategoriesNew } from '@/hooks/useCategories';
 import { usePosts } from '@/hooks/usePosts';
 
 const CreatePostPage = () => {
   const navigate = useNavigate();
-  const { categories } = useCategories();
+  const { categories } = useCategoriesNew();
   const { isLoading, createPost } = usePosts();
 
   if (!categories) {
