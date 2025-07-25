@@ -1,10 +1,10 @@
 import React from 'react';
-import { ReservationStatus } from '@/types/reservation.type';
+import { ReservationStatus } from '@/types/Reservation.type';
 
 export const reservationTabs = [
   'Tất cả',
   'Chờ xác nhận',
-  'Đã xác nhận',
+  'Đã đặt bàn',
   'Đã hủy',
   'Hoàn tất',
 ];
@@ -15,7 +15,7 @@ export const reservationStatusMapping: Record<
 > = {
   'Tất cả': null,
   'Chờ xác nhận': ['PENDING'],
-  'Đã xác nhận': ['CONFIRMED'],
+  'Đã đặt bàn': ['BOOKED'],
   'Đã hủy': ['CANCELLED'],
   'Hoàn tất': ['DONE'],
 };

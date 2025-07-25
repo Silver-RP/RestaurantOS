@@ -68,7 +68,7 @@ const TableManagement: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-admintext mb-4">Quản lý bàn</h1>
+        <h1 className="text-2xl font-bold text-admintext">Quản lý bàn</h1>
       </div>
 
       <div className="flex flex-wrap gap-4 items-center justify-between">
