@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useGetCart } from '@/hooks/useCart';
-import { useAuth } from '@/hooks/useAuth';
-// Bỏ import toastService vì không sử dụng nữa
-// import { toastService } from '@/utils/toastService';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import Cookies from 'js-cookie';
@@ -34,11 +31,15 @@ interface SidebarProps {
 const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
   const { data: cart } = useGetCart();
-  const { isAuthenticated } = useAuth();
   const countCart = cart?.items?.length || 0;
   const favoriteCount = useSelector(
     (state: RootState) => state.favorite.items.length,
   );
+  const favoriteCount1 = useSelector(
+    (state: RootState) => state.favorite,
+  );
+
+  console.log('ExtendSidebar rendered: ', favoriteCount1);
   const dispatch = useDispatch();
   useEffect(() => {
     const handleResize = () => {
@@ -129,7 +130,8 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
                   />
                 </Link>
                 <span className="absolute -top-1 -right-2 bg-secondaryColor text-black text-xs rounded-full px-1">
-                  {isAuthenticated ? countCart : 0}
+                {countCart}
+                  {/* {isAuthenticated ? countCart : 0} */}
                 </span>
               </div>
               <FiSearch
