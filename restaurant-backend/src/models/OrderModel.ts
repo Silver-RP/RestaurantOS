@@ -19,6 +19,7 @@ export interface IOrder extends Document {
   address_id: Types.ObjectId | IAddress | null | undefined;
   payment_method: 'CASH' | 'BANKING' | 'VNPAY' | 'MOMO' | 'MOMO_ATM' | 'CREDIT_CARD';
   delivery_type: 'DELIVERY' | 'PICKUP';
+  addressSnapshot: IAddress;
 
   status:
   | 'ORDER_PLACED'
@@ -74,6 +75,15 @@ const OrderSchema = new Schema<IOrder>(
       type: String,
       enum: ['DELIVERY', 'PICKUP'],
       required: true,
+    },
+    addressSnapshot: {
+      full_name: { type: String, required: true },
+      phone: { type: String, required: true },
+      province: { type: String, required: true },
+      district: { type: String, required: true },
+      street_address: { type: String, required: true },
+      ward: { type: String, required: true },
+      address_type: { type: String, enum: ['HOME', 'WORK', 'OTHER'], default: 'HOME' },
     },
     status: {
       type: String,
