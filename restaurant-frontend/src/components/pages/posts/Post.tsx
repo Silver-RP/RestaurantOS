@@ -16,13 +16,13 @@ const Post: React.FC<PostProps> = ({ post }) => {
   };
 
   return (
-    <div className="text-white w-full relative">
+    <div className="text-white w-full relative ">
       <img
         src={post.images?.[0] || '/assets/images/default-post.jpg'}
         alt={post.title}
-        className="w-full h-auto max-h-80 object-cover"
+        className=" w-[335px] h-[190px] object-cover"
       />
-      <p className="bg-secondaryColor text-black inline-block px-3 py-1 text-sm mt-4 absolute top-4 left-4">
+      <p className="bg-secondaryColor text-black inline-block px-3 py-1 text-sm mt-3 absolute top-0 left-0">
         {new Date(post.createdAt).toLocaleDateString('en-US', {
           month: 'long',
           day: 'numeric',
@@ -38,7 +38,7 @@ const Post: React.FC<PostProps> = ({ post }) => {
             In: <span className="text-secondaryColor font-semibold">{post.categories_id.Cate_name}</span>
           </span>
         </div>
-        <div className="flex gap-2 mt-2">
+        {/* <div className="flex gap-2 mt-2">
           <button className="bg-white text-black px-2 py-1 text-xs flex items-center gap-1">
             <FaShareAlt /> Share
           </button>
@@ -54,10 +54,10 @@ const Post: React.FC<PostProps> = ({ post }) => {
           >
             <FaTwitter /> Twitter
           </button>
-        </div>
+        </div> */}
       </div>
-      <h3 className="text-xl font-bold mt-6 mb-2 break-words">{post.title}</h3>
-      <p className="text-sm mt-2 mb-4 break-words leading-relaxed">{post.desc}</p>
+      <h3 className="text-xl font-bold mt-4 mb-2 break-words line-clamp-2">{post.title}</h3>
+      <p className="text-sm mt-2 mb-4 break-words leading-relaxed line-clamp-2">{post.desc}</p>
       <ButtonComponents variant="filled" size="small" onClick={handlePostClick}>
         Đọc thêm
       </ButtonComponents>

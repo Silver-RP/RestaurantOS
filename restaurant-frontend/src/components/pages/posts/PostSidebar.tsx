@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 
+import { FaSearch } from 'react-icons/fa';
+
 interface PostSidebarProps {
   className?: string;
   onSearch?: (value: string) => void;
@@ -36,13 +38,14 @@ const PostSidebar: React.FC<PostSidebarProps> = ({ className, onSearch }) => {
             value={searchValue}
             onChange={handleSearchChange}
             onKeyDown={handleKeyDown}
-            className="w-full sm:w-[140px] md:w-[180px] px-2 py-1 text-sm bg-transparent border border-hr text-white placeholder-slate-500 focus:outline-none"
+            className="w-full sm:w-[140px] md:w-[155px] px-2 py-1 text-sm bg-transparent border border-hr text-white placeholder-slate-500 focus:outline-none"
           />
           <button
-            className="px-3 py-1 text-sm bg-secondaryColor text-white rounded hover:bg-secondaryColor/80"
+            className="px-2 h-[30px] py-1 text-[13px] bg-secondaryColor text-black rounded-[3px] hover:bg-secondaryColor"
             onClick={handleSearch}
           >
             Tìm kiếm
+            {/* <FaSearch/> */}
           </button>
         </div>
       </div>

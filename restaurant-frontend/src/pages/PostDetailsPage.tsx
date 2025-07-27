@@ -37,7 +37,7 @@ const PostDetailsPage = () => {
   }
 
   return (
-    <OrderOnlineLayout className="px-4 sm:px-6">
+    <OrderOnlineLayout className="w-full px-4 sm:px-6">
       <PostContent post={post} />
     </OrderOnlineLayout>
   );
