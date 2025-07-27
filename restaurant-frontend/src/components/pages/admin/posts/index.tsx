@@ -99,12 +99,6 @@ const PostsPage = () => {
     setSearchParams(newParams, { replace: true });
   };
 
-  const handleLimitChange = (newLimit: number) => {
-    const newParams = new URLSearchParams(searchParams.toString());
-    newParams.set('limit', String(newLimit));
-    newParams.set('page', '1');
-    setSearchParams(newParams, { replace: true });
-  };
 
   return (
     <main className="!p-0 bg-white rounded-lg ">
@@ -202,15 +196,21 @@ const PostsPage = () => {
                     <td className="px-4 py-2">{index + 1}</td>
                     <td className="px-4 py-2">
                       <img
-                        src={post.images?.[0] || '/assets/images/default-post.jpg'}
+                        src={
+                          post.images?.[0] || '/assets/images/default-post.jpg'
+                        }
                         alt={post.title}
                         className="w-12 h-12 object-cover rounded"
                       />
                     </td>
                     <td className="px-4 py-2">
                       <div>
-                        <div className="text-sm font-medium text-gray-900">{post.title}</div>
-                        <div className="text-sm text-gray-500 truncate max-w-xs">{post.desc}</div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {post.title}
+                        </div>
+                        <div className="text-sm text-gray-500 truncate max-w-xs">
+                          {post.desc}
+                        </div>
                       </div>
                     </td>
                     <td className="px-4 py-2">
@@ -222,12 +222,15 @@ const PostsPage = () => {
                       {new Date(post.createdAt).toLocaleDateString('vi-VN')}
                     </td>
                     <td className="px-4 py-2">
-                      <span className={`px-2 py-1 text-xs rounded-full ${post.status === 'published'
-                        ? 'bg-green-100 text-green-800'
-                        : post.status === 'pending'
-                          ? 'bg-blue-100 text-blue-800'
-                          : 'bg-yellow-100 text-yellow-800'
-                        }`}>
+                      <span
+                        className={`px-2 py-1 text-xs rounded-full ${
+                          post.status === 'published'
+                            ? 'bg-green-100 text-green-800'
+                            : post.status === 'pending'
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-yellow-100 text-yellow-800'
+                        }`}
+                      >
                         {post.status === 'published'
                           ? 'Đã đăng'
                           : post.status === 'pending'
@@ -262,8 +265,15 @@ const PostsPage = () => {
               currentPage={currentPage}
               totalPages={totalPages}
               onPageChange={handlePageChange}
-              limit={Number(searchParams.get('limit') || 10)}
-              onLimitChange={handleLimitChange}
+              limit={Number(searchParams.get('limit') || 12)}
+              onLimitChange={(newLimit) => {
+                setSearchParams((prev) => {
+                  const newParams = new URLSearchParams(prev);
+                  newParams.set('limit', newLimit.toString());
+                  newParams.delete('page');
+                  return newParams;
+                });
+              }}
             />
           )}
         </div>
