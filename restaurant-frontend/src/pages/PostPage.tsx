@@ -4,24 +4,20 @@ import PostSidebar from '../components/pages/posts/PostSidebar';
 import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
 import { usePosts } from '../hooks/usePosts';
 import Pagination from '../components/common/Pagination';
+import Container from '@/components/common/Container';
+
 
 const PostPage: React.FC = () => {
   const { data: postsData, isLoading, error, searchParams, setSearchParams } = usePosts();
-
-  if (isLoading) {
-    return <div className="text-white">Loading...</div>;
-  }
-
-  if (error) {
-    return <div className="text-white">Error loading posts</div>;
-  }
 
   return (
     <>
       <BreadCrumbComponents />
       <div className="bg-bodyBackground min-h-screen text-white">
-        <div className="container mx-auto">
-          <div className="flex flex-col lg:flex-row gap-10 px-4 py-10">
+        <Container>
+
+          <div className="max-w-[1500px] py-10">
+          <div className="flex flex-col lg:flex-row gap-10 ">
             <div className="lg:w-1/4 w-full relative">
               <div className="w-full h-[calc(100vh-2rem)]">
                 <PostSidebar
@@ -41,7 +37,7 @@ const PostPage: React.FC = () => {
               </div>
             </div>
             <div className="w-full lg:w-3/4">
-              <PostListSection posts={postsData?.docs || []} />
+              <PostListSection posts={postsData?.docs || []} isLoading={isLoading} />
               <div className="mt-8">
                 <Pagination
                   currentPage={postsData?.page || 1}
@@ -65,6 +61,8 @@ const PostPage: React.FC = () => {
             </div>
           </div>
         </div>
+        </Container>
+
       </div>
     </>
   );
