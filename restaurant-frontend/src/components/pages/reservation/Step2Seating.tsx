@@ -159,9 +159,15 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({
               }
               let status: 'selected' | 'available' | 'reserved' | 'booked' =
                 'available';
-              if (isSelected) status = 'selected';
-              else if (t.isBooked) status = 'booked';
-              else if (!isAvailable) status = 'reserved';
+              if (isCapacityNotEnough) {
+                status = 'reserved';
+              } else if (isSelected) {
+                status = 'selected';
+              } else if (t.isBooked) {
+                status = 'booked';
+              } else if (!isAvailable) {
+                status = 'reserved';
+              }
               return (
                 <div
                   key={tableId}

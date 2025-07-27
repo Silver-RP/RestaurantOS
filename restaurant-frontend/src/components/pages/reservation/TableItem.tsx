@@ -24,14 +24,14 @@ interface TableItemProps {
 const getBorderColor = (status: TableStatus) => {
   if (status === 'selected') return 'border-yellow-400';
   if (status === 'booked') return 'border-red-500';
-  if (status === 'reserved') return 'border-red-500';
+  if (status === 'reserved') return 'border-gray-500';
   return 'border-green-500';
 };
 
 const getChairColor = (status: TableStatus) => {
   if (status === 'selected') return 'bg-yellow-400';
   if (status === 'booked') return 'bg-red-400';
-  if (status === 'reserved') return 'bg-red-400';
+  if (status === 'reserved') return 'bg-gray-400';
   return 'bg-green-400';
 };
 

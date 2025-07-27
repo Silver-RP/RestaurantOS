@@ -36,24 +36,24 @@ const ContactUsForm: React.FC = () => {
         <div className=" rounded-md col-span-4 text-white">
           <h2 className="text-2xl mb-6">Liên hệ với chúng tôi</h2>
           <form className="space-y-6" onSubmit={handleSubmit}>
-          <div className="flex flex-col gap-2 relative">
-  <label className="text-sm md:text-base">Chủ đề</label>
-  <div className="relative">
-    <select
-      name="subject"
-      className="p-3 pr-10 bg-transparent border border-[#074b6b] text-white placeholder:text-gray-400 
+            <div className="flex flex-col gap-2 relative">
+              <label className="text-sm md:text-base">Chủ đề</label>
+              <div className="relative">
+                <select
+                  name="subject"
+                  className="p-3 pr-10 bg-transparent border border-[#074b6b] text-white placeholder:text-gray-400 
         rounded appearance-none focus:outline-none focus:border-secondaryColor focus:ring-1 focus:ring-secondaryColor transition w-full"
-      value={formData.subject}
-      onChange={handleChange}
-    >
-      <option value="">-- Chọn chủ đề --</option>
-      <option value="Dịch vụ khách hàng">Dịch vụ khách hàng</option>
-      <option value="Hỗ trợ kỹ thuật">Hỗ trợ kỹ thuật</option>
-      <option value="Góp ý">Góp ý</option>
-    </select>
-    <FiChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-white pointer-events-none" />
-  </div>
-</div>
+                  value={formData.subject}
+                  onChange={handleChange}
+                >
+                  <option value="">-- Chọn chủ đề --</option>
+                  <option value="Dịch vụ khách hàng">Dịch vụ khách hàng</option>
+                  <option value="Hỗ trợ kỹ thuật">Hỗ trợ kỹ thuật</option>
+                  <option value="Góp ý">Góp ý</option>
+                </select>
+                <FiChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-white pointer-events-none" />
+              </div>
+            </div>
 
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex flex-col gap-2 w-full md:w-1/2">

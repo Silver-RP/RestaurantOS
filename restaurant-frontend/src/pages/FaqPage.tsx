@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
-import { FaAnglesRight, FaAnglesDown } from 'react-icons/fa6';
+import React, { useState, useCallback } from 'react';
+import { FaAnglesRight } from 'react-icons/fa6';
+import { motion, AnimatePresence } from 'framer-motion';
+import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
+import ButtonComponents from '../components/common/ButtonComponents';
 
 const faqData = {
   tong_quat: [
@@ -106,74 +109,188 @@ export default function FaqPage() {
   const [activeCategory, setActiveCategory] =
     useState<keyof typeof faqData>('tong_quat');
 
-  const toggleAnswer = (index: string | number) => {
+  // Reset expanded questions when changing category
+  const handleCategoryChange = useCallback((category: keyof typeof faqData) => {
+    setActiveCategory(category);
+    setExpandedQuestions({}); // Reset all expanded questions
+  }, []);
+
+  const toggleAnswer = useCallback((index: string | number) => {
     setExpandedQuestions((prev) => ({
       ...prev,
       [index]: !prev[index],
     }));
+  }, []);
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.4,
+        staggerChildren: 0.05,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.3,
+        ease: 'easeOut',
+      },
+    },
+  };
+
+  const answerVariants = {
+    hidden: {
+      opacity: 0,
+      scaleY: 0,
+      transformOrigin: 'top',
+    },
+    visible: {
+      opacity: 1,
+      scaleY: 1,
+      transformOrigin: 'top',
+      transition: {
+        duration: 0.2,
+        ease: 'easeOut',
+      },
+    },
+    exit: {
+      opacity: 0,
+      scaleY: 0,
+      transformOrigin: 'top',
+      transition: {
+        duration: 0.15,
+        ease: 'easeIn',
+      },
+    },
   };
 
   return (
     <div className="min-h-screen bg-bodyBackground">
-      <div
-        className="bg-cover bg-center h-60 flex items-center justify-center"
-        style={{ backgroundImage: "url('/images/banner/FAQs-banner-1.jpg')" }}
-      >
-        <div className="text-center">
-          <h1 className="text-white text-4xl font-bold mb-2">FAQs</h1>
-          <p className="text-white text-lg opacity-80">
-            Những câu hỏi thường gặp
-          </p>
-        </div>
-      </div>
+      <BreadCrumbComponents />
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row gap-6">
-          {/* Category Buttons */}
-          <div className="w-full md:w-1/4">
-            <div className="flex flex-col gap-4 ml-10">
-              {Object.keys(faqData).map((key) => (
-                <button
-                  key={key}
-                  onClick={() => setActiveCategory(key as keyof typeof faqData)}
-                  className={`text-left px-4 py-2 rounded-md text-lg font-medium border transition-all
-                    ${
-                        activeCategory === key
-                        ? 'bg-headerBackground text-white'
-                        : 'bg-gray-100 text-headerBackground hover:bg-headerBackground hover:text-white'
-                    }`}
-                >
-                  {faqCategories[key as keyof typeof faqCategories] || key}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* FAQ Content */}
-          <div className="w-full md:w-3/4">
-            <div className="flex flex-col gap-4">
-              {faqData[activeCategory]?.map((faq, index) => (
-                <div key={index}>
-                  <button
-                    onClick={() => toggleAnswer(index)}
-                    className="w-full text-black flex justify-between items-center px-4 py-3 bg-white border rounded-lg text-left text-md font-medium hover:bg-gray-100 transition"
-                  >
-                    {faq.question}
-                    {expandedQuestions[index] ? (
-                      <FaAnglesDown />
-                    ) : (
-                      <FaAnglesRight />
-                    )}
-                  </button>
-                  {expandedQuestions[index] && (
-                    <p className="bg-white px-6 py-4 border-l-4 border-orange-500 text-gray-700 rounded-b-lg">
-                      {faq.answer}
-                    </p>
-                  )}
+      <div className="min-h-auto bg-bodyBackground py-16 flex justify-center">
+        <div className="w-11/12 md:w-container95 lg:w-container95 xl:w-container95 2xl:w-mainContainer mx-auto">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
+              {/* Category Sidebar */}
+              <motion.div className="w-full lg:w-1/4" variants={itemVariants}>
+                <div className="sticky top-8">
+                  <h3 className="text-2xl font-restora font-light text-white mb-6">
+                    Danh mục
+                  </h3>
+                  <div className="flex flex-col gap-3">
+                    {Object.keys(faqData).map((key) => (
+                      <motion.div
+                        key={key}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <ButtonComponents
+                          variant={
+                            activeCategory === key ? 'selected' : 'filled'
+                          }
+                          size="medium"
+                          onClick={() =>
+                            handleCategoryChange(key as keyof typeof faqData)
+                          }
+                          className="w-full text-left justify-start"
+                        >
+                          <span className="font-roboto">
+                            {faqCategories[key as keyof typeof faqCategories] ||
+                              key}
+                          </span>
+                        </ButtonComponents>
+                      </motion.div>
+                    ))}
+                  </div>
                 </div>
-              ))}
+              </motion.div>
+
+              {/* FAQ Content */}
+              <motion.div
+                className="w-full lg:w-3/4"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="mb-8">
+                  <h2 className="text-3xl font-restora font-light text-white mb-2">
+                    {faqCategories[activeCategory]}
+                  </h2>
+                  <p className="text-grayText font-roboto">
+                    Tìm hiểu thêm về{' '}
+                    {faqCategories[activeCategory].toLowerCase()}
+                  </p>
+                </div>
+
+                <motion.div
+                  className="space-y-4"
+                  key={activeCategory}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {faqData[activeCategory]?.map((faq, index) => (
+                    <motion.div
+                      key={`${activeCategory}-${index}`}
+                      className="bg-headerBackground border border-hr rounded-lg overflow-hidden shadow-md"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.2, delay: index * 0.05 }}
+                      whileHover={{ y: -1 }}
+                    >
+                      <button
+                        onClick={() => toggleAnswer(index)}
+                        className="w-full text-left px-6 py-5 bg-headerBackground hover:bg-opacity-80 transition-all duration-300 flex justify-between items-center group"
+                      >
+                        <h3 className="text-lg font-medium text-white font-roboto pr-4 group-hover:text-secondaryColor transition-colors duration-300">
+                          {faq.question}
+                        </h3>
+                        <motion.div
+                          animate={{
+                            rotate: expandedQuestions[index] ? 90 : 0,
+                          }}
+                          transition={{ duration: 0.2, ease: 'easeOut' }}
+                          className="text-secondaryColor text-xl flex-shrink-0"
+                        >
+                          <FaAnglesRight />
+                        </motion.div>
+                      </button>
+
+                      <AnimatePresence mode="wait">
+                        {expandedQuestions[index] && (
+                          <motion.div
+                            variants={answerVariants}
+                            initial="hidden"
+                            animate="visible"
+                            exit="exit"
+                            className="px-6 pb-5 overflow-hidden"
+                          >
+                            <div className="border-l-4 border-secondaryColor pl-4">
+                              <p className="text-grayText font-roboto leading-relaxed">
+                                {faq.answer}
+                              </p>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </motion.div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </div>

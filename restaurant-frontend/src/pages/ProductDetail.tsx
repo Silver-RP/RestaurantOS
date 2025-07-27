@@ -21,35 +21,44 @@ const ProductDetail: React.FC = () => {
 
   useProductView(productId);
 
- 
-
-   const tabs = food ? [
-    {
-      id: 'description',
-      title: 'Mô tả',
-      content: food.description || 'Chưa có mô tả cho sản phẩm này.',
-    },
-    {
-      id: 'details',
-      title: 'Chi tiết sản phẩm',
-      content: food.ingredients 
-  ? `Nguyên liệu: ${food.ingredients}` 
-  : 'Chưa có thông tin chi tiết cho sản phẩm này.',
-    },
-    {
-      id: 'reviews',
-      title: 'Đánh giá',
-      content: (
-        <ProductReviews
-          productId={food._id}
-          productName={food.name}
-          averageRating={food.average_rating || 0}
-          ratingCount={food.rating_count || 0}
-          scrollToForm={shouldOpenReviewTab}
-        />
-      ),
-    },
-  ] : [];
+  const tabs = food
+    ? [
+        {
+          id: 'description',
+          title: 'Mô tả',
+          content: food.description || 'Chưa có mô tả cho sản phẩm này.',
+        },
+        {
+          id: 'details',
+          title: 'Chi tiết sản phẩm',
+          content: food.ingredients
+            ? `Nguyên liệu: ${food.ingredients}`
+            : 'Chưa có thông tin chi tiết cho sản phẩm này.',
+        },
+        {
+          id: 'reviews',
+          title: 'Đánh giá',
+          content: (
+            <ProductReviews
+              productId={food._id}
+              productName={food.name}
+              averageRating={food.average_rating || 0}
+              ratingCount={food.rating_count || 0}
+              scrollToForm={shouldOpenReviewTab}
+            />
+          ),
+        },
+        {
+          id: 'policies',
+          title: 'Chính sách',
+          content: (
+            <div className="pb-4">
+              <ProductPolicies />
+            </div>
+          ),
+        },
+      ]
+    : [];
 
   if (loading) {
     return (
@@ -107,14 +116,14 @@ const ProductDetail: React.FC = () => {
                 )}
                 sku={food._id}
               />
-              <div className="mt-8 hidden 2xl:block">
-                <ProductPolicies />
-              </div>
             </div>
           </div>
 
           {/* <ProductTabs tabs={tabs} /> */}
-          <ProductTabs tabs={tabs} defaultOpenTab={shouldOpenReviewTab ? 'reviews' : null} />
+          <ProductTabs
+            tabs={tabs}
+            defaultOpenTab={shouldOpenReviewTab ? 'reviews' : null}
+          />
 
           <RelatedProductList
             categories={food.categories.map((c) =>
