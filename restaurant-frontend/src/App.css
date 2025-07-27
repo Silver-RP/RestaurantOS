@@ -161,8 +161,8 @@ input:-webkit-autofill:focus {
 
 @font-face {
   font-family: 'Restora';
-  src: url('/fonts/Restora/Nasir Udin - RestoraExtraLight.woff2') format('woff2'),
-       url('/fonts/Restora/Nasir Udin - RestoraExtraLight.woff') format('woff');
+  src: url('/fonts/Restora/RestoraExtraLight.woff2') format('woff2'),
+       url('/fonts/Restora/RestoraExtraLight.woff') format('woff');
   font-weight: 200;
   font-style: normal;
   font-display: swap;
@@ -170,8 +170,8 @@ input:-webkit-autofill:focus {
 
 @font-face {
   font-family: 'Restora';
-  src: url('/fonts/Restora/Nasir Udin - RestoraThinItalic.woff2') format('woff2'),
-       url('/fonts/Restora/Nasir Udin - RestoraThinItalic.woff') format('woff');
+  src: url('/fonts/Restora/RestoraThinItalic.woff2') format('woff2'),
+       url('/fonts/Restora/RestoraThinItalic.woff') format('woff');
   font-weight: 100;
   font-style: italic;
   font-display: swap;
