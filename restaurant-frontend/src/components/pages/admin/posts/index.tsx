@@ -41,20 +41,24 @@ const PostsPage = () => {
     setSearchTerm(value);
   };
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      const newParams = new URLSearchParams(searchParams.toString());
+useEffect(() => {
+  const timer = setTimeout(() => {
+    const newParams = new URLSearchParams(searchParams.toString());
+
+    const prevSearch = searchParams.get('search') || '';
+    if (searchTerm !== prevSearch) {
       if (searchTerm) {
         newParams.set('search', searchTerm);
       } else {
         newParams.delete('search');
       }
-      newParams.set('page', '1');
+      newParams.set('page', '1'); 
       setSearchParams(newParams);
-    }, 500);
+    }
+  }, 500);
 
-    return () => clearTimeout(timer);
-  }, [searchTerm, searchParams, setSearchParams]);
+  return () => clearTimeout(timer);
+}, [searchTerm, searchParams, setSearchParams]);
 
   const handleSort = (field: string) => {
     const newOrder = sortField === field && sortOrder === 'asc' ? 'desc' : 'asc';
