@@ -42,40 +42,45 @@ const ReservationCard: React.FC<Props> = ({ reservation, onCancel }) => {
   const statusLabel = statusLabelMap[reservation.status] || reservation.status;
 
   const handleCancelClick = () => {
+    const isBooked = reservation.status === 'BOOKED';
+    const title = isBooked ? 'Yêu cầu hủy đặt bàn' : 'Xác nhận hủy đặt bàn';
+    const message = isBooked
+      ? 'Bạn có chắc chắn muốn yêu cầu hủy đơn đặt bàn này không? Yêu cầu sẽ được gửi đến nhà hàng để xem xét.'
+      : 'Bạn có chắc chắn muốn hủy đơn đặt bàn này không?';
+    const buttonText = isBooked ? 'GỬI YÊU CẦU' : 'CÓ, HỦY ĐƠN';
+
     confirmAlert({
       overlayClassName: 'custom-overlay',
       customUI: ({ onClose }) => {
         let reason = '';
         return (
-          <div className="custom-ui bg-headerBackground border border-secondaryColor text-white p-6 rounded-md max-w-md mx-auto text-center shadow-lg">
-            <h2 className="text-xl mb-4 text-red-400 font-semibold uppercase">
-              Xác nhận hủy
+          <div className="custom-ui bg-bodyBackground border border-secondaryColor text-white p-6 rounded-xl shadow-2xl max-w-md mx-auto text-center">
+            <h2 className="text-xl mb-4 text-secondaryColor font-semibold uppercase tracking-wide">
+              {title}
             </h2>
-            <p className="mb-4">
-              Bạn có chắc chắn muốn hủy đơn đặt bàn này không?
-            </p>
+            <p className="mb-4 text-white/90">{message}</p>
             <textarea
               placeholder="Lý do bạn muốn hủy..."
               onChange={(e) => (reason = e.target.value)}
-              className="w-full rounded border border-white/10 bg-transparent p-2 text-sm text-white placeholder-white/40 focus:outline-none focus:ring-1 focus:ring-secondaryColor mb-6"
+              className="w-full rounded-lg border border-white/20 bg-[#14324a] p-3 text-sm text-white placeholder-white/40 focus:outline-none focus:ring-1 focus:ring-secondaryColor focus:border-secondaryColor mb-6 resize-none"
               rows={3}
             />
             <div className="flex justify-center gap-4">
               <button
-                className="px-4 py-2 text-sm rounded-md bg-white/10 text-white hover:bg-white/20"
+                className="px-6 py-2 text-sm bg-transparent border border-white/20 text-white hover:bg-white/10 transition-colors"
                 onClick={onClose}
               >
                 KHÔNG
               </button>
               <button
-                className="px-4 py-2 text-sm rounded-md bg-red-600 hover:bg-red-700 text-white"
+                className="px-6 py-2 text-sm bg-secondaryColor text-headerBackground hover:bg-secondaryColor/90 transition-colors font-medium"
                 onClick={() => {
                   console.log('Lý do hủy:', reason);
                   onCancel(reservation._id!);
                   onClose();
                 }}
               >
-                CÓ, HỦY ĐƠN
+                {buttonText}
               </button>
             </div>
           </div>
@@ -205,8 +210,8 @@ const ReservationCard: React.FC<Props> = ({ reservation, onCancel }) => {
 
         {reservation.status === 'BOOKED' && (
           <button
-            className="px-4 py-1.5 text-xs bg-transparent border border-secondaryColor text-white font-normal font-sans"
-            disabled
+            className="px-4 py-1.5 text-xs bg-transparent border border-secondaryColor text-white font-normal font-sans hover:bg-secondaryColor hover:text-headerBackground focus:ring-bodyBackground active:bg-secondaryColor/90 active:text-headerBackground"
+            onClick={handleCancelClick}
           >
             Yêu cầu huỷ đặt bàn
           </button>

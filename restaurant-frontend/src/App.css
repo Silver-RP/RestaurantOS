@@ -158,3 +158,21 @@ input:-webkit-autofill:focus {
   word-break: break-all;
   overflow-wrap: break-word;
 }
+
+@font-face {
+  font-family: 'Restora';
+  src: url('/fonts/Restora/Nasir Udin - RestoraExtraLight.woff2') format('woff2'),
+       url('/fonts/Restora/Nasir Udin - RestoraExtraLight.woff') format('woff');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Restora';
+  src: url('/fonts/Restora/Nasir Udin - RestoraThinItalic.woff2') format('woff2'),
+       url('/fonts/Restora/Nasir Udin - RestoraThinItalic.woff') format('woff');
+  font-weight: 100;
+  font-style: italic;
+  font-display: swap;
+}

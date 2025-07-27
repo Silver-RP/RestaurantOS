@@ -160,31 +160,33 @@ const ReservationCard: React.FC<Props> = ({ onCancel }) => {
       customUI: ({ onClose }) => {
         let reason = '';
         return (
-          <div className="custom-ui bg-headerBackground border border-secondaryColor text-white p-6 rounded-md max-w-md mx-auto text-center shadow-lg">
-            <h2 className="text-xl mb-4 text-red-400 font-semibold uppercase">
-              Xác nhận hủy
+          <div className="custom-ui bg-bodyBackground border border-secondaryColor text-white p-6 rounded-xl shadow-2xl max-w-md mx-auto text-center">
+            <h2 className="text-xl mb-4 text-secondaryColor font-semibold uppercase tracking-wide">
+              Xác nhận hủy đặt bàn
             </h2>
-            <p className="mb-4">
+            <p className="mb-4 text-white/90">
               Bạn có chắc chắn muốn hủy đơn đặt bàn này không?
             </p>
             <textarea
               placeholder="Lý do bạn muốn hủy..."
               onChange={(e) => (reason = e.target.value)}
-              className="w-full rounded border border-white/10 bg-transparent p-2 text-sm text-white placeholder-white/40 focus:outline-none focus:ring-1 focus:ring-secondaryColor mb-6"
+              className="w-full rounded-lg border border-white/20 bg-[#14324a] p-3 text-sm text-white placeholder-white/40 focus:outline-none focus:ring-1 focus:ring-secondaryColor focus:border-secondaryColor mb-6 resize-none"
               rows={3}
             />
             <div className="flex justify-center gap-4">
               <button
-                className="px-4 py-2 text-sm rounded-md bg-white/10 text-white hover:bg-white/20"
+                className="px-6 py-2 text-sm bg-transparent border border-white/20 text-white hover:bg-white/10 transition-colors"
                 onClick={onClose}
               >
                 KHÔNG
               </button>
               <button
-                className="px-4 py-2 text-sm rounded-md bg-red-600 hover:bg-red-700 text-white"
+                className="px-6 py-2 text-sm bg-secondaryColor text-headerBackground hover:bg-secondaryColor/90 transition-colors font-medium"
                 onClick={() => {
                   console.log('Lý do hủy:', reason);
-                  onCancel(reservation._id!);
+                  if (reservation?._id) {
+                    onCancel(reservation._id);
+                  }
                   onClose();
                 }}
               >

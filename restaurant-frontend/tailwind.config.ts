@@ -63,7 +63,6 @@ export default {
         'fade-down': 'fadeDown 1s ease-out',
         fadeIn: 'fadeIn 0.3s ease-out forwards',
         shake: 'shake 0.6s ease-in-out infinite',
-  
       },
       keyframes: {
         wiggle: {
@@ -85,7 +84,6 @@ export default {
           '60%': { transform: 'translateX(-4px)' },
           '80%': { transform: 'translateX(4px)' },
         },
-        
       },
     },
   },
