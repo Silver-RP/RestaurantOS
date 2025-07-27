@@ -87,6 +87,7 @@ class OrderValidator {
     }
     return address;
   }
+  
   static async validateCartAndItems(userId: string, clientItems: any[], session: any) {
     let totalAmount = 0;
     const orderItems = [];

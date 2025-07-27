@@ -9,6 +9,7 @@ const refreshTokenSchema = new mongoose.Schema(
     userAgent: String,
     ipAddress: String,
     replacedByToken: { type: String },
+    rememberMe: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

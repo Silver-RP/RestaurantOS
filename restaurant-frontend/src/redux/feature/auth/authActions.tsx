@@ -2,14 +2,16 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { RegisterPayload, LoginPayload } from './authTypes';
 import Cookies from 'js-cookie';
-import {
+import { 
+  setAuthData, 
+  clearAuthCookies, 
   setAccessToken,
   setRefreshToken,
-  clearAuthCookies,
+  setUserInfo 
 } from '../../../utils/tokenHelpers';
 import { clearFavorites } from '../favorite/favoriteSlice';
 
-const BASE_URL = import.meta.env.VITE_BACKEND_URL;
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000/api';
 
 const apiRequest = async (
   url: string,
@@ -60,23 +62,30 @@ export const LoginUser = createAsyncThunk(
       const data = await apiRequest(`${BASE_URL}/auth/login`, payload, 'POST');
       const { accessToken, refreshToken, user, message, isBirthday } = data;
 
+      // Validation
       if (!accessToken) {
         console.warn('⚠️ accessToken is missing in API response');
+        return rejectWithValue('Invalid server response: missing access token');
       }
 
-      setAccessToken(accessToken);
-      setRefreshToken(refreshToken, payload.rememberMe); // Only test
-      Cookies.set('userInfo', JSON.stringify(user), {
-        expires: payload.rememberMe ? 21 : 2,
-        sameSite: import.meta.env.PROD ? 'None' : 'Lax',
-        secure: import.meta.env.PROD,
-      });
+      if (!refreshToken) {
+        console.warn('⚠️ refreshToken is missing in API response');
+        return rejectWithValue('Invalid server response: missing refresh token');
+      }
 
-      return { token: accessToken, user, message, isBirthday };
+      // Set cookies - in production this might be done by backend
+      setAuthData(accessToken, refreshToken, user, payload.rememberMe);
+
+      return { 
+        token: accessToken, 
+        user, 
+        message, 
+        isBirthday,
+        rememberMe: payload.rememberMe 
+      };
     } catch (error: unknown) {
       return rejectWithValue(
-        (error as { message: string })?.message ||
-        'An unexpected error occurred',
+        (error as { message: string })?.message || 'Login failed',
       );
     }
   },
@@ -87,20 +96,48 @@ export const LogoutUser = createAsyncThunk(
   async (_, { dispatch, rejectWithValue }) => {
     try {
       const data = await apiRequest(`${BASE_URL}/auth/logout`, {}, 'POST');
+      
       dispatch(clearFavorites());
       clearAuthCookies();
+      
+      window.dispatchEvent(new CustomEvent('auth:logout', { 
+        detail: { type: 'manual' } 
+      }));
+      
       return data;
     } catch (error: unknown) {
+      console.warn('Logout API failed, but clearing local data anyway');
+      dispatch(clearFavorites());
+      clearAuthCookies();
+      
       if (axios.isAxiosError(error)) {
         return rejectWithValue(
-          error.response?.data?.message || 'An error occurred',
+          error.response?.data?.message || 'Logout API failed but local data cleared',
         );
       }
-      return rejectWithValue('An unexpected error occurred');
+      return rejectWithValue('Logout failed but local data cleared');
     }
   },
 );
 
+// Force Logout (automatic, triggered by token expiry)
+export const forceLogout = createAsyncThunk(
+  'auth/forceLogout',
+  async (reason: string = 'Token expired', { dispatch }) => {
+    console.log(`🔒 Force logout triggered: ${reason}`);
+    
+    // Don't call logout API since tokens are already invalid
+    dispatch(clearFavorites());
+    clearAuthCookies();
+    
+    // Notify other parts of app
+    window.dispatchEvent(new CustomEvent('auth:logout', { 
+      detail: { type: 'automatic', reason } 
+    }));
+    
+    return { reason };
+  },
+);
 
 export const LoginWithGoogle = createAsyncThunk(
   'auth/loginGoogle',
@@ -145,3 +182,52 @@ export const LoginWithGoogle = createAsyncThunk(
     }
   },
 );
+
+export const refreshTokenAction = createAsyncThunk(
+  'auth/refreshToken',
+  async (_, { rejectWithValue }) => {
+    try {
+      const data = await apiRequest(`${BASE_URL}/auth/refresh`, {}, 'POST');
+      const { accessToken } = data;
+
+      if (!accessToken) {
+        throw new Error('No access token received from refresh');
+      }
+
+      setAccessToken(accessToken);
+
+      return { accessToken };
+    } catch (error: unknown) {
+      console.error('Token refresh failed:', error);
+      if (axios.isAxiosError(error)) {
+        return rejectWithValue(
+          error.response?.data?.message || 'Token refresh failed',
+        );
+      }
+      return rejectWithValue('Token refresh failed');
+    }
+  },
+);
+
+
+// export const LoginWithGoogle = createAsyncThunk(
+//   'auth/loginWithGoogle',
+//   async (payload: { token: string; rememberMe?: boolean }, { rejectWithValue }) => {
+//     try {
+//       const data = await apiRequest(`${BASE_URL}/auth/google`, payload, 'POST');
+//       const { accessToken, refreshToken, user, message } = data;
+
+//       if (!accessToken || !refreshToken) {
+//         return rejectWithValue('Invalid server response: missing tokens');
+//       }
+
+//       setAuthData(accessToken, refreshToken, user, payload.rememberMe);
+
+//       return { token: accessToken, user, message };
+//     } catch (error: unknown) {
+//       return rejectWithValue(
+//         (error as { message: string })?.message || 'Google login failed',
+//       );
+//     }
+//   },
+// );
