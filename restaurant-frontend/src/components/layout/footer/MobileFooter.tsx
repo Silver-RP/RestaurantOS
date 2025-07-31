@@ -58,7 +58,7 @@ const MobileFooter = () => {
             title: "Liên Hệ",
             content: (
               <div className="text-xs space-y-1">
-                <p><FaPhoneAlt className="inline mr-2" /> +84 - 05512345, +84 - 0239991256</p>
+                <p><FaPhoneAlt className="inline mr-2" /> +84 - 0239991255, +84 - 0239991256</p>
                 <p><FaEnvelope className="inline mr-2" /> beefbeef@gmail.com</p>
                 <p><FaMapMarkerAlt className="inline mr-2" /> 161 Quốc Hương, Thảo Điền, Quận 2</p>
               </div>
