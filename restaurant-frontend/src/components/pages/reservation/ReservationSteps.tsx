@@ -12,7 +12,7 @@ interface ReservationStepsProps {
 
 const ReservationSteps: React.FC<ReservationStepsProps> = ({ step, steps }) => {
   return (
-    <div className="w-full flex justify-between items-center px-4 sm:px-10 mb-10 relative">
+    <div className="w-full flex justify-between items-center px-0 sm:px-10 mb-10 relative">
       {steps.map((s, index) => {
         const isCompleted = step > s.step;
         const isActive = step === s.step;
@@ -35,7 +35,7 @@ const ReservationSteps: React.FC<ReservationStepsProps> = ({ step, steps }) => {
             </div>
 
             <div
-              className={`text-sm mt-2 font-medium transition-all duration-300 ${
+              className={`text-xs sm:text-sm mt-2 font-medium transition-all duration-300 ${
                 isActive
                   ? 'text-secondaryColor'
                   : isCompleted
@@ -47,7 +47,7 @@ const ReservationSteps: React.FC<ReservationStepsProps> = ({ step, steps }) => {
             </div>
 
             <div
-              className={`text-xs mt-1 transition-all duration-300 hidden sm:block ${
+              className={`text-[10px] sm:text-xs mt-1 transition-all duration-300 hidden sm:block ${
                 isCompleted
                   ? 'text-green-400'
                   : isActive
@@ -67,9 +67,7 @@ const ReservationSteps: React.FC<ReservationStepsProps> = ({ step, steps }) => {
                 className="absolute top-4 left-1/2 right-[-50%] h-[2px] z-0"
                 style={{
                   backgroundColor:
-                    step > s.step
-                      ? '#FFDEA0'
-                      : 'rgba(255, 255, 255, 0.2)',
+                    step > s.step ? '#FFDEA0' : 'rgba(255, 255, 255, 0.2)',
                   width: '100%',
                 }}
               />

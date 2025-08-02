@@ -169,10 +169,10 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
           transition={{ duration: 0.6 }}
           className="text-center mb-8"
         >
-          <h1 className="text-4xl mb-4 text-secondaryColor uppercase tracking-widest drop-shadow-lg">
+          <h1 className="text-2xl sm:text-4xl mb-2 sm:mb-4 text-secondaryColor uppercase tracking-widest drop-shadow-lg">
             Thanh toán đặt cọc
           </h1>
-          <p className="text-gray-300 text-lg w-full mx-auto">
+          <p className="text-base sm:text-lg text-gray-300 w-full mx-auto">
             Hoàn tất việc đặt bàn bằng cách thanh toán khoản đặt cọc. Số tiền
             này sẽ được trừ vào hóa đơn cuối cùng.
           </p>
@@ -185,12 +185,12 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <div className="bg-headerBackground/80 border border-secondaryColor/30 rounded-lg p-10 flex flex-col items-center justify-center shadow-lg">
-              <h3 className="text-2xl font-bold text-secondaryColor mb-4 flex items-center gap-2">
+            <div className="bg-headerBackground/80 border border-secondaryColor/30 rounded-lg p-4 sm:p-10 flex flex-col items-center justify-center shadow-lg">
+              <h3 className="text-xl sm:text-2xl font-bold text-secondaryColor mb-4 flex items-center gap-2">
                 <BiSolidDiscount className="text-3xl" />
                 Tổng tiền đặt cọc
               </h3>
-              <span className="text-5xl font-extrabold text-secondaryColor drop-shadow-lg mb-2">
+              <span className="text-3xl sm:text-5xl font-extrabold text-secondaryColor drop-shadow-lg mb-2">
                 {fCurrency(depositAmount)}
               </span>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8 w-full">
@@ -199,9 +199,13 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
                   className="bg-bodyBackground/50 border border-secondaryColor/20 rounded-lg p-4 text-center hover:border-secondaryColor/40 transition-all duration-200"
                 >
                   <FaShieldAlt className="text-secondaryColor w-10 h-10 mb-3 mx-auto" />
-                  <p className="font-semibold text-white mb-2">Phí giữ bàn</p>
-                  <p className="text-sm text-gray-400 mb-2">Phí cơ bản</p>
-                  <span className="text-2xl font-bold text-secondaryColor">
+                  <p className="font-semibold text-white mb-2 text-base sm:text-lg">
+                    Phí giữ bàn
+                  </p>
+                  <p className="text-sm sm:text-base text-gray-400 mb-2">
+                    Phí cơ bản
+                  </p>
+                  <span className="text-xl sm:text-2xl font-bold text-secondaryColor">
                     {fCurrency(baseDeposit)}
                   </span>
                 </motion.div>
@@ -210,13 +214,13 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
                   className="bg-bodyBackground/50 border border-secondaryColor/20 rounded-lg p-4 text-center hover:border-secondaryColor/40 transition-all duration-200"
                 >
                   <MdChair className="text-secondaryColor w-10 h-10 mb-3 mx-auto" />
-                  <p className="font-semibold text-white mb-2">
+                  <p className="font-semibold text-white mb-2 text-base sm:text-lg">
                     Cọc theo loại bàn
                   </p>
-                  <p className="text-sm text-gray-400 mb-2">
+                  <p className="text-sm sm:text-base text-gray-400 mb-2">
                     {getTableTypeDisplayName(formData.tableCategory)}
                   </p>
-                  <span className="text-2xl font-bold text-secondaryColor">
+                  <span className="text-xl sm:text-2xl font-bold text-secondaryColor">
                     {fCurrency(tableDeposit)}
                   </span>
                 </motion.div>
@@ -225,14 +229,14 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
                   className="bg-bodyBackground/50 border border-secondaryColor/20 rounded-lg p-4 text-center hover:border-secondaryColor/40 transition-all duration-200"
                 >
                   <FaUsers className="text-secondaryColor w-10 h-10 mb-3 mx-auto" />
-                  <p className="font-semibold text-white mb-2">
+                  <p className="font-semibold text-white mb-2 text-base sm:text-lg">
                     Cọc theo số người
                   </p>
-                  <p className="text-sm text-gray-400 mb-2">
+                  <p className="text-sm sm:text-base text-gray-400 mb-2">
                     {formData.number_of_people} người
                     {formData.number_of_people >= 6 && ' (≥6 người)'}
                   </p>
-                  <span className="text-2xl font-bold text-secondaryColor">
+                  <span className="text-xl sm:text-2xl font-bold text-secondaryColor">
                     {fCurrency(guestDeposit)}
                   </span>
                 </motion.div>
@@ -241,15 +245,15 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
                   className="bg-bodyBackground/50 border border-secondaryColor/20 rounded-lg p-4 text-center hover:border-secondaryColor/40 transition-all duration-200"
                 >
                   <GiKnifeFork className="text-secondaryColor w-10 h-10 mb-3 mx-auto" />
-                  <p className="font-semibold text-white mb-2">
+                  <p className="font-semibold text-white mb-2 text-base sm:text-lg">
                     Cọc theo món ăn
                   </p>
-                  <p className="text-sm text-gray-400 mb-2">
+                  <p className="text-sm sm:text-base text-gray-400 mb-2">
                     {formData.selectedItems.length > 0
                       ? `${formData.selectedItems.length} món (${fCurrency(selectedFoodTotal)})`
                       : 'Chưa chọn món'}
                   </p>
-                  <span className="text-2xl font-bold text-secondaryColor">
+                  <span className="text-xl sm:text-2xl font-bold text-secondaryColor">
                     {fCurrency(foodDeposit)}
                   </span>
                 </motion.div>
@@ -263,8 +267,8 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.7 }}
           >
-            <div className="bg-headerBackground/80 border border-secondaryColor/30 rounded-lg p-6 mb-0">
-              <h3 className="text-xl font-bold text-secondaryColor mb-6 flex items-center gap-2">
+            <div className="bg-headerBackground/80 border border-secondaryColor/30 rounded-lg p-4 sm:p-6 mb-0">
+              <h3 className="text-xl sm:text-2xl font-bold text-secondaryColor mb-6 flex items-center gap-2">
                 <FaCreditCard className="text-2xl" />
                 Phương thức thanh toán
               </h3>

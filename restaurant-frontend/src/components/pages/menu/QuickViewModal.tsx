@@ -11,6 +11,9 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { FiHeart, FiStar } from 'react-icons/fi';
 
 const QuickViewModal = () => {
+  const hideAddToCart = useSelector(
+    (state: RootState) => state.quickView.hideAddToCart,
+  );
   const dispatch = useDispatch();
   const product = useSelector(
     (state: RootState) => state.quickView.selectedProduct,
@@ -50,15 +53,14 @@ const QuickViewModal = () => {
               <span className="ml-1">Đề xuất</span>
             </span>
           )}
-           {product.isDishNew && (
+          {product.isDishNew && (
             <span className="max-w-[36px] bg-secondaryColor text-black text-[10px] font-semibold px-1 py-1 rounded-sm">
               NEW
             </span>
           )}
         </div>
 
-
-        <div className="w-full md:w-1/2 p-8 flex flex-col justify-center space-y-4 text-white font-light">
+        <div className="w-full md:w-1/2 p-2 sm:p-8 flex flex-col justify-center space-y-4 text-white font-light">
           <h2 className="text-2xl sm:text-3xl text-white mb-2">
             {product.name}
           </h2>
@@ -89,62 +91,60 @@ const QuickViewModal = () => {
             {product.shortDescription || product.description}
           </p>
 
-          <div className="flex flex-col sm:flex-row items-stretch gap-4 mb-2">
-            <div className="flex items-center border border-hr rounded overflow-hidden">
-              <button
-                onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
-                className="px-3 py-2 text-white hover:bg-secondaryColor transition"
-              >
-                –
-              </button>
-              <span className="px-5 py-2 text-white">{quantity}</span>
-              <button
-                onClick={() => setQuantity((prev) => prev + 1)}
-                className="px-3 py-2 text-white hover:bg-secondaryColor transition"
-              >
-                +
-              </button>
-            </div>
+          {!hideAddToCart && (
+            <div className="flex flex-col sm:flex-row items-stretch gap-4 mb-2">
+              <div className="flex items-center border border-hr rounded overflow-hidden">
+                <button
+                  onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
+                  className="px-3 py-2 text-white hover:bg-secondaryColor transition"
+                >
+                  –
+                </button>
+                <span className="px-5 py-2 text-white">{quantity}</span>
+                <button
+                  onClick={() => setQuantity((prev) => prev + 1)}
+                  className="px-3 py-2 text-white hover:bg-secondaryColor transition"
+                >
+                  +
+                </button>
+              </div>
 
-            <ButtonComponents
-              variant="filled"
-              size="small"
-              onClick={() =>
-                addToCart(
-                  { dishId: product._id, quantity },                 
-                )
-              }
-            >
-              THÊM GIỎ HÀNG
-            </ButtonComponents>
-          </div>
+              <ButtonComponents
+                variant="filled"
+                size="small"
+                onClick={() => addToCart({ dishId: product._id, quantity })}
+              >
+                THÊM GIỎ HÀNG
+              </ButtonComponents>
+            </div>
+          )}
 
           <div className="flex flex-wrap gap-4">
             <div className="relative group/tooltip">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleFavorite(product?._id);
-              }}
-              className={`p-1.5 sm:p-2 bg-white rounded-full shadow-md 
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleFavorite(product?._id);
+                }}
+                className={`p-1.5 sm:p-2 bg-white rounded-full shadow-md 
                           hover:bg-secondaryColor hover:text-white hover:-translate-y-1 transition-all duration-300`}
-            >
-              {isFavorited ? (
-                <FaHeart size={18} className="text-red-500" />
-              ) : (
-                <FiHeart size={18} className="text-black" />
-              )}
-            </button>
-            <div
-              className="absolute -top-8 left-1/2 -translate-x-1/2 
+              >
+                {isFavorited ? (
+                  <FaHeart size={18} className="text-red-500" />
+                ) : (
+                  <FiHeart size={18} className="text-black" />
+                )}
+              </button>
+              <div
+                className="absolute -top-8 left-1/2 -translate-x-1/2 
                           bg-black text-white text-[10px] px-2 py-1 rounded 
                           whitespace-nowrap opacity-0 group-hover/tooltip:opacity-100 
                           transition-all duration-300 z-20 pointer-events-none"
-            >
-              {isFavorited ? 'Đã yêu thích' : 'Yêu thích'}
-              <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-black rotate-45"></div>
+              >
+                {isFavorited ? 'Đã yêu thích' : 'Yêu thích'}
+                <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-black rotate-45"></div>
+              </div>
             </div>
-          </div>
           </div>
 
           <div className="text-xs text-gray-400 mt-6 space-y-1">
