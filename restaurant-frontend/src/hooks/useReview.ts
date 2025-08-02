@@ -6,6 +6,7 @@ import {
   updateReviewApi,
   deleteReviewApi,
   toggleReviewVisibilityApi,
+  getUserReviewsApi,
   ReviewPayload,
   UpdateReviewPayload,
   FetchReviewsParams,
@@ -110,6 +111,21 @@ export const useReview = () => {
     }
   };
 
+  const getUserReviews = async (params?: { page?: number; limit?: number }) => {
+    try {
+      setLoading(true);
+      const result = await getUserReviewsApi(params);
+      return result;
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Lỗi khi tải đánh giá';
+      toast.error(errorMessage);
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     loading,
     error,
@@ -119,5 +135,6 @@ export const useReview = () => {
     updateReview,
     deleteReview,
     toggleVisibility,
+    getUserReviews,
   };
 };

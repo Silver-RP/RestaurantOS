@@ -12,6 +12,7 @@ const VoucherDetailModal = ({ open, onClose, voucher }: { open: boolean, onClose
     if (type === 'public') return 'Công khai';
     if (type === 'private') return 'Riêng tư';
     if (type === 'gift') return 'Quà tặng';
+    if (type === 'birthday') return 'Sinh nhật';
     return type;
   };
   return (
@@ -21,7 +22,12 @@ const VoucherDetailModal = ({ open, onClose, voucher }: { open: boolean, onClose
         <h2 className="text-xl font-bold mb-4">Chi tiết Voucher</h2>
         <div className="space-y-2 text-sm">
           <div><b>Mã:</b> {voucher.code}</div>
-          <div><b>Loại:</b> {getTypeLabel(voucher.type)}</div>
+          <div><b>Loại:</b> <span className={
+  voucher.type === 'public' ? 'bg-green-100 text-green-800 px-2 py-1 rounded'
+  : voucher.type === 'gift' ? 'bg-purple-100 text-purple-800 px-2 py-1 rounded'
+  : voucher.type === 'birthday' ? 'bg-pink-100 text-pink-800 px-2 py-1 rounded'
+  : 'bg-blue-100 text-blue-800 px-2 py-1 rounded'
+}>{getTypeLabel(voucher.type)}</span></div>
           <div><b>Mô tả:</b> {voucher.description || 'Không có'}</div>
           <div><b>Loại giảm giá:</b> {voucher.discount_type === 'percent' ? 'Phần trăm' : 'Số tiền cố định'}</div>
           <div><b>Giá trị giảm giá:</b> {voucher.discount_type === 'percent' ? `${voucher.discount_value}%` : `${voucher.discount_value?.toLocaleString()} VNĐ`}</div>
@@ -120,6 +126,7 @@ const VoucherList: React.FC = () => {
     if (type === 'public') return 'Công khai';
     if (type === 'private') return 'Riêng tư';
     if (type === 'gift') return 'Quà tặng';
+    if (type === 'birthday') return 'Sinh nhật';
     return type;
   };
 
@@ -216,7 +223,9 @@ const VoucherList: React.FC = () => {
                           ? 'bg-green-100 text-green-800' 
                           : voucher.type === 'gift'
                             ? 'bg-purple-100 text-purple-800'
-                            : 'bg-blue-100 text-blue-800'
+                            : voucher.type === 'birthday'
+                              ? 'bg-pink-100 text-pink-800'
+                              : 'bg-blue-100 text-blue-800'
                       }`}>
                         {getTypeLabel(voucher.type)}
                       </span>
@@ -299,4 +308,4 @@ const VoucherList: React.FC = () => {
   );
 };
 
-export default VoucherList; 
+export default VoucherList;

@@ -2,7 +2,7 @@ export interface Voucher {
   _id?: string;
   code: string;
   description?: string;
-  type: 'public' | 'private' | 'gift';
+  type: 'public' | 'private' | 'gift' | 'birthday'; // thêm 'birthday'
   discount_type: 'percent' | 'fixed';
   discount_value: number;
   max_discount_value?: number;
@@ -24,4 +24,4 @@ export interface UserVoucherDisplay extends Voucher {
   user_voucher_id: string;
   user_voucher_savedAt?: string;
   user_voucher_updatedAt?: string;
-} 
+}

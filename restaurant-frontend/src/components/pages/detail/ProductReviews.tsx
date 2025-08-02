@@ -36,9 +36,6 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const reviewsPerPage: number = 4;
-  const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0);
-  const averageRating = reviews.length ? totalRating / reviews.length : 0;
-  const ratingCount = reviews.length;
   const [editingReview, setEditingReview] = useState<IReview | null>(null);
 
   const reviewFormRef = useRef<HTMLDivElement>(null);
@@ -46,16 +43,24 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({
 
   useEffect(() => {
     const loadReviews = async () => {
-      const result = await fetchReviews({
-        productId,
-        page: currentPage,
-        limit: reviewsPerPage,
-        filter: filter || undefined,
-      });
+      try {
+        console.log('Loading reviews for productId:', productId);
+        const result = await fetchReviews({
+          productId,
+          page: currentPage,
+          limit: reviewsPerPage,
+          filter: filter || undefined,
+        });
 
-      if (result) {
-        setReviews(result.docs);
-        setTotalPages(result.totalPages);
+        if (result) {
+          console.log('Reviews loaded:', result.docs);
+          setReviews(result.docs);
+          setTotalPages(result.totalPages);
+        } else {
+          console.log('No reviews result');
+        }
+      } catch (error) {
+        console.error('Error loading reviews:', error);
       }
     };
 
@@ -64,13 +69,19 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({
 
   useEffect(() => {
     if (searchParams.get('review') === 'true' && reviewFormRef.current) {
-      reviewFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Delay một chút để đảm bảo component đã render xong
+      setTimeout(() => {
+        reviewFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
     }
   }, [searchParams]);
 
   useEffect(() => {
     if (scrollToForm && reviewFormRef.current) {
-      reviewFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Delay một chút để đảm bảo component đã render xong
+      setTimeout(() => {
+        reviewFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
     }
   }, [scrollToForm]);
 
@@ -88,6 +99,9 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({
   };
 
   const distribution = getRatingDistribution();
+  const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0);
+  const averageRating = reviews.length ? totalRating / reviews.length : 0;
+  const ratingCount = reviews.length;
 
   const paginate = (pageNumber: number) => {
     if (pageNumber > 0 && pageNumber <= totalPages) {
@@ -221,7 +235,7 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({
           <div className="space-y-2">
             {[5, 4, 3, 2, 1].map((star) => (
               <div key={star} className="flex items-center">
-                <div className="w-8 text-sm">{star} sao</div>
+                <div className="w-8 text-sm text-white">{star} sao</div>
                 <div className="flex-grow mx-2 bg-gray-700 h-2 rounded-full">
                   <div
                     className="bg-yellow-400 h-2 rounded-full"
@@ -230,7 +244,7 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({
                     }}
                   />
                 </div>
-                <div className="w-8 text-sm text-right">
+                <div className="w-8 text-sm text-right text-white">
                   {distribution[5 - star]}
                 </div>
               </div>

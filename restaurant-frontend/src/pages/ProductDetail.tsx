@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { useFoodDetail } from '../hooks/useFoods';
 import { useProductView } from '../hooks/useProductView';
 import RelatedProductList from '../components/pages/detail/RelatedProductList';
@@ -9,15 +9,14 @@ import ProductInfo from '../components/pages/detail/ProductInfo';
 import ProductPolicies from '../components/pages/detail/ProductPolicies';
 import ProductTabs from '../components/pages/detail/ProductTabs';
 import ProductReviews from '..//components/pages/detail/ProductReviews';
-import { useLocation } from 'react-router-dom';
 
 const ProductDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
-  const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { food, loading, error } = useFoodDetail(slug || '');
   const productId = food?._id || '';
 
-  const shouldOpenReviewTab = location.state?.openReview === true;
+  const shouldOpenReviewTab = searchParams.get('review') === 'true';
 
   useProductView(productId);
 

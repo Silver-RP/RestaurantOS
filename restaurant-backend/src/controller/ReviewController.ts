@@ -100,4 +100,21 @@ export const ReviewController = {
       res.status(500).json({ message: error.message || 'Server error' });
     }
   },
+
+  getUserReviews: async (req: Request, res: Response): Promise<void> => {
+    try {
+      const userId = (req.user as IUser).id as Types.ObjectId;
+      const { page = 1, limit = 10 } = req.query;
+
+      const reviews = await ReviewService.getUserReviews(
+        userId,
+        Number(page),
+        Number(limit)
+      );
+      res.json({ success: true, data: reviews });
+    } catch (error: any) {
+      console.error('Get user reviews error:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  },
 };
