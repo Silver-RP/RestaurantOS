@@ -680,8 +680,8 @@ class DashboardService {
       { $sort: { _id: 1 } },
     ]);
 
- 
-    const reservationData = await ReservationDetail.aggregate([
+    // Lấy reservationRevenue từ ReservationDetail
+    const reservationRevenueData = await ReservationDetail.aggregate([
       {
         $lookup: {
           from: 'reservations',
@@ -701,6 +701,22 @@ class DashboardService {
         $group: {
           _id: { $month: '$reservation.createdAt' },
           reservationRevenue: { $sum: '$total_amount' },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    // Lấy reservationCount từ ReservationModel
+    const reservationCountData = await Reservation.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: startDate, $lte: endDate },
+          status: { $ne: 'CANCELLED' },
+        },
+      },
+      {
+        $group: {
+          _id: { $month: '$createdAt' },
           reservationCount: { $sum: 1 },
         },
       },
@@ -726,14 +742,17 @@ class DashboardService {
       const monthNumber = index + 1;
 
       const orderMonth = orderData.find((item) => item._id === monthNumber);
-      const reservationMonth = reservationData.find((item) => item._id === monthNumber);
+      const reservationRevenueMonth = reservationRevenueData.find(
+        (item) => item._id === monthNumber,
+      );
+      const reservationCountMonth = reservationCountData.find((item) => item._id === monthNumber);
 
       return {
         month,
         orderRevenue: orderMonth?.orderRevenue || 0,
         orderCount: orderMonth?.orderCount || 0,
-        reservationRevenue: reservationMonth?.reservationRevenue || 0,
-        reservationCount: reservationMonth?.reservationCount || 0,
+        reservationRevenue: reservationRevenueMonth?.reservationRevenue || 0,
+        reservationCount: reservationCountMonth?.reservationCount || 0,
       };
     });
 
