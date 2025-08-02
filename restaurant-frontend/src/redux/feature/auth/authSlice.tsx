@@ -166,7 +166,7 @@ const authSlice: Slice<AuthState> = createSlice({
         state.isAuthenticated = false;
         state.isBirthday = false;
         state.loading = false;
-        state.error = `Session expired: ${action.payload.reason}`;
+        state.error = `Phiên đăng nhập đã hết hạn: ${action.payload.reason}`;
         state.success = null;
         state.message = null;
       })

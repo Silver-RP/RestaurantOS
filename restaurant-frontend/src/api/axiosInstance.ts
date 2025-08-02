@@ -70,7 +70,7 @@ axiosInstance.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       
       if (originalRequest.url?.includes('/auth/refresh')) {
-        handleAuthFailure('Refresh token expired');
+        handleAuthFailure('Hãy đăng nhập để tiếp tục');
         return Promise.reject(error);
       }
       
@@ -114,11 +114,11 @@ axiosInstance.interceptors.response.use(
         console.error('❌ Token refresh failed:', refreshError);
         processQueue(refreshError, null);
         if (refreshError.response?.status === 401) {
-          handleAuthFailure('Refresh token expired');
+          handleAuthFailure('vui lòng đăng nhập lại.');
         } else if (refreshError.code === 'NETWORK_ERROR') {
-          handleAuthFailure('Network error during token refresh');
+          handleAuthFailure('Mạng không ổn định, vui lòng thử lại sau.');
         } else {
-          handleAuthFailure('Token refresh failed');
+          handleAuthFailure('Đã xảy ra lỗi khi làm mới phiên, vui lòng thử lại sau.');
         }
         
         return Promise.reject(refreshError);
@@ -128,7 +128,7 @@ axiosInstance.interceptors.response.use(
     }
     
     if (error.response?.status === 401 && originalRequest._retry) {
-      handleAuthFailure('Invalid token after refresh');
+      handleAuthFailure('vui lòng đăng nhập lại.');
     }
     
     if (error.response?.status === 403) {
