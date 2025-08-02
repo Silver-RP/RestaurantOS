@@ -52,7 +52,6 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({
     table?: ITable,
   ) => {
     if (!isAvailable || !table) return;
-    // Chỉ cho chọn 1 bàn duy nhất
     if (selectedTables.length === 1 && selectedTables[0]._id === table._id) {
       setSelectedTables([]);
       setFormData((prev) => ({
@@ -129,8 +128,7 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({
               const isSelected = selectedTables.some(
                 (sel) => (sel._id ?? sel.code) === tableId,
               );
-              const hasVip = selectedTables.some((sel) => sel.type === 'vip');
-              const selectedType = selectedTables[0]?.type;
+
               const isCapacityNotEnough =
                 t.type === 'vip'
                   ? false
@@ -140,11 +138,6 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({
               let isAvailable = !!t.isAvailable;
               if (t.isBooked) {
                 isAvailable = false;
-              }
-              if (hasVip) {
-                isAvailable = t.type === 'vip' && isAvailable;
-              } else if (selectedTables.length > 0) {
-                isAvailable = t.type === selectedType && isAvailable;
               }
               // Disable bàn nhóm nếu 2 người
               if (t.type === 'group' && formData.number_of_people === 2) {
@@ -200,16 +193,20 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({
         {/* Legend */}
         <div className="flex gap-6 justify-center mt-4 text-white">
           <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
+              <span className="w-6 h-6 rounded bg-[#F9D783] border-2 border-[#F9D783] inline-block" />
+              <span>Đang chọn</span>
+            </div>
             <span className="w-6 h-6 rounded bg-[#1abc9c] border-2 border-[#F9D783] inline-block" />
             <span>Trống</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-6 h-6 rounded bg-[#e74c3c] border-2 border-[#F9D783] inline-block" />
-            <span>Không khả dụng</span>
+            <span>Đã đặt trước</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-6 h-6 rounded bg-[#F9D783] border-2 border-[#F9D783] inline-block" />
-            <span>Đang chọn</span>
+            <span className="w-6 h-6 rounded bg-[#3E4B5B] border-2 border-[#F9D783] inline-block" />
+            <span>Không khả dụng</span>
           </div>
           <div className="flex justify-center items-center">
             <ButtonComponents

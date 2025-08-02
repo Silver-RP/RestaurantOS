@@ -243,7 +243,7 @@ const Step3Menu: React.FC<Step3MenuProps> = ({
                       image={item.images?.[0]}
                       name={item.name}
                       category={item.categories?.[0]?.Cate_name || 'Khác'}
-                      price={`${item.discount_price || item.price} VND`}
+                      price={`${(item.discount_price || item.price).toLocaleString('vi-VN')} VND`}
                       onAdd={() => {
                         setSelectedFood(item);
                         setModalOpen(true);
@@ -261,7 +261,12 @@ const Step3Menu: React.FC<Step3MenuProps> = ({
                         justifyContent: 'center',
                       }} // giống nút "+"
                       onClick={() =>
-                        dispatch(openQuickView(toFoodDetail(item)))
+                        dispatch(
+                          openQuickView({
+                            product: toFoodDetail(item),
+                            hideAddToCart: true,
+                          }),
+                        )
                       }
                       aria-label="Xem nhanh"
                     >

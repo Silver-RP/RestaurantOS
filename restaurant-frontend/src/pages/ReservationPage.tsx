@@ -90,56 +90,60 @@ const ReservationPage: React.FC = () => {
         confirmAlert({
           overlayClassName: 'custom-overlay',
           customUI: ({ onClose }) => (
-            <div className="custom-ui bg-headerBackground text-secondaryColor p-6 shadow-md max-w-lg mx-auto text-center">
-              <h2 className="text-xl mb-4">Khôi phục thông tin đặt bàn</h2>
-              <p className="mb-6">
-                Hệ thống phát hiện bạn có thông tin đặt bàn được lưu gần đây.{' '}
-                <br />
-                Bạn muốn tiếp tục với dữ liệu đã lưu hay bắt đầu đặt mới?
-              </p>
-              <div className="flex justify-center gap-4">
-                <ButtonComponents
-                  variant="outline"
-                  size="small"
-                  onClick={() => {
-                    localStorage.removeItem('reservation-data');
-                    setFormData({
-                      full_name: '',
-                      phone: '',
-                      email: '',
-                      date: '',
-                      time: '',
-                      number_of_people: 0,
-                      note: '',
-                      table_type: '',
-                      seatingName: '',
-                      tableCategory: '',
-                      menu: '',
-                      selectedItems: [],
-                    });
-                    onClose();
-                  }}
-                  className="px-6 py-2 rounded-none border-secondaryColor"
-                >
-                  Bắt đầu mới
-                </ButtonComponents>
+            <div className="px-2">
+              <div className="custom-ui bg-headerBackground text-secondaryColor p-4 sm:p-6 shadow-md max-w-lg mx-auto text-center">
+                <h2 className="text-lg sm:text-xl mb-3 sm:mb-4">
+                  Khôi phục thông tin đặt bàn
+                </h2>
+                <p className="text-sm sm:text-base mb-5 sm:mb-6">
+                  Hệ thống phát hiện bạn có thông tin đặt bàn được lưu gần đây.{' '}
+                  <br />
+                  Bạn muốn tiếp tục với dữ liệu đã lưu hay bắt đầu đặt mới?
+                </p>
+                <div className="flex justify-center gap-4">
+                  <ButtonComponents
+                    variant="outline"
+                    size="small"
+                    onClick={() => {
+                      localStorage.removeItem('reservation-data');
+                      setFormData({
+                        full_name: '',
+                        phone: '',
+                        email: '',
+                        date: '',
+                        time: '',
+                        number_of_people: 0,
+                        note: '',
+                        table_type: '',
+                        seatingName: '',
+                        tableCategory: '',
+                        menu: '',
+                        selectedItems: [],
+                      });
+                      onClose();
+                    }}
+                    className="px-4 sm:px-6 py-2 text-sm sm:text-base rounded-none border-secondaryColor"
+                  >
+                    Bắt đầu mới
+                  </ButtonComponents>
 
-                <ButtonComponents
-                  variant="filled"
-                  size="small"
-                  onClick={() => {
-                    setFormData(parsed.formData);
-                    if (parsed.step && typeof parsed.step === 'number') {
-                      setStep(parsed.step);
-                    } else {
-                      setStep(1);
-                    }
-                    onClose();
-                  }}
-                  className="px-6 py-2 rounded-none"
-                >
-                  Tiếp tục đặt bàn
-                </ButtonComponents>
+                  <ButtonComponents
+                    variant="filled"
+                    size="small"
+                    onClick={() => {
+                      setFormData(parsed.formData);
+                      if (parsed.step && typeof parsed.step === 'number') {
+                        setStep(parsed.step);
+                      } else {
+                        setStep(1);
+                      }
+                      onClose();
+                    }}
+                    className="px-4 sm:px-6 py-2 text-sm sm:text-base rounded-none"
+                  >
+                    Tiếp tục đặt bàn
+                  </ButtonComponents>
+                </div>
               </div>
             </div>
           ),
@@ -159,8 +163,8 @@ const ReservationPage: React.FC = () => {
   return (
     <>
       <BreadcrumbComponent />
-      <div className="bg-bodyBackground text-white pt-16">
-        <div className="max-w-[1200px] w-full mx-auto text-center pb-10">
+      <div className="bg-bodyBackground text-white pt-6 sm:pt-16">
+        <div className="max-w-[1200px] w-full mx-auto text-center pb-6 sm:pb-10">
           <ReservationSteps step={step} steps={steps} />
 
           {step === 1 && (
@@ -208,7 +212,7 @@ const ReservationPage: React.FC = () => {
           )}
 
           {step === 6 && (
-            <div className="text-center py-24 bg-bodyBackground">
+            <div className="text-center py-16 sm:py-24 px-4 bg-bodyBackground">
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
@@ -218,10 +222,10 @@ const ReservationPage: React.FC = () => {
                 <AiOutlineCheckCircle size={72} />
               </motion.div>
 
-              <h2 className="text-3xl font-bold text-white mb-3">
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">
                 Đặt bàn thành công!
               </h2>
-              <p className="text-gray-400 text-base max-w-md mx-auto mb-6">
+              <p className="text-gray-400 text-sm sm:text-base max-w-md mx-auto mb-6">
                 Cảm ơn bạn đã đặt bàn. Chúng tôi sẽ liên hệ để xác nhận lại
                 trạng thái. Vui lòng kiểm tra email hoặc lịch sử đặt bàn để theo
                 dõi trạng thái.

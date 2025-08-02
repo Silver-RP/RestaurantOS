@@ -31,7 +31,7 @@ const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({
       const selectedDate = new Date(formData.date);
       const isToday = selectedDate.toDateString() === now.toDateString();
       const minTime = isToday
-        ? new Date(now.getTime() + 3 * 60 * 60 * 1000)
+        ? new Date(now.getTime() + 30 * 60 * 1000)
         : new Date(selectedDate.setHours(0, 0, 0, 0));
 
       for (let hour = 9; hour <= 21; hour++) {
@@ -157,7 +157,7 @@ const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className="px-4 sm:px-[50px] py-6 rounded text-left space-y-6"
+      className="px-4 sm:px-[50px] py-0 sm:py-6 rounded text-left space-y-6"
     >
       <div className="grid sm:grid-cols-3 gap-4">
         <div className="flex flex-col gap-2">

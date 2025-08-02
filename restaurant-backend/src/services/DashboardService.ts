@@ -680,17 +680,27 @@ class DashboardService {
       { $sort: { _id: 1 } },
     ]);
 
-    const reservationData = await Reservation.aggregate([
+ 
+    const reservationData = await ReservationDetail.aggregate([
+      {
+        $lookup: {
+          from: 'reservations',
+          localField: 'reservation_id',
+          foreignField: '_id',
+          as: 'reservation',
+        },
+      },
+      { $unwind: '$reservation' },
       {
         $match: {
-          createdAt: { $gte: startDate, $lte: endDate },
-          status: { $ne: 'CANCELLED' },
+          'reservation.createdAt': { $gte: startDate, $lte: endDate },
+          'reservation.status': { $ne: 'CANCELLED' },
         },
       },
       {
         $group: {
-          _id: { $month: '$createdAt' },
-          reservationRevenue: { $sum: '$total_price' },
+          _id: { $month: '$reservation.createdAt' },
+          reservationRevenue: { $sum: '$total_amount' },
           reservationCount: { $sum: 1 },
         },
       },
