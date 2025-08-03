@@ -4,7 +4,7 @@ import PostsApi from '../api/PostsApi';
 import { PostType } from '../types/PostType';
 import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
 import PostSidebar from '../components/pages/posts/PostSidebar';
-import ButtonComponents from '../components/common/ButtonComponents';
+import Post from '../components/pages/posts/Post';
 
 const PostsByTagPage = () => {
   const { tag } = useParams<{ tag: string }>();
@@ -41,30 +41,7 @@ const PostsByTagPage = () => {
               ) : posts.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                   {posts.map(post => (
-                    <div key={post._id} className="text-white w-full relative bg-[#1a2233] rounded-lg shadow-lg overflow-hidden">
-                      <img
-                        src={post.images?.[0] || '/assets/images/default-post.jpg'}
-                        alt={post.title}
-                        className="w-full h-[300px] object-cover"
-                      />
-                      <p className="bg-secondaryColor text-black inline-block px-3 py-1 text-sm mt-4 absolute top-4 left-4 rounded">
-                        {new Date(post.createdAt).toLocaleDateString('vi-VN', {
-                          month: 'long',
-                          day: 'numeric',
-                          year: 'numeric',
-                        })}
-                      </p>
-                      <div className="p-4">
-                        <p className="text-sm mt-2">
-                          Đăng bởi: <span className="text-secondaryColor">{post.user_id.username}</span> In: <span className="text-secondaryColor">{post.categories_id.Cate_name}</span>
-                        </p>
-                        <h3 className="text-xl font-bold mt-3 break-words">{post.title}</h3>
-                        <p className="text-sm mt-2 break-words">{post.desc}</p>
-                        <ButtonComponents variant="filled" size="small" onClick={() => window.location.href = `/post-details/${post._id}`}>
-                          Đọc thêm
-                        </ButtonComponents>
-                      </div>
-                    </div>
+                    <Post key={post._id} post={post} />
                   ))}
                 </div>
               ) : (
