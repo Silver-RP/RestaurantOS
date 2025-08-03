@@ -21,12 +21,12 @@ class CronJobService {
       await this.cancelUnpaidOrders();
     });
 
-    this.cancelReservationTask = cron.schedule('* * * * *', async () => {
+    this.cancelReservationTask = cron.schedule('*/60 * * * * *', async () => {
       console.log('Chạy cron job kiểm tra đơn đặt bàn quá hạn...');
       await this.cancelPendingReservations();
     });
 
-    this.resetHeldTableTask = cron.schedule('* * * * *', async () => {
+    this.resetHeldTableTask = cron.schedule('*/15 * * * *', async () => {
       await this.resetExpiredHeldTables();
     });
 

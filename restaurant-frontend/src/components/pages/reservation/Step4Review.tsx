@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ReservationFormData } from '@/types/Reservation.type';
 import ButtonComponents from '@/components/common/ButtonComponents';
 import { toast } from 'react-toastify';
@@ -62,7 +62,9 @@ const Step4Review: React.FC<Step4ReviewProps> = ({
     (total, item) => total + item.price * item.quantity,
     0,
   );
-
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   return (
     <div className="bg-bodyBackground text-white py-0 sm:py-8 px-4 flex items-center justify-center min-h-screen">
       <div className="max-w-4xl w-full mx-auto">

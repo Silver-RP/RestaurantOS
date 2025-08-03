@@ -20,10 +20,15 @@ const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({
   const [selectedTime, setSelectedTime] = useState(formData.time);
   const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
   const [submitted, setSubmitted] = useState(false);
-
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   useEffect(() => {
     setFormData((prev) => ({ ...prev, time: selectedTime }));
   }, [selectedTime]);
+  useEffect(() => {
+    setSelectedTime(formData.time);
+  }, [formData.time]);
   useEffect(() => {
     const generateTimeOptions = () => {
       const options: string[] = [];

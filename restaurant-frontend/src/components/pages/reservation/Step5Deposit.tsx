@@ -28,6 +28,9 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
   onBack,
   onPaymentMethodChange,
 }) => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   const [depositAmount, setDepositAmount] = useState<number>(0);
   const [isPaying, setIsPaying] = useState(false);
   const [tableDeposit, setTableDeposit] = useState(0);
@@ -160,7 +163,7 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
   );
 
   return (
-    <div className="bg-bodyBackground text-white py-8 px-4 flex items-center justify-center">
+    <div className="bg-bodyBackground text-white py-0 px-4 flex items-center justify-center">
       <div className="max-w-4xl w-full mx-auto">
         {/* Header với animation */}
         <motion.div
@@ -169,10 +172,10 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
           transition={{ duration: 0.6 }}
           className="text-center mb-8"
         >
-          <h1 className="text-2xl sm:text-4xl mb-2 sm:mb-4 text-secondaryColor uppercase tracking-widest drop-shadow-lg">
+          <h1 className="text-2xl sm:text-3xl mb-2 sm:mb-4 text-secondaryColor uppercase tracking-widest drop-shadow-lg">
             Thanh toán đặt cọc
           </h1>
-          <p className="text-base sm:text-lg text-gray-300 w-full mx-auto">
+          <p className="text-base sm:text-md text-gray-300 w-full mx-auto">
             Hoàn tất việc đặt bàn bằng cách thanh toán khoản đặt cọc. Số tiền
             này sẽ được trừ vào hóa đơn cuối cùng.
           </p>
@@ -185,12 +188,12 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <div className="bg-headerBackground/80 border border-secondaryColor/30 rounded-lg p-4 sm:p-10 flex flex-col items-center justify-center shadow-lg">
-              <h3 className="text-xl sm:text-2xl font-bold text-secondaryColor mb-4 flex items-center gap-2">
+            <div className="bg-headerBackground/80 border border-secondaryColor/30 rounded-lg p-4 sm:p-6 flex flex-col items-center justify-center shadow-lg">
+              <h3 className="text-xl sm:text-xl font-bold text-secondaryColor mb-4 flex items-center gap-2">
                 <BiSolidDiscount className="text-3xl" />
                 Tổng tiền đặt cọc
               </h3>
-              <span className="text-3xl sm:text-5xl font-extrabold text-secondaryColor drop-shadow-lg mb-2">
+              <span className="text-3xl sm:text-4xl font-semibold text-secondaryColor drop-shadow-lg mb-2">
                 {fCurrency(depositAmount)}
               </span>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8 w-full">

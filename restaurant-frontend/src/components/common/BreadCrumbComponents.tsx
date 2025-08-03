@@ -57,7 +57,7 @@ const BreadcrumbComponent = () => {
       aria-label="breadcrumb"
       className="relative py-2 sm:py-4 bg-[url('/assets/images/banner/breadcrumb01.jpg')] bg-cover bg-center 
              flex justify-center items-center
-             h-[80px] sm:h-[100px] lg:h-[140px] xl:h-[180px]"
+             h-[60px] sm:h-[80px] lg:h-[100px]"
     >
       <div className="absolute inset-0 bg-black bg-opacity-40 z-0" />
 

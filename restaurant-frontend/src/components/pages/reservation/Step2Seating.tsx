@@ -100,124 +100,129 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({
     }
     onNext();
   };
-
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   return (
     <div className="max-w-4xl mx-auto text-white font-serif">
-      <div className="bg-[#112233] border border-[#F9D783] rounded-xl p-6 pt-0">
-        <div
-          className="grid relative mx-auto"
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(12, 1fr)',
-            gridTemplateRows: 'repeat(8, 1fr)',
-            gap: '20px',
-            width: '100%',
-            height: 600,
-            position: 'relative',
-          }}
-        >
-          {tables
-            .filter(
-              (t) =>
-                typeof t.position?.x === 'number' &&
-                typeof t.position?.y === 'number',
-            )
-            .map((t) => {
-              const tableId = t._id ?? t.code;
-              const isGroupOrVip = t.type === 'group' || t.type === 'vip';
-              const isSelected = selectedTables.some(
-                (sel) => (sel._id ?? sel.code) === tableId,
-              );
+      <div className="bg-[#112233] border border-[#F9D783] rounded-xl p-6">
+        <div className="overflow-x-auto w-full">
+          <div
+            className="grid relative mx-auto h-[450px] sm:h-[600px]"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(11, 1fr)',
+              gridTemplateRows: 'repeat(7, 1fr)',
+              gap: '4px',
+              width: '100%',
+              position: 'relative',
+            }}
+          >
+            {tables
+              .filter(
+                (t) =>
+                  typeof t.position?.x === 'number' &&
+                  typeof t.position?.y === 'number' &&
+                  t.position.x > 1 &&
+                  t.position.y > 1,
+              )
+              .map((t) => {
+                const tableId = t._id ?? t.code;
+                const isGroupOrVip = t.type === 'group' || t.type === 'vip';
+                const isSelected = selectedTables.some(
+                  (sel) => (sel._id ?? sel.code) === tableId,
+                );
+                const adjustedX = t.position.x - 1;
+                const adjustedY = t.position.y - 1;
 
-              const isCapacityNotEnough =
-                t.type === 'vip'
-                  ? false
-                  : t.type === 'group'
-                    ? (formData.number_of_people || 1) > 10
-                    : t.capacity < (formData.number_of_people || 1);
-              let isAvailable = !!t.isAvailable;
-              if (t.isBooked) {
-                isAvailable = false;
-              }
-              // Disable bàn nhóm nếu 2 người
-              if (t.type === 'group' && formData.number_of_people === 2) {
-                isAvailable = false;
-              }
-              // Disable bàn 2 nếu 4 người trở lên
-              if (t.capacity === 2 && formData.number_of_people >= 4) {
-                isAvailable = false;
-              }
-              if (isCapacityNotEnough) {
-                isAvailable = false;
-              }
-              let status: 'selected' | 'available' | 'reserved' | 'booked' =
-                'available';
-              if (isCapacityNotEnough) {
-                status = 'reserved';
-              } else if (isSelected) {
-                status = 'selected';
-              } else if (t.isBooked) {
-                status = 'booked';
-              } else if (!isAvailable) {
-                status = 'reserved';
-              }
-              return (
-                <div
-                  key={tableId}
-                  style={{
-                    gridColumn: `${t.position.x} / span ${isGroupOrVip ? 2 : 1}`,
-                    gridRow: t.position.y,
-                    justifySelf: 'center',
-                    alignSelf: 'center',
-                  }}
-                >
-                  <TableItem
-                    id={tableId}
-                    name={t.code}
-                    type={t.type}
-                    status={status}
-                    onClick={() => {
-                      if (isCapacityNotEnough) {
-                        setShowCapacityWarningModal(true);
-                        return;
-                      }
-                      handleSelect(tableId, t.code, isAvailable, t);
+                const isCapacityNotEnough =
+                  t.type === 'vip'
+                    ? false
+                    : t.type === 'group'
+                      ? (formData.number_of_people || 1) > 10
+                      : t.capacity < (formData.number_of_people || 1);
+                let isAvailable = !!t.isAvailable;
+                if (t.isBooked) {
+                  isAvailable = false;
+                }
+                if (t.type === 'group' && formData.number_of_people === 2) {
+                  isAvailable = false;
+                }
+                if (t.capacity === 2 && formData.number_of_people >= 4) {
+                  isAvailable = false;
+                }
+                if (isCapacityNotEnough) {
+                  isAvailable = false;
+                }
+                let status: 'selected' | 'available' | 'reserved' | 'booked' =
+                  'available';
+                if (isCapacityNotEnough) {
+                  status = 'reserved';
+                } else if (isSelected) {
+                  status = 'selected';
+                } else if (t.isBooked) {
+                  status = 'booked';
+                } else if (!isAvailable) {
+                  status = 'reserved';
+                }
+                return (
+                  <div
+                    key={tableId}
+                    style={{
+                      gridColumn: `${adjustedX} / span ${isGroupOrVip ? 2 : 1}`,
+                      gridRow: adjustedY,
+                      justifySelf: 'center',
+                      alignSelf: 'center',
                     }}
-                    capacity={t.capacity}
-                    disabled={!isAvailable && !isSelected}
-                  />
-                </div>
-              );
-            })}
+                  >
+                    <TableItem
+                      id={tableId}
+                      name={t.code}
+                      type={t.type}
+                      status={status}
+                      onClick={() => {
+                        if (isCapacityNotEnough) {
+                          setShowCapacityWarningModal(true);
+                          return;
+                        }
+                        handleSelect(tableId, t.code, isAvailable, t);
+                      }}
+                      capacity={t.capacity}
+                      disabled={!isAvailable && !isSelected}
+                    />
+                  </div>
+                );
+              })}
+          </div>
         </div>
         {/* Legend */}
-        <div className="flex gap-6 justify-center mt-4 text-white">
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2">
-              <span className="w-6 h-6 rounded bg-[#F9D783] border-2 border-[#F9D783] inline-block" />
-              <span>Đang chọn</span>
-            </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-4 mt-4 w-full md:w-80% mx-auto text-sm sm:text-base text-white">
+          <div className="flex items-center justify-center gap-2">
+            <span className="w-6 h-6 rounded bg-[#F9D783] border-2 border-[#F9D783] inline-block" />
+            <span>Đang chọn</span>
+          </div>
+          <div className="flex items-center justify-center gap-2">
             <span className="w-6 h-6 rounded bg-[#1abc9c] border-2 border-[#F9D783] inline-block" />
             <span>Trống</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-center gap-2">
             <span className="w-6 h-6 rounded bg-[#e74c3c] border-2 border-[#F9D783] inline-block" />
             <span>Đã đặt trước</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-center gap-2">
             <span className="w-6 h-6 rounded bg-[#3E4B5B] border-2 border-[#F9D783] inline-block" />
             <span>Không khả dụng</span>
           </div>
-          <div className="flex justify-center items-center">
-            <ButtonComponents
-              variant="filled"
-              size="small"
-              className="font-bold"
-              onClick={() => setShowTypeInfo(true)}
-            >
-              Xem chi tiết các loại bàn
-            </ButtonComponents>
-          </div>
+        </div>
+        <div className="flex justify-center items-center w-full mt-4">
+          <ButtonComponents
+            variant="filled"
+            size="small"
+            className="font-bold"
+            onClick={() => setShowTypeInfo(true)}
+          >
+            Xem chi tiết các loại bàn
+          </ButtonComponents>
         </div>
         <TableTypeInfoModal
           isOpen={showTypeInfo}
@@ -293,7 +298,7 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({
         </GlobalModal>
       )}
       {/* Nút điều hướng */}
-      <div className="flex justify-between mt-10">
+      <div className="flex justify-between mt-3 md:mt-10">
         <ButtonComponents variant="outline" size="small" onClick={onBack}>
           QUAY LẠI
         </ButtonComponents>

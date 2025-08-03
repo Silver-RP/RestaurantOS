@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Step1BasicInfo from '@components/pages/reservation/Step1BasicInfo';
 import BreadcrumbComponent from '@components/common/BreadCrumbComponents';
 import Step2Seating from '@components/pages/reservation/Step2Seating';
@@ -52,6 +52,7 @@ const ReservationPage: React.FC = () => {
   const [formData, setFormData] =
     useState<ReservationFormData>(getInitialFormData());
   const [step, setStep] = useState(1);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleBeforeUnload = async () => {
@@ -163,15 +164,21 @@ const ReservationPage: React.FC = () => {
   return (
     <>
       <BreadcrumbComponent />
-      <div className="bg-bodyBackground text-white pt-6 sm:pt-16">
-        <div className="max-w-[1200px] w-full mx-auto text-center pb-6 sm:pb-10">
+      <div
+        ref={containerRef}
+        className="bg-bodyBackground text-white pt-6 sm:pt-8"
+      >
+        <div className="max-w-[1200px] w-full mx-auto text-center pb-6 sm:pb-8">
           <ReservationSteps step={step} steps={steps} />
 
           {step === 1 && (
             <Step1BasicInfo
               formData={formData}
               setFormData={setFormData}
-              onNext={() => setStep(2)}
+              onNext={() => {
+                setStep(2);
+                containerRef.current?.scrollTo(0, 0);
+              }}
             />
           )}
 
@@ -179,8 +186,14 @@ const ReservationPage: React.FC = () => {
             <Step2Seating
               formData={formData}
               setFormData={setFormData}
-              onNext={() => setStep(3)}
-              onBack={() => setStep(1)}
+              onNext={() => {
+                setStep(3);
+                containerRef.current?.scrollTo(0, 0);
+              }}
+              onBack={() => {
+                setStep(1);
+                containerRef.current?.scrollTo(0, 0);
+              }}
             />
           )}
 
@@ -188,8 +201,14 @@ const ReservationPage: React.FC = () => {
             <Step3Menu
               formData={formData}
               setFormData={setFormData}
-              onNext={() => setStep(4)}
-              onBack={() => setStep(2)}
+              onNext={() => {
+                setStep(4);
+                containerRef.current?.scrollTo(0, 0);
+              }}
+              onBack={() => {
+                setStep(2);
+                containerRef.current?.scrollTo(0, 0);
+              }}
             />
           )}
 
@@ -197,16 +216,28 @@ const ReservationPage: React.FC = () => {
             <Step4Review
               formData={formData}
               setFormData={setFormData}
-              onNext={() => setStep(5)}
-              onBack={() => setStep(3)}
+              onNext={() => {
+                setStep(5);
+                containerRef.current?.scrollTo(0, 0);
+              }}
+              onBack={() => {
+                setStep(3);
+                containerRef.current?.scrollTo(0, 0);
+              }}
             />
           )}
 
           {step === 5 && (
             <Step5Deposit
               formData={formData}
-              onSuccess={() => setStep(6)}
-              onBack={() => setStep(4)}
+              onSuccess={() => {
+                setStep(6);
+                containerRef.current?.scrollTo(0, 0);
+              }}
+              onBack={() => {
+                setStep(4);
+                containerRef.current?.scrollTo(0, 0);
+              }}
               onPaymentMethodChange={(method) => setPaymentMethod(method || '')}
             />
           )}
