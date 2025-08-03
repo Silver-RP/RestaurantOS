@@ -381,19 +381,19 @@ class FoodController {
     }
   }
 
-  async getDishIngredients (req: Request, res: Response): Promise<any> {
+  async getDishIngredients(req: Request, res: Response): Promise<any> {
     try {
       const dishId = req.params.dishId;
       if (!mongoose.Types.ObjectId.isValid(dishId)) {
         return res.status(400).json({ message: 'Invalid dish ID' });
       }
       const ingredients = await FoodService.getDishIngredients(dishId);
-      
+
       return res.status(200).json({
         success: true,
         message: 'Ingredient restored successfully',
         data: ingredients,
-    });
+      });
     } catch (error) {
       console.error('Error getting dish ingredients:', error);
       return res.status(500).json({ message: 'Internal server error' });
@@ -407,21 +407,21 @@ class FoodController {
       if (!mongoose.Types.ObjectId.isValid(dishId)) {
         return res.status(400).json({ message: 'Invalid dish ID' });
       }
-  
+
       const ingredients = req.body;
       if (!Array.isArray(ingredients)) {
         return res.status(400).json({ message: 'Body must be an array of ingredients.' });
       }
-  
+
       for (const ing of ingredients) {
         const { ingredientId, quantity, unit } = ing;
         if (!ingredientId || quantity == null || !unit) {
           return res.status(400).json({ message: 'Missing fields in one or more ingredients.' });
         }
       }
-  
+
       const addedIngredients = await FoodService.addManyDishIngredients(dishId, ingredients);
-  
+
       return res.status(201).json({ data: addedIngredients });
     } catch (error) {
       console.error('Error adding dish ingredients:', error);
@@ -437,13 +437,13 @@ class FoodController {
       if (!mongoose.Types.ObjectId.isValid(dishId)) {
         return res.status(400).json({ message: 'Invalid dish ID' });
       }
-  
+
       if (!Array.isArray(updates)) {
         return res.status(400).json({ message: 'Body must be an array of updates.' });
       }
-  
+
       const results = await FoodService.updateManyDishIngredients(dishId, updates);
-  
+
       return res.status(200).json({ data: results });
     } catch (error) {
       console.error('Error updating dish ingredients:', error);
@@ -459,21 +459,18 @@ class FoodController {
       if (!mongoose.Types.ObjectId.isValid(dishId)) {
         return res.status(400).json({ message: 'Invalid dish ID' });
       }
-  
+
       if (!Array.isArray(ids)) {
         return res.status(400).json({ message: 'ids must be an array.' });
       }
-  
-      const deleted = await FoodService.deleteManyDishIngredients( ids, dishId);
-  
+
+      const deleted = await FoodService.deleteManyDishIngredients(ids, dishId);
+
       return res.status(200).json({ data: deleted });
     } catch (error) {
       console.error('Error deleting dish ingredients:', error);
       return res.status(500).json({ message: 'Internal server error' });
     }
   }
-  
-
-  
 }
 export default new FoodController();

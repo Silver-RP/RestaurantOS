@@ -14,7 +14,7 @@ const BestOffersSection: React.FC = () => {
   );
   const navigate = useNavigate();
   return (
-    <section className="w-full bg-bodyBackground py-16">
+    <section className="w-full bg-bodyBackground py-8 sm:py-16">
       <Container>
         <img
           src="/assets/images/home/IconOnline.svg"
@@ -37,17 +37,20 @@ const BestOffersSection: React.FC = () => {
         ) : isError ? (
           <div className="text-center text-red-400 mt-8">Lỗi tải dữ liệu</div>
         ) : (data ?? []).length > 0 ? (
-          <MenuGrid
-            items={(data ?? []).slice(0, 6).map((dish) => ({
-              name: dish.name,
-              price: dish.price,
-              description: dish.description,
-              image: dish.images?.[0] || '',
-              hoverImage: dish.images?.[1] || dish.images?.[0] || '',
-              slug: dish.slug || '',
-              average_rating: dish.average_rating || 0,
-            }))}
-          />
+          (console.log('data:', data),
+          (
+            <MenuGrid
+              items={(data ?? []).slice(0, 6).map((dish) => ({
+                name: dish.name,
+                price: dish.price,
+                description: dish.description,
+                image: dish.images?.[0] || '',
+                hoverImage: dish.images?.[1] || dish.images?.[0] || '',
+                slug: dish.slug || '',
+                average_rating: dish.average_rating || 0,
+              }))}
+            />
+          ))
         ) : (
           <div className="text-center text-gray-400 mt-8">
             Không có món ăn trong danh mục này

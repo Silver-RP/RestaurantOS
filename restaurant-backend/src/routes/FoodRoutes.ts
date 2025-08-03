@@ -39,5 +39,4 @@ router.post('/:dishId/ingredients', FoodController.addDishIngredient);
 router.put('/:dishId/ingredients', FoodController.updateDishIngredient);
 router.delete('/:dishId/ingredients', FoodController.deleteDishIngredient);
 
-
 export default router;

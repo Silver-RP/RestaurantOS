@@ -8,7 +8,7 @@ const PublicVoucherSection: React.FC = () => {
 
   useEffect(() => {
     getAllVouchers({ type: 'public', status: 'active', limit: 5 })
-      .then(res => setVouchers(res.data.docs))
+      .then((res) => setVouchers(res.docs))
       .finally(() => setLoading(false));
   }, []);
 
@@ -17,12 +17,16 @@ const PublicVoucherSection: React.FC = () => {
 
   return (
     <section className="bg-bodyBackground my-8 px-4">
-      <h2 className="text-2xl font-bold mb-4 text-center">Ưu đãi dành cho bạn</h2>
+      <h2 className="text-2xl font-bold mb-4 text-center">
+        Ưu đãi dành cho bạn
+      </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {vouchers.map(voucher => (
-          <div key={voucher._id} className="border rounded-lg p-4 shadow "></div>
+        {vouchers.map((voucher) => (
+          <div key={voucher._id} className="border rounded-lg p-4 shadow">
             <div className="font-semibold text-lg mb-2">{voucher.code}</div>
-            <div className="mb-1">{voucher.description || 'Không có mô tả'}</div>
+            <div className="mb-1">
+              {voucher.description || 'Không có mô tả'}
+            </div>
             <div>
               <span className="font-bold">Loại: </span>
               {voucher.discount_type === 'percent'
@@ -31,7 +35,9 @@ const PublicVoucherSection: React.FC = () => {
             </div>
             <div>
               <span className="font-bold">HSD: </span>
-              {voucher.end_date ? new Date(voucher.end_date).toLocaleDateString() : 'Không giới hạn'}
+              {voucher.end_date
+                ? new Date(voucher.end_date).toLocaleDateString()
+                : 'Không giới hạn'}
             </div>
           </div>
         ))}
@@ -40,4 +46,4 @@ const PublicVoucherSection: React.FC = () => {
   );
 };
 
-export default PublicVoucherSection; 
+export default PublicVoucherSection;

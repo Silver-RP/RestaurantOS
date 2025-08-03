@@ -303,6 +303,7 @@ class FoodService {
             images: 1,
             favorites_count: 1,
             rating: 1,
+            average_rating: 1,
             categories: 1,
             slug: 1,
           },
@@ -483,27 +484,30 @@ class FoodService {
   async getDishIngredients(dishId: string) {
     try {
       const dishInfo = await Dish.findById(dishId).select('name images ingredients').lean();
-  
+
       if (!dishInfo) {
         return { message: 'Dish not found' };
       }
-  
-      const ingredientsRaw = await DishIngredient.find({ dishId: new mongoose.Types.ObjectId(dishId) })
+
+      const ingredientsRaw = await DishIngredient.find({
+        dishId: new mongoose.Types.ObjectId(dishId),
+      })
         .populate({
           path: 'ingredientId',
-          select: 'name'
+          select: 'name',
         })
         .lean();
-  
-      const ingredients = ingredientsRaw.map(item => ({
-        _id: item._id,
-        ingredientId: item.ingredientId._id,
-        ingredientName: (item.ingredientId as any).name,
-        quantity: item.quantity,
-        unit: item.unit,
-      }))
-      .sort((a, b) => a.ingredientName.localeCompare(b.ingredientName));
-  
+
+      const ingredients = ingredientsRaw
+        .map((item) => ({
+          _id: item._id,
+          ingredientId: item.ingredientId._id,
+          ingredientName: (item.ingredientId as any).name,
+          quantity: item.quantity,
+          unit: item.unit,
+        }))
+        .sort((a, b) => a.ingredientName.localeCompare(b.ingredientName));
+
       return {
         dish: {
           id: dishInfo._id,
@@ -513,75 +517,72 @@ class FoodService {
         },
         ingredients: ingredients || [],
       };
-  
     } catch (error) {
       console.error('Error getting dish ingredients:', error);
       throw new Error('Error getting dish ingredients');
     }
   }
-  
+
   async addManyDishIngredients(
     dishId: string,
-    ingredients: { ingredientId: string; quantity: number; unit: string }[]
+    ingredients: { ingredientId: string; quantity: number; unit: string }[],
   ) {
     try {
       const addedIngredients = [];
-  
+
       for (const ing of ingredients) {
         const { ingredientId, quantity, unit } = ing;
-  
+
         const exists = await DishIngredient.findOne({
           dish: new mongoose.Types.ObjectId(dishId),
           ingredient: new mongoose.Types.ObjectId(ingredientId),
         });
-  
+
         if (exists) {
           console.log(`Ingredient ${ingredientId} already exists for dish ${dishId}`);
-          continue; 
+          continue;
         }
-  
+
         const newItem = await DishIngredient.create({
           dishId: new mongoose.Types.ObjectId(dishId),
           ingredientId: new mongoose.Types.ObjectId(ingredientId),
           quantity,
           unit,
         });
-  
+
         addedIngredients.push(newItem);
       }
-  
+
       return addedIngredients;
     } catch (error) {
       console.error('Error adding dish ingredients:', error);
       throw new Error('Error adding dish ingredients');
     }
   }
-  
+
   async updateManyDishIngredients(
     dishId: string,
-    updates: { _id: string; ingredientId: string; quantity: number; unit: string }[]
+    updates: { _id: string; ingredientId: string; quantity: number; unit: string }[],
   ) {
     const results = [];
-  
+
     for (const item of updates) {
       const { _id, ingredientId, quantity, unit } = item;
 
-      if (
-        !mongoose.Types.ObjectId.isValid(_id) ||
-        !mongoose.Types.ObjectId.isValid(ingredientId)
-      ) continue;
-  
+      if (!mongoose.Types.ObjectId.isValid(_id) || !mongoose.Types.ObjectId.isValid(ingredientId))
+        continue;
+
       const exists = await DishIngredient.findOne({
         _id: { $ne: _id },
         dishId: new mongoose.Types.ObjectId(dishId),
         ingredientId: new mongoose.Types.ObjectId(ingredientId),
       });
-  
+
       if (exists) {
         console.log(`Nguyên liệu ${ingredientId} đã tồn tại trong món ăn ${dishId}, bỏ qua.`);
         continue;
       }
-  
+
       const updated = await DishIngredient.findOneAndUpdate(
         { _id, dishId: new mongoose.Types.ObjectId(dishId) },
         {
@@ -589,20 +590,20 @@ class FoodService {
           quantity,
           unit,
         },
-        { new: true }
+        { new: true },
       );
-  
+
       if (updated) results.push(updated);
     }
-  
+
     return results;
   }
-  
+
   async deleteManyDishIngredients(ids: string[], dishId: string) {
     const results = [];
     for (const id of ids) {
       if (!mongoose.Types.ObjectId.isValid(id)) continue;
-  
+
       const deleted = await DishIngredient.findOneAndDelete({
         _id: id,
         dishId: new mongoose.Types.ObjectId(dishId),
@@ -610,7 +611,7 @@ class FoodService {
 
       if (deleted) results.push(deleted);
     }
-  
+
     return results;
   }
 
