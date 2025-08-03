@@ -24,7 +24,7 @@ class CategoryController {
       }
 
       const result = await CategoryService.AddCategory(req);
-      res.status(201).json(result); // Chỉ gọi 1 lần
+      res.status(201).json(result);
     } catch (error: any) {
       console.error('❌ Controller AddCategory Error:', error);
       res.status(500).json({ message: error.message || 'Internal server error' });

@@ -41,7 +41,7 @@ const PrimarySidebar: React.FC<PrimarySidebarProps> = ({ toggleSidebar }) => {
   const menuItemsMain = [
     { icon: <FaHome />, label: 'Trang chủ', link: '/' },
     { icon: <FaUtensils />, label: 'Thực đơn', link: '/menu' },
-    { icon: <FaRegListAlt />, label: 'Bài viết', link: '/post' },
+    { icon: <FaRegListAlt />, label: 'Bài viết', link: '/posts' },
     { icon: <MdInfo />, label: 'Giới thiệu', link: '/aboutus' },
     { icon: <FaPhoneAlt />, label: 'Liên hệ', link: '/contact' },
   ];

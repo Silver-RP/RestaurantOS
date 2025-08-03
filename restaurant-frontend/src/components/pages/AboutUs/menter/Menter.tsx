@@ -53,7 +53,7 @@ const teamMembers = [
 const Menter = () => {
   return (
     <div className="bg-bodyBackground min-h-screen flex items-center justify-center">
-      <div className="w-mainContainer sm:w-container95 px-4 sm:px-6 lg:px-8 py-12">
+      <div className="w-full sm:w-container95 px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center mb-12">
           <div className="flex justify-center items-center mb-4">
             <img
@@ -62,10 +62,10 @@ const Menter = () => {
               className="rounded"
             />
           </div>
-          <h1 className="text-white text-4xl md:text-5xl font-restora">
+          <h1 className="text-white text-3xl md:text-5xl font-restora">
             Đội Ngũ Của Chúng Tôi
           </h1>
-          <h2 className="text-sm sm:text-base md:text-lg flex justify-center items-center font-sans font-extralight uppercase tracking-widest mb-6 text-secondaryColor">
+          <h2 className="text-sm sm:text-base md:text-lg flex justify-center items-center font-sans font-extralight uppercase tracking-widest mb-3 sm:mb-6 text-secondaryColor">
             <FaDiamond className="inline mr-2" style={{ fontSize: '7px' }} />
             AMAZING TEAM
             <FaDiamond className="inline ml-2" style={{ fontSize: '7px' }} />

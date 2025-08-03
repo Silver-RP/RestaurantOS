@@ -5,6 +5,7 @@ import ButtonComponents from '../../common/ButtonComponents';
 import NavExtend from './NavExtend';
 import { BsPersonCheck } from 'react-icons/bs';
 import Cookies from 'js-cookie';
+import { motion } from 'framer-motion';
 
 interface MobileSidebarProps {
   toggleSidebar: () => void;
@@ -28,10 +29,12 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex">
       {/* Sidebar */}
-      <div
-        className={`w-72 h-full bg-headerBackground text-white transform transition-transform duration-500 ease-in-out ${
-          isOpen ? 'translate-x-0' : '-translate-x-72'
-        }`}
+      <motion.div
+        initial={{ x: -288 }}
+        animate={{ x: isOpen ? 0 : -288 }}
+        exit={{ x: -288 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        className="w-72 h-full bg-headerBackground text-white fixed left-0 top-0 z-50"
       >
         <div className="flex flex-col h-full relative">
           <div className="p-6">
@@ -97,14 +100,16 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Overlay */}
-      <div
+      <motion.div
         onClick={toggleSidebar}
-        className={`flex-1 bg-black transition-all duration-500 ${
-          isOpen ? 'opacity-50' : 'opacity-0 pointer-events-none'
-        }`}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: isOpen ? 0.5 : 0 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.3 }}
+        className={`flex-1 bg-black fixed inset-0 z-40 ${isOpen ? '' : 'pointer-events-none'}`}
       />
     </div>
   );

@@ -6,7 +6,7 @@ const Menu = () => {
   return (
     <div className="bg-bodyBackground sm:h-[630px] flex items-center justify-center text-white">
       {/* Main Content */}
-      <div className="p-12 sm:p-6 w-mainContainer sm:w-container95 mt-6  pb-20">
+      <div className="p-0 sm:p-6 w-mainContainer sm:w-container95 mt-6 pb-4 pb-20">
         {/* Section: Image and Info */}
         <section className="flex flex-col md:flex-row md:grid-cols-2 justify-between items-center space-y-8 sm:space-y-0">
           {/* box1 */}
@@ -51,7 +51,7 @@ const Menu = () => {
               />
             </div>
 
-            <div className="w-full sm:w-1/2 text-left pt-16 space-y-12 sm:space-y-8 mt-10 sm:mt-0">
+            <div className="w-full sm:w-1/2 text-left pt-0 md:pt-16 space-y-12 sm:space-y-8 mt-10 sm:mt-0">
               <div className="text-center mb-3">
                 <h2 className="text-secondaryColor text-sm sm:text-base font-restora">
                   Giờ Hoạt Động

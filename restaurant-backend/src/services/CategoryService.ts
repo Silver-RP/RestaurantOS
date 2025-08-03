@@ -7,16 +7,22 @@ import streamifier from 'streamifier';
 class CategoryService {
   async GetAllCategory(req: Request, res: Response): Promise<any> {
     try {
-      const { page = 1, limit = 10 } = req.query;
+      const { page = 1, limit = 10, type } = req.query;
 
       const pageNumber = parseInt(page as string, 10);
       const limitNumber = parseInt(limit as string, 10);
 
       const skip = (pageNumber - 1) * limitNumber;
 
-      const totalCategories = await Category.countDocuments();
+      const filter: any = {};
+      if (type) {
+        const typeList = typeof type === 'string' ? type.split(',') : [];
+        filter.Cate_type = { $in: typeList };
+      }
 
-      const categories = await Category.find().skip(skip).limit(limitNumber);
+      const totalCategories = await Category.countDocuments(filter);
+
+      const categories = await Category.find(filter).skip(skip).limit(limitNumber);
 
       if (categories.length === 0) {
         return res.status(404).json({ message: 'No categories found!' });

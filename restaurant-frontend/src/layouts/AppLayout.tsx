@@ -9,6 +9,7 @@ import { useFetchFavorites } from '@/hooks/useFetchFavorites';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import Chatbox from '@/components/common/ChatBox';
+import { AnimatePresence } from 'framer-motion';
 
 const LayoutContent: React.FC = () => {
   const location = useLocation();
@@ -70,47 +71,14 @@ const LayoutContent: React.FC = () => {
           </div>
 
           {/* Mobile Sidebar */}
-          {isMobileSidebarOpen && (
-            <>
+          <AnimatePresence>
+            {isMobileSidebarOpen && (
               <MobileSidebar
                 isOpen={isMobileSidebarOpen}
                 toggleSidebar={toggleMobileSidebar}
               />
-              <div
-                className="fixed top-0 left-0 w-full h-full bg-black/50 z-40"
-                onClick={toggleMobileSidebar}
-              />
-            </>
-          )}
-
-          {/* Toggle Button for Mobile */}
-          {!isSidebarOpen && (
-            <button
-              className="xl:hidden fixed top-5 left-5 z-50 w-10 h-10 bg-secondaryColor p-2 rounded-md flex flex-col justify-center items-center space-y-1"
-              onClick={toggleMobileSidebar}
-            >
-              {!isMobileSidebarOpen ? (
-                <>
-                  <span className="block w-6 h-0.5 bg-black"></span>
-                  <span className="block w-5 h-0.5 bg-black"></span>
-                  <span className="block w-6 h-0.5 bg-black"></span>
-                </>
-              ) : (
-                <svg
-                  className="h-6 w-6 text-black"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              )}
-            </button>
-          )}
+            )}
+          </AnimatePresence>
         </>
       )}
 
@@ -128,7 +96,41 @@ const LayoutContent: React.FC = () => {
             : ''
         }`}
       >
-        <Outlet />
+        <div className="fixed w-full top-0 z-40 backdrop-blur-md bg-headerBackground flex items-center justify-between px-4 py-2 xl:hidden">
+          <img
+            src="/assets/images/logo.png"
+            alt="Logo"
+            className="h-8 mx-auto"
+          />
+          <button
+            className="w-10 h-10 bg-secondaryColor p-2 rounded-md flex flex-col justify-center items-center space-y-1"
+            onClick={toggleMobileSidebar}
+          >
+            {!isMobileSidebarOpen ? (
+              <>
+                <span className="block w-6 h-0.5 bg-black"></span>
+                <span className="block w-5 h-0.5 bg-black"></span>
+                <span className="block w-6 h-0.5 bg-black"></span>
+              </>
+            ) : (
+              <svg
+                className="h-6 w-6 text-black"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            )}
+          </button>
+        </div>
+        <div className="mt-14 xl:mt-0">
+          <Outlet />
+        </div>
         {!hideSidebarFooter && (
           <>
             <Footer />

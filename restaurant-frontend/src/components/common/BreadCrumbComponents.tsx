@@ -39,18 +39,23 @@ const BreadcrumbComponent = () => {
     return shortLabels[label] || truncateText(label, 8);
   };
 
-  const breadcrumbList = [
-    { path: '/', label: 'Trang chủ' },
-    ...pathnames.map((value, index) => {
+  const breadcrumbList = [{ path: '/', label: 'Trang chủ' }];
+
+  if (pathnames.length > 0) {
+    pathnames.forEach((value, index) => {
       const to = `/${pathnames.slice(0, index + 1).join('/')}`;
-      return {
-        path: to,
-        label:
-          breadcrumbConfig[to] ||
-          decodeURIComponent(value).replace(/[_-]/g, ' '),
-      };
-    }),
-  ];
+      // Only map to matchedPath if found, otherwise leave undefined (do not default to '/')
+      const matchedPath = breadcrumbConfig[to]
+        ? to
+        : Object.keys(breadcrumbConfig).find((key) => to.startsWith(key));
+      const label =
+        (matchedPath ? breadcrumbConfig[matchedPath] : undefined) ||
+        decodeURIComponent(value).replace(/[_-]/g, ' ');
+      // Skip pushing if to !== '/' but label is 'Trang chủ'
+      if (to !== '/' && label === 'Trang chủ') return;
+      breadcrumbList.push({ path: to, label });
+    });
+  }
 
   return (
     <nav
@@ -62,7 +67,7 @@ const BreadcrumbComponent = () => {
       <div className="absolute inset-0 bg-black bg-opacity-40 z-0" />
 
       <div className="relative z-10 px-4 w-full max-w-6xl">
-        <ol className="flex items-center flex-wrap gap-1 text-xs sm:text-sm md:text-base text-white font-medium justify-start sm:justify-center">
+        <ol className="flex items-center flex-wrap gap-1 text-xs sm:text-sm md:text-base text-white font-medium justify-center">
           {breadcrumbList.map((item, index) => (
             <li key={item.path} className="flex items-center flex-shrink-0">
               {index > 0 && (
@@ -70,7 +75,7 @@ const BreadcrumbComponent = () => {
               )}
               {index === breadcrumbList.length - 1 ? (
                 <span
-                  className="text-white text-lg sm:text-xl font-semibold"
+                  className="text-white text-sm sm:text-base font-semibold"
                   title={item.label}
                 >
                   <span className="hidden sm:inline">{item.label}</span>
@@ -81,7 +86,7 @@ const BreadcrumbComponent = () => {
               ) : (
                 <Link
                   to={item.path}
-                  className="hover:text-secondaryColor transition text-lg sm:text-xl"
+                  className="hover:text-secondaryColor transition text-sm sm:text-base"
                   title={item.label}
                 >
                   <span className="hidden sm:inline">{item.label}</span>

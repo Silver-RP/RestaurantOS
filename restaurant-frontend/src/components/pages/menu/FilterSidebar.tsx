@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useCategories } from '../../../hooks/useCategories';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
@@ -9,7 +9,8 @@ interface FilterSidebarProps {
 }
 
 const FilterSidebar: React.FC<FilterSidebarProps> = ({ onClose }) => {
-  const { categories, loading, error } = useCategories();
+  const categoryTypes = useMemo(() => ['dish', 'drink'], []);
+  const { categories, loading, error } = useCategories(categoryTypes);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 30000000]);
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -108,6 +109,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onClose }) => {
             step={100000}
             value={priceRange}
             onChange={handlePriceChange}
+            onAfterChange={handleApplyFilter}
             trackStyle={[{ backgroundColor: '#FFDEA0', height: 2 }]}
             handleStyle={[
               {
@@ -133,12 +135,6 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onClose }) => {
           <div className="flex items-center justify-between mt-6 text-white text-sm">
             <span>{priceRange[0].toLocaleString('vi-VN')} VND</span>
             <span>{priceRange[1].toLocaleString('vi-VN')} VND</span>
-            <button
-              onClick={handleApplyFilter}
-              className="text-secondaryColor text-xs tracking-widest uppercase hover:opacity-80 transition"
-            >
-              FILTER
-            </button>
           </div>
         </div>
       </div>
