@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
 export interface IReservation extends mongoose.Document {
+  _id: mongoose.Types.ObjectId;
   user_id?: mongoose.Types.ObjectId | null;
   full_name: string;
   phone: string;
@@ -19,6 +20,8 @@ export interface IReservation extends mongoose.Document {
   room_type?: string;
   createdAt?: Date;
   updatedAt?: Date;
+  cancelled_reason?: string;
+  cancelled_at?: Date;
 }
 
 export interface IReservationDetail extends mongoose.Document {

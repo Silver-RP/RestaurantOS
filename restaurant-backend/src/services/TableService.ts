@@ -56,9 +56,7 @@ const TableService = {
       table_code: { $in: tableCodes },
       date: date,
       expireAt: { $gt: now },
-    })
-      .sort({ updatedAt: -1 })
-      .lean();
+    }).sort({ updatedAt: -1 });
 
     // Tạo map để tra cứu nhanh trạng thái đặt/giữ và kiểm tra overlap
     const statusMap = new Map();
@@ -94,8 +92,12 @@ const TableService = {
         };
       }
       const reservationStatus = statusMap.get(table.code);
+      const expireDate = reservationStatus ? new Date(reservationStatus.expireAt) : null;
+      const isExpired = expireDate ? expireDate.getTime() < Date.now() : false;
+
       const isBookedOrHolding =
         !!reservationStatus &&
+        !isExpired &&
         (reservationStatus.status === 'booked' || reservationStatus.status === 'holding');
 
       return {
@@ -103,15 +105,22 @@ const TableService = {
         allowBooking: true,
         isAvailable: !isBookedOrHolding,
         isBooked: isBookedOrHolding,
-        reservationStatus: reservationStatus
-          ? {
-              status: reservationStatus.status,
-              date: reservationStatus.date,
-              time: reservationStatus.time,
-              expireAt: reservationStatus.expireAt,
-            }
-          : null,
+        reservationStatus:
+          reservationStatus && !isExpired
+            ? {
+                status: reservationStatus.status,
+                date: reservationStatus.date,
+                time: reservationStatus.time,
+                expireAt: new Date(reservationStatus.expireAt),
+              }
+            : null,
       };
+    });
+
+    tablesWithStatus.forEach((t) => {
+      console.log(
+        `[DEBUG] Table ${t.code} - isBooked: ${t.isBooked} - expireAt: ${t.reservationStatus?.expireAt}`,
+      );
     });
 
     return tablesWithStatus;

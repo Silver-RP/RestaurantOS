@@ -31,6 +31,8 @@ const reservationSchema = new mongoose.Schema<IReservation>(
       default: 'UNPAID',
     },
     paid_at: { type: Date, default: null },
+    cancelled_reason: { type: String, default: '' },
+    cancelled_at: { type: Date, default: null },
   },
   { timestamps: true },
 );

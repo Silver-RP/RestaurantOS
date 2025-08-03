@@ -1,22 +1,33 @@
 import mongoose from 'mongoose';
 import { Order, IOrder } from '../models/OrderModel';
-import Payment, { IPayment } from '../models/PaymentModel';
+import Payment from '../models/PaymentModel';
 import cron from 'node-cron';
 import MailerService from './MailerService';
 import User from '../models/UserModel';
-import PostsService from './PostsServices'; 
+import PostsService from './PostsServices';
 import { OrderDetail } from '../models/OrderDetailModel';
+import { Reservation } from '../models/ReservationModel';
+import { TableReservationStatus } from '../models/TableReservationStatusModel';
 
 class CronJobService {
-
   private cancelOrderTask: any;
-  private publishPostTask: any; 
-
+  private publishPostTask: any;
+  private cancelReservationTask: any;
+  private resetHeldTableTask: any;
   constructor() {
     // Cron job hủy đơn hàng chưa thanh toán trong 30 phút
     this.cancelOrderTask = cron.schedule('* * * * *', async () => {
       console.log('Chạy cron job kiểm tra đơn hàng chưa thanh toán...');
       await this.cancelUnpaidOrders();
+    });
+
+    this.cancelReservationTask = cron.schedule('* * * * *', async () => {
+      console.log('Chạy cron job kiểm tra đơn đặt bàn quá hạn...');
+      await this.cancelPendingReservations();
+    });
+
+    this.resetHeldTableTask = cron.schedule('* * * * *', async () => {
+      await this.resetExpiredHeldTables();
     });
 
     // Cron job for publishing scheduled posts (e.g., every minute)
@@ -35,11 +46,10 @@ class CronJobService {
     });
   }
 
-
   // Hàm kiểm tra và hủy đơn hàng chưa thanh toán
   private async cancelUnpaidOrders() {
     try {
-      const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000); 
+      const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
 
       // Tìm các đơn hàng chưa thanh toán với phương thức thanh toán online
       const unpaidOrders = await Order.find({
@@ -97,9 +107,7 @@ class CronJobService {
       }
 
       // Populate address_id và lấy order_items
-      const populatedOrder = await Order.findById(order._id)
-        .populate('address_id')
-        .lean();
+      const populatedOrder = await Order.findById(order._id).populate('address_id').lean();
       const order_items = await OrderDetail.find({ order_id: order._id }).lean();
 
       await MailerService.sendOrderCancellation({
@@ -112,16 +120,96 @@ class CronJobService {
     }
   }
 
+  // Hàm hủy đơn đặt bàn sau 30 phút chưa xác nhận
+  private async cancelPendingReservations() {
+    try {
+      const expireTime = new Date(Date.now() - 5 * 60 * 1000); // 1 phút trước
+
+      const pendingReservations = await Reservation.find({
+        status: 'PENDING',
+        createdAt: { $lte: expireTime },
+      });
+
+      for (const reservation of pendingReservations) {
+        reservation.status = 'CANCELLED';
+        reservation.cancelled_reason = 'Không thanh toán phần đặt bàn trong thời gian quy định';
+        reservation.cancelled_at = new Date();
+        await reservation.save();
+
+        // Cập nhật trạng thái bàn tương ứng để cho phép người khác đặt lại
+        await TableReservationStatus.updateMany(
+          { reservation_id: reservation._id },
+          {
+            $set: {
+              status: 'holding',
+              heldBy: null,
+              reservation_id: null,
+              expireAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+            },
+          },
+        );
+
+        await this.sendReservationCancellationEmail(reservation);
+
+        // Gửi email nếu cần:
+        // await MailerService.sendReservationCancellation(...)
+
+        console.log(`Đã hủy đơn đặt bàn ${reservation._id}`);
+      }
+
+      console.log(`Đã xử lý ${pendingReservations.length} đơn đặt bàn quá hạn.`);
+    } catch (error: any) {
+      console.error('Lỗi khi hủy đơn đặt bàn:', error.message);
+    }
+  }
+
+  private async resetExpiredHeldTables() {
+    try {
+      const result = await TableReservationStatus.deleteMany({
+        status: 'holding',
+        reservation_id: null,
+      });
+
+      if (result.deletedCount && result.deletedCount > 0) {
+        console.log(`Đã xoá ${result.deletedCount} bản ghi bàn giữ quá hạn.`);
+      }
+    } catch (error: any) {
+      console.error('Lỗi khi xoá các bản ghi bàn giữ quá hạn:', error.message);
+    }
+  }
+
+  // Hàm gửi email thông báo hủy đặt bàn
+  private async sendReservationCancellationEmail(reservation: any) {
+    try {
+      const user = await User.findById(reservation.user_id).lean();
+      if (!user || !user.email) {
+        console.error(`Không tìm thấy người dùng hoặc email cho đơn đặt bàn ${reservation._id}`);
+        return;
+      }
+
+      await MailerService.sendReservationCancellation({
+        reservation,
+        userEmail: user.email,
+        reason: reservation.cancelled_reason || 'Không xác nhận trong thời gian quy định',
+      });
+    } catch (error: any) {
+      console.error(`Lỗi khi gửi email hủy đặt bàn ${reservation._id}:`, error.message);
+    }
+  }
+
   public start() {
     this.cancelOrderTask.start();
     this.publishPostTask.start();
+    this.cancelReservationTask.start();
+    this.resetHeldTableTask.start();
   }
 
   public stop() {
     this.cancelOrderTask.stop();
     this.publishPostTask.stop();
+    this.cancelReservationTask.stop();
+    this.resetHeldTableTask.stop();
   }
 }
 
 export default new CronJobService();
-

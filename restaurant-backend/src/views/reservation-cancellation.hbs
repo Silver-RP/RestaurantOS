@@ -1,0 +1,71 @@
+
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Đơn đặt bàn bị hủy</title>
+</head>
+
+<body style="background-color: #012B40; color: white; font-family: sans-serif; margin: 0; padding: 0;">
+  <div style="max-width: 600px; margin: 20px auto;">
+
+    <div style="display: flex; justify-content: space-between; align-items: center; background-color: #021D2A; padding: 24px; padding-bottom: 0px; border-top-left-radius: 16px; border-top-right-radius: 16px;">
+      <table style="width: 100%;">
+        <tr>
+          <td style="text-align: left;">
+            <img src="https://res.cloudinary.com/dw8c7oz6q/image/upload/v1748798728/logo_tmawjo.png" alt="Logo"
+              style="height: 80px;" />
+          </td>
+          <td style="text-align: right; font-size: 14px; color: #D1D5DB;">
+            BeefBeef Restaurant
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <div style="background-color: white; color: black; border-bottom-left-radius: 16px; border-bottom-right-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <div style="background-color: #021D2A; color: white; padding: 24px;">
+        <h1 style="font-size: 20px; font-weight: 600; margin: 0 0 8px;">Đơn đặt bàn của bạn đã bị hủy</h1>
+        <p style="font-size: 14px; margin: 0 0 8px;">Mã đặt bàn: <strong>#{{reservationId}}</strong></p>
+        <p style="font-size: 14px; margin: 0 0 16px;">Lý do hủy: {{reason}}</p>
+      </div>
+
+      <div style="padding: 24px;">
+        <div style="margin-bottom: 24px;">
+          <h2 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">Thông tin khách hàng</h2>
+          <span><strong>Họ và tên:</strong> {{name}}</span> <br>
+          <span><strong>Số điện thoại:</strong> {{phone}}</span> <br>
+          <span><strong>Email:</strong> {{email}}</span> <br>
+        </div>
+
+        <div style="margin-bottom: 24px;">
+          <h2 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">Chi tiết đặt bàn</h2>
+          <span><strong>Ngày đặt:</strong> {{date}}</span> <br>
+          <span><strong>Giờ đặt:</strong> {{time}}</span> <br>
+          <span><strong>Loại bàn:</strong> {{tableType}}</span> <br>
+          <span><strong>Số lượng người:</strong> {{numberOfPeople}}</span> <br>
+        </div>
+
+        <div style="margin: 32px 0; text-align: center;">
+          <a href="{{reservationDetailUrl}}" style="background-color: #FFDEA0; color: #021D2A; font-weight: bold; padding: 10px 20px; text-decoration: none; border-radius: 8px;">Xem chi tiết đơn đặt bàn</a>
+        </div>
+
+        <div style="background-color: #F3F4F6; padding: 12px; border-radius: 8px;">
+          <p style="margin: 0;">Nếu bạn có bất kỳ thắc mắc nào, vui lòng liên hệ với chúng tôi qua hotline hoặc email.</p>
+          <p style="margin: 0;">BeefBeef, 161 Quốc Hương, Thảo Điền, Quận 2 – 0239991255 – beefbeef@gmail.com</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align: center; font-size: 14px; color: #9CA3AF; padding: 24px;">
+      <p style="margin: 0;">&copy; 2024 BeefBeef. All rights reserved.</p>
+      <p style="margin-top: 8px;">
+        <a href="#" style="color: #D1D5DB; text-decoration: none;">Chính sách bảo mật</a> ·
+        <a href="#" style="color: #D1D5DB; text-decoration: none;">Liên hệ</a>
+      </p>
+    </div>
+  </div>
+</body>
+</html>
