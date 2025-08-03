@@ -19,7 +19,7 @@ const PostPage: React.FC = () => {
           <div className="max-w-[1500px] py-10">
           <div className="flex flex-col lg:flex-row gap-10 ">
             <div className="lg:w-1/4 w-full relative">
-              <div className="w-full h-[calc(100vh-2rem)]">
+              <div className="w-full h-[400px]">
                 <PostSidebar
                   onSearch={(value) => {
                     setSearchParams((prev) => {

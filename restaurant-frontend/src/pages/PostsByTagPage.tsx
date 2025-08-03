@@ -30,7 +30,7 @@ const PostsByTagPage = () => {
         <div className="container mx-auto">
           <div className="flex flex-col lg:flex-row gap-10 px-4 py-10">
             <div className="lg:w-1/4 w-full relative">
-              <div className="w-full h-[calc(100vh-2rem)]">
+              <div className="w-full h-[400px]">
                 <PostSidebar />
               </div>
             </div>

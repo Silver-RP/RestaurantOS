@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface PostSidebarProps {
   className?: string;
@@ -8,6 +9,12 @@ interface PostSidebarProps {
 const PostSidebar: React.FC<PostSidebarProps> = ({ className }) => {
   const [showPosts, setShowPosts] = useState(false);
   const [showCategories, setShowCategories] = useState(false);
+  const navigate = useNavigate();
+
+  // Hàm chuyển hướng khi click vào thể loại
+  const handleCategoryClick = (tag: string) => {
+    navigate(`/posts/tag/${encodeURIComponent(tag)}`);
+  };
 
   return (
     <aside className={`w-full space-y-6 text-white lg:space-y-10 ${className}`}>
@@ -38,9 +45,24 @@ const PostSidebar: React.FC<PostSidebarProps> = ({ className }) => {
           <span className="text-2xl lg:hidden">{showCategories ? '-' : '+'}</span>
         </div>
         <ul className={`${showCategories ? 'block' : 'hidden'} lg:block space-y-2`}>
-          <li className="hover:text-secondaryColor transition cursor-pointer">Món ăn ngon</li>
-          <li className="hover:text-secondaryColor transition cursor-pointer">Món ăn dinh dưỡng</li>
-          <li className="hover:text-secondaryColor transition cursor-pointer">Món ăn gia đình</li>
+          <li
+            className="hover:text-secondaryColor transition cursor-pointer"
+            onClick={() => handleCategoryClick('Đồ uống có cồn')}
+          >
+            Đồ uống có cồn
+          </li>
+          <li
+            className="hover:text-secondaryColor transition cursor-pointer"
+            onClick={() => handleCategoryClick('Ẩm thực & món ngon')}
+          >
+            Ẩm thực & món ngon
+          </li>
+          <li
+            className="hover:text-secondaryColor transition cursor-pointer"
+            onClick={() => handleCategoryClick('Món ăn gia đình')}
+          >
+            Món ăn gia đình
+          </li>
         </ul>
       </div>
     </aside>

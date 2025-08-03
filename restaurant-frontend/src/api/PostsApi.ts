@@ -19,6 +19,7 @@ export interface PostsQueryParams {
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+  status?: string; // Thêm status để truyền filter bài viết
 }
 
 const PostsApi = {

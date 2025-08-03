@@ -15,12 +15,12 @@ const PostListSection: React.FC<PostListSectionProps> = ({ posts, isLoading }) =
       </div>
     );
   }
-  const publishedPosts = posts.filter(post => post.status === 'published');
+  // Không cần filter lại, backend đã trả về đúng bài published
   return (
     <section className="bg-bodyBackground text-white ">
       <div className="w-full mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-          {publishedPosts.map((post) => (
+          {posts.map((post) => (
             <Post key={post._id} post={post} />
           ))}
         </div>

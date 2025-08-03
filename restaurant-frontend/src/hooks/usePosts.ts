@@ -20,7 +20,8 @@ export const usePosts = () => {
     limit,
     search,
     sortBy,
-    sortOrder: sortOrder as 'asc' | 'desc'
+    sortOrder: sortOrder as 'asc' | 'desc',
+    status: 'published', // Luôn lấy bài đã xuất bản
   };
 
   const { data, isLoading: isLoadingPosts, error } = useQuery({
