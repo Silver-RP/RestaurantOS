@@ -680,7 +680,34 @@ class DashboardService {
       { $sort: { _id: 1 } },
     ]);
 
-    const reservationData = await Reservation.aggregate([
+    // Lấy reservationRevenue từ ReservationDetail
+    const reservationRevenueData = await ReservationDetail.aggregate([
+      {
+        $lookup: {
+          from: 'reservations',
+          localField: 'reservation_id',
+          foreignField: '_id',
+          as: 'reservation',
+        },
+      },
+      { $unwind: '$reservation' },
+      {
+        $match: {
+          'reservation.createdAt': { $gte: startDate, $lte: endDate },
+          'reservation.status': { $ne: 'CANCELLED' },
+        },
+      },
+      {
+        $group: {
+          _id: { $month: '$reservation.createdAt' },
+          reservationRevenue: { $sum: '$total_amount' },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    // Lấy reservationCount từ ReservationModel
+    const reservationCountData = await Reservation.aggregate([
       {
         $match: {
           createdAt: { $gte: startDate, $lte: endDate },
@@ -690,7 +717,6 @@ class DashboardService {
       {
         $group: {
           _id: { $month: '$createdAt' },
-          reservationRevenue: { $sum: '$total_price' },
           reservationCount: { $sum: 1 },
         },
       },
@@ -716,14 +742,17 @@ class DashboardService {
       const monthNumber = index + 1;
 
       const orderMonth = orderData.find((item) => item._id === monthNumber);
-      const reservationMonth = reservationData.find((item) => item._id === monthNumber);
+      const reservationRevenueMonth = reservationRevenueData.find(
+        (item) => item._id === monthNumber,
+      );
+      const reservationCountMonth = reservationCountData.find((item) => item._id === monthNumber);
 
       return {
         month,
         orderRevenue: orderMonth?.orderRevenue || 0,
         orderCount: orderMonth?.orderCount || 0,
-        reservationRevenue: reservationMonth?.reservationRevenue || 0,
-        reservationCount: reservationMonth?.reservationCount || 0,
+        reservationRevenue: reservationRevenueMonth?.reservationRevenue || 0,
+        reservationCount: reservationCountMonth?.reservationCount || 0,
       };
     });
 

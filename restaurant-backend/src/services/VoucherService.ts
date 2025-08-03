@@ -296,7 +296,15 @@ export default class VoucherService {
   }
 
   static async getPublicActiveVouchers(page = 1, limit = 12) {
-    const query = { type: 'public', status: { $in: ['active', 'out_of_stock'] } };
+    const now = new Date();
+    const query = {
+      type: 'public',
+      status: 'active',
+      $and: [
+        { $or: [{ end_date: null }, { end_date: { $gt: now } }] },
+        { $or: [{ start_date: null }, { start_date: { $lte: now } }] }
+      ]
+    };
     const sortOption = { createdAt: -1 };
     return await (Voucher as mongoose.PaginateModel<IVoucherDocument>).paginate(query, { page, limit, sort: sortOption });
   }

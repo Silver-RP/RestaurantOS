@@ -47,7 +47,7 @@ export const ReviewService = {
   },
 
   async getReviewsByProduct(productId: string, page = 1, limit = 5, ratingFilter?: number) {
-    const query: any = { productId };
+    const query: any = { productId: new Types.ObjectId(productId) };
     if (ratingFilter) query.rating = ratingFilter;
 
     const options = {
@@ -57,6 +57,7 @@ export const ReviewService = {
       populate: {
         path: 'userId',
         select: 'username',
+        model: 'User',
       },
     };
 
@@ -95,7 +96,7 @@ export const ReviewService = {
   },
 
   async getRatingDistribution(productId: string) {
-    const allReviews = await ReviewModel.find({ productId });
+    const allReviews = await ReviewModel.find({ productId: new Types.ObjectId(productId) });
     const distribution = [0, 0, 0, 0, 0];
 
     allReviews.forEach((r) => {
@@ -105,5 +106,20 @@ export const ReviewService = {
     });
 
     return distribution;
+  },
+
+  async getUserReviews(userId: Types.ObjectId, page = 1, limit = 10) {
+    const options = {
+      page,
+      limit,
+      sort: { date: -1 },
+      populate: {
+        path: 'productId',
+        select: 'name images slug',
+        model: 'Dish',
+      },
+    };
+
+    return ReviewModel.paginate({ userId }, options);
   },
 };

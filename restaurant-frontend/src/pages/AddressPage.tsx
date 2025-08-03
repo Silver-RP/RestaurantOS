@@ -2,20 +2,18 @@ import React from 'react';
 import AddressBook from '../components/pages/address/AddressBook';
 import ProfileSidebar from '../components/pages/proflie/ProfileSidebar';
 import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
+import Container from '../components/common/Container';
 
 const AddressPage: React.FC = () => {
-  
-
   return (
     <>
       <BreadCrumbComponents />
-      <div className="min-h-screen bg-bodyBackground py-12 font-sans">
-        <div className="w-mainContainer lg:w-mainContainer mx-auto flex flex-col md:w-container95 md:flex-row gap-8">
-          <div className="w-full md:w-[280px] lg:w-1/3">
+      <div className="min-h-screen bg-bodyBackground font-sans">
+        <Container className="flex gap-6 py-10">
+          <div className="w-1/3 hidden md:block">
             <ProfileSidebar />
           </div>
-
-          <div className="flex-1">
+          <div className="flex-1 w-2/3 ">
             <AddressBook
               defaultAddress={{
                 name: 'Nguyễn Thanh Tiến',
@@ -35,7 +33,7 @@ const AddressPage: React.FC = () => {
               ]}
             />
           </div>
-        </div>
+        </Container>
       </div>
     </>
   );

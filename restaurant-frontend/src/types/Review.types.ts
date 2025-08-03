@@ -1,6 +1,11 @@
 export interface IReview {
     _id: string;
-    productId: string;
+    productId: string | {
+      _id: string;
+      name: string;
+      images?: string[];
+      slug?: string;
+    };
     userId: {
         _id: string;
         username: string;

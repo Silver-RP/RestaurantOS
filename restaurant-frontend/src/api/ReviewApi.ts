@@ -63,3 +63,18 @@ export const toggleReviewVisibilityApi = async (
 export const deleteReviewApi = async (reviewId: string): Promise<void> => {
   await api.delete(`/review/${reviewId}`);
 };
+
+export const getUserReviewsApi = async (params?: { page?: number; limit?: number }): Promise<{
+  docs: IReview[];
+  totalDocs: number;
+  page: number;
+  totalPages: number;
+}> => {
+  const res = await api.get<{ data: {
+    docs: IReview[];
+    totalDocs: number;
+    page: number;
+    totalPages: number;
+  } }>('/review/user-reviews', { params });
+  return res.data.data;
+};

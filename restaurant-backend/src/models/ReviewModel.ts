@@ -16,7 +16,7 @@ const ReviewSchema: Schema<IReview> = new Schema(
   {
     productId: {
       type: Schema.Types.ObjectId,
-      ref: 'Product',
+      ref: 'Dish',
       required: true,
     },
     userId: {

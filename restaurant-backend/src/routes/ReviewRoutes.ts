@@ -6,6 +6,8 @@ const router = Router();
 
 router.get('/', ReviewController.list);
 
+router.get('/user-reviews', AuthMiddleWare.verifyToken, ReviewController.getUserReviews);
+
 router.post('/', AuthMiddleWare.verifyToken, ReviewController.create);
 
 router.put('/:id', AuthMiddleWare.verifyToken, ReviewController.update);

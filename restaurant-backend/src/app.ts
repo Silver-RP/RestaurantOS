@@ -42,6 +42,7 @@ import { Server } from 'socket.io';
 import { initSocket } from './socket/socket';
 import ChatRoutes from './routes/ChatRoutes'; 
 import { scheduleLoyaltyYearlyJob } from './cron/loyaltyYearlyJob';
+import { scheduleBirthdayVoucherJob } from './cron/BirthdayVoucherJob';
 
 const app = express();
 const server = createServer(app);
@@ -76,6 +77,7 @@ dotenv.config();
 connectDB();
 
 scheduleLoyaltyYearlyJob();
+scheduleBirthdayVoucherJob();
 
 CronJobService.start();
 
