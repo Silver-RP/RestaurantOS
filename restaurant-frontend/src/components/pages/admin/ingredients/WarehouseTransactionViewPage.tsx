@@ -11,6 +11,7 @@ import {
   FaFilePdf,
   FaFilter,
 } from 'react-icons/fa';
+import { BiUndo } from 'react-icons/bi';
 import AdvancedTransactionFilterPanel from './AdvancedTransactionFilterPanel';
 import AdminPagination from '../AdminPagination';
 
@@ -19,6 +20,7 @@ const WarehouseTransactionViewPage: React.FC = () => {
     transactions,
     loading,
     error,
+    navigate,
     searchParams,
     setSearchParams,
     showExportMenu,
@@ -114,6 +116,16 @@ const WarehouseTransactionViewPage: React.FC = () => {
                 </button>
               </div>
             )}
+          </div>
+
+          <div className="flex gap-4 items-center">
+            <button
+              onClick={() => navigate('/admin/ingredients')}
+              className="flex px-4 py-2 gap-2 border bg-gray-100 border-gray-300 text-gray-700 rounded hover:bg-gray-200"
+            >
+              <BiUndo size={18} />
+              <span>Quay về</span>
+            </button>
           </div>
         </div>
       </div>
