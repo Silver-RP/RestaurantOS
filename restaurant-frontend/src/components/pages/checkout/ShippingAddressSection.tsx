@@ -59,7 +59,7 @@ const ShippingAddressSection = ({
       const defaultAddr = addresses.find((a) => a.is_default);
       if (defaultAddr) {
         console.log('✅ Auto-select default:', defaultAddr.id);
-        onSelect(defaultAddr.id); // 👈 đúng ID từ API
+        onSelect(defaultAddr.id);
       }
     }
   }, [addresses, selectedId]);
@@ -235,7 +235,7 @@ const ShippingAddressSection = ({
         Phương Thức Nhận Hàng
       </h2>
       {/* Delivery method */}
-      <div className="flex gap-4 mb-4">
+      <div className="flex flex-col sm:flex-row gap-4 mb-4">
         <label className="flex items-center cursor-pointer">
           <input
             type="radio"
@@ -267,7 +267,7 @@ const ShippingAddressSection = ({
                 className="text-blue-500 underline cursor-pointer ml-1"
                 onClick={handleOpenAddModal}
               >
-                Thêm địa chỉ mới
+                Thêm mới
               </span>
             </div>
           ) : (
@@ -278,13 +278,13 @@ const ShippingAddressSection = ({
               <p className="text-sm text-white/50">
                 {getFormattedAddress(selected)}
                 {selected.is_default && (
-                  <span className="ml-2 px-1 text-red-500 border border-red-500 text-xs">
+                  <span className="ml-2 px-0 sm:px-1 text-red-500 border border-red-500 text-xs">
                     Mặc Định
                   </span>
                 )}
                 <span
                   onClick={() => setIsSelectModalOpen(true)}
-                  className="ml-4 text-blue-500 cursor-pointer"
+                  className=" ml-0 sm:ml-4 text-blue-500 cursor-pointer"
                 >
                   Thay Đổi
                 </span>
@@ -297,13 +297,13 @@ const ShippingAddressSection = ({
             <h3 className="font-semibold text-white mb-2">
               Thời Gian Giao Hàng
             </h3>
-            <div className="flex items-center">
+            <div className="flex items-center justify-between gap-2">
               <p className="text-sm text-white/70">
                 {getFormattedDeliveryTime()}
               </p>
               <p
                 onClick={() => setIsDeliveryTimeModalOpen(true)}
-                className="text-blue-500 mx-3 text-sm cursor-pointer"
+                className="text-blue-500 text-sm cursor-pointer whitespace-nowrap"
               >
                 Thay đổi
               </p>
@@ -380,7 +380,7 @@ const ShippingAddressSection = ({
                 </p>
                 <p
                   onClick={() => setIsDeliveryTimeModalOpen(true)}
-                  className="text-blue-500 mx-3 text-sm cursor-pointer"
+                  className="text-blue-500 mx-3 text-sm cursor-pointer whitespace-nowrap"
                 >
                   Chọn giờ
                 </p>

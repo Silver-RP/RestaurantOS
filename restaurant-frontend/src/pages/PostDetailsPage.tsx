@@ -3,7 +3,6 @@ import { useParams } from 'react-router-dom';
 import OrderOnlineLayout from '../components/pages/PostDetails/OrderOnlineLayout';
 import PostContent from '../components/pages/PostDetails/PostContent';
 import { usePostById } from '../hooks/usePosts';
-import BreadcrumbComponent from '@/components/common/BreadCrumbComponents';
 
 const PostDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -48,7 +47,6 @@ const PostDetailsPage = () => {
 
   return (
     <>
-      <BreadcrumbComponent />
       <OrderOnlineLayout className="w-full sm:px-6">
         <PostContent post={post} />
       </OrderOnlineLayout>

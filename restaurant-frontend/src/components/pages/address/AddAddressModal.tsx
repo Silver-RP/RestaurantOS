@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -9,6 +10,7 @@ import { FiChevronDown } from 'react-icons/fi';
 import { createAddress, searchAddress } from '@/api/AddressApi';
 import { cities, wardsByDistrict } from '@/utils/DataAddress';
 import { toast } from 'react-toastify';
+import GlobalModal from '@/components/common/GlobalModal';
 
 interface AddAddressModalProps {
   isOpen: boolean;
@@ -42,14 +44,14 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
   onSave,
   total,
 }) => {
-  const getFullAddress = (
-    street: string,
-    ward: string,
-    district: string,
-    province: string,
-  ) => {
-    return `${street}, ${ward}, ${district}, ${province}`;
-  };
+  // const getFullAddress = (
+  //   street: string,
+  //   ward: string,
+  //   district: string,
+  //   province: string,
+  // ) => {
+  //   return `${street}, ${ward}, ${district}, ${province}`;
+  // };
   const [lat, setLat] = useState(0);
   const [lon, setLon] = useState(0);
   const [addressType, setAddressType] = useState('home');
@@ -58,8 +60,8 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
   const [selectedDistrict, setSelectedDistrict] = useState('');
   const [selectedWard, setSelectedWard] = useState('');
   const [isDuplicate, setIsDuplicate] = useState(false);
-  const [locationError, setLocationError] = useState('');
-  const [isSearchingLocation, setIsSearchingLocation] = useState(false);
+  const [, setLocationError] = useState('');
+  const [, setIsSearchingLocation] = useState(false);
 
   const {
     control,
@@ -240,7 +242,7 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 flex justify-center items-center bg-slate-900 bg-opacity-50 z-50 p-4">
+    <GlobalModal>
       <div
         className="bg-bodyBackground p-4 sm:p-5 md:p-6 rounded-lg w-full sm:w-10/12 md:w-8/12 lg:w-6/12 xl:w-4/12 border border-[#FFE0A0] max-h-[90vh] sm:max-h-[85vh] md:max-h-[80vh] overflow-y-auto relative"
         style={{
@@ -596,6 +598,6 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
           </div>
         </form>
       </div>
-    </div>
+    </GlobalModal>
   );
 };
