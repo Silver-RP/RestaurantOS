@@ -14,6 +14,7 @@ import { useCategories } from '@/hooks/useCategories';
 import { Listbox } from '@headlessui/react';
 import { FaHeartCirclePlus } from 'react-icons/fa6';
 import OrderOnlineSection from '@/components/pages/homepage/OrderOnline';
+import LoadingOverlay from '@/components/common/LoadingOverlay';
 
 const FavoritePage: React.FC = () => {
   const navigate = useNavigate();
@@ -128,7 +129,7 @@ const FavoritePage: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-5">
           <div className="lg:col-span-5 col-span-1 py-4">
             {loading ? (
-              <p>Đang tải danh sách yêu thích...</p>
+              <LoadingOverlay loading={true} />
             ) : error ? (
               <p className="text-red-500">{error}</p>
             ) : !Array.isArray(filteredFavorites) ||
@@ -154,7 +155,7 @@ const FavoritePage: React.FC = () => {
             ) : (
               <>
                 <div className="border border-secondaryColor px-0 py-4 sm:p-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[calc(100vh-150px)] scrollbar-custom overflow-y-auto">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 overflow-y-auto max-h-[600px]">
                     {filteredFavorites.map((item) => (
                       <FavoriteItemCard
                         key={item._id}
@@ -179,9 +180,8 @@ const FavoritePage: React.FC = () => {
             )}
           </div>
         </div>
-    
       </Container>
-      <OrderOnlineSection/>
+      <OrderOnlineSection />
     </>
   );
 };

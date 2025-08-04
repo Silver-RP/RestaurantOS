@@ -5,6 +5,7 @@ import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
 import { usePosts } from '../hooks/usePosts';
 import Pagination from '../components/common/Pagination';
 import Container from '@/components/common/Container';
+import LoadingOverlay from '@/components/common/LoadingOverlay';
 
 const PostPage: React.FC = () => {
   const {
@@ -20,9 +21,9 @@ const PostPage: React.FC = () => {
       <div className="bg-bodyBackground min-h-screen text-white">
         <Container>
           <div className="max-w-[1500px] py-10 px-4">
-            <div className="flex flex-col lg:flex-row gap-10 ">
-              <div className="lg:w-1/4 w-full relative">
-                <div className="w-full min-h-[400px]">
+            <div className="flex flex-col lg:flex-row lg:items-start gap-10">
+              <div className="lg:w-1/4 w-full h-fit">
+                <div className="sticky top-[120px] self-start">
                   <PostSidebar
                     onSearch={(value) => {
                       setSearchParams((prev) => {
@@ -39,11 +40,12 @@ const PostPage: React.FC = () => {
                   />
                 </div>
               </div>
-              <div className="w-full lg:w-3/4">
+              <div className="w-full lg:w-3/4 relative">
                 {isLoading ? (
-                  <div className="text-center py-10 text-sm text-gray-400">
-                    Đang tải bài viết...
-                  </div>
+                  <>
+                    {' '}
+                    <LoadingOverlay loading={true} />
+                  </>
                 ) : (
                   <>
                     <PostListSection

@@ -9,6 +9,7 @@ import ProductInfo from '../components/pages/detail/ProductInfo';
 import ProductPolicies from '../components/pages/detail/ProductPolicies';
 import ProductTabs from '../components/pages/detail/ProductTabs';
 import ProductReviews from '..//components/pages/detail/ProductReviews';
+import LoadingOverlay from '@/components/common/LoadingOverlay';
 
 const ProductDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -60,9 +61,7 @@ const ProductDetail: React.FC = () => {
     : [];
 
   if (loading) {
-    return (
-      <div className="text-center text-white py-20">Đang tải sản phẩm...</div>
-    );
+    return <LoadingOverlay loading={true} />;
   }
 
   if (error || !food) {

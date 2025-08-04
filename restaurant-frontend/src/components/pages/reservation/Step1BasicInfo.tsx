@@ -39,7 +39,7 @@ const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({
         ? new Date(now.getTime() + 30 * 60 * 1000)
         : new Date(selectedDate.setHours(0, 0, 0, 0));
 
-      for (let hour = 9; hour <= 21; hour++) {
+      for (let hour = 9; hour <= 20; hour++) {
         for (let min = 0; min < 60; min += 15) {
           const time = new Date(selectedDate);
           time.setHours(hour, min, 0, 0);

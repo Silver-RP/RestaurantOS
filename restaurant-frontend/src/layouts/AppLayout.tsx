@@ -84,7 +84,7 @@ const LayoutContent: React.FC = () => {
 
       {/* Main Content */}
       <div
-        className={`flex-1 min-h-screen bg-white transition-all duration-300 overflow-y-auto ${
+        className={`flex-1 min-h-screen bg-bodyBackground transition-all duration-300 overflow-y-auto ${
           !hideSidebarFooter
             ? isSidebarOpen
               ? isExtended
@@ -96,40 +96,36 @@ const LayoutContent: React.FC = () => {
             : ''
         }`}
       >
-        <div className="fixed w-full top-0 z-40 backdrop-blur-md bg-headerBackground flex items-center justify-between px-4 py-2 xl:hidden">
-          <img
-            src="/assets/images/logo.png"
-            alt="Logo"
-            className="h-8 mx-auto"
-          />
-          <button
-            className="w-10 h-10 bg-secondaryColor p-2 rounded-md flex flex-col justify-center items-center space-y-1"
-            onClick={toggleMobileSidebar}
-          >
-            {!isMobileSidebarOpen ? (
-              <>
-                <span className="block w-6 h-0.5 bg-black"></span>
-                <span className="block w-5 h-0.5 bg-black"></span>
-                <span className="block w-6 h-0.5 bg-black"></span>
-              </>
-            ) : (
-              <svg
-                className="h-6 w-6 text-black"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            )}
-          </button>
-        </div>
-        <div className="mt-14 xl:mt-0">
-          <Outlet />
+        {' '}
+        <button
+          className="w-10 h-10 absolute top-2 left-5 z-50 bg-secondaryColor p-2 rounded-md flex flex-col justify-center items-center space-y-1"
+          onClick={toggleMobileSidebar}
+        >
+          {!isMobileSidebarOpen ? (
+            <>
+              <span className="block w-6 h-0.5 bg-black"></span>
+              <span className="block w-5 h-0.5 bg-black"></span>
+              <span className="block w-6 h-0.5 bg-black"></span>
+            </>
+          ) : (
+            <svg
+              className="h-6 w-6 text-black"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          )}
+        </button>
+        <div>
+          <div className="overflow-y-auto">
+            <Outlet />
+          </div>
         </div>
         {!hideSidebarFooter && (
           <>

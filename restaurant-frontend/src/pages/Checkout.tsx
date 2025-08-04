@@ -12,7 +12,6 @@ import { useUserVouchers } from '@/hooks/useVouchers';
 import { UserVoucherDisplay } from '@/types/Voucher.type';
 import { getLoyaltyAccountInfo } from '@/api/LoyaltyApi';
 
-
 interface Product {
   image: string;
   name: string;
@@ -85,10 +84,14 @@ const CheckoutPage = () => {
   const { data: cart } = useGetCart();
   const navigate = useNavigate();
   const { data: fetchedAddresses = [], refetch } = useUserAddresses();
-  const { data: userVouchers = [] } = useUserVouchers();
-  const [selectedVoucher, setSelectedVoucher] = useState<UserVoucherDisplay | null>(null);
+  const { data: userVouchers = [] } = useUserVouchers() as {
+    data: UserVoucherDisplay[];
+  };
+  const [selectedVoucher, setSelectedVoucher] =
+    useState<UserVoucherDisplay | null>(null);
   const [discountAmount, setDiscountAmount] = useState<number>(0);
-  const [loyaltyDiscountPercent, setLoyaltyDiscountPercent] = useState<number>(0);
+  const [loyaltyDiscountPercent, setLoyaltyDiscountPercent] =
+    useState<number>(0);
 
   useEffect(() => {
     const selectedItemsStr = localStorage.getItem('selectedCartItems');
@@ -137,9 +140,11 @@ const CheckoutPage = () => {
 
   useEffect(() => {
     // Lấy loyalty discount percent
-    getLoyaltyAccountInfo().then((info) => {
-      setLoyaltyDiscountPercent(info?.current_tier?.discount || 0);
-    }).catch(() => setLoyaltyDiscountPercent(0));
+    getLoyaltyAccountInfo()
+      .then((info) => {
+        setLoyaltyDiscountPercent(info?.current_tier?.discount || 0);
+      })
+      .catch(() => setLoyaltyDiscountPercent(0));
   }, []);
 
   const handleAddAddress = async (newAddr: Omit<Address, '_id'>) => {
@@ -186,14 +191,17 @@ const CheckoutPage = () => {
     };
     setProducts(updatedProducts);
   };
-  const selectedAddress = addresses.find((addr) => addr._id === selectedId || addr.id === selectedId);
+  const selectedAddress = addresses.find((addr) => addr._id === selectedId);
 
   const handleVoucherChange = (voucher: UserVoucherDisplay | null) => {
     setSelectedVoucher(voucher);
     if (voucher && voucher.user_voucher_id) {
       // Tính discountAmount giống logic ở ProductInfoSection
       let discount = 0;
-      const items_price = products.reduce((sum, item) => sum + item.discountedPrice * item.quantity, 0);
+      const items_price = products.reduce(
+        (sum, item) => sum + item.discountedPrice * item.quantity,
+        0,
+      );
       if (voucher.discount_type === 'fixed') {
         discount = voucher.discount_value;
       } else if (voucher.discount_type === 'percent') {
@@ -242,7 +250,7 @@ const CheckoutPage = () => {
     const total_quantity = products.reduce(
       (sum, item) => sum + item.quantity,
       0,
-    );   
+    );
 
     const orderData: OrderData = {
       payment_method: paymentMethod as 'CASH' | 'BANKING' | 'VNPAY' | 'MOMO',
@@ -266,9 +274,10 @@ const CheckoutPage = () => {
       total_quantity,
       voucher_id: selectedVoucher?._id || null,
       discount_amount: discountAmount,
-    };    if (deliveryMethod === 'delivery') {
+    };
+    if (deliveryMethod === 'delivery') {
       if (selectedAddress) {
-        orderData.address_id = selectedAddress._id || selectedAddress.id,
+        orderData.address_id = selectedAddress._id;
         orderData.address = {
           full_name: selectedAddress.full_name,
           phone: selectedAddress.phone,
