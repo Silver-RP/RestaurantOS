@@ -43,7 +43,6 @@ const Login = () => {
 
   useEffect(() => {
     if (success) {
-      toast.success('Đăng nhập thành công!');
       navigate('/');
     }
     if (error) {
@@ -111,8 +110,6 @@ const Login = () => {
   
           const userId = result.user._id;
           dispatch(fetchCurrentUser({ userId }));
-  
-          toast.success('Đăng nhập thành công!');
           navigate('/');
         });
     } catch (error) {
