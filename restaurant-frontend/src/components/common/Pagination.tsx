@@ -31,7 +31,7 @@ const Pagination: React.FC<PaginationProps> = ({
   };
 
   return (
-    <div className="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between md:gap-6">
+    <div className="flex items-start gap-4 flex-row md:items-center md:justify-between md:gap-6">
       {showLimit !== false && (
         <div className="flex items-center mb-4 md:mb-0 relative">
           {/* <span className="text-white mr-2">Hiển thị</span> */}
@@ -68,7 +68,7 @@ const Pagination: React.FC<PaginationProps> = ({
           <button
             key={page}
             onClick={() => onPageChange(page)}
-            className={`shrink-0 w-10 h-10 flex items-center justify-center text-sm font-semibold transition ${
+            className={`shrink-0 h-6 w-6 sm:w-10 sm:h-10 flex items-center justify-center text-sm font-semibold transition ${
               page === currentPage
                 ? 'border-2 border-[#FFDEA0] rounded-full text-white'
                 : 'text-white hover:text-secondaryColor'
@@ -82,14 +82,14 @@ const Pagination: React.FC<PaginationProps> = ({
           <button
             onClick={() => onPageChange(currentPage + 1)}
             aria-label="Next page"
-            className="text-white hover:text-secondaryColor transition px-3 py-2 rounded-md"
+            className="text-white hover:text-secondaryColor transition px-2 py-1 sm:px-3 sm:py-2 rounded-md"
           >
             <FaChevronRight />
           </button>
         )}
       </nav>
 
-      <div className="text-white text-sm md:text-base mt-2 md:mt-0">
+      <div className="text-white text-xs md:text-base mt-1 md:mt-0">
         <span>
           Trang&nbsp;
           <span className="text-secondaryColor font-semibold">

@@ -24,4 +24,5 @@ export const breadcrumbConfig: Record<string, string> = {
   '/reservation/lookup-reservation': 'Tra cứu đặt bàn',
   '/foods': 'Thực đơn',
   '/faqs': 'Câu hỏi thường gặp',
+  '/post-details': 'Bài viết',
 };

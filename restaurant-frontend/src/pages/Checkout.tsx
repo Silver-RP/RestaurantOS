@@ -306,41 +306,44 @@ const CheckoutPage = () => {
   return (
     <>
       <BreadCrumbComponents />
-      <div className="flex py-10 bg-bodyBackground min-h-screen text-white">
-        <div className="w-11/12 md:w-container95 lg:w-container90 xl:w-container85 2xl:w-mainContainer mx-auto space-y-6">
-          <h1 className="text-2xl font-bold">Thanh toán</h1>
+      <div className="py-8 px-4 bg-bodyBackground min-h-screen text-white">
+        <div className="max-w-6xl mx-auto space-y-6">
+          <h1 className="text-2xl sm:text-3xl mb-4 text-secondaryColor uppercase tracking-widest font-restora text-center drop-shadow-lg">
+            Thanh toán
+          </h1>
+          <div className="space-y-6">
+            <ShippingAddressSection
+              addresses={addresses}
+              refetch={refetch}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+              onAdd={handleAddAddress}
+              onDeliveryTimeChange={handleDeliveryTimeChange}
+              initialDeliveryTime={deliveryTime}
+              deliveryMethod={deliveryMethod}
+              onDeliveryMethodChange={setDeliveryMethod}
+              receiver={receiver}
+              receiverPhone={receiverPhone}
+              onReceiverChange={(name, phone) => {
+                setReceiver(name);
+                setReceiverPhone(phone);
+              }}
+            />
 
-          <ShippingAddressSection
-            addresses={addresses}
-            refetch={refetch}
-            selectedId={selectedId}
-            onSelect={setSelectedId}
-            onAdd={handleAddAddress}
-            onDeliveryTimeChange={handleDeliveryTimeChange}
-            initialDeliveryTime={deliveryTime}
-            deliveryMethod={deliveryMethod}
-            onDeliveryMethodChange={setDeliveryMethod}
-            receiver={receiver}
-            receiverPhone={receiverPhone}
-            onReceiverChange={(name, phone) => {
-              setReceiver(name);
-              setReceiverPhone(phone);
-            }}
-          />
-
-          <ProductInfoSection
-            products={products}
-            note={orderNote}
-            shippingFee={shippingFee}
-            paymentMethod={paymentMethod}
-            onPaymentMethodChange={(method) => setPaymentMethod(method || '')}
-            vouchers={userVouchers as UserVoucherDisplay[]}
-            onProceedToPayment={handleProceedToPayment}
-            onNoteChange={handleOrderNoteChange}
-            onProductNoteChange={handleProductNotes}
-            onVoucherChange={handleVoucherChange}
-            loyaltyDiscountPercent={loyaltyDiscountPercent}
-          />
+            <ProductInfoSection
+              products={products}
+              note={orderNote}
+              shippingFee={shippingFee}
+              paymentMethod={paymentMethod}
+              onPaymentMethodChange={(method) => setPaymentMethod(method || '')}
+              vouchers={userVouchers as UserVoucherDisplay[]}
+              onProceedToPayment={handleProceedToPayment}
+              onNoteChange={handleOrderNoteChange}
+              onProductNoteChange={handleProductNotes}
+              onVoucherChange={handleVoucherChange}
+              loyaltyDiscountPercent={loyaltyDiscountPercent}
+            />
+          </div>
         </div>
       </div>
     </>
