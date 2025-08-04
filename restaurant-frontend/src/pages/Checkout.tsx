@@ -304,9 +304,9 @@ const CheckoutPage = () => {
 
   return (
     <>
-      <div className="py-8 px-4 bg-bodyBackground min-h-screen text-white">
+      <div className=" py-4 sm:py-8 px-4 bg-bodyBackground min-h-screen text-white">
         <div className="max-w-6xl mx-auto space-y-6">
-          <h1 className="text-2xl sm:text-3xl mb-4 text-secondaryColor uppercase tracking-widest font-restora text-center drop-shadow-lg">
+          <h1 className="text-2xl sm:text-2xl mb-0 sm:mb-4 text-secondaryColor uppercase tracking-widest font-restora text-center drop-shadow-lg">
             Thanh toán
           </h1>
           <div className="space-y-6">

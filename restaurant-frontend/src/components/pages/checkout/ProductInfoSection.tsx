@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import PaymentMethodSelector,  { paymentMethods } from './PaymentMethodSelector';
+import PaymentMethodSelector, { paymentMethods } from './PaymentMethodSelector';
 import ButtonComponents from '@components/common/ButtonComponents';
 import VoucherSelector from './VoucherSelector';
 import { UserVoucherDisplay } from '@/types/Voucher.type';
@@ -43,40 +43,43 @@ const ProductInfoSection = ({
   onVoucherChange,
   loyaltyDiscountPercent = 0, // default 0
 }: ProductInfoProps) => {
-  const [selectedVoucher, setSelectedVoucher] = useState<UserVoucherDisplay | null>(null);
+  const [selectedVoucher, setSelectedVoucher] =
+    useState<UserVoucherDisplay | null>(null);
   const [discountAmount, setDiscountAmount] = useState(0);
   const [orderNote, setOrderNote] = useState(note || '');
 
   const originalTotalPrice = products.reduce(
     (sum, item) => sum + item.price * item.quantity,
-    0
+    0,
   );
 
-  const productDiscountTotal = products.reduce(
-    (sum, item) => {
-      const itemDiscount = item.discountedPrice !== undefined
+  const productDiscountTotal = products.reduce((sum, item) => {
+    const itemDiscount =
+      item.discountedPrice !== undefined
         ? (item.price - item.discountedPrice) * item.quantity
         : 0;
-      return sum + itemDiscount;
-    },
-    0
-  );
+    return sum + itemDiscount;
+  }, 0);
 
-  const totalPrice = products.reduce(
-    (sum, item) => {
-      const effectivePrice = item.discountedPrice !== undefined ? item.discountedPrice : item.price;
-      return sum + effectivePrice * item.quantity;
-    },
-    0
-  );
+  const totalPrice = products.reduce((sum, item) => {
+    const effectivePrice =
+      item.discountedPrice !== undefined ? item.discountedPrice : item.price;
+    return sum + effectivePrice * item.quantity;
+  }, 0);
 
   // Tính giảm giá loyalty
-  const loyaltyDiscount = Math.round(totalPrice * (loyaltyDiscountPercent / 100));
+  const loyaltyDiscount = Math.round(
+    totalPrice * (loyaltyDiscountPercent / 100),
+  );
 
   const vatAmount = Math.round(totalPrice * 0.08);
-  const finalAmount = totalPrice + shippingFee + vatAmount - discountAmount - loyaltyDiscount;
+  const finalAmount =
+    totalPrice + shippingFee + vatAmount - discountAmount - loyaltyDiscount;
 
-  const handleVoucherApply = (voucher: UserVoucherDisplay, discount: number) => {
+  const handleVoucherApply = (
+    voucher: UserVoucherDisplay,
+    discount: number,
+  ) => {
     if (!voucher.user_voucher_id) {
       setSelectedVoucher(null);
       setDiscountAmount(0);
@@ -129,17 +132,23 @@ const ProductInfoSection = ({
           <tbody>
             {products.map((product, idx) => (
               <tr key={idx} className="border-t border-white/10">
-                <td className="p-2 flex items-center gap-2 md:gap-3">
+                <td className="p-2 flex flex-col sm:flex-row items-center gap-2 md:gap-3">
                   <img
                     src={product.image}
                     alt={product.name}
-                    className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-cover rounded-md"
+                    className=" h-12 w-full sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-cover rounded-md"
                   />
                   <div>
-                    <p className="font-semibold">{product.name}</p>
+                    <p className="text-xs sm:text-lg font-semibold line-clamp-2">
+                      {product.name}
+                    </p>
                     {product.category ? (
                       <p className="text-xs text-white/60 mt-0.5">
-                        Phân loại: {product.category}
+                        <span className="hidden sm:inline-block">
+                          {' '}
+                          Phân loại:
+                        </span>
+                        {product.category}
                       </p>
                     ) : (
                       <p className="text-xs text-white/60 mt-0.5">
@@ -162,17 +171,20 @@ const ProductInfoSection = ({
                 <td className="p-2 text-center">
                   <div>
                     {product.discountedPrice !== product.price ? (
-                      <div className="text-sm mt-1 flex flex-col">
+                      <div className="text-xs sm:text-sm mt-1 flex flex-col">
                         <span className="line-through text-gray-400">
-                          {product.price.toLocaleString()} VND
+                          {product.price.toLocaleString()}{' '}
+                          <span className="hidden sm:inline-block"> VND</span>
                         </span>
                         <span className="text-secondaryColor font-semibold">
-                          {product.discountedPrice.toLocaleString()} VND
+                          {product.discountedPrice.toLocaleString()}{' '}
+                          <span className="hidden sm:inline-block"> VND</span>
                         </span>
                       </div>
                     ) : (
-                      <div className="text-sm mt-1">
-                        {product.price.toLocaleString()} VND
+                      <div className="text-xs sm:text-sm mt-1">
+                        {product.price.toLocaleString()}{' '}
+                        <span className="hidden sm:inline-block"> VND</span>
                       </div>
                     )}
                   </div>
