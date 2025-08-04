@@ -1,4 +1,3 @@
-import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
 import TrackingReservationForm from '../components/pages/trackingReservation/Index';
 import TrackingReservationResult from '../components/pages/trackingReservation/TrackingReservationResult';
 import { useSearchParams } from 'react-router-dom';
@@ -11,7 +10,6 @@ const TrackingReservationPage = () => {
 
   return (
     <div>
-      <BreadCrumbComponents />
       {hasQuery ? (
         <TrackingReservationResult
           reservation={yourReservationData}

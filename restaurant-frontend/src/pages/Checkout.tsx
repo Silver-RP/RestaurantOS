@@ -7,7 +7,6 @@ import { useGetCart } from '@hooks/useCart';
 import { useNavigate } from 'react-router-dom';
 import { useUserAddresses } from '@/hooks/useAddress';
 import { toast } from 'react-toastify';
-import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
 import { useUserVouchers } from '@/hooks/useVouchers';
 import { UserVoucherDisplay } from '@/types/Voucher.type';
 import { getLoyaltyAccountInfo } from '@/api/LoyaltyApi';
@@ -305,7 +304,6 @@ const CheckoutPage = () => {
 
   return (
     <>
-      <BreadCrumbComponents />
       <div className="py-8 px-4 bg-bodyBackground min-h-screen text-white">
         <div className="max-w-6xl mx-auto space-y-6">
           <h1 className="text-2xl sm:text-3xl mb-4 text-secondaryColor uppercase tracking-widest font-restora text-center drop-shadow-lg">

@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { FaAnglesRight } from 'react-icons/fa6';
 import { motion, AnimatePresence } from 'framer-motion';
-import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
 import ButtonComponents from '../components/common/ButtonComponents';
 
 const faqData = {
@@ -173,8 +172,6 @@ export default function FaqPage() {
 
   return (
     <div className="min-h-screen bg-bodyBackground">
-      <BreadCrumbComponents />
-
       <div className="min-h-auto bg-bodyBackground py-16 flex justify-center">
         <div className="w-11/12 md:w-container95 lg:w-container95 xl:w-container95 2xl:w-mainContainer mx-auto">
           <motion.div

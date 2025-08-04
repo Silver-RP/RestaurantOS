@@ -1,13 +1,11 @@
 import React from 'react';
 import AddressBook from '../components/pages/address/AddressBook';
 import ProfileSidebar from '../components/pages/proflie/ProfileSidebar';
-import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
 import Container from '../components/common/Container';
 
 const AddressPage: React.FC = () => {
   return (
     <>
-      <BreadCrumbComponents />
       <div className="min-h-screen bg-bodyBackground font-sans">
         <Container className="flex gap-6 py-10">
           <div className="w-1/3 hidden md:block">
@@ -26,7 +24,8 @@ const AddressPage: React.FC = () => {
                 {
                   name: 'Nguyễn Ngọc Mỹ',
                   phone: '0378217272',
-                  address: 'Đối diện Lotte Lê Văn Lương, Quận Gò Vấp, Hồ Chí Minh',
+                  address:
+                    'Đối diện Lotte Lê Văn Lương, Quận Gò Vấp, Hồ Chí Minh',
                   coordinates: { lat: 10.8231, lon: 106.6297 },
                   addressType: 'home',
                 },

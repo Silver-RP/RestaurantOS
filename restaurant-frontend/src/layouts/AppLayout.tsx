@@ -136,11 +136,7 @@ const LayoutContent: React.FC = () => {
         )}
         <div>
           {!isNoMarginTop && <BreadcrumbComponent />}
-          <div
-            className={
-              isNoMarginTop ? '' : 'mt-[60px] sm:mt-[80px] lg:mt-[100px]'
-            }
-          >
+          <div className={isNoMarginTop ? '' : ''}>
             <Outlet />
           </div>
         </div>
