@@ -1,9 +1,5 @@
-<<<<<<< HEAD
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { fetchSidebarData } from '../../../api/sidebarApi';
-=======
-import React, { useState, useRef } from 'react';
->>>>>>> c61593630ca59f681e814abe6e8df90fa3d71697
 import { useNavigate } from 'react-router-dom';
 
 interface PostSidebarProps {
