@@ -1,6 +1,6 @@
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import ButtonComponents from '../components/common/ButtonComponents';
-import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
 import { AiOutlineCloseCircle } from 'react-icons/ai';
 import { motion } from 'framer-motion';
 import { useHandleRetryPayment } from '@/hooks/useOrder';
@@ -10,7 +10,7 @@ const PaymentFailed = () => {
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(window.location.search);
   const id = new URLSearchParams(window.location.search).get('id') || '';
-  const type = (searchParams.get('type') || 'order') as 'order' | 'reservation'; 
+  const type = (searchParams.get('type') || 'order') as 'order' | 'reservation';
 
   const { mutate: retryPaymentMutate, isPending: retrying } =
     useHandleRetryPayment();
@@ -24,14 +24,15 @@ const PaymentFailed = () => {
   const isLoggedIn = !!userInfo;
 
   const buttonLabel = isReservation
-  ? isLoggedIn ? 'Lịch sử đặt bàn' : 'Tra cứu đặt bàn'
-  : isLoggedIn ? 'Lịch sử đơn hàng' : '';
+    ? isLoggedIn
+      ? 'Lịch sử đặt bàn'
+      : 'Tra cứu đặt bàn'
+    : isLoggedIn
+      ? 'Lịch sử đơn hàng'
+      : '';
 
-  
   return (
     <>
-      <BreadCrumbComponents />
-
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -60,9 +61,9 @@ const PaymentFailed = () => {
         <div className="bg-yellow-100 text-yellow-800 text-sm rounded-md px-4 py-3 mb-6 max-w-lg text-justify leading-relaxed">
           {isReservation ? (
             <>
-              "Đặt bàn của bạn sẽ <strong>bị hủy sau 60 phút</strong> nếu thanh
-              toán không được hoàn tất. Hãy kiểm tra email và thanh toán sớm để
-              giữ chỗ."
+              &ldquo;Đặt bàn của bạn sẽ <strong>bị hủy sau 60 phút</strong> nếu
+              thanh toán không được hoàn tất. Hãy kiểm tra email và thanh toán
+              sớm để giữ chỗ.&rdquo;
             </>
           ) : (
             <>
@@ -92,7 +93,7 @@ const PaymentFailed = () => {
             }}
             className="bg-white text-gray-800 border border-gray-300 hover:bg-gray-100"
           >
-             {buttonLabel}
+            {buttonLabel}
           </ButtonComponents>
         </div>
       </motion.div>

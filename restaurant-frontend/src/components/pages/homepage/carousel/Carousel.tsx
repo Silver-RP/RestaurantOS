@@ -4,6 +4,7 @@ import { BiDrink } from 'react-icons/bi';
 import { BsCupHot } from 'react-icons/bs';
 import { useGetActiveBanners } from '../../../../hooks/useBanner';
 import { useNavigate } from 'react-router-dom';
+import LoadingOverlay from '@/components/common/LoadingOverlay';
 
 const icons = [
   <MdRestaurant key="restaurant" />,
@@ -81,11 +82,7 @@ const Carousel = () => {
   };
 
   if (loading) {
-    return (
-      <div className="h-[75vh] bg-bodyBackground md:h-screen w-full flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-secondaryColor"></div>
-      </div>
-    );
+    return <LoadingOverlay loading={true} />;
   }
 
   if (error || activeBanners.length === 0) {

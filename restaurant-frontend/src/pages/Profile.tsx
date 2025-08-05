@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 import ProfileSidebar from '../components/pages/proflie/ProfileSidebar';
-import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
+
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { useEffect } from 'react';
@@ -14,7 +14,6 @@ import { useCheckPassword } from '@/hooks/useUsers';
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
 import Container from '@/components/common/Container';
 import UserLoyaltyTier from '@/components/pages/proflie/UserLoyaltyTier';
-
 
 const ProfilePage = () => {
   const [touchedFields, setTouchedFields] = useState({
@@ -34,7 +33,7 @@ const ProfilePage = () => {
 
   const { user } = useSelector((state: RootState) => state.user);
   console.log('user in profile', user);
-  
+
   const [formattedBirthday, setFormattedBirthday] = useState('');
 
   const [isEditingPersonal, setIsEditingPersonal] = useState(false);
@@ -312,9 +311,7 @@ const ProfilePage = () => {
 
   return (
     <div className="flex flex-col bg-bodyBackground text-white font-sans">
-      <BreadCrumbComponents />
-
-      <Container className='flex gap-6 py-10'>
+      <Container className="flex gap-6 py-10">
         <div className="w-1/3 hidden md:block">
           <ProfileSidebar />
         </div>

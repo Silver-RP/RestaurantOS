@@ -106,7 +106,7 @@ const Step2Seating: React.FC<Step2SeatingProps> = ({
   return (
     <div className="max-w-4xl mx-auto text-white font-serif">
       <div className="bg-[#112233] border border-[#F9D783] rounded-xl p-6">
-        <div className="overflow-x-auto w-full">
+        <div className="overflow-x-auto w-full hide-scrollbar">
           <div
             className="grid relative mx-auto h-[450px] sm:h-[600px]"
             style={{

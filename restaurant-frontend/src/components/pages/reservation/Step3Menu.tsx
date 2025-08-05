@@ -142,7 +142,7 @@ const Step3Menu: React.FC<Step3MenuProps> = ({
                     filterSidebarVisible ? 'translate-x-0' : '-translate-x-full'
                   }`}
                 >
-                  <div className="p-6 overflow-y-auto h-full">
+                  <div className="p-6 overflow-y-auto hide-scrollbar h-full">
                     <FilterSidebar onClose={handleCloseFilter} />
                   </div>
                 </div>
@@ -235,7 +235,7 @@ const Step3Menu: React.FC<Step3MenuProps> = ({
             ) : error ? (
               <div className="text-center text-red-500 py-20">{error}</div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[300px] sm:max-h-none overflow-y-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[300px] sm:max-h-none overflow-y-auto hide-scrollbar  ">
                 {foods?.docs?.map((item) => (
                   <div
                     key={item._id}

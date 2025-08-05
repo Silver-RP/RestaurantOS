@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { IReservation } from '@/types/Reservation.type';
 import Container from '@/components/common/Container';
 import { useReservations } from '@/hooks/useReservations';
-import BreadcrumbComponent from '@/components/common/BreadCrumbComponents';
 import ReservationCard from '@/components/pages/myreservation/ReservationCard';
 import ReservationDetailModal from '@/components/pages/myreservation/ReservationDetailModal';
 import NavigationReservation, {
@@ -42,7 +41,6 @@ const MyReservationsPage: React.FC = () => {
 
   return (
     <>
-      <BreadcrumbComponent />
       <Container>
         <div className="w-full mx-auto min-h-[600px)] py-10 text-white space-y-6">
           <NavigationReservation

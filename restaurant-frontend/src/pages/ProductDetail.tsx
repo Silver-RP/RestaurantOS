@@ -3,12 +3,13 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import { useFoodDetail } from '../hooks/useFoods';
 import { useProductView } from '../hooks/useProductView';
 import RelatedProductList from '../components/pages/detail/RelatedProductList';
-import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
+
 import ProductGallery from '../components/pages/detail/ProductGallery';
 import ProductInfo from '../components/pages/detail/ProductInfo';
 import ProductPolicies from '../components/pages/detail/ProductPolicies';
 import ProductTabs from '../components/pages/detail/ProductTabs';
 import ProductReviews from '..//components/pages/detail/ProductReviews';
+import LoadingOverlay from '@/components/common/LoadingOverlay';
 
 const ProductDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -60,9 +61,7 @@ const ProductDetail: React.FC = () => {
     : [];
 
   if (loading) {
-    return (
-      <div className="text-center text-white py-20">Đang tải sản phẩm...</div>
-    );
+    return <LoadingOverlay loading={true} />;
   }
 
   if (error || !food) {
@@ -75,7 +74,6 @@ const ProductDetail: React.FC = () => {
 
   return (
     <>
-      <BreadCrumbComponents />
       <section className="bg-bodyBackground w-full text-white py-16">
         <div className="w-11/12 md:w-container95 lg:w-container95 xl:w-container95 2xl:w-mainContainer mx-auto">
           <div className="flex flex-col lg:flex-row gap-8">

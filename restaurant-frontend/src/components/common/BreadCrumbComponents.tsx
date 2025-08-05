@@ -60,7 +60,7 @@ const BreadcrumbComponent = () => {
   return (
     <nav
       aria-label="breadcrumb"
-      className="relative py-2 sm:py-4 bg-[url('/assets/images/banner/breadcrumb01.jpg')] bg-cover bg-center 
+      className="sticky w-full top-0 z-20  py-2 sm:py-4 bg-[url('/assets/images/banner/breadcrumb01.jpg')] bg-cover bg-center 
              flex justify-center items-center
              h-[60px] sm:h-[80px] lg:h-[100px]"
     >

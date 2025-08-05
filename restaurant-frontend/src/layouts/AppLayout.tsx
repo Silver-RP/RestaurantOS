@@ -10,10 +10,20 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import Chatbox from '@/components/common/ChatBox';
 import { AnimatePresence } from 'framer-motion';
+import BreadcrumbComponent from '@/components/common/BreadCrumbComponents';
 
 const LayoutContent: React.FC = () => {
   const location = useLocation();
   const { fetchFavorites } = useFetchFavorites();
+  const noMarginTopPaths = [
+    '/',
+    '/login',
+    '/register',
+    '/reset-password',
+    '/verify-otp',
+    '/forgot-password',
+  ];
+  const isNoMarginTop = noMarginTopPaths.includes(location.pathname);
   const currentUser = useSelector((state: RootState) => state.user.user);
   useEffect(() => {
     if (currentUser?._id) {
@@ -84,7 +94,7 @@ const LayoutContent: React.FC = () => {
 
       {/* Main Content */}
       <div
-        className={`flex-1 min-h-screen bg-white transition-all duration-300 overflow-y-auto ${
+        className={`flex-1 min-h-screen bg-bodyBackground transition-all duration-300 overflow-y-auto ${
           !hideSidebarFooter
             ? isSidebarOpen
               ? isExtended
@@ -96,14 +106,10 @@ const LayoutContent: React.FC = () => {
             : ''
         }`}
       >
-        <div className="fixed w-full top-0 z-40 backdrop-blur-md bg-headerBackground flex items-center justify-between px-4 py-2 xl:hidden">
-          <img
-            src="/assets/images/logo.png"
-            alt="Logo"
-            className="h-8 mx-auto"
-          />
+        {' '}
+        {!hideSidebarFooter && (
           <button
-            className="w-10 h-10 bg-secondaryColor p-2 rounded-md flex flex-col justify-center items-center space-y-1"
+            className="w-10 h-10 fixed top-2 left-5 z-50 bg-secondaryColor p-2 rounded-md flex flex-col justify-center items-center space-y-1"
             onClick={toggleMobileSidebar}
           >
             {!isMobileSidebarOpen ? (
@@ -127,9 +133,12 @@ const LayoutContent: React.FC = () => {
               </svg>
             )}
           </button>
-        </div>
-        <div className="mt-14 xl:mt-0">
-          <Outlet />
+        )}
+        <div>
+          {!isNoMarginTop && <BreadcrumbComponent />}
+          <div className={isNoMarginTop ? '' : ''}>
+            <Outlet />
+          </div>
         </div>
         {!hideSidebarFooter && (
           <>

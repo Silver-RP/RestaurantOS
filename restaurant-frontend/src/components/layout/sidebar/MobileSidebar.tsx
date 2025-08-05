@@ -6,6 +6,10 @@ import NavExtend from './NavExtend';
 import { BsPersonCheck } from 'react-icons/bs';
 import Cookies from 'js-cookie';
 import { motion } from 'framer-motion';
+import { useGetCart } from '@/hooks/useCart';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from '@/redux/store';
+import { openSearchModal } from '../../../redux/feature/modal/searchModalSlice';
 
 interface MobileSidebarProps {
   toggleSidebar: () => void;
@@ -20,11 +24,18 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
   isOpen,
 }) => {
   const navigate = useNavigate();
-
   const handleNavigate = (path: string) => {
     navigate(path);
     toggleSidebar();
   };
+
+  const { data: cart } = useGetCart();
+  const countCart = cart?.items?.length || 0;
+  const favoriteCount = useSelector(
+    (state: RootState) => state.favorite.items.length,
+  );
+
+  const dispatch = useDispatch();
 
   return (
     <div className="fixed inset-0 z-50 flex">
@@ -72,7 +83,7 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
                 >
                   <FiHeart className="hover:text-secondaryColor" />
                   <span className="absolute -top-1 -right-2 bg-secondaryColor text-black text-xs rounded-full px-1">
-                    0
+                    { favoriteCount > 0 ? favoriteCount : 0 }
                   </span>
                 </Link>
                 <Link
@@ -83,10 +94,14 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
                 >
                   <FiShoppingCart className="hover:text-secondaryColor" />
                   <span className="absolute -top-1 -right-2 bg-secondaryColor text-black text-xs rounded-full px-1">
-                    0
+                    { countCart > 0 ? countCart : 0 }
                   </span>
                 </Link>
-                <FiSearch className="hover:text-secondaryColor" />
+                <FiSearch
+                onClick={() => dispatch(openSearchModal())}
+                className="hover:text-secondaryColor"
+                aria-label="Search"
+              />
               </div>
 
               <ButtonComponents

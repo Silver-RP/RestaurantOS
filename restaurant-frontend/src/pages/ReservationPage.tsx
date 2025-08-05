@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Step1BasicInfo from '@components/pages/reservation/Step1BasicInfo';
-import BreadcrumbComponent from '@components/common/BreadCrumbComponents';
 import Step2Seating from '@components/pages/reservation/Step2Seating';
 import Step3Menu from '@components/pages/reservation/Step3Menu';
 import Step4Review from '@/components/pages/reservation/Step4Review';
@@ -163,7 +162,6 @@ const ReservationPage: React.FC = () => {
   }, [formData, step]);
   return (
     <>
-      <BreadcrumbComponent />
       <div
         ref={containerRef}
         className="bg-bodyBackground text-white pt-6 sm:pt-8"

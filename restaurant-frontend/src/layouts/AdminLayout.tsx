@@ -4,8 +4,6 @@ import {
   FaHome,
   FaUtensils,
   FaFileAlt,
-  FaInfoCircle,
-  FaEnvelope,
   FaSignOutAlt,
   FaAngleLeft,
   FaAngleRight,
@@ -13,7 +11,6 @@ import {
   FaCartPlus,
   FaImage,
   FaTicketAlt,
-  FaBell,
   FaCrown,
 } from 'react-icons/fa';
 import { GiHotMeal, GiWheat } from 'react-icons/gi';

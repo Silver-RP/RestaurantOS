@@ -1,11 +1,10 @@
-// --- 1. CartPage.tsx ---
 import React, { useEffect, useState } from 'react';
 import ButtonComponents from '@components/common/ButtonComponents';
-import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
 import { useGetCart } from '@hooks/useCart';
 import CartTable from '@components/pages/cart/CartTable';
 import CartSummary from '@components/pages/cart/CartSummary';
 import Container from '@/components/common/Container';
+import LoadingOverlay from '@/components/common/LoadingOverlay';
 
 interface Cart {
   _id: string;
@@ -26,6 +25,7 @@ interface CartItem {
 
 const CartPage = () => {
   const { data } = useGetCart();
+  const isLoading = !data;
 
   const cartItemsRaw = (data as unknown as Cart)?.items || [];
 
@@ -69,16 +69,14 @@ const CartPage = () => {
   };
 
   return (
-    <>
-      <div className="w-full mx-auto">
-        <BreadCrumbComponents />
-      </div>
+    <div className="relative">
+      <LoadingOverlay loading={isLoading} />
       <Container>
         <div className="w-full mx-auto pb-10 py-10">
           <h1 className="text-3xl mb-8 text-center lg:text-left">Giỏ hàng</h1>
 
           {isCartEmpty ? (
-           <div className="flex flex-col items-center justify-center text-center text-white/70 min-h-[calc(100vh-656px)]">
+            <div className="flex flex-col items-center justify-center text-center text-white/70 min-h-[calc(100vh-656px)]">
               <h2 className="text-xl mb-4">
                 Không có sản phẩm nào trong giỏ hàng
               </h2>
@@ -111,7 +109,7 @@ const CartPage = () => {
           )}
         </div>
       </Container>
-    </>
+    </div>
   );
 };
 

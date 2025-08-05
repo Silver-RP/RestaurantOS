@@ -1,5 +1,9 @@
+<<<<<<< HEAD
 import React, { useState, useEffect } from 'react';
 import { fetchSidebarData } from '../../../api/sidebarApi';
+=======
+import React, { useState, useRef } from 'react';
+>>>>>>> c61593630ca59f681e814abe6e8df90fa3d71697
 import { useNavigate } from 'react-router-dom';
 
 interface PostSidebarProps {
@@ -33,10 +37,16 @@ const PostSidebar: React.FC<PostSidebarProps> = ({ className, onSearch }) => {
     }
   };
 
-  const [searchValue, setSearchValue] = useState("");
+  const [searchValue, setSearchValue] = useState('');
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
+
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      if (typeof onSearch === 'function') onSearch(e.target.value);
+    }, 500);
   };
 
   const handleSearch = () => {
@@ -52,34 +62,83 @@ const PostSidebar: React.FC<PostSidebarProps> = ({ className, onSearch }) => {
   return (
     <aside className={`w-full space-y-6 text-white lg:space-y-10 ${className}`}>
       {/* Tìm kiếm */}
-      <div>
-        <h3 className="text-xl font-semibold mb-2">Tìm kiếm blog</h3>
-        <div className="flex flex-wrap sm:flex-nowrap gap-2 items-center">
+      <div className="bg-headerBackground p-4 rounded-lg shadow-sm space-y-3 transition-shadow hover:shadow-md">
+        <h3 className="text-lg font-semibold mb-1 tracking-tight">
+          Tìm kiếm blog
+        </h3>
+        <div className="relative">
           <input
             type="text"
-            placeholder="Tìm Kiếm..."
+            placeholder="Tìm kiếm..."
             value={searchValue}
             onChange={handleSearchChange}
             onKeyDown={handleKeyDown}
-            className="w-full sm:w-[140px] md:w-[155px] px-2 py-1 text-sm bg-transparent border border-hr text-white placeholder-slate-500 focus:outline-none"
+            className="w-full px-3 pl-10 py-2 text-sm bg-transparent border border-hr text-white placeholder-slate-500 rounded-md focus:outline-none"
           />
           <button
-            className="px-2 h-[30px] py-1 text-[13px] bg-secondaryColor text-black rounded-[3px] hover:bg-secondaryColor"
             onClick={handleSearch}
+            className="absolute left-2 top-1/2 -translate-y-1/2 text-secondaryColor hover:text-white"
+            aria-label="Tìm kiếm"
           >
-            Tìm kiếm
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M21 21l-4.35-4.35M16.65 10.5a6.15 6.15 0 11-12.3 0 6.15 6.15 0 0112.3 0z"
+              />
+            </svg>
           </button>
         </div>
       </div>
-      <hr className="border border-hr" />
       {/* Bài viết */}
-      <div>
+      <div className="bg-headerBackground p-4 rounded-lg shadow-sm space-y-3 transition-shadow hover:shadow-md">
         <div
-          className="flex justify-between items-center cursor-pointer"
+          className="flex justify-between items-center cursor-pointer select-none"
           onClick={() => setShowPosts(!showPosts)}
         >
-          <h3 className="text-xl font-semibold mb-2">Bài viết</h3>
-          <span className="text-2xl lg:hidden">{showPosts ? '-' : '+'}</span>
+          <h3 className="text-lg font-semibold mb-1 tracking-tight">
+            Bài viết
+          </h3>
+          <span className="text-xl lg:hidden transition-transform">
+            {showPosts ? (
+              <svg
+                width="20"
+                height="20"
+                fill="none"
+                className="inline-block"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  d="M5 10h10"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            ) : (
+              <svg
+                width="20"
+                height="20"
+                fill="none"
+                className="inline-block"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  d="M10 5v10M5 10h10"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            )}
+          </span>
         </div>
         <ul className={`space-y-2 text-sm ${showPosts ? 'block' : 'hidden'} lg:block`}>
           {posts.filter(post => post.name.toLowerCase() !== 'voucher').map(post => (
@@ -93,16 +152,48 @@ const PostSidebar: React.FC<PostSidebarProps> = ({ className, onSearch }) => {
           ))}
         </ul>
       </div>
-      <hr className="border border-hr" />
-
       {/* Thể loại blog */}
-      <div>
+      <div className="bg-headerBackground p-4 rounded-lg shadow-sm space-y-3 transition-shadow hover:shadow-md">
         <div
-          className="flex justify-between items-center cursor-pointer"
+          className="flex justify-between items-center cursor-pointer select-none"
           onClick={() => setShowCategories(!showCategories)}
         >
-          <h3 className="text-xl font-semibold mb-2">Thể loại blog</h3>
-          <span className="text-2xl lg:hidden">{showCategories ? '-' : '+'}</span>
+          <h3 className="text-lg font-semibold mb-1 tracking-tight">
+            Thể loại blog
+          </h3>
+          <span className="text-xl lg:hidden transition-transform">
+            {showCategories ? (
+              <svg
+                width="20"
+                height="20"
+                fill="none"
+                className="inline-block"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  d="M5 10h10"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            ) : (
+              <svg
+                width="20"
+                height="20"
+                fill="none"
+                className="inline-block"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  d="M10 5v10M5 10h10"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            )}
+          </span>
         </div>
         <ul className={`${showCategories ? 'block' : 'hidden'} lg:block space-y-2`}>
           {categories.map(category => (
