@@ -1,6 +1,7 @@
 import { FiChevronDown } from 'react-icons/fi';
 import ButtonComponents from '../../common/ButtonComponents';
 import React, { useState } from 'react';
+import Cookies from 'js-cookie';
 
 const ContactUsForm: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -29,6 +30,10 @@ const ContactUsForm: React.FC = () => {
     e.preventDefault();
     console.log('Dữ liệu gửi đi:', formData);
   };
+  const checkIsLoggedIn = (): boolean => {
+    const userInfo = Cookies.get('userInfo');
+    return !!userInfo;
+  };
 
   return (
     <div className="min-h-auto bg-bodyBackground py-16 flex justify-center">
@@ -41,20 +46,21 @@ const ContactUsForm: React.FC = () => {
               <div className="relative">
                 <select
                   name="subject"
-                  className="p-3 pr-10 bg-transparent border border-[#074b6b] text-white placeholder:text-gray-400 
+                  className="p-3 pr-10 bg-transparent border border-[#074b6b] bg-bodyBackground text-white placeholder:text-gray-400 
         rounded appearance-none focus:outline-none focus:border-secondaryColor focus:ring-1 focus:ring-secondaryColor transition w-full"
                   value={formData.subject}
                   onChange={handleChange}
                 >
-                  <option value="">-- Chọn chủ đề --</option>
-                  <option value="Dịch vụ khách hàng">Dịch vụ khách hàng</option>
-                  <option value="Hỗ trợ kỹ thuật">Hỗ trợ kỹ thuật</option>
-                  <option value="Góp ý">Góp ý</option>
+                  <option className="text-white bg-bodyBackground" value="">-- Chọn chủ đề --</option>
+                  <option className="text-white bg-bodyBackground" value="Dịch vụ khách hàng">Dịch vụ khách hàng</option>
+                  <option className="text-white bg-bodyBackground" value="Hỗ trợ kỹ thuật">Hỗ trợ kỹ thuật</option>
+                  <option className="text-white bg-bodyBackground" value="Góp ý">Góp ý</option>
                 </select>
                 <FiChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-white pointer-events-none" />
               </div>
             </div>
 
+            {!checkIsLoggedIn() ? (
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex flex-col gap-2 w-full md:w-1/2">
                 <label className="text-sm md:text-base">Tên</label>
@@ -83,8 +89,11 @@ const ContactUsForm: React.FC = () => {
                 />
               </div>
             </div>
+            ) : (
+              ""
+            )}
 
-            <div className="flex flex-col gap-2">
+            {/* <div className="flex flex-col gap-2">
               <label className="text-sm md:text-base">Tệp đính kèm</label>
               <input
                 type="file"
@@ -92,7 +101,7 @@ const ContactUsForm: React.FC = () => {
                 className="text-white file:bg-[#ffda95] file:border-0 file:text-black file:px-3 file:py-1"
               />
               <span className="text-sm text-gray-400">(không bắt buộc)</span>
-            </div>
+            </div> */}
 
             <div className="flex flex-col gap-2">
               <label className="text-sm md:text-base">Tin nhắn</label>
