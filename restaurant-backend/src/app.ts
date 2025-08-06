@@ -14,6 +14,8 @@ import PostsRoutes from './routes/PostsRoutes';
 import PostReportRoutes from './routes/PostReportRoutes';
 import commentPostRoutes from './routes/CommentPostRoutes';
 
+import SidebarRoutes from './routes/sidebar.routes';
+
 import StaffRoutes from './routes/StaffRoutes';
 import FoodRoutes from './routes/FoodRoutes';
 import PermissionRoutes from './routes/PermissionRoutes';
@@ -186,6 +188,7 @@ app.use('/api/voucher', VoucherRoutes);
 app.use('/api/faq', AuthMiddleWare.verifyToken, FaqRoutes);
 app.use('/api/contact', ContactRoutes);
 
+app.use('/api/sidebar', SidebarRoutes);
 server.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
   console.log(`Mongo URI: ${process.env.MONGO_URI ? 'Connected' : 'Not configured'}`);

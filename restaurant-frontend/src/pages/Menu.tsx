@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import FilterSidebar from '../components/pages/menu/FilterSidebar';
-import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
 import ProductGrid from '../components/pages/menu/ProductGrid';
 import Pagination from '../components/common/Pagination';
 import { BsGridFill, BsListUl } from 'react-icons/bs';
@@ -70,9 +69,6 @@ const MenuPage: React.FC = () => {
 
   return (
     <section className="bg-bodyBackground w-full min-h-screen text-white">
-      <div className="w-full mx-auto">
-        <BreadCrumbComponents />
-      </div>
       <Container>
         <div className="flex gap-8 py-10 w-full max-w-[1500px] mx-auto">
           {isFilterOpen && (

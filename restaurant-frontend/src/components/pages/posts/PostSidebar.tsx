@@ -1,4 +1,5 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { fetchSidebarData } from '../../../api/sidebarApi';
 import { useNavigate } from 'react-router-dom';
 
 interface PostSidebarProps {
@@ -9,11 +10,27 @@ interface PostSidebarProps {
 const PostSidebar: React.FC<PostSidebarProps> = ({ className, onSearch }) => {
   const [showPosts, setShowPosts] = useState(false);
   const [showCategories, setShowCategories] = useState(false);
+  const [posts, setPosts] = useState<{id:number, name:string}[]>([]);
+  const [categories, setCategories] = useState<{id:number, name:string}[]>([]);
+  useEffect(() => {
+    fetchSidebarData()
+      .then(data => {
+        setPosts(data.posts || []);
+        setCategories(data.categories || []);
+      })
+      .catch(err => {
+        console.error('Lỗi lấy sidebar:', err);
+      });
+  }, []);
   const navigate = useNavigate();
 
   // Hàm chuyển hướng khi click vào thể loại
   const handleCategoryClick = (tag: string) => {
-    navigate(`/posts/tag/${encodeURIComponent(tag)}`);
+    if (tag.toLowerCase() === 'voucher') {
+      navigate('/voucher');
+    } else {
+      navigate(`/posts/tag/${encodeURIComponent(tag)}`);
+    }
   };
 
   const [searchValue, setSearchValue] = useState('');
@@ -119,27 +136,16 @@ const PostSidebar: React.FC<PostSidebarProps> = ({ className, onSearch }) => {
             )}
           </span>
         </div>
-        <ul
-          className={`space-y-2 text-[15px] leading-tight ${showPosts ? 'block' : 'hidden'} lg:block`}
-        >
-          <li
-            className="hover:text-secondaryColor transition cursor-pointer rounded-md px-2 py-1 hover:bg-secondaryColor/10"
-            onClick={() => handleCategoryClick('Tin tức')}
-          >
-            Tin tức
-          </li>
-          <li
-            className="hover:text-secondaryColor transition cursor-pointer rounded-md px-2 py-1 hover:bg-secondaryColor/10"
-            onClick={() => handleCategoryClick('voucher')}
-          >
-            Voucher
-          </li>
-          <li
-            className="hover:text-secondaryColor transition cursor-pointer rounded-md px-2 py-1 hover:bg-secondaryColor/10"
-            onClick={() => handleCategoryClick('BEEF BEEF')}
-          >
-            BEEF BEEF
-          </li>
+        <ul className={`space-y-2 text-sm ${showPosts ? 'block' : 'hidden'} lg:block`}>
+          {posts.filter(post => post.name.toLowerCase() !== 'voucher').map(post => (
+            <li
+              key={post.id}
+              className="hover:text-secondaryColor transition cursor-pointer"
+              onClick={() => handleCategoryClick(post.name)}
+            >
+              {post.name}
+            </li>
+          ))}
         </ul>
       </div>
       {/* Thể loại blog */}
@@ -185,27 +191,16 @@ const PostSidebar: React.FC<PostSidebarProps> = ({ className, onSearch }) => {
             )}
           </span>
         </div>
-        <ul
-          className={`${showCategories ? 'block' : 'hidden'} lg:block space-y-2 text-[15px] leading-tight`}
-        >
-          <li
-            className="hover:text-secondaryColor transition cursor-pointer rounded-md px-2 py-1 hover:bg-secondaryColor/10"
-            onClick={() => handleCategoryClick('Đồ uống có cồn')}
-          >
-            Đồ uống có cồn
-          </li>
-          <li
-            className="hover:text-secondaryColor transition cursor-pointer rounded-md px-2 py-1 hover:bg-secondaryColor/10"
-            onClick={() => handleCategoryClick('Ẩm thực & món ngon')}
-          >
-            Ẩm thực & món ngon
-          </li>
-          <li
-            className="hover:text-secondaryColor transition cursor-pointer rounded-md px-2 py-1 hover:bg-secondaryColor/10"
-            onClick={() => handleCategoryClick('Món ăn gia đình')}
-          >
-            Món ăn gia đình
-          </li>
+        <ul className={`${showCategories ? 'block' : 'hidden'} lg:block space-y-2`}>
+          {categories.map(category => (
+            <li
+              key={category.id}
+              className="hover:text-secondaryColor transition cursor-pointer"
+              onClick={() => handleCategoryClick(category.name)}
+            >
+              {category.name}
+            </li>
+          ))}
         </ul>
       </div>
     </aside>

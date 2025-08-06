@@ -29,7 +29,6 @@ export const useReview = () => {
     try {
       setLoading(true);
       const review = await createReviewApi(data);
-      toast.success('Đánh giá đã được gửi thành công');
       return review;
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Lỗi khi tạo đánh giá';

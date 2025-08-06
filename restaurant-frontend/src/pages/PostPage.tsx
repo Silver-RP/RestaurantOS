@@ -1,7 +1,6 @@
 import React from 'react';
 import PostListSection from '../components/pages/posts/PostListSection';
 import PostSidebar from '../components/pages/posts/PostSidebar';
-import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
 import { usePosts } from '../hooks/usePosts';
 import Pagination from '../components/common/Pagination';
 import Container from '@/components/common/Container';
@@ -17,7 +16,6 @@ const PostPage: React.FC = () => {
 
   return (
     <>
-      <BreadCrumbComponents />
       <div className="bg-bodyBackground min-h-screen text-white">
         <Container>
           <div className="max-w-[1500px] py-10 px-4">

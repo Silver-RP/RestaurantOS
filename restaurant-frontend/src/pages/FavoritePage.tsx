@@ -6,7 +6,6 @@ import { RootState } from '@/redux/store';
 import FavoriteItemCard from '@/components/pages/favorite/FavoriteItemCard';
 import Container from '@/components/common/Container';
 import ButtonComponents from '@/components/common/ButtonComponents';
-import BreadcrumbComponent from '@/components/common/BreadCrumbComponents';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useFetchFavorites } from '@/hooks/useFetchFavorites';
 import { FiChevronDown, FiSearch } from 'react-icons/fi';
@@ -63,7 +62,6 @@ const FavoritePage: React.FC = () => {
 
   return (
     <>
-      <BreadcrumbComponent />
       <Container>
         <div className="flex flex-col sm:flex-row sm:items-center justify-start items-start sm:justify-between gap-4 pt-5 mb-4">
           <div className="flex flex-col sm:flex-row items-center gap-3 w-full max-w-[512px]">

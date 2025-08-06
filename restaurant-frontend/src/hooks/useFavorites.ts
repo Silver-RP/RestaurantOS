@@ -35,8 +35,7 @@ export const useFavorites = () => {
     try {
       const response = await addFavoriteApi(dishId);
       dispatch(addFavorite(response.data));
-      fetchFavorites(); // 👉 force đồng bộ lại Redux
-      toastService.success('Đã thêm vào danh sách yêu thích');
+      fetchFavorites(); 
     } catch (err: any) {
       if (err?.response?.status === 409) {
         toastService.warning('Món ăn đã có trong danh sách yêu thích');
@@ -50,8 +49,7 @@ export const useFavorites = () => {
     try {
       await removeFavoriteApi(favoriteId);
       dispatch(removeFavoriteSuccess(favoriteId));
-      fetchFavorites(); // 👉 reload lại state
-      toastService.success('Đã xoá khỏi danh sách yêu thích');
+      fetchFavorites(); 
     } catch {
       toastService.error('Xoá khỏi danh sách yêu thích thất bại');
     }

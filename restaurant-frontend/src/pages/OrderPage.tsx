@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect } from 'react';
-import NavigationOrder, { statusMapping } from '../components/pages/order/NavigationOrder';
-import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
+import NavigationOrder, {
+  statusMapping,
+} from '../components/pages/order/NavigationOrder';
 import {
   FaChevronLeft,
   FaChevronRight,
@@ -59,12 +60,10 @@ const OrderPage: React.FC = () => {
 
   return (
     <>
-      <BreadCrumbComponents />
-
       <div className="flex py-10 bg-bodyBackground min-h-auto text-white flex-col">
         <div className="w-11/12 md:w-container95 min-h-[calc(100vh-668px)] lg:w-container95 xl:w-container95 2xl:w-mainContainer mx-auto space-y-6">
-          <NavigationOrder 
-            activeTab={activeTab} 
+          <NavigationOrder
+            activeTab={activeTab}
             onTabChange={setActiveTab}
             onSort={handleSort}
             currentSort={sortType}
@@ -99,7 +98,7 @@ const OrderPage: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-3">
-                <button 
+                <button
                   onClick={() => handlePageChange(page - 1)}
                   disabled={page === 1}
                   className={page === 1 ? 'opacity-50 cursor-not-allowed' : ''}
@@ -123,10 +122,12 @@ const OrderPage: React.FC = () => {
                   ),
                 )}
 
-                <button 
+                <button
                   onClick={() => handlePageChange(page + 1)}
                   disabled={page === totalPages}
-                  className={page === totalPages ? 'opacity-50 cursor-not-allowed' : ''}
+                  className={
+                    page === totalPages ? 'opacity-50 cursor-not-allowed' : ''
+                  }
                 >
                   <FaChevronRight className="text-xl" />
                 </button>

@@ -5,6 +5,7 @@ import ButtonComponents from '@components/common/ButtonComponents';
 import { usePlaceDirectOrder } from '@/hooks/useOrder';
 import { PlaceOrderRequest } from '@/types/Order.type';
 import { toast } from 'react-toastify';
+import LoadingOverlay from '@/components/common/LoadingOverlay';
 // import { motion } from "framer-motion";
 
 // Define the expected order data structure from localStorage
@@ -229,24 +230,22 @@ const OrderConfirmation = () => {
   };
 
   if (!orderData) {
-    return (
-      <div className="min-h-screen bg-[#012B40] text-white flex items-center justify-center">
-        <p>Đang tải thông tin đơn hàng...</p>
-      </div>
-    );
+    return <LoadingOverlay loading={true} />;
   }
 
   return (
     <div className="min-h-screen bg-[#012B40] text-white">
       {/* Main Content */}
-      <main className=" mx-auto pt-10 pb-12">
-        <h1 className="text-4xl font-bold text-center mb-12">
+      <main className=" mx-auto pt-4 sm:pt-10 pb-4 sm:pb-12">
+        <h1 className="text-xl sm:text-3xl text-secondaryColor text-center pb-4 sm:pb-12">
           Xác nhận đơn hàng
         </h1>
 
         {/* User Information */}
         <section className="border text-white placeholder:text-gray-400 border-[#074b6b] rounded p-6 mb-8">
-          <h2 className="text-2xl font-semibold mb-4">Thông tin khách hàng</h2>
+          <h2 className="text-lg sm:text-2xl font-semibold mb-4">
+            Thông tin khách hàng
+          </h2>
           <div className="grid md:grid-cols-2 gap-6">
             {orderData.address && (
               <>
@@ -274,32 +273,47 @@ const OrderConfirmation = () => {
         </section>
 
         {/* Order Items */}
-        <section className="border text-white placeholder:text-gray-400 border-[#074b6b] rounded p-6 mb-8">
-          <h2 className="text-2xl font-semibold mb-4">Món ăn đã chọn</h2>
+        <section className="border text-white placeholder:text-gray-400 border-[#074b6b] rounded p-2 sm:p-6 mb-8">
+          <h2 className="text-lg sm:text-2xl font-semibold mb-4">
+            Món ăn đã chọn
+          </h2>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-white/20">
-                  <th className="text-left py-4">Món ăn</th>
-                  <th className="text-center py-4">Số lượng</th>
-                  <th className="text-right py-4">Đơn giá</th>
-                  <th className="text-right py-4">Thành tiền</th>
+                  <th className="text-left py-4 text-sm sm:text-base">
+                    Món ăn
+                  </th>
+                  <th className="text-center py-4 text-sm sm:text-base">
+                    Số lượng
+                  </th>
+                  <th className="text-right py-4 text-sm sm:text-base">
+                    Đơn giá
+                  </th>
+                  <th className="text-right py-4 text-sm sm:text-base">
+                    Thành tiền
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {orderItems.map((item, index) => (
                   <tr key={index} className="border-b border-white/20">
-                    <td className="py-4">
-                      <div className="flex items-center space-x-4 w-full">
+                    <td className="py-4  text-sm sm:text-base">
+                      <div className="flex  flex-col md:flex-row items-center space-x-4 w-full">
                         <img
                           src={item.image}
                           alt={item.name}
-                          className="w-16 h-16 object-cover"
+                          className=" w-full h-auto  sm:w-16 sm:h-16 object-cover"
                         />
-                        <div className="flex flex-col flex-grow">
+
+                        <div className="flex flex-col w-full flex-grow">
                           <span className="font-medium">{item.name}</span>
                           <span className="text-sm text-gray-300">
-                            Phân loại: {item.category}
+                            <span className="hidden sm:inline-block">
+                              {' '}
+                              Phân loại:
+                            </span>
+                            {item.category}
                           </span>
                           <span className="text-sm italic text-gray-400 mt-1">
                             Ghi chú: {item.note || 'Không có ghi chú'}
@@ -307,31 +321,42 @@ const OrderConfirmation = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="text-center">{item.quantity}</td>
-                    <td className="text-right">
+                    <td className="text-center text-sm sm:text-base">
+                      {item.quantity}
+                    </td>
+                    <td className="text-right text-sm sm:text-base">
                       {' '}
                       <div>
                         {item.discountedPrice !== item.price ? (
                           <div className="text-sm mt-1 flex flex-col">
                             <span className="line-through text-gray-400">
-                              {item.price?.toLocaleString()} VNĐ
+                              {item.price?.toLocaleString()}{' '}
+                              <span className="hidden sm:inline-block">
+                                {' '}
+                                VNĐ
+                              </span>
                             </span>
                             <span className="text-secondaryColor font-semibold">
-                              {item.discountedPrice?.toLocaleString()} VNĐ
+                              {item.discountedPrice?.toLocaleString()}{' '}
+                              <span className="hidden sm:inline-block">
+                                {' '}
+                                VNĐ
+                              </span>
                             </span>
                           </div>
                         ) : (
                           <div className="text-sm mt-1">
-                            {item.price?.toLocaleString()} VNĐ
+                            {item.price?.toLocaleString()}{' '}
+                            <span className="hidden sm:inline-block"> VNĐ</span>
                           </div>
                         )}
                       </div>
                     </td>
-                    <td className="text-right">
+                    <td className="text-right text-sm sm:text-base">
                       {(
                         (item.discountedPrice || item.price) * item.quantity
                       ).toLocaleString()}{' '}
-                      VNĐ
+                      <span className="hidden sm:inline-block"> VNĐ</span>
                     </td>
                   </tr>
                 ))}
@@ -342,7 +367,9 @@ const OrderConfirmation = () => {
 
         {/* Order Details */}
         <section className="border text-white placeholder:text-gray-400 border-[#074b6b] rounded p-6 mb-8">
-          <h2 className="text-2xl font-semibold mb-4">Chi tiết đơn hàng</h2>
+          <h2 className="text-lg sm:text-2xl font-semibold mb-4">
+            Chi tiết đơn hàng
+          </h2>
           <div className="grid md:grid-cols-2 gap-6">
             <InfoItem
               label="Phương thức giao hàng"
@@ -365,7 +392,9 @@ const OrderConfirmation = () => {
               <>
                 <div>
                   <span className="text-gray-300">Thời gian đến lấy hàng:</span>
-                  <p className="font-medium">{getScheduledTimeDisplay()}</p>
+                  <p className="font-medium text-sm sm:text-base">
+                    {getScheduledTimeDisplay()}
+                  </p>
                   <p>
                     Địa chỉ: Nhà Hàng BeefBeef – 161 Quốc Hương, Thảo Điền, Quận
                     2
@@ -376,14 +405,14 @@ const OrderConfirmation = () => {
               ''
             )}
             {orderData.delivery_time_type !== 'SCHEDULED' &&
-              orderData.delivery_type === 'DELIVERY' ? (
-                <InfoItem
-                  label="Thời gian giao hàng"
-                  value="Trong 45-90 phút tính từ lúc đặt hàng."
-                />
-              ) : (
-                ''
-              )}
+            orderData.delivery_type === 'DELIVERY' ? (
+              <InfoItem
+                label="Thời gian giao hàng"
+                value="Trong 45-90 phút tính từ lúc đặt hàng."
+              />
+            ) : (
+              ''
+            )}
             {orderData.note && (
               <InfoItem label="Ghi chú" value={orderData.note} />
             )}
@@ -408,13 +437,15 @@ const OrderConfirmation = () => {
             {orderData.discount_amount && orderData.discount_amount > 0 && (
               <div className="flex justify-between">
                 <span>Giảm giá voucher:</span>
-                <span className="text-green-400">- {orderData.discount_amount.toLocaleString()} VNĐ</span>
+                <span className="text-green-400">
+                  - {orderData.discount_amount.toLocaleString()} VNĐ
+                </span>
               </div>
             )}
             <div className="flex justify-between text-xl font-bold pt-4 border-t border-white/20">
               <span>Tổng cộng:</span>
               <span className="text-secondaryColor">
-                {(orderData.total_price).toLocaleString()} VNĐ
+                {orderData.total_price.toLocaleString()} VNĐ
               </span>
             </div>
           </div>
@@ -443,7 +474,7 @@ const InfoItem: React.FC<{ label: string; value: string }> = ({
 }) => (
   <div>
     <span className="text-gray-300">{label}:</span>
-    <p className="font-medium">{value}</p>
+    <p className="font-medium text-sm sm:text-base">{value}</p>
   </div>
 );
 

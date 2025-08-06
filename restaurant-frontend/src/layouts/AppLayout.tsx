@@ -10,10 +10,20 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import Chatbox from '@/components/common/ChatBox';
 import { AnimatePresence } from 'framer-motion';
+import BreadcrumbComponent from '@/components/common/BreadCrumbComponents';
 
 const LayoutContent: React.FC = () => {
   const location = useLocation();
   const { fetchFavorites } = useFetchFavorites();
+  const noMarginTopPaths = [
+    '/',
+    '/login',
+    '/register',
+    '/reset-password',
+    '/verify-otp',
+    '/forgot-password',
+  ];
+  const isNoMarginTop = noMarginTopPaths.includes(location.pathname);
   const currentUser = useSelector((state: RootState) => state.user.user);
   useEffect(() => {
     if (currentUser?._id) {
@@ -97,33 +107,36 @@ const LayoutContent: React.FC = () => {
         }`}
       >
         {' '}
-        <button
-          className="w-10 h-10 absolute top-2 left-5 z-50 bg-secondaryColor p-2 rounded-md flex flex-col justify-center items-center space-y-1"
-          onClick={toggleMobileSidebar}
-        >
-          {!isMobileSidebarOpen ? (
-            <>
-              <span className="block w-6 h-0.5 bg-black"></span>
-              <span className="block w-5 h-0.5 bg-black"></span>
-              <span className="block w-6 h-0.5 bg-black"></span>
-            </>
-          ) : (
-            <svg
-              className="h-6 w-6 text-black"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          )}
-        </button>
+        {!hideSidebarFooter && (
+          <button
+            className="w-10 h-10 fixed top-2 left-5 z-50 bg-secondaryColor p-2 rounded-md flex flex-col justify-center items-center space-y-1"
+            onClick={toggleMobileSidebar}
+          >
+            {!isMobileSidebarOpen ? (
+              <>
+                <span className="block w-6 h-0.5 bg-black"></span>
+                <span className="block w-5 h-0.5 bg-black"></span>
+                <span className="block w-6 h-0.5 bg-black"></span>
+              </>
+            ) : (
+              <svg
+                className="h-6 w-6 text-black"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            )}
+          </button>
+        )}
         <div>
-          <div className="overflow-y-auto">
+          {!isNoMarginTop && <BreadcrumbComponent />}
+          <div className={isNoMarginTop ? '' : ''}>
             <Outlet />
           </div>
         </div>

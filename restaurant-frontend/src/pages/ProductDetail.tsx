@@ -3,7 +3,7 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import { useFoodDetail } from '../hooks/useFoods';
 import { useProductView } from '../hooks/useProductView';
 import RelatedProductList from '../components/pages/detail/RelatedProductList';
-import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
+
 import ProductGallery from '../components/pages/detail/ProductGallery';
 import ProductInfo from '../components/pages/detail/ProductInfo';
 import ProductPolicies from '../components/pages/detail/ProductPolicies';
@@ -74,7 +74,6 @@ const ProductDetail: React.FC = () => {
 
   return (
     <>
-      <BreadCrumbComponents />
       <section className="bg-bodyBackground w-full text-white py-16">
         <div className="w-11/12 md:w-container95 lg:w-container95 xl:w-container95 2xl:w-mainContainer mx-auto">
           <div className="flex flex-col lg:flex-row gap-8">

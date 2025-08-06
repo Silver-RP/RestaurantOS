@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useRef, useEffect } from 'react';
 import { FiCornerDownLeft, FiMoreVertical, FiSend } from 'react-icons/fi';
 import EmojiPicker, { Theme } from 'emoji-picker-react';
@@ -85,7 +86,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   };
   const showReactionPicker = (idx: number, messageId: string) => {
     if (!pickerRef.current) {
-      pickerRef.current = new EmojiButton({ position: 'bottom-end', theme: 'dark' });
+      pickerRef.current = new EmojiButton({
+        position: 'bottom-end',
+        theme: 'dark',
+      });
       pickerRef.current.on('emoji', (selection) => {
         if (currentMsgIdRef.current) {
           handleReactToMessage(currentMsgIdRef.current, selection.emoji);
@@ -113,8 +117,13 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
   useEffect(() => {
     if (expandedFaq !== null && !loadingFaq) {
-      const matched = faqs.find(f => f.question.trim().toLowerCase() === faqList[expandedFaq].trim().toLowerCase());
-      const answer = matched?.answer || 'Xin lỗi, tôi chưa có câu trả lời phù hợp.';
+      const matched = faqs.find(
+        (f) =>
+          f.question.trim().toLowerCase() ===
+          faqList[expandedFaq].trim().toLowerCase(),
+      );
+      const answer =
+        matched?.answer || 'Xin lỗi, tôi chưa có câu trả lời phù hợp.';
       let i = 0;
       setTypingText('');
       if (typingInterval.current) clearInterval(typingInterval.current);
@@ -161,18 +170,20 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
       {!showInput ? (
         <div className="p-4 space-y-3 text-sm">
-          <p className="font-semibold text-yellow-300">
-            Câu hỏi thường gặp:
-          </p>
+          <p className="font-semibold text-yellow-300">Câu hỏi thường gặp:</p>
           {faqList.map((faq, idx) => {
-            const matched = faqs.find(f => f.question.trim().toLowerCase() === faq.trim().toLowerCase());
+            const matched = faqs.find(
+              (f) =>
+                f.question.trim().toLowerCase() === faq.trim().toLowerCase(),
+            );
             return (
               <div key={idx}>
                 <button
                   onClick={() => handleFaqClick(idx)}
                   className="block text-left w-full bg-[#1B263B] text-white hover:bg-yellow-300 hover:text-black px-4 py-3 rounded transition"
                 >
-                  <span className="text-xl mr-2">❓</span>{faq}
+                  <span className="text-xl mr-2">❓</span>
+                  {faq}
                 </button>
                 {loadingFaq === idx && (
                   <div className="flex items-start mt-1">
@@ -187,7 +198,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                             <span className="dot bg-yellow-400 inline-block w-2 h-2 rounded-full mr-1 animate-bounce [animation-delay:150ms]"></span>
                             <span className="dot bg-yellow-400 inline-block w-2 h-2 rounded-full animate-bounce [animation-delay:300ms]"></span>
                           </span>
-                          <span className="text-gray-500 text-sm">Đang trả lời...</span>
+                          <span className="text-gray-500 text-sm">
+                            Đang trả lời...
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -212,7 +225,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       ) : (
         <>
           {/* Message display */}
-          <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 text-sm scrollbar-thin scrollbar-thumb-yellow-400 scrollbar-track-transparent scrollbar-thumb-rounded-full hover:scrollbar-thumb-yellow-500">
+          <div className="flex-1 overflow-y-auto hide-scrollbar px-4 py-3 space-y-3 text-sm scrollbar-thin scrollbar-thumb-yellow-400 scrollbar-track-transparent scrollbar-thumb-rounded-full hover:scrollbar-thumb-yellow-500">
             {messages.map((msg, idx) => {
               const text = msg.text || msg.content || '';
               const senderId = msg.sender_id || '';
@@ -222,7 +235,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
               const attachments = msg.attachments || [];
 
               return (
-                <div key={idx} className={`flex items-start ${isMine ? 'justify-end' : 'justify-start'}`}>
+                <div
+                  key={idx}
+                  className={`flex items-start ${isMine ? 'justify-end' : 'justify-start'}`}
+                >
                   {/* Avatar trái */}
                   {!isMine && (
                     <img
@@ -244,7 +260,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                     >
                       {/* Nội dung text */}
                       <p>{text}</p>
-                      
+
                       {/* Hiển thị hình ảnh nếu có */}
                       {messageType === 'image' && attachments.length > 0 && (
                         <div className="mt-3 space-y-2">
@@ -270,15 +286,21 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
                       {/* Thời gian */}
                       <p className="text-xs text-gray-500 mt-1 text-right">
-                        {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {new Date().toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
                       </p>
                     </div>
 
                     {/* ✅ Emoji tách rời bên ngoài bubble */}
                     {msg.reactions && msg.reactions.length > 0 && (
                       <div
-                        className={`absolute text-xl ${isMine ? 'bottom-[-12px] left-[-6px]' : 'bottom-[-12px] right-[-6px]'
-                          }`}
+                        className={`absolute text-xl ${
+                          isMine
+                            ? 'bottom-[-12px] left-[-6px]'
+                            : 'bottom-[-12px] right-[-6px]'
+                        }`}
                       >
                         {msg.reactions.map((r, i) => (
                           <span key={i}>{r.emoji}</span>
@@ -328,12 +350,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                   )}
                 </div>
               );
-
             })}
 
             <div ref={messageEndRef} />
           </div>
-
 
           {/* Input */}
           <div className="border-t border-yellow-300 p-2 bg-[#0D1B2A] flex items-center gap-2 relative overflow-visible">
@@ -393,7 +413,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
               </div>
             )}
           </div>
-
         </>
       )}
     </div>

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ButtonComponents from '../components/common/ButtonComponents';
-import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
 import { AiOutlineCheckCircle } from 'react-icons/ai';
 import { motion } from 'framer-motion';
 import { FiDownload } from 'react-icons/fi';
@@ -65,7 +64,9 @@ const PaymentSuccess = () => {
 
   if (isReservation) {
     buttonLabel = isLoggedIn ? 'Lịch sử đặt bàn' : 'Tra cứu đặt bàn';
-    targetPath = isLoggedIn ? '/profile/my-reservation' : '/reservation/lookup-reservation';
+    targetPath = isLoggedIn
+      ? '/profile/my-reservation'
+      : '/reservation/lookup-reservation';
   } else if (isLoggedIn) {
     buttonLabel = 'Lịch sử đơn hàng';
     targetPath = '/profile/orders';
@@ -73,8 +74,6 @@ const PaymentSuccess = () => {
 
   return (
     <>
-      <BreadCrumbComponents />
-
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}

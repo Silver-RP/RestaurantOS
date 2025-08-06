@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import ButtonComponents from '@components/common/ButtonComponents';
-import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
 import { useGetCart } from '@hooks/useCart';
 import CartTable from '@components/pages/cart/CartTable';
 import CartSummary from '@components/pages/cart/CartSummary';
@@ -72,9 +71,6 @@ const CartPage = () => {
   return (
     <div className="relative">
       <LoadingOverlay loading={isLoading} />
-      <div className="w-full mx-auto">
-        <BreadCrumbComponents />
-      </div>
       <Container>
         <div className="w-full mx-auto pb-10 py-10">
           <h1 className="text-3xl mb-8 text-center lg:text-left">Giỏ hàng</h1>
