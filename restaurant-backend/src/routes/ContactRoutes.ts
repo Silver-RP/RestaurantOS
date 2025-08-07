@@ -5,6 +5,6 @@ import AuthMiddleWare from '../middleware/AuthMiddleWare';
 
 const router = Router();
 
-router.post('/contact', ContactController.postContact);
+router.post('/createContact', AuthMiddleWare.optionalVerifyToken, ContactController.postContact);
 
 export default router;
