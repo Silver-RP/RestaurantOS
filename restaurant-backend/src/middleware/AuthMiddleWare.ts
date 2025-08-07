@@ -24,6 +24,29 @@ class AuthMiddleWare {
     }
   }
 
+  async optionalVerifyToken(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const authHeader = req.headers['authorization'];
+      const token = authHeader && typeof authHeader === 'string' ? authHeader.split(' ')[1] : null;
+
+      if (!token) {
+        req.user = undefined;
+        return next();
+      }
+
+      const user = jwt.verify(token, process.env.ACCESS_TOKEN as string) as IUser;
+      req.user = user;
+      next();
+    } catch (err: any) {
+      console.error('Optional token verification failed:', err.message);
+      req.user = undefined;
+      next();
+    }
+  }
+
+
+
+
   async verifyRefreshToken(req: Request, res: Response, next: NextFunction): Promise<any> {
     try {
       const token = req.cookies.refreshToken;
