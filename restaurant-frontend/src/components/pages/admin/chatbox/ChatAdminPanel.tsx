@@ -87,9 +87,16 @@ const ChatAdminPanel: React.FC = () => {
 
   const onSend = () => {
     if (!input.trim() || !currentChat) return;
-    handleSend(input); 
+    handleSend(input);
     setInput('');
-    setReplyingTo(null); 
+    setReplyingTo(null);
+  };
+
+  // Gửi tin nhắn khi nhấn Enter
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      onSend();
+    }
   };
 
   const handleReaction = (emoji: string, idx: number) => {
@@ -419,6 +426,7 @@ const ChatAdminPanel: React.FC = () => {
               <input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleInputKeyDown}
                 className="flex-1 border border-gray-300 px-4 py-2 rounded-full outline-none text-gray-800 focus:ring-2 focus:ring-blue-300"
                 placeholder="Nhập tin nhắn..."
               />

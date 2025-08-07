@@ -111,11 +111,17 @@ class ChatService {
         const lastMsg = await ChatMessageModel.findOne({ chat_id: chat._id })
           .sort({ sent_at: -1 })
           .lean();
+        const unreadCount = await ChatMessageModel.countDocuments({
+          chat_id: chat._id,
+          sender_role: 'user',
+          read_at: null,
+        });
 
         return {
           ...chat,
           lastMessage: lastMsg?.content || '',
           lastMessageTime: lastMsg?.sent_at || chat.updated_at,
+          unreadCount, 
         };
       }),
     );

@@ -1,4 +1,6 @@
 import React from 'react';
+import { BsChatDots } from 'react-icons/bs';
+import { useAdminChatbox } from '@/hooks/useAdminChatbox';
 import {
   FaHome,
   FaUtensils,
@@ -36,6 +38,7 @@ type MenuItemAction = {
 type MenuItem = MenuItemLink | MenuItemAction;
 
 const PrimarySidebar: React.FC<PrimarySidebarProps> = ({ toggleSidebar }) => {
+  const { totalUnreadCount } = useAdminChatbox();
   const location = useLocation();
 
   const menuItemsMain = [
@@ -44,6 +47,23 @@ const PrimarySidebar: React.FC<PrimarySidebarProps> = ({ toggleSidebar }) => {
     { icon: <FaRegListAlt />, label: 'Bài viết', link: '/posts' },
     { icon: <MdInfo />, label: 'Giới thiệu', link: '/aboutus' },
     { icon: <FaPhoneAlt />, label: 'Liên hệ', link: '/contact' },
+    {
+      icon: (
+        <div className="relative flex items-center justify-center" style={{ minWidth: 32, minHeight: 32 }}>
+          <BsChatDots className="text-2xl" />
+          {totalUnreadCount > 0 && (
+            <span
+              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold z-10 border-2 border-white shadow"
+              style={{ minWidth: 20, minHeight: 20 }}
+            >
+              {totalUnreadCount}
+            </span>
+          )}
+        </div>
+      ),
+      label: 'Chatbox',
+      link: '/admin/chatbox',
+    },
   ];
 
   const userInfo = Cookies.get('userInfo');

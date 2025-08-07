@@ -24,11 +24,13 @@ export const useAdminChatbox = () => {
   }, []);
 
   useEffect(() => {
-    const handleMessage = (msg: ChatMessage) => {
+    const handleMessage = async (msg: ChatMessage) => {
       if (msg.chat_id === currentChat?._id) {
         const exists = messages.some((m) => m._id === msg._id);
         if (!exists) setMessages((prev) => [...prev, msg]);
       }
+      const list = await getAllUserChats();
+      setSessions(list);
     };
 
     socket.on('message', handleMessage);
@@ -58,7 +60,7 @@ export const useAdminChatbox = () => {
       await sendMessage({ chatId: currentChat._id, content });
     } catch (err: any) {
       const errorMsg = err?.response?.data?.message || 'Đã xảy ra lỗi khi gửi tin nhắn';
-      alert(errorMsg); // hoặc toast.error(errorMsg)
+      alert(errorMsg); 
       console.error('[LỖI GỬI TIN NHẮN]', err);
     }
   };
@@ -78,6 +80,21 @@ export const useAdminChatbox = () => {
     console.log('[MESSAGES]', msgs);
     setMessages(msgs);
 
+    // Đánh dấu tất cả tin nhắn chưa đọc từ user là đã đọc
+    try {
+      const { markMessageAsRead } = await import('@/api/ChatboxApi');
+      const unreadMsgs = msgs.filter(m => !m.read_at && m.sender_role === 'user');
+      for (const msg of unreadMsgs) {
+        await markMessageAsRead(session._id, msg._id);
+      }
+    } catch (err) {
+      console.error('[LỖI ĐÁNH DẤU ĐÃ ĐỌC]', err);
+    }
+
+    // Sau khi đánh dấu đã đọc, gọi lại API lấy danh sách chat để cập nhật badge
+    const updatedSessions = await getAllUserChats();
+    setSessions(updatedSessions);
+
     if (!socket.connected) {
       socket.connect();
     }
@@ -89,7 +106,11 @@ export const useAdminChatbox = () => {
     });
     console.log('[SOCKET JOIN]', { userId: 'cashier', chatId: session._id, roles: 'cashier' });
   };
-
+  console.log('[DANH SÁCH PHIÊN CHAT]', sessions);
+  
+  const totalUnreadCount = sessions.reduce((sum, s) => sum + (s.unreadCount ?? 0), 0);
+  console.log('[TỔNG SỐ TIN NHẮN CHƯA ĐỌC]', totalUnreadCount);
+  
   return {
     sessions,
     currentChat,
@@ -98,5 +119,6 @@ export const useAdminChatbox = () => {
     handleSend,
     messageEndRef,
     assignCashierSession,
+    totalUnreadCount,
   };
 };
