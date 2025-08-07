@@ -9,7 +9,7 @@ const VoucherList: React.FC = () => {
   const { data, isLoading } = usePublicActiveVouchers({ page, limit });
   const saveVoucherMutation = useSaveVoucher();
   const { data: userVouchersData } = useUserVouchers();
-  const userVouchers: UserVoucherDisplay[] = Array.isArray(userVouchersData) ? userVouchersData as UserVoucherDisplay[] : [];
+  const userVouchers: UserVoucherDisplay[] = Array.isArray(userVouchersData) ? userVouchersData as unknown as UserVoucherDisplay[] : [];
   const savedVoucherIds = new Set(userVouchers.map(v => v._id));
   const vouchers: Voucher[] = data?.docs || [];
 
