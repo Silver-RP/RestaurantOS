@@ -370,27 +370,21 @@ class ChatService {
         chat.status = 'open';
         await chat.save();
       } 
-      // Trường hợp 2: Có cashier được gán -> Đợi cashier reply, nếu không có thì bot reply
       else {
         console.log('[🤖 BOT] Có cashier, đợi 12s cho cashier reply');
-        // Sử dụng setTimeout để không block request
         setTimeout(async () => {
           try {
-            // Kiểm tra xem cashier có reply trong 1 giây vừa rồi không
-            const twelveSecondsAgo = new Date(Date.now() - 120000);
+            const twelveSecondsAgo = new Date(Date.now() - 1000);
             const hasCashierReply = await ChatMessageModel.exists({
               chat_id: chat._id,
               sender_role: 'cashier',
               sent_at: { $gte: twelveSecondsAgo }
             });
-
-            // Nếu cashier không reply trong 12s -> Bot reply
             if (!hasCashierReply) {
               console.log('[🤖 BOT] Cashier không reply trong 12s, bot reply');
               const { getBotReply } = require('../utils/openaiBot');
               const botReply = await getBotReply(data.content);
 
-              // Kiểm tra xem bot reply có chứa link hình ảnh không
               const imageUrls = this.extractImageUrls(botReply.content);
               const messageType = (imageUrls.length > 0 || botReply.attachments.length > 0) ? 'image' : 'text';
               const allAttachments = [...botReply.attachments, ...imageUrls];

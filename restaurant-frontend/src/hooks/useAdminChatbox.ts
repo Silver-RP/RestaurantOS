@@ -65,6 +65,7 @@ export const useAdminChatbox = () => {
 
   const selectChat = async (userId: string) => {
     const session = await getUserChatSession(userId);
+    console.log('[SESSION USER]', session);
 
     if (!session.cashier_user_id) {
       await assignCashierSession(session._id);
@@ -74,6 +75,7 @@ export const useAdminChatbox = () => {
     setCurrentChat(session);
 
     const msgs = await getMessages(session._id);
+    console.log('[MESSAGES]', msgs);
     setMessages(msgs);
 
     if (!socket.connected) {
@@ -85,6 +87,7 @@ export const useAdminChatbox = () => {
       chatId: session._id,
       roles: 'cashier',
     });
+    console.log('[SOCKET JOIN]', { userId: 'cashier', chatId: session._id, roles: 'cashier' });
   };
 
   return {

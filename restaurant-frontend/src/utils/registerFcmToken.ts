@@ -1,5 +1,5 @@
-import { messaging } from '../firebase/firebase';
-import { getToken } from 'firebase/messaging';
+import { getToken, messaging } from '../firebase/firebase';
+
 import axios from 'axios';
 
 export const registerFcmToken = async () => {

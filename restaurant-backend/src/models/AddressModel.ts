@@ -1,46 +1,44 @@
-import { Schema, model, Document, Types } from 'mongoose';
-
-export interface IAddress extends Document {
-  user_id: Types.ObjectId;
-  full_name: string;
-  phone: string;
-  province: string;
-  district: string;
-  street_address: string;
-  ward: string;
-  address_type: 'HOME' | 'WORK' | 'OTHER';
-  is_default?: boolean;
-  createdAt?: Date;
-  updatedAt?: Date;
-  lat: number;
-  lon: number;
-}
+import { Schema, model, Types } from 'mongoose';
+import { IAddress } from '../types/address.type';
 
 const AddressSchema = new Schema<IAddress>(
   {
-    user_id: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    user_id: { type: Types.ObjectId, ref: 'User', required: true, index: true },
     full_name: { type: String, required: true },
     phone: { type: String, required: true },
+
     province: { type: String, required: true },
-    district: { type: String, required: true },
+    district: { type: String }, 
     ward: { type: String, required: true },
     street_address: { type: String, required: true },
+
+    postcode: { type: String }, 
+    display_name: { type: String }, 
+
+    osm_id: { type: String }, 
+    osm_type: { type: String }, 
+    boundingbox: { type: [String] }, 
+
+    lat: { type: Number },
+    lon: { type: Number },
+
     address_type: {
       type: String,
       enum: ['HOME', 'WORK', 'OTHER'],
       default: 'HOME',
     },
     is_default: { type: Boolean, default: false },
-    lat: { type: Number },
-    lon: { type: Number },
   },
   { timestamps: true },
 );
 
+// Chỉ cho phép 1 địa chỉ mặc định cho mỗi user
 AddressSchema.index(
   { user_id: 1, is_default: 1 },
   { unique: true, partialFilterExpression: { is_default: true } },
 );
+
+// Định dạng khi trả JSON
 AddressSchema.set('toJSON', {
   virtuals: true,
   transform: (_doc, ret) => {

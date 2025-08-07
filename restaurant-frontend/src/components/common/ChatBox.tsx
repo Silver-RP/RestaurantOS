@@ -1,9 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { socket } from '@/utils/socket';
 import ChatToggleButton from './ChatToggleButton';
 import ChatWindow from './ChatWindow';
 import { useFaq } from '@/hooks/useFaq';
 import { getAnswerByQuestion } from '@/api/FaqApi';
 import { useChatbox } from '@/hooks/useUserChatbox';
+import { getUnreadMessageCount, markMessageAsRead } from '@/api/ChatboxApi';
+import { getMessages } from '@/api/ChatboxApi';
 
 interface Message {
   sender: 'user' | 'bot';
@@ -24,7 +27,35 @@ const Chatbox: React.FC = () => {
   
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [unreadCount, setUnreadCount] = useState(3);
+  const [unreadCount, setUnreadCount] = useState(0);
+  useEffect(() => {
+    if (!isOpen) {
+      const fetchUnread = async () => {
+        try {
+          const count = await getUnreadMessageCount();
+          console.log('Unread messages count:', count);
+          setUnreadCount(count);
+        } catch {
+          setUnreadCount(0);
+        }
+      };
+      fetchUnread();
+    }
+  }, [isOpen]);
+
+  // Lắng nghe socket: khi có tin nhắn mới và chatbox đang đóng, cập nhật badge
+  useEffect(() => {
+    const handleSocketMessage = async () => {
+      if (!isOpen) {
+        const count = await getUnreadMessageCount();
+        setUnreadCount(count);
+      }
+    };
+    socket.on('message', handleSocketMessage);
+    return () => {
+      socket.off('message', handleSocketMessage);
+    };
+  }, [isOpen]);
   const [input, setInput] = useState('');
   const [showInput, setShowInput] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -80,8 +111,23 @@ const Chatbox: React.FC = () => {
   };
 
   useEffect(() => {
-    if (isOpen) setUnreadCount(0);
-  }, [isOpen]);
+    const markAllAsRead = async () => {
+      if (isOpen && chatId) {
+        try {
+          // Lấy danh sách tin nhắn chưa đọc
+          const allMessages = await getMessages(chatId);
+          const unreadMessages = allMessages.filter((msg: any) => !msg.read_at && msg.sender !== 'user');
+          for (const msg of unreadMessages) {
+            await markMessageAsRead(chatId, msg._id);
+          }
+        } catch (err) {
+          console.error('Lỗi đánh dấu đã đọc:', err);
+        }
+        setUnreadCount(0);
+      }
+    };
+    markAllAsRead();
+  }, [isOpen, chatId]);
 
   return (
     <div className="fixed bottom-6 right-6 z-50">
@@ -98,6 +144,11 @@ const Chatbox: React.FC = () => {
           faqList={faqs.map((f) => f.question)}
           currentUserId={userId ?? undefined}
           faqs={faqs}
+          onInputKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+            if (e.key === 'Enter') {
+              handleSend();
+            }
+          }}
         />
       ) : (
         <ChatToggleButton unreadCount={unreadCount} onClick={toggleChat} />

@@ -13,7 +13,7 @@ router.post('/:chatId/assign', ChatController.assignCashier); //Gán mình xử 
 router.get('/unread-count', ChatController.getUnreadMessageCount); // Lấy số lượng tin nhắn chưa đọc của user
 router.delete(
   '/:chatId/message/:messageId',
-  verifyChatPermission, // đảm bảo user có quyền với chat này
+  verifyChatPermission,
   ChatController.deleteMessage,
 );
 router.patch(

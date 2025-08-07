@@ -1,33 +1,6 @@
 import mongoose, { Document } from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
-
-export interface IUser extends Document {
-  username: string;
-  email: string;
-  password: string | null;
-  birthday?: Date | null;
-  avatar?: string | null;
-  phone: string | null;
-  googleId?: string | null;
-  isEmailVerified: boolean;
-  emailVerificationOtp?: string | null;
-  emailVerificationOtpExpiry?: Date | null;
-  changePasswordOtp?: string | null;
-  changePasswordOtpExpiry?: Date | null;
-  phoneOtp?: string | null;
-  phoneOtpExpiry?: Date | null;
-  roles?: mongoose.Schema.Types.ObjectId[];
-  gender?: string | null;
-  status?: string | null;
-  default_address_id?: mongoose.Schema.Types.ObjectId[];
-  expireAt: Date;
-  otpSentCount: number;
-  lastOtpSentAt: Date;
-  otpVerifiedForChangePassword: boolean;
-  isOnline: boolean;
-
-}
-
+import { IUser } from '../types/user.type';
 const userSchema = new mongoose.Schema(
   {
     username: { type: String, trim: true },
@@ -91,10 +64,7 @@ const userSchema = new mongoose.Schema(
     },
   },
 );
-
 userSchema.plugin(mongoosePaginate);
-
 export type UserModel = mongoose.PaginateModel<IUser>;
-
 const User = mongoose.model<IUser, UserModel>('User', userSchema);
 export default User;

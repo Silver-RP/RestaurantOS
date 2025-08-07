@@ -29,8 +29,9 @@ interface ChatWindowProps {
   faqList: string[];
   currentUserId?: string;
   faqs: { question: string; answer: string }[];
-}
+    onInputKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 
+}
 const ChatWindow: React.FC<ChatWindowProps> = ({
   messages,
   input,
@@ -46,6 +47,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 }) => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [reactionPickerIdx, setReactionPickerIdx] = useState<number | null>(null);
+  const [reactionPickerLock, setReactionPickerLock] = useState(false);
+  const hideActionTimeout = useRef<NodeJS.Timeout | null>(null);
+  const reactionPickerRef = useRef<HTMLDivElement | null>(null);
+  const popularEmojis = ['😂', '😍', '👍', '😢', '😮', '😡', '❤️', '😆'];
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const messageEndRef = useRef<HTMLDivElement | null>(null);
   const emojiButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -54,10 +60,29 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
   const [loadingFaq, setLoadingFaq] = useState<number | null>(null);
   const [typingText, setTypingText] = useState<string>('');
-  const typingInterval = useRef<NodeJS.Timeout | null>(null);
+  const typingInterval = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [faqAnswers, setFaqAnswers] = useState<{ [key: number]: string }>({});
 
   useEffect(() => {
+    // Đóng dải emoji khi click ra ngoài
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        reactionPickerRef.current &&
+        !reactionPickerRef.current.contains(event.target as Node)
+      ) {
+        setReactionPickerLock(false);
+        setReactionPickerIdx(null);
+      }
+    }
+    if (reactionPickerLock) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      if (hideActionTimeout.current) clearTimeout(hideActionTimeout.current);
+    };
     messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
@@ -85,22 +110,14 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     });
   };
   const showReactionPicker = (idx: number, messageId: string) => {
-    if (!pickerRef.current) {
-      pickerRef.current = new EmojiButton({
-        position: 'bottom-end',
-        theme: 'dark',
-      });
-      pickerRef.current.on('emoji', (selection) => {
-        if (currentMsgIdRef.current) {
-          handleReactToMessage(currentMsgIdRef.current, selection.emoji);
-        }
-      });
-    }
-
-    currentMsgIdRef.current = messageId;
-
-    if (emojiButtonRefs.current[idx]) {
-      pickerRef.current.togglePicker(emojiButtonRefs.current[idx]!);
+    if (reactionPickerIdx === idx && reactionPickerLock) {
+      // Nếu đang mở, click lại sẽ đóng
+      setReactionPickerLock(false);
+      setReactionPickerIdx(null);
+    } else {
+      setReactionPickerIdx(idx);
+      setReactionPickerLock(true);
+      currentMsgIdRef.current = messageId;
     }
   };
 
@@ -144,7 +161,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     }
   }, [expandedFaq, loadingFaq, faqs, faqList]);
   return (
-    <div className="w-[420px] h-[620px] bg-[#0D1B2A] text-white border border-yellow-300 rounded-lg flex flex-col shadow-lg overflow-hidden relative">
+    <div className="w-[420px] h-[620px] bg-[#0D1B2A] text-white border border-yellow-300 rounded-lg flex flex-col shadow-lg overflow-hidden relative z-[1000]">
       {/* Header */}
       <div className="bg-[#1B263B] flex items-center justify-between px-4 py-3 text-base font-semibold">
         <span className="text-white">🐮 Hỗ trợ BeefBeef</span>
@@ -229,7 +246,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             {messages.map((msg, idx) => {
               const text = msg.text || msg.content || '';
               const senderId = msg.sender_id || '';
-              // Xử lý cả hai loại tin nhắn: Message và ChatMessage
               const isMine = senderId === currentUserId || senderId === 'user';
               const messageType = msg.message_type || 'text';
               const attachments = msg.attachments || [];
@@ -249,7 +265,27 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                   )}
 
                   {/* Bubble + Emoji */}
-                  <div className="relative group max-w-[75%]">
+                  <div
+                    className="relative group max-w-[75%]"
+                    onMouseEnter={() => {
+                      // Hover vào bubble cũng giữ dải emoji
+                      if (reactionPickerLock) {
+                        if (hideActionTimeout.current) {
+                          clearTimeout(hideActionTimeout.current);
+                          hideActionTimeout.current = null;
+                        }
+                      }
+                    }}
+                    onMouseLeave={() => {
+                      // Khi rời chuột khỏi bubble, giữ lại 2s rồi mới ẩn dải emoji nếu đang mở
+                      if (reactionPickerLock) {
+                        hideActionTimeout.current = setTimeout(() => {
+                          setReactionPickerLock(false);
+                          setReactionPickerIdx(null);
+                        }, 2000);
+                      }
+                    }}
+                  >
                     {/* Tin nhắn */}
                     <div
                       className={`
@@ -311,20 +347,35 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                     {/* Hover actions */}
                     <div
                       className={`
-                        absolute top-1/2 -translate-y-1/2 z-10 hidden group-hover:flex gap-1
+                        absolute top-1/2 -translate-y-1/2 z-[50] gap-1 hidden group-hover:flex
                         ${isMine ? 'right-full mr-2' : 'left-full ml-2'}
                       `}
                     >
                       <button
                         onClick={() => alert('Reply')}
-                        className="action-btn w-8 h-8 rounded-full bg-white border border-gray-200 shadow flex items-center justify-center hover:scale-110 transition"
+                        className="action-btn w-8 h-8 rounded-full bg-white border border-gray-200 shadow flex items-center justify-center hover:scale-110 transition focus:outline-none focus:ring-2 focus:ring-yellow-300"
+                        style={{ zIndex: 60 }}
+                        tabIndex={0}
                         title="Reply"
                       >
                         <FiCornerDownLeft className="text-gray-800" />
                       </button>
                       <button
-                        ref={(el) => (emojiButtonRefs.current[idx] = el)}
-                        onClick={() => showReactionPicker(idx, msg._id || '')}
+                        onClick={() => {
+                          // Click để mở/đóng dải emoji (ưu tiên click)
+                          if (reactionPickerIdx === idx && reactionPickerLock) {
+                            setReactionPickerLock(false);
+                            setReactionPickerIdx(null);
+                          } else {
+                            setReactionPickerIdx(idx);
+                            setReactionPickerLock(true);
+                            currentMsgIdRef.current = msg._id || '';
+                          }
+                          if (hideActionTimeout.current) {
+                            clearTimeout(hideActionTimeout.current);
+                            hideActionTimeout.current = null;
+                          }
+                        }}
                         className="action-btn w-8 h-8 rounded-full bg-white border border-gray-200 shadow flex items-center justify-center hover:scale-110 transition"
                         title="Emoji"
                       >
@@ -337,6 +388,47 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                       >
                         <FiMoreVertical className="text-gray-800" />
                       </button>
+                      {reactionPickerIdx === idx && reactionPickerLock && (
+                        <div
+                          ref={reactionPickerRef}
+                          className="absolute top-10 left-0 z-[9999] bg-white rounded-lg shadow flex gap-1 px-2 py-1 border border-gray-200"
+                          style={{ pointerEvents: 'auto' }}
+                          onMouseEnter={() => {
+                            // Hover vào dải emoji thì giữ lại, clear timeout
+                            if (hideActionTimeout.current) {
+                              clearTimeout(hideActionTimeout.current);
+                              hideActionTimeout.current = null;
+                            }
+                          }}
+                          onMouseLeave={() => {
+                            // Khi rời chuột khỏi dải emoji, giữ lại 2s rồi mới ẩn nếu không click
+                            hideActionTimeout.current = setTimeout(() => {
+                              setReactionPickerLock(false);
+                              setReactionPickerIdx(null);
+                            }, 2000);
+                          }}
+                        >
+                          {popularEmojis.map((emoji) => (
+                            <button
+                              key={emoji}
+                              className="text-xl hover:scale-125 transition focus:outline-none"
+                              onClick={() => {
+                                if (currentMsgIdRef.current) {
+                                  handleReactToMessage(currentMsgIdRef.current, emoji);
+                                }
+                                setReactionPickerLock(false);
+                                setReactionPickerIdx(null);
+                                if (hideActionTimeout.current) {
+                                  clearTimeout(hideActionTimeout.current);
+                                  hideActionTimeout.current = null;
+                                }
+                              }}
+                            >
+                              {emoji}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -357,14 +449,16 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
           {/* Input */}
           <div className="border-t border-yellow-300 p-2 bg-[#0D1B2A] flex items-center gap-2 relative overflow-visible">
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 relative z-20">
               <button
-                className="text-white hover:text-yellow-300 text-lg"
-                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                className="text-white hover:text-yellow-300 text-lg focus:outline-none focus:ring-2 focus:ring-yellow-300"
+                style={{ zIndex: 30 }}
+                onClick={() => setShowEmojiPicker((prev) => !prev)}
+                tabIndex={0}
               >
                 😊
               </button>
-              <label className="cursor-pointer text-white hover:text-yellow-300 text-lg">
+              <label className="cursor-pointer text-white hover:text-yellow-300 text-lg" style={{ zIndex: 30 }}>
                 📷
                 <input
                   ref={fileInputRef}
@@ -379,13 +473,17 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
               </label>
               <button
                 onClick={() => alert('🚧 Tính năng ghi âm sẽ sớm ra mắt')}
-                className="text-white hover:text-yellow-300 text-lg"
+                className="text-white hover:text-yellow-300 text-lg focus:outline-none focus:ring-2 focus:ring-yellow-300"
+                style={{ zIndex: 30 }}
+                tabIndex={0}
               >
                 🎤
               </button>
               <button
                 onClick={() => alert('🔗 Gửi link sẽ sớm được hỗ trợ')}
-                className="text-white hover:text-yellow-300 text-lg"
+                className="text-white hover:text-yellow-300 text-lg focus:outline-none focus:ring-2 focus:ring-yellow-300"
+                style={{ zIndex: 30 }}
+                tabIndex={0}
               >
                 🔗
               </button>
@@ -396,6 +494,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
               onChange={(e) => onInputChange(e.target.value)}
               className="flex-1 px-3 py-[6px] bg-[#0D1B2A] text-white text-sm outline-none border border-white/10 rounded min-w-0"
               placeholder="Nhập tin nhắn, emoji, đính kèm..."
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleSendClick();
+                }
+              }}
             />
 
             <button
@@ -405,7 +508,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
               <FiSend size={18} />
             </button>
             {showEmojiPicker && (
-              <div className="absolute bottom-[50px] left-0 z-50 max-w-[300px]">
+              <div className="absolute bottom-[50px] left-0 z-[9999] max-w-[300px]" style={{ pointerEvents: 'auto' }}>
                 <EmojiPicker
                   theme={Theme.DARK}
                   onEmojiClick={(e) => onInputChange(input + e.emoji)}

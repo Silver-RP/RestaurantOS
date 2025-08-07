@@ -63,3 +63,15 @@ export const getAllUserChats = async (): Promise<ChatSessionResponse[]> => {
 export const assignCashierSession = async (chatId: string): Promise<void> => {
   await axiosInstance.post(`/chat/${chatId}/assign`);
 };
+
+// Lấy số lượng tin nhắn chưa đọc của user/cashier
+export const getUnreadMessageCount = async (): Promise<number> => {
+  const { data } = await axiosInstance.get('/chat/unread-count');
+  console.log('getUnreadMessageCount response:', data);
+  
+  return data.unreadCount;
+};
+
+export const markMessageAsRead = async (chatId: string, messageId: string): Promise<void> => {
+  await axiosInstance.patch(`/chat/${chatId}/read`, { messageId });
+};

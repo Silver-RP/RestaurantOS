@@ -18,16 +18,19 @@ export const getAddressesByUserId = async (): Promise<Address[]> => {
   if (!response.data.success) {
     throw new Error('Lỗi khi lấy danh sách địa chỉ');
   }
-  
-  return response.data.data;
+  // Đảm bảo trả về đầy đủ các trường địa chỉ cho FE
+  return response.data.data.map((item) => ({
+    ...item,
+    full_display: `${item.street_address}, ${item.ward}, ${item.district}, ${item.province}`,
+  }));
 };
 
 export const createAddress = async (
   addressData: {
     full_name: string;
+    district: string;
     phone: string;
     province: string;
-    district: string;
     ward: string;
     street_address: string;
     address_type: 'HOME' | 'WORK' | 'OTHER';
@@ -44,6 +47,8 @@ export const createAddress = async (
   if (!response.data.success) {
     throw new Error('Tạo địa chỉ thất bại');
   }  
+  console.log('Địa chỉ đã được tạo thành công:', response.data.data);
+  
   return response.data.data;
 };
 
@@ -62,7 +67,8 @@ export const searchAddress = async (query: string): Promise<any[]> => {
       params: { q: query },
     }
   );
-
+  console.log('Kết quả tìm kiếm địa chỉ:', response.data);
+  
   return response.data; 
 };
 
@@ -74,4 +80,23 @@ export const deleteAddress = async (id: string) => {
 export const updateAddress = async (id: string, data: any) => {
   const res = await axiosInstance.put(`${BaseURLADDRESS}/address/update/${id}`, data);  
   return res.data;
+};
+
+export const getProvinces = async (): Promise<any[]> => {
+  const response = await axiosInstance.get(`${BaseURLADDRESS}/address/provinces`);
+  return response.data;
+};
+
+export const getDistrictsByProvinceCode = async (provinceCode: string): Promise<any[]> => {
+  const response = await axiosInstance.get(`${BaseURLADDRESS}/address/districts`, {
+    params: { provinceCode }
+  });
+  return response.data;
+};
+
+export const getWardsByDistrictCode = async (districtCode: string): Promise<any[]> => {
+  const response = await axiosInstance.get(`${BaseURLADDRESS}/address/wards`, {
+    params: { districtCode }
+  });
+  return response.data;
 };

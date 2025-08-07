@@ -174,7 +174,7 @@ const Register = () => {
           <InputComponent
             type="text"
             value={formData.username}
-            placeholder="Tên tài khoản"
+            placeholder="Tên người dùng"
             name="username"
             onChange={handleChange}
             ref={usernameRef}

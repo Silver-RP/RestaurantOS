@@ -9,4 +9,8 @@ router.delete('/:id', checkAddressOwner, AddressController.deleteAddress);
 router.put('/set-default/:id', checkAddressOwner, AddressController.setDefaultAddress);
 router.post('/create', AddressController.createAddress);
 router.get('/searchmap', addressSearchLimiter, AddressController.searchAddress);
+router.get('/provinces', AddressController.getProvinces);
+router.get('/districts', AddressController.getDistricts); 
+router.get('/wards', AddressController.getWards);   
+
 export default router;

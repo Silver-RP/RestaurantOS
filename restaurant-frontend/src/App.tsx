@@ -7,13 +7,11 @@ import 'react-confirm-alert/src/react-confirm-alert.css';
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthListener } from "@components/common/AuthListener";
-
 import ScrollToTop from "@components/common/ScrollToTop";
 import QuickViewModal from "@components/pages/menu/QuickViewModal";
 import AppRoutes from "./routers/index";
 import AuthInitializer from "./utils/AuthInitializer";
 import SearchModal from "@components/common/SearchModal";
-
 import ToastSwitcher from "@components/common/ToastSwitcher";
 import FullScreenOverlayLoading from "./components/common/FullScreenOverlayLoading";
 import GlobalReservationModal from "./components/common/modals/GlobalReservationModal";

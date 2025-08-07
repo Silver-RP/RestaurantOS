@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import AuthController from '../controller/AuthController';
 import GoogleAuthMiddleWare from '../middleware/GoogleAuthMiddleWare';
-import { loginSchema, registerSchema } from '../schemas/auth.schema';
+import { loginSchema, registerSchema } from '../validators/authValidator';
 import { validateRequest } from '../middleware/ValidateRequest';
 import AuthMiddleWare from '../middleware/AuthMiddleWare';
 import { changePasswordSchema } from '../validators/changePwProfileValidator';

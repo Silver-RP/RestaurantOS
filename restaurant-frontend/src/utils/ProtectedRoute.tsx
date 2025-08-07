@@ -13,6 +13,8 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   const location = useLocation();
 
   const userInfoString = Cookies.get('userInfo');
+  console.log('userInfoString:', userInfoString);
+  
   const userInfo = userInfoString ? JSON.parse(userInfoString) : null;
 
   if (!userInfo) {

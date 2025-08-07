@@ -185,7 +185,7 @@ app.use('/api/chat', AuthMiddleWare.verifyToken, ChatRoutes);
 app.use('/api/ingredients', AuthMiddleWare.verifyToken, IngredientsRouter);
 app.use('/api/inventory', AuthMiddleWare.verifyToken, InventoryRoutes);
 app.use('/api/voucher', VoucherRoutes);
-app.use('/api/faq', AuthMiddleWare.verifyToken, FaqRoutes);
+app.use('/api/faq', FaqRoutes);
 app.use('/api/contact', ContactRoutes);
 
 app.use('/api/sidebar', SidebarRoutes);

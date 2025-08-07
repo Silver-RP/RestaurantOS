@@ -1,42 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { searchAddress } from '@/api/AddressApi';
+import { AddressInputProps } from '@/types/Address.type';
+import { AddressData } from '@/types/Address.type';
 
-export interface AddressInputProps {
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onSelectLocation: (lat: number, lon: number, address: string) => void;
-  district: string;
-  ward: string;
-  province: string;
-}
 
-interface AddressData {
-  lat: string;
-  lon: string;
-  display_name: string;
-  address: {
-    suburb?: string;
-    village?: string;
-    city_district?: string;
-    county?: string;
-    state_district?: string;
-    region?: string;
-    city?: string;
-  };
-}
-
-// 🧠 Hàm format địa chỉ để tránh undefined
 const formatAddress = (item: AddressData): string => {
-  const ward = item.address.suburb || item.address.village || '';
+  const address = item.address || {};
+  const ward = address.suburb || address.village || '';
   const district =
-    item.address.city_district ||
-    item.address.county ||
-    item.address.state_district ||
-    item.address.region ||
+    address.city_district ||
+    address.county ||
+    address.state ||
+    address.city ||
+    address.country ||
+    address.country_code ||
     '';
-  const base = item.display_name.split(', Thành phố Hồ Chí Minh')[0];
+  const base = typeof item.display_name === 'string' ? item.display_name.split(', Thành phố Hồ Chí Minh')[0] : '';
 
-  return `${base}${ward ? `, Phường ${ward}` : ''}${district ? `, Quận ${district}` : ''}, TP. Hồ Chí Minh`;
+  return `${base}${ward ? `, Phường ${ward}` : ''}, TP. Hồ Chí Minh`;
 };
 
 export const AddressInput: React.FC<AddressInputProps> = ({
@@ -63,7 +44,7 @@ export const AddressInput: React.FC<AddressInputProps> = ({
           const data: AddressData[] = await searchAddress(`${query}, Hồ Chí Minh`);
           setSuggestions(data);
         } catch (err) {
-          console.error('❌ Fetch address error:', err);
+          console.error('Fetch address error:', err);
         }
       };
 

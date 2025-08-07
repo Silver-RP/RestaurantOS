@@ -27,7 +27,7 @@ export const MapDisplay: React.FC<MapDisplayProps> = ({
         attribution: '© OpenStreetMap contributors',
       }).addTo(mapRef.current);
 
-      // ✅ Cho phép click để chọn vị trí
+      // Cho phép click để chọn vị trí
       mapRef.current.on('click', (e: L.LeafletMouseEvent) => {
         const { lat, lng } = e.latlng;
         if (onLocationSelect) {
