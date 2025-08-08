@@ -2,9 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useReview } from '@/hooks/useReview';
 import { IReview } from '@/types/Review.types';
-import { FaStar, FaHeadset, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import {
+  FaStar,
+  FaHeadset,
+  FaChevronLeft,
+  FaChevronRight,
+} from 'react-icons/fa';
 import { toast } from 'react-toastify';
-import BreadCrumbComponents from '@/components/common/BreadCrumbComponents';
 import Container from '@/components/common/Container';
 import ProfileSidebar from './ProfileSidebar';
 
@@ -61,7 +65,6 @@ const UserReviews: React.FC = () => {
 
   return (
     <div className="flex flex-col bg-bodyBackground text-white font-sans">
-      <BreadCrumbComponents />
       <Container className="flex gap-6 py-10">
         <div className="w-1/3 hidden md:block">
           <ProfileSidebar />
@@ -82,7 +85,8 @@ const UserReviews: React.FC = () => {
                   Cần hỗ trợ?
                 </h3>
                 <p className="text-sm text-gray-300 mb-3">
-                  Nếu bạn có bất kỳ ý kiến nào hoặc cần hỗ trợ, vui lòng liên hệ với chúng tôi.
+                  Nếu bạn có bất kỳ ý kiến nào hoặc cần hỗ trợ, vui lòng liên hệ
+                  với chúng tôi.
                 </p>
                 <button
                   onClick={handleContactSupport}
@@ -118,40 +122,50 @@ const UserReviews: React.FC = () => {
                     key={review._id}
                     className="border border-[#FFE0A0] rounded-lg p-6 hover:bg-[#FFE0A0]/5 transition-colors cursor-pointer"
                     onClick={() => {
-                      if (review.productId && typeof review.productId === 'object' && review.productId.slug) {
+                      if (
+                        review.productId &&
+                        typeof review.productId === 'object' &&
+                        review.productId.slug
+                      ) {
                         navigate(`/foods/${review.productId.slug}?review=true`);
                       }
                     }}
                   >
                     <div className="flex items-start gap-4">
                       {/* Hình ảnh sản phẩm */}
-                      {review.productId && typeof review.productId === 'object' && review.productId.images && review.productId.images[0] && (
-                        <img
-                          src={review.productId.images[0]}
-                          alt={review.productId.name}
-                          className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = '/placeholder-image.jpg';
-                          }}
-                        />
-                      )}
-                      
+                      {review.productId &&
+                        typeof review.productId === 'object' &&
+                        review.productId.images &&
+                        review.productId.images[0] && (
+                          <img
+                            src={review.productId.images[0]}
+                            alt={review.productId.name}
+                            className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src = '/placeholder-image.jpg';
+                            }}
+                          />
+                        )}
+
                       <div className="flex-1 min-w-0">
                         {/* Tên sản phẩm */}
-                        {review.productId && typeof review.productId === 'object' && (
-                          <h4 className="font-semibold text-white mb-2 hover:text-[#FFE0A0] transition-colors">
-                            {review.productId.name || 'Sản phẩm'}
-                          </h4>
-                        )}
-                        
+                        {review.productId &&
+                          typeof review.productId === 'object' && (
+                            <h4 className="font-semibold text-white mb-2 hover:text-[#FFE0A0] transition-colors">
+                              {review.productId.name || 'Sản phẩm'}
+                            </h4>
+                          )}
+
                         {/* Đánh giá sao và ngày */}
                         <div className="flex items-center gap-3 mb-3">
                           <div className="flex">
                             {renderStars(review.rating)}
                           </div>
                           <span className="text-sm text-gray-400">
-                            {new Date(review.createdAt || '').toLocaleDateString('vi-VN')}
+                            {new Date(
+                              review.createdAt || '',
+                            ).toLocaleDateString('vi-VN')}
                           </span>
                           {review.isVerifiedPurchase && (
                             <span className="inline-block bg-green-600 text-white text-xs px-2 py-1 rounded">
@@ -159,9 +173,11 @@ const UserReviews: React.FC = () => {
                             </span>
                           )}
                         </div>
-                        
+
                         {/* Nội dung đánh giá */}
-                        <p className="text-gray-300 leading-relaxed">{review.comment}</p>
+                        <p className="text-gray-300 leading-relaxed">
+                          {review.comment}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -183,19 +199,21 @@ const UserReviews: React.FC = () => {
                         <FaChevronLeft />
                       </button>
 
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                        <button
-                          key={page}
-                          onClick={() => paginate(page)}
-                          className={`px-3 py-2 rounded ${
-                            currentPage === page
-                              ? 'bg-[#FFE0A0] text-black'
-                              : 'bg-gray-700 text-white hover:bg-gray-600'
-                          }`}
-                        >
-                          {page}
-                        </button>
-                      ))}
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                        (page) => (
+                          <button
+                            key={page}
+                            onClick={() => paginate(page)}
+                            className={`px-3 py-2 rounded ${
+                              currentPage === page
+                                ? 'bg-[#FFE0A0] text-black'
+                                : 'bg-gray-700 text-white hover:bg-gray-600'
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        ),
+                      )}
 
                       <button
                         onClick={() => paginate(currentPage + 1)}
@@ -220,4 +238,4 @@ const UserReviews: React.FC = () => {
   );
 };
 
-export default UserReviews; 
+export default UserReviews;
