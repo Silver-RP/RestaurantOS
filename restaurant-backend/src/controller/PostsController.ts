@@ -10,8 +10,9 @@ class PostsController {
       const sortBy = req.query.sortBy as string || 'createdAt';
       const sortOrder = req.query.sortOrder as 'asc' | 'desc' || 'desc';
       const status = req.query.status as string || undefined;
+      const categoryId = req.query.categoryId as string || undefined;
 
-      const posts = await PostsService.getAllPosts(page, limit, search, sortBy, sortOrder, status);
+      const posts = await PostsService.getAllPosts(page, limit, search, sortBy, sortOrder, status, categoryId);
       res.status(200).json({
         success: true,
         ...posts
@@ -70,7 +71,7 @@ class PostsController {
     try {
       const { id } = req.params;
       const userId = (req.user as any).id?.toString();
-      
+
       // Validate required fields
       const { title, desc, content, categories_id } = req.body;
       if (!title && !desc && !content && !categories_id) {
@@ -79,7 +80,7 @@ class PostsController {
           message: 'Cần ít nhất một trường để cập nhật'
         });
       }
-      
+
       const post = await PostsService.updatePost(id, req, userId);
       res.status(200).json({
         success: true,
@@ -98,7 +99,7 @@ class PostsController {
     try {
       const { id } = req.params;
       const userId = (req.user as any).id?.toString();
-      
+
       await PostsService.deletePost(id, userId);
       res.status(200).json({
         success: true,
@@ -117,7 +118,7 @@ class PostsController {
     try {
       const { id } = req.params;
       const post = await PostsService.incrementPostViews(id);
-      
+
       res.status(200).json({
         success: true,
         data: post
@@ -143,7 +144,7 @@ class PostsController {
       }
 
       const result = await PostsService.toggleLike(id, userId);
-      
+
       res.status(200).json({
         success: true,
         ...result
@@ -169,7 +170,7 @@ class PostsController {
       }
 
       const result = await PostsService.checkUserLiked(id, userId);
-      
+
       res.status(200).json({
         success: true,
         ...result
@@ -187,11 +188,24 @@ class PostsController {
       const { tag } = req.params;
       const page = Number(req.query.page) || 1;
       const limit = Number(req.query.limit) || 10;
-      const posts = await PostsService.getPostsByTag(tag, page, limit);
+      const search = (req.query.search as string) || '';
+      const posts = await PostsService.getPostsByTag(tag, page, limit, search);
       res.status(200).json({
         success: true,
         ...posts
       });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error instanceof Error ? error.message : 'Lỗi server'
+      });
+    }
+  }
+
+  async getAllTags(req: Request, res: Response) {
+    try {
+      const tags = await PostsService.getAllTags();
+      res.status(200).json({ success: true, data: tags });
     } catch (error) {
       res.status(500).json({
         success: false,

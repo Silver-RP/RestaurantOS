@@ -20,6 +20,7 @@ export interface PostsQueryParams {
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
   status?: string; // Thêm status để truyền filter bài viết
+  categoryId?: string; // Lọc theo danh mục
 }
 
 const PostsApi = {
@@ -76,10 +77,15 @@ const PostsApi = {
     return response.data;
   },
 
-  getPostsByTag: async (tag: string): Promise<PostsResponse> => {
-    const response = await api.get(`/posts/by-tag/${encodeURIComponent(tag)}`);
+  getPostsByTag: async (tag: string, params?: { page?: number; limit?: number; search?: string }): Promise<PostsResponse> => {
+    const response = await api.get(`/posts/by-tag/${encodeURIComponent(tag)}`, { params });
     return response.data;
   }
+};
+
+export const getAllTags = async (): Promise<string[]> => {
+  const response = await api.get('/posts/tags/all');
+  return response.data?.data ?? [];
 };
 
 export default PostsApi;
