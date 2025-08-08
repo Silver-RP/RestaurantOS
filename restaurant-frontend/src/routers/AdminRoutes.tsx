@@ -38,7 +38,9 @@ import CreateVoucherPage from '../components/pages/admin/voucher/Create';
 import EditVoucherPage from '../components/pages/admin/voucher/Edit';
 import TrashVoucherPage from '../components/pages/admin/voucher/Trash';
 import AdminLoginPage from '@/components/pages/admin/login/Index';
-import LoyaltyAdmin from '@/components/pages/admin/loyalty';import ChatAdminPanel from "../components/pages/admin/chatbox/ChatAdminPanel";
+import LoyaltyAdmin from '@/components/pages/admin/loyalty';
+import ChatAdminPanel from "../components/pages/admin/chatbox/ChatAdminPanel";
+import ContactPage from "../components/pages/admin/contact";
 
 
 const adminRoutes = [
@@ -64,6 +66,7 @@ const adminRoutes = [
       { path: 'foods/search', element: <SearchResults /> },
       { path: 'categories', element: <CategoriesPage /> },
       { path: 'orders', element: <OrderPage /> },
+      { path: 'contact', element: <ContactPage /> },
       { path: 'reservations', element: <OrderTable /> },
       { path: 'tables', element: <OrderTableResevation /> },
       { path: 'categories/create', element: <CreateCategoryPage /> },

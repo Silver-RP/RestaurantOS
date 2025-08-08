@@ -14,7 +14,7 @@ const statusMap: Record<string, string> = {
 const UserVoucherList: React.FC = () => {
   const { data, isLoading } = useUserVouchers();
   const vouchers: UserVoucherDisplay[] = Array.isArray(data)
-    ? (data as UserVoucherDisplay[])
+    ? (data as unknown as UserVoucherDisplay[])
     : [];
 
   return (

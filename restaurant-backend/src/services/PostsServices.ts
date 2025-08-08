@@ -2,14 +2,21 @@ import { Post } from '../models/PostsModel';
 import mongoose from 'mongoose';
 import cloudinary from '../config/cloudinary';
 import streamifier from 'streamifier';
-import { IUser } from '../models/UserModel';
 import { Request } from 'express';
 import AuthMiddleWare from '../middleware/AuthMiddleWare';
 import { Types } from 'mongoose';
 import UploadImageService from '../services/UploadImageService';
 
 class PostsService {
-  async getAllPosts(page = 1, limit = 10, search = '', sortBy = 'createdAt', sortOrder: 'asc' | 'desc' = 'desc', status?: string) {
+  async getAllPosts(
+    page = 1,
+    limit = 10,
+    search = '',
+    sortBy = 'createdAt',
+    sortOrder: 'asc' | 'desc' = 'desc',
+    status?: string,
+    categoryId?: string,
+  ) {
     try {
       const query: any = {};
 
@@ -24,6 +31,11 @@ class PostsService {
       // Add status filter
       if (status) {
         query.status = status;
+      }
+
+      // Add category filter
+      if (categoryId && mongoose.Types.ObjectId.isValid(categoryId)) {
+        query.categories_id = new mongoose.Types.ObjectId(categoryId);
       }
 
       const skip = (page - 1) * limit;
@@ -410,8 +422,14 @@ class PostsService {
     }
   }
 
-  async getPostsByTag(tag: string, page = 1, limit = 10) {
-    const query = { tags: { $in: [tag] } };
+  async getPostsByTag(tag: string, page = 1, limit = 10, search = '') {
+    const query: any = { tags: { $in: [tag] } };
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { desc: { $regex: search, $options: 'i' } }
+      ];
+    }
     const skip = (page - 1) * limit;
     const totalDocs = await Post.countDocuments(query);
     const totalPages = Math.ceil(totalDocs / limit);
@@ -434,6 +452,24 @@ class PostsService {
       prevPage: page > 1 ? page - 1 : null,
       nextPage: page < totalPages ? page + 1 : null
     };
+  }
+
+  async getAllTags() {
+    try {
+      const tags: string[] = await Post.distinct('tags', { tags: { $exists: true, $ne: [] } });
+      // Normalize and filter empty values
+      const uniqueTags = Array.from(
+        new Set(
+          tags
+            .filter(Boolean)
+            .map((t) => (typeof t === 'string' ? t.trim() : ''))
+            .filter((t) => t.length > 0)
+        )
+      ).sort((a, b) => a.localeCompare(b, 'vi'));
+      return uniqueTags;
+    } catch (error) {
+      throw error;
+    }
   }
 
   async publishScheduledPosts() {
