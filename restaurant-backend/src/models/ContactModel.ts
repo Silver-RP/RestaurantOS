@@ -8,6 +8,7 @@ export interface IContact extends Document {
   user?: mongoose.Schema.Types.ObjectId | null;
   createdAt: Date;
   phone: string;
+  status: 'NEW' | 'PROCESSED';
 }
 
 const contactSchema = new mongoose.Schema<IContact>(
@@ -18,6 +19,7 @@ const contactSchema = new mongoose.Schema<IContact>(
     message: { type: String, required: true },
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     phone: { type: String, required: true },
+    status: { type: String, enum: ['NEW', 'PROCESSED'], default: 'NEW' },
   },
   { timestamps: { createdAt: true, updatedAt: false } },
 );

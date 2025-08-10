@@ -89,7 +89,7 @@ const ProductCardList: React.FC<ProductCardProps> = ({
 
   const handleQuickView = (e: React.MouseEvent) => {
     e.stopPropagation();
-    dispatch(openQuickView(productDetail));
+    dispatch(openQuickView({ product: productDetail }));
   };
 
   const handleAddToFavorite = (e: React.MouseEvent) => {

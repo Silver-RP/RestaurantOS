@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import PostsApi, { PostsResponse, PostsQueryParams } from '../api/PostsApi';
 import { toast } from 'react-toastify';
 import { useSearchParams } from 'react-router-dom';
+import { PostType } from '../types/PostType';
 
 export const POSTS_QUERY_KEY = ['posts'];
 
@@ -14,6 +15,7 @@ export const usePosts = () => {
   const search = searchParams.get('search') || '';
   const sortBy = searchParams.get('sortBy') || 'createdAt';
   const sortOrder = searchParams.get('sortOrder') || 'desc';
+  const categoryId = searchParams.get('categoryId') || undefined;
 
   const queryParams: PostsQueryParams = {
     page,
@@ -22,6 +24,7 @@ export const usePosts = () => {
     sortBy,
     sortOrder: sortOrder as 'asc' | 'desc',
     status: 'published', // Luôn lấy bài đã xuất bản
+    categoryId,
   };
 
   const { data, isLoading: isLoadingPosts, error } = useQuery({
@@ -48,9 +51,9 @@ export const usePosts = () => {
       console.error('Failed to create post:', error);
     },
   });
-  
+
   const { mutate: updatePost, isPending: isUpdating } = useMutation({
-    mutationFn: ({ id, formData }: { id: string; formData: FormData }) => 
+    mutationFn: ({ id, formData }: { id: string; formData: FormData }) =>
       PostsApi.updatePost(id, formData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: POSTS_QUERY_KEY });
@@ -108,7 +111,7 @@ export const usePostById = (id: string) => {
     onSuccess: (response) => {
       // Cập nhật cache với dữ liệu mới
       queryClient.setQueryData(['post-like', id], response);
-      
+
       // Cập nhật số lượt like trong bài viết
       const currentPost = queryClient.getQueryData<PostType>(['post', id]);
       if (currentPost) {

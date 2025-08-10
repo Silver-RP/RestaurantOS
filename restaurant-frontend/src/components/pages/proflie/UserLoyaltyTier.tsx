@@ -168,7 +168,7 @@ const UserLoyaltyTier: React.FC = () => {
           <span className="block text-xs text-gray-400">Quyền lợi</span>
           <span className="text-sm text-white">{info.current_tier?.benefits ?? '---'}</span>
         </div>
-        <div>
+        <div className="ml-5">
           {milestones.length > 0 && (
             <FaGift className="text-yellow-400 cursor-pointer text-4xl" title="Xem mốc quà tặng" onClick={handleOpenMilestoneModal} />
           )}
@@ -190,13 +190,10 @@ const UserLoyaltyTier: React.FC = () => {
         </div>
       )}
       {nextTier && (
-        <div className="mt-2 text-xs text-gray-300">
+        <div className="mt-2 text-xs text-yellow-300">
           Còn {(nextTier.min_spent - currentSpent).toLocaleString()}đ để lên hạng <b>{getTierNameVN(nextTier.tier_name)}</b>
         </div>
       )}
-           <div className="mt-2 text-xs text-yellow-300">
-        <b>Lưu ý:</b> Mỗi năm, hạng thành viên sẽ được reset lại dựa trên tổng chi tiêu của năm đó. Bạn cần chi tiêu lại để duy trì hoặc nâng hạng.
-      </div>
       {/* Modal mốc quà tặng */}
       {showMilestoneModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">

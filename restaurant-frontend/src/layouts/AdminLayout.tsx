@@ -12,6 +12,7 @@ import {
   FaImage,
   FaTicketAlt,
   FaCrown,
+  FaEnvelope,
 } from 'react-icons/fa';
 import { GiHotMeal, GiWheat } from 'react-icons/gi';
 import { FaCalendarAlt } from 'react-icons/fa';
@@ -192,6 +193,16 @@ const AdminLayout: React.FC = () => {
               expanded={isSidebarOpen}
               currentPath={location.pathname}
             />
+
+            <NavItem
+              href="/admin/contact"
+              icon={<FaEnvelope />}
+              label="Liên hệ"
+              expanded={isSidebarOpen}
+              currentPath={location.pathname}
+            />
+
+
           </nav>
         </div>
        

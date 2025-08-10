@@ -1,7 +1,6 @@
 import React from 'react';
 import { useUserVouchers } from '@/hooks/useVouchers';
 import { UserVoucherDisplay } from '@/types/Voucher.type';
-import BreadCrumbComponents from '@/components/common/BreadCrumbComponents';
 import Container from '@/components/common/Container';
 import ProfileSidebar from '@/components/pages/proflie/ProfileSidebar';
 
@@ -15,12 +14,11 @@ const statusMap: Record<string, string> = {
 const UserVoucherList: React.FC = () => {
   const { data, isLoading } = useUserVouchers();
   const vouchers: UserVoucherDisplay[] = Array.isArray(data)
-    ? (data as UserVoucherDisplay[])
+    ? (data as unknown as UserVoucherDisplay[])
     : [];
 
   return (
     <div className="flex flex-col bg-bodyBackground text-white font-sans">
-      <BreadCrumbComponents />
       <Container className="flex gap-6 py-10">
         <div className="w-1/3 hidden md:block">
           <ProfileSidebar />

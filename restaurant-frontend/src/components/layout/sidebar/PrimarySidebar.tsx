@@ -1,5 +1,4 @@
 import React from 'react';
-import { useAdminChatbox } from '@/hooks/useAdminChatbox';
 import {
   FaHome,
   FaUtensils,
@@ -37,7 +36,6 @@ type MenuItemAction = {
 type MenuItem = MenuItemLink | MenuItemAction;
 
 const PrimarySidebar: React.FC<PrimarySidebarProps> = ({ toggleSidebar }) => {
-  const { totalUnreadCount } = useAdminChatbox();
   const location = useLocation();
 
   const menuItemsMain = [

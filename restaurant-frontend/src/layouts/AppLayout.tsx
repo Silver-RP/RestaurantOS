@@ -22,6 +22,7 @@ const LayoutContent: React.FC = () => {
     '/reset-password',
     '/verify-otp',
     '/forgot-password',
+    '/verify-otp-email',
   ];
   const isNoMarginTop = noMarginTopPaths.includes(location.pathname);
   const currentUser = useSelector((state: RootState) => state.user.user);
