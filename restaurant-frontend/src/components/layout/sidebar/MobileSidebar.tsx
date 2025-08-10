@@ -4,7 +4,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import ButtonComponents from '../../common/ButtonComponents';
 import NavExtend from './NavExtend';
 import { BsPersonCheck } from 'react-icons/bs';
-import Cookies from 'js-cookie';
 import { motion } from 'framer-motion';
 import { useGetCart } from '@/hooks/useCart';
 import { useSelector, useDispatch } from 'react-redux';
@@ -15,9 +14,7 @@ interface MobileSidebarProps {
   toggleSidebar: () => void;
   isOpen: boolean;
 }
-
-const userInfo = Cookies.get('userInfo');
-const user = userInfo ? JSON.parse(userInfo) : null;
+const user = useSelector((state: RootState) => state.auth.userInfo);
 
 const MobileSidebar: React.FC<MobileSidebarProps> = ({
   toggleSidebar,

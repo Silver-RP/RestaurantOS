@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useGetCart } from '@/hooks/useCart';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
-import Cookies from 'js-cookie';
 import {
   FiUser,
   FiShoppingCart,
@@ -54,8 +53,7 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
   const fontSize = windowHeight <= 600 ? 'text-sm' : 'text-base';
   const iconSize = windowHeight <= 600 ? 'text-xl' : 'text-2xl';
 
-  const userInfo = Cookies.get('userInfo');
-  const user = userInfo ? JSON.parse(userInfo) : null;
+  const user = useSelector((state: RootState) => state.auth.userInfo);
 
   return (
     <div
