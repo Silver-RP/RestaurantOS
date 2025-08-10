@@ -11,26 +11,28 @@ import {
   FiMoreVertical,
 } from 'react-icons/fi';
 import { BsChatDots } from 'react-icons/bs';
-import { ReactMic } from 'react-mic';
+// import { ReactMic } from 'react-mic';
 import { useAdminChatbox } from '@/hooks/useAdminChatbox';
 import { EmojiButton } from '@joeattardi/emoji-button';
 import { socket } from '@/utils/socket';
-import { ChatMessage } from '@/types/Chatbox.type';
+import { ChatMessage, ChatSessionResponse } from '@/types/Chatbox.type';
 
-type User = {
-  _id: string;
-  username: string;
-  isOnline?: boolean;
+// Helpers cho kiểu user có thể là string hoặc object
+const getUserObj = (u: unknown): { _id?: string; username?: string; isOnline?: boolean } | null => {
+  return typeof u === 'object' && u !== null ? (u as { _id?: string; username?: string; isOnline?: boolean }) : null;
 };
+// const getUserId = (u: unknown): string => getUserObj(u)?._id ?? String(u ?? '');
+const getUserName = (u: unknown): string => getUserObj(u)?.username ?? `User ${String(u ?? '').slice(-4)}`;
+const getUserOnline = (u: unknown): boolean => Boolean(getUserObj(u)?.isOnline);
 
-type ChatSession = {
-  _id: string;
-  user_id: User;
-  unreadCount?: number;
-  lastMessage?: string;
-  lastMessageTime?: string;
-  cashier_user_id?: string;
-};
+// type ChatSession = {
+//   _id: string;
+//   user_id: User;
+//   unreadCount?: number;
+//   lastMessage?: string;
+//   lastMessageTime?: string;
+//   cashier_user_id?: string;
+// };
 const ChatAdminPanel: React.FC = () => {
   const {
     sessions,
@@ -50,9 +52,8 @@ const ChatAdminPanel: React.FC = () => {
   const [search, setSearch] = useState('');
   const [filterUnread, setFilterUnread] = useState<'all' | 'read' | 'unread'>('all');
   const [recording, setRecording] = useState(false);
-  const [filteredSessions, setFilteredSessions] = useState(sessions);
-  const [reactionPicker, setReactionPicker] = useState<number | null>(null);
-  const [messageReactions, setMessageReactions] = useState<{ [key: number]: string }>({});
+  const [filteredSessions, setFilteredSessions] = useState<ChatSessionResponse[]>(sessions as ChatSessionResponse[]);
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
   const emojiButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -69,10 +70,7 @@ const ChatAdminPanel: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    let filtered = sessions.filter((s) => {
-      const username = typeof s.user_id === 'string' ? s.user_id : s.user_id?.username || '';
-      return username.toLowerCase().includes(search.toLowerCase());
-    });
+    let filtered = (sessions as ChatSessionResponse[]).filter((s) => getUserName(s.user_id).toLowerCase().includes(search.toLowerCase()));
     if (filterUnread === 'unread') {
       filtered = filtered.filter((s) => (s.unreadCount ?? 0) > 0);
     } else if (filterUnread === 'read') {
@@ -100,7 +98,6 @@ const ChatAdminPanel: React.FC = () => {
   };
 
   const handleReaction = (emoji: string, idx: number) => {
-    setMessageReactions((prev) => ({ ...prev, [idx]: emoji }));
     handleReactionSaveToServer(messages[idx]._id, emoji);
   };
 
@@ -124,7 +121,7 @@ const ChatAdminPanel: React.FC = () => {
 
 
   const showReactionPicker = (idx: number) => {
-    const picker = new EmojiButton({ position: 'bottom-end', theme: 'light' });
+    const picker = new EmojiButton({ position: 'top', theme: 'light' });
     picker.on('emoji', (selection) => {
       handleReaction(selection.emoji, idx);
     });
@@ -132,8 +129,8 @@ const ChatAdminPanel: React.FC = () => {
   };
 
   return (
-    <div className="flex h-[600px] border border-gray-200 rounded-xl shadow overflow-hidden bg-[#f7f9fc]">
-      <div className="w-72 border-r p-4 flex flex-col bg-white">
+    <div className="flex h-[640px] border border-gray-200 rounded-2xl shadow-lg overflow-hidden bg-[#f7f9fc]">
+      <div className="w-80 border-r p-4 flex flex-col bg-white">
         <div className="flex items-center gap-2 mb-3 px-3 py-2 bg-white border border-gray-300 focus-within:ring-2 focus-within:ring-blue-400 shadow-sm transition-all">
           <FiSearch className="text-gray-500" />
           <input
@@ -146,7 +143,7 @@ const ChatAdminPanel: React.FC = () => {
         <div className="relative w-full mb-4">
           <select
             value={filterUnread}
-            onChange={(e) => setFilterUnread(e.target.value as any)}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilterUnread(e.target.value as 'all' | 'read' | 'unread')}
             className="w-full appearance-none px-3 py-2 pr-10 border border-gray-300 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
           >
             <option value="all">Tất cả</option>
@@ -162,9 +159,11 @@ const ChatAdminPanel: React.FC = () => {
             <div className="text-center text-sm text-gray-400 mt-6">No chats available</div>
           ) : (
             filteredSessions
-              .filter(s => s.user_id) // Lọc ra những chat có user_id
-              .map((s) => {
-              const lastMsg = s.lastMessage || 'Không có tin nhắn nào';
+              .filter((s) => s.user_id)
+              .map((s: ChatSessionResponse) => {
+              const lastMsg: string = s.lastMessage
+                ? (typeof s.lastMessage === 'string' ? s.lastMessage : (s.lastMessage as ChatMessage).content)
+                : 'Không có tin nhắn nào';
               const lastDate = s.lastMessageTime
                 ? new Date(s.lastMessageTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                 : '';
@@ -172,19 +171,17 @@ const ChatAdminPanel: React.FC = () => {
               return (
                 <div
                   key={s._id}
-                  onClick={() => s.user_id?._id && selectChat(s.user_id._id)}
+                  onClick={() => selectChat(typeof s.user_id === 'string' ? s.user_id : String((getUserObj(s.user_id)?._id) || ''))}
                   className={`relative flex gap-3 items-center p-2 rounded-lg cursor-pointer transition-all duration-150 ${currentChat?._id === s._id ? 'bg-[#dce9fa]' : 'hover:bg-[#f0f3f7]'
                     }`}
                 >
                   {/* Avatar + Status Dot */}
                   <div className="relative w-10 h-10">
                     <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-white text-sm font-semibold">
-                      {typeof s.user_id === 'object' && s.user_id.username
-                        ? s.user_id.username.charAt(0).toUpperCase()
-                        : ''}
+                      {getUserName(s.user_id).charAt(0).toUpperCase()}
                     </div>
                     <span
-                      className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${typeof s.user_id === 'object' && s.user_id?.isOnline ? 'bg-green-400' : 'bg-red-500'
+                      className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${getUserOnline(s.user_id) ? 'bg-green-400' : 'bg-red-500'
                         }`}
                     />
                   </div>
@@ -192,16 +189,10 @@ const ChatAdminPanel: React.FC = () => {
                   {/* Nội dung chat */}
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-center">
-                      <div className="truncate text-sm text-gray-800 font-medium">
-                        {typeof s.user_id === 'object' && s.user_id.username
-                          ? s.user_id.username
-                          : ''}
-                      </div>
-                      <div className="text-[10px] text-gray-400 ml-2 whitespace-nowrap">
-                        {lastDate}
-                      </div>
+                      <div className="truncate text-sm text-gray-800 font-medium">{getUserName(s.user_id)}</div>
+                  <div className="text-[10px] text-gray-400 ml-2 whitespace-nowrap">{lastDate}</div>
                     </div>
-                    <div className="truncate text-xs text-gray-500">{lastMsg}</div>
+                     <div className="truncate text-xs text-gray-500">{lastMsg}</div>
                   </div>
 
                   {/* Badge unread */}
@@ -219,9 +210,9 @@ const ChatAdminPanel: React.FC = () => {
       </div>
 
       <div className="flex-1 flex flex-col bg-white relative">
-        <div className="flex items-center justify-between bg-white px-5 py-3 border-b relative">
+        <div className="flex items-center justify-between bg-white/90 backdrop-blur px-5 py-3 border-b relative">
           <h4 className="font-semibold text-gray-800">
-            {currentChat ? `Trò chuyện cùng: ${currentChat.user_id.username}` : 'Chọn một phiên trò chuyện'}
+            {currentChat ? `Trò chuyện cùng: ${getUserName(currentChat.user_id)}` : 'Chọn một phiên trò chuyện'}
           </h4>
           <button onClick={() => setMenuOpen(!menuOpen)} className="text-gray-500 hover:text-gray-900">
             <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -260,17 +251,19 @@ const ChatAdminPanel: React.FC = () => {
             <div className="flex-1 overflow-y-auto px-6 py-4 text-sm">
               <div className="flex flex-col gap-y-2">
                 {messages.map((m, idx) => {
-                  const isMine = m.sender_id === currentChat?.cashier_user_id;
-                  const emoji = messageReactions[idx];
+                   const isMine = m.sender_id === currentChat?.cashier_user_id;
                   return (
-                    <div className="flex items-end gap-2" key={idx}>
-                      {!isMine && (
+                    <div className="flex items-end gap-2" key={idx}
+                      onMouseEnter={() => setHoveredIdx(idx)}
+                      onMouseLeave={() => setHoveredIdx((prev) => (prev === idx ? null : prev))}
+                    >
+                      {!isMine && currentChat && (
                         <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-white text-xs font-bold">
-                          {(currentChat?.user_id.username || 'U')?.charAt(0).toUpperCase()}
+                          {getUserName(currentChat.user_id).charAt(0).toUpperCase()}
                         </div>
                       )}
                       <div
-                        className={`relative group inline-block px-4 py-2 rounded-2xl shadow-md whitespace-pre-wrap break-words max-w-[80%] ${isMine
+                        className={`relative group inline-block ${isMine ? 'px-4 py-2' : 'px-3 py-2'} rounded-2xl shadow-md whitespace-pre-wrap break-words max-w-[80%] ${isMine
                           ? 'ml-auto bg-[#3B82F6] text-white hover:bg-[#2563EB]'
                           : 'mr-auto bg-gray-100 text-gray-900'
                           }`}
@@ -278,7 +271,7 @@ const ChatAdminPanel: React.FC = () => {
                         {m.reply_to && typeof m.reply_to === 'object' && (
                           <div className={`mb-1 p-2 rounded bg-white border-l-4 ${isMine ? 'border-blue-300' : 'border-gray-300'} text-sm`}>
                             <div className="font-semibold text-gray-800 text-xs">
-                              {m.reply_to.sender_id === currentChat?.cashier_user_id ? 'Bạn' : currentChat?.user_id.username}
+                          {m.reply_to.sender_id === currentChat?.cashier_user_id ? 'Bạn' : getUserName(currentChat?.user_id as unknown)}
                             </div>
                             <div className="text-gray-600 text-sm truncate">{m.reply_to.content}</div>
                           </div>
@@ -290,12 +283,19 @@ const ChatAdminPanel: React.FC = () => {
                           </span>
                         </div>
 
-                        {emoji && (
-                          <div className="absolute bottom-[-12px] right-[-6px] text-xl">{emoji}</div>
+                        {/* Reactions summary (gom nhóm) */}
+                        {m.reactions && m.reactions.length > 0 && (
+                          <div className={`absolute bottom-[-14px] ${isMine ? 'right-[-6px]' : 'left-[-6px]'} bg-white rounded-full border border-gray-200 shadow px-1.5 py-[2px] text-[12px] flex items-center gap-1`}
+                          >
+                            {[...new Map((m.reactions ?? []).map((r: { emoji: string }) => [r.emoji, true])).keys()].slice(0,5).map((emoji, i) => (
+                              <span key={i}>{emoji}</span>
+                            ))}
+                            <span className="text-gray-500">{(m.reactions ?? []).length}</span>
+                          </div>
                         )}
 
                         <div
-                          className={`absolute top-1/2 -translate-y-1/2 z-20 hidden group-hover:flex gap-1 ${isMine
+                          className={`absolute top-1/2 -translate-y-1/2 z-20 ${hoveredIdx === idx ? 'flex' : 'hidden group-hover:flex'} gap-1 ${isMine
                             ? 'right-full translate-x-[-8px]'
                             : 'left-full translate-x-[8px]'
                             }`}
@@ -367,7 +367,7 @@ const ChatAdminPanel: React.FC = () => {
                 <div className="px-4 py-2 rounded-lg bg-gray-100 border-l-4 border-blue-400 text-sm relative">
                   <div className="text-gray-600 mb-1">
                     Đang trả lời: <span className="font-medium text-blue-600">
-                      {replyingTo.sender_role === 'cashier' ? 'Bạn' : currentChat?.user_id.username}
+                      {replyingTo.sender_role === 'cashier' ? 'Bạn' : getUserName(currentChat?.user_id as unknown)}
                     </span>
                   </div>
                   <div className="text-gray-800 italic truncate max-w-[90%]">
@@ -383,7 +383,7 @@ const ChatAdminPanel: React.FC = () => {
               </div>
             )}
 
-            <div className="border-t px-5 py-3 flex items-center gap-2">
+            <div className="border-t px-5 py-3 flex items-center gap-2 bg-white/90 backdrop-blur">
               <input
                 type="file"
                 id="imageUpload"

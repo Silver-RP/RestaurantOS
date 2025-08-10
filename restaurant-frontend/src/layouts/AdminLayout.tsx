@@ -23,8 +23,10 @@ import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@/redux/hook';
 import { BsChatDots } from 'react-icons/bs';
+import { useAdminChatbox } from '@/hooks/useAdminChatbox';
 
 const AdminLayout: React.FC = () => {
+  const { totalUnreadCount } = useAdminChatbox();
   const { isSidebarOpen, toggleSidebarExtend } = useAdminSidebar();
   const location = useLocation();
   const navigate = useNavigate();
@@ -66,12 +68,14 @@ const AdminLayout: React.FC = () => {
     }
   };
 
+ 
+
   return (
     <div className="flex min-h-screen bg-adminbg text-admintext">
       {/* Sidebar */}
       <aside
         className={classNames(
-          'bg-admincard flex flex-col justify-between transition-all duration-300 fixed top-0 left-0 z-50 h-full overflow-y-auto', // 👈 thêm overflow-y-auto
+          'bg-admincard flex flex-col justify-between transition-all duration-300 fixed top-0 left-0 z-50 h-full overflow-y-auto',
           isSidebarOpen ? 'w-[200px] px-4' : 'w-16 items-center',
         )}
       >
@@ -91,6 +95,7 @@ const AdminLayout: React.FC = () => {
           </button>
 
           <nav className="flex flex-col gap-6 w-full max-w-[200px items-center">
+            {/* ...existing NavItems... */}
             <NavItem
               href="/admin"
               icon={<FaHome />}
@@ -140,7 +145,6 @@ const AdminLayout: React.FC = () => {
               expanded={isSidebarOpen}
               currentPath={location.pathname}
             />
-
             <NavItem
               href="/admin/ingredients"
               icon={<GiWheat />}
@@ -148,7 +152,6 @@ const AdminLayout: React.FC = () => {
               expanded={isSidebarOpen}
               currentPath={location.pathname}
             />
-
             <NavItem
               href="/admin/banners"
               icon={<FaImage />}
@@ -156,7 +159,6 @@ const AdminLayout: React.FC = () => {
               expanded={isSidebarOpen}
               currentPath={location.pathname}
             />
-
             <NavItem
               href="/admin/vouchers"
               icon={<FaTicketAlt />}
@@ -164,14 +166,25 @@ const AdminLayout: React.FC = () => {
               expanded={isSidebarOpen}
               currentPath={location.pathname}
             />
-            <NavItem 
-            href="/admin/chatbox"
-            icon={<BsChatDots />}
-            label="Chatbox"
-            expanded={isSidebarOpen}
-            currentPath={location.pathname}
+            <NavItem
+              href="/admin/chatbox"
+              icon={
+                <div className="relative flex items-center justify-center" style={{ minWidth: 32, minHeight: 32 }}>
+                  <BsChatDots className="text-2xl" />
+                  {totalUnreadCount > 0 && (
+                    <span
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold z-10 border-2 border-white shadow"
+                      style={{ minWidth: 20, minHeight: 20 }}
+                    >
+                      {totalUnreadCount}
+                    </span>
+                  )}
+                </div>
+              }
+              label="Chatbox"
+              expanded={isSidebarOpen}
+              currentPath={location.pathname}
             />
-
             <NavItem
               href="/admin/loyalty"
               icon={<FaCrown />}
@@ -179,10 +192,9 @@ const AdminLayout: React.FC = () => {
               expanded={isSidebarOpen}
               currentPath={location.pathname}
             />
-
           </nav>
         </div>
-
+       
         <div className="my-5 flex justify-center">
           <NavItem
             onClick={handleLogout}
@@ -193,8 +205,7 @@ const AdminLayout: React.FC = () => {
             currentPath={location.pathname} href={''}          />
         </div>
       </aside>
-
-      {/* Main Content Area */}
+      {/* Main Content */}
       <div
         className={classNames(
           'flex-1 flex flex-col transition-all duration-300 bg-white',
@@ -203,7 +214,6 @@ const AdminLayout: React.FC = () => {
       >
         {/* Header */}
         <AdminHeader />
-
         {/* Page content */}
         <main className="flex-1 w-full bg-white p-6 transition-all duration-300">
           <div className="w-full h-full overflow-auto">

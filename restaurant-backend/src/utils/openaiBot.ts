@@ -5,7 +5,6 @@ dotenv.config();
 
 export const getBotReply = async (userMessage: string): Promise<{ content: string; attachments: string[] }> => {
   try {
-    // Kiểm tra xem có phải câu hỏi về món ăn không
     const dishKeywords = [
       'món ăn', 'thực đơn', 'menu', 'thịt bò', 'steak', 'wagyu', 'angus', 
       'ribeye', 'tenderloin', 'món ngon', 'đặc sản', 'signature', 'nổi bật',
@@ -16,21 +15,17 @@ export const getBotReply = async (userMessage: string): Promise<{ content: strin
       userMessage.toLowerCase().includes(keyword)
     );
 
-    // Nếu là câu hỏi về món ăn, tìm và trả về thông tin món ăn
     if (isDishQuestion) {
       const dishes = await BotService.findDishesByKeyword(userMessage);
       
       if (dishes.length > 0) {
-        // Nếu tìm thấy món ăn cụ thể
         if (dishes.length === 1) {
           return BotService.createDishMessage(dishes[0]);
         } else {
-          // Nếu tìm thấy nhiều món ăn
           return BotService.createDishesListMessage(dishes, 'Các món ăn phù hợp');
         }
       }
 
-      // Nếu không tìm thấy món ăn cụ thể, thử lấy món nổi bật
       const featuredDishes = await BotService.getFeaturedDishes();
       if (featuredDishes.length > 0) {
         const result = BotService.createDishesListMessage(featuredDishes, 'Món ăn nổi bật của nhà hàng');
@@ -39,7 +34,6 @@ export const getBotReply = async (userMessage: string): Promise<{ content: strin
       }
     }
 
-    // Kiểm tra câu hỏi về danh mục món ăn
     const categoryKeywords = {
       'thịt bò': ['thịt bò', 'beef', 'steak', 'bít tết'],
       'đồ uống': ['đồ uống', 'nước', 'rượu', 'cocktail', 'mocktail'],
@@ -57,7 +51,6 @@ export const getBotReply = async (userMessage: string): Promise<{ content: strin
       }
     }
 
-    // Kiểm tra câu hỏi về giá
     const priceMatch = userMessage.match(/(\d+)\s*-\s*(\d+)\s*(k|nghìn|triệu)/i);
     if (priceMatch) {
       const minPrice = parseInt(priceMatch[1]) * (priceMatch[3].toLowerCase().includes('triệu') ? 1000000 : 1000);
@@ -165,7 +158,7 @@ Hãy trả lời như một chuyên gia ẩm thực thực sự, am hiểu sâu 
       'https://openrouter.ai/api/v1/chat/completions',
       {
         model: 'openai/gpt-4o',
-        max_tokens: 512,
+        max_tokens: 450,
         messages: [
           {
             role: 'system',
@@ -184,13 +177,12 @@ Hãy trả lời như một chuyên gia ẩm thực thực sự, am hiểu sâu 
         },
       },
     );
-
     return {
       content: response.data.choices[0].message.content,
       attachments: []
     };
   } catch (error: any) {
-    console.error('❌ Bot error:', error.response?.data || error.message);
+    console.error('Bot error:', error.response?.data || error.message);
     return {
       content: 'Xin lỗi, tôi không thể phản hồi lúc này. Vui lòng gọi số đặt bàn +84-28-3744-1234 để được hỗ trợ trực tiếp.',
       attachments: []

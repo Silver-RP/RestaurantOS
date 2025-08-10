@@ -42,22 +42,23 @@ export const useChatbox = () => {
         const fetchedMessages = await getMessages(chat._id);
         console.log('✅ Messages loaded:', fetchedMessages.length);
         setMessages(fetchedMessages);
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('❌ Lỗi khởi tạo chat:', error);
+        const err = error as { response?: { status?: number; statusText?: string }; message?: string; config?: { url?: string; method?: string }; code?: string };
         console.error('❌ Error details:', {
-          status: error?.response?.status,
-          statusText: error?.response?.statusText,
-          message: error?.message,
-          url: error?.config?.url,
-          method: error?.config?.method,
+          status: err?.response?.status,
+          statusText: err?.response?.statusText,
+          message: err?.message,
+          url: err?.config?.url,
+          method: err?.config?.method,
         });
         
         // Kiểm tra các lỗi phổ biến
-        if (error?.response?.status === 404) {
+        if (err?.response?.status === 404) {
           console.error('❌ API endpoint không tồn tại hoặc server chưa chạy');
-        } else if (error?.response?.status === 401) {
+        } else if (err?.response?.status === 401) {
           console.error('❌ Token không hợp lệ hoặc hết hạn');
-        } else if (error?.code === 'NETWORK_ERROR') {
+        } else if (err?.code === 'NETWORK_ERROR') {
           console.error('❌ Không thể kết nối đến server');
         }
       } finally {
@@ -95,8 +96,8 @@ export const useChatbox = () => {
     };
   }, []);
 
-  const handleSend = async (content: string, replyTo?: string) => {
-    if (!chatId || !content.trim() || isSending.current) return;
+  const handleSend = async (content: string, replyTo?: string, attachments?: string[]) => {
+    if (!chatId || ( !content.trim() && (!attachments || attachments.length === 0) ) || isSending.current) return;
 
     isSending.current = true;
     try {
@@ -106,6 +107,7 @@ export const useChatbox = () => {
         replyTo,
         senderId: userId ?? undefined,
         role: 'user',
+        attachments,
       });
     } catch (error) {
       console.error('Send message failed:', error);

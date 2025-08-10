@@ -52,26 +52,6 @@ export const createAddress = async (
   return response.data.data;
 };
 
-
-/**
- * Gọi API BE để tìm địa chỉ từ từ khóa người dùng nhập (dùng Nominatim qua backend).
- * @param query Địa chỉ người dùng nhập (vd: "274 Nguyễn Văn Lương")
- * @returns Mảng kết quả địa chỉ từ Nominatim
- */
-export const searchAddress = async (query: string): Promise<any[]> => {
-  if (!query.trim()) return [];
-
-  const response = await axiosInstance.get<any[]>(
-    `${BaseURLADDRESS}/address/searchmap`,
-    {
-      params: { q: query },
-    }
-  );
-  console.log('Kết quả tìm kiếm địa chỉ:', response.data);
-  
-  return response.data; 
-};
-
 export const deleteAddress = async (id: string) => {
   const res = await axiosInstance.delete(`${BaseURLADDRESS}/address/${id}`);
   return res.data;

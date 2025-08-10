@@ -15,13 +15,6 @@ const AddressSchema = new Schema<IAddress>(
     postcode: { type: String }, 
     display_name: { type: String }, 
 
-    osm_id: { type: String }, 
-    osm_type: { type: String }, 
-    boundingbox: { type: [String] }, 
-
-    lat: { type: Number },
-    lon: { type: Number },
-
     address_type: {
       type: String,
       enum: ['HOME', 'WORK', 'OTHER'],

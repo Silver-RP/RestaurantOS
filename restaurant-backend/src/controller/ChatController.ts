@@ -52,9 +52,9 @@ const ChatController = {
       }
 
       const userId = user.id;
-      const { content, replyTo } = req.body;
+      const { content, replyTo, attachments } = req.body;
 
-      if (!content?.trim()) {
+      if (!content?.trim() && (!attachments || attachments.length === 0)) {
         res.status(400).json({ message: 'Nội dung không được để trống' });
         return;
       }
@@ -65,14 +65,13 @@ const ChatController = {
         ? 'cashier'
         : 'user';
 
-      console.log('[✅ ROLE DETECTED]', role);
-
       const message: SendMessageDto = {
         chatId,
         senderId: userId,
         content,
         replyTo,
         role,
+        attachments,
       };
 
       const savedMessage = await ChatService.sendMessage(message);

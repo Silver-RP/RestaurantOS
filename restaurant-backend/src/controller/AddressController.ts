@@ -2,18 +2,10 @@ import { Request, Response } from 'express';
 import AddressService from '../services/AddressService';
 import { CreateAddressSchema, UpdateAddressSchema } from '../validators/addressValidator';
 import mongoose from 'mongoose';
-import axios from 'axios';
-import { getAddressFromNominatim } from '../utils/address';
-import stringSimilarity from 'string-similarity';
-import https from 'https';
 import { Address } from '../models/AddressModel';
 import { Types } from 'mongoose';
 import { IUser } from '../types/user.type';
-import {
-  getProvinces,
-  getDistrictsByProvinceCode,
-  getWardsByDistrictCode,
-} from 'sub-vn';
+import { getProvinces, getDistrictsByProvinceCode, getWardsByDistrictCode } from 'sub-vn';
 
 class AddressController {
   async createAddress(req: Request, res: Response): Promise<void> {
@@ -29,7 +21,7 @@ class AddressController {
         province_code: req.body.province_code,
         district_code: req.body.district_code,
         ward_code: req.body.ward_code,
-        district: req.body.district, 
+        district: req.body.district,
       };
       const userId = (req.user as IUser).id as Types.ObjectId;
       if (!userId) {
@@ -44,16 +36,10 @@ class AddressController {
         });
         return;
       }
-      const isExisted = await Address.findOne({
-        user_id: userId,
-        district: input.district,
-        street_address: input.street_address,
-        ward: input.ward,
-        province: input.province,
-      });
+
       const address = await AddressService.createAddress(
         { ...input, user_id: userId } as any,
-        userId.toString()
+        userId.toString(),
       );
       res.status(201).json({
         success: true,
@@ -66,8 +52,6 @@ class AddressController {
           province: address.province,
           ward: address.ward,
           street_address: address.street_address,
-          lat: address.lat,
-          lon: address.lon,
           is_default: address.is_default,
           address_type: address.address_type,
         },
@@ -184,37 +168,7 @@ class AddressController {
       res.status(500).json({ success: false, message: error.message || 'Internal server error' });
     }
   }
-  async searchAddress(req: Request, res: Response): Promise<void> {
-    const query = req.query.q as string;
-    const agent = new https.Agent({ family: 4 });
-    if (!query || query.trim() === '') {
-      res.status(400).json({ error: 'Thiếu tham số địa chỉ (q)' });
-      return;
-    }
-    try {
-      const response = await axios.get('https://nominatim.openstreetmap.org/search', {
-        params: {
-          q: query,
-          format: 'json',
-          addressdetails: 1,
-          countrycodes: 'vn',
-          bounded: 1,
-          viewbox: '106.3,10.95,107.0,10.6',
-        },
-        headers: {
-          'User-Agent': 'beefbeef-restaurant/1.0 (nguyenngocmy1311@gmail.com)',
-          'Accept-Language': 'vi',
-        },
-        timeout: 10000,
-        httpsAgent: agent,
-      });
 
-      res.json(response.data);
-    } catch (error) {
-      console.error('Nominatim API error:', error);
-      res.status(500).json({ error: 'Failed to fetch from Nominatim' });
-    }
-  }
   async getProvinces(req: Request, res: Response): Promise<void> {
     try {
       const provinces = getProvinces();

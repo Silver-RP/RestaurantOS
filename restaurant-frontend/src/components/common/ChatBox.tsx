@@ -59,7 +59,7 @@ const Chatbox: React.FC = () => {
   const [input, setInput] = useState('');
   const [showInput, setShowInput] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [messageReactions, setMessageReactions] = useState<{ [key: string]: string }>({});
+  // const [messageReactions, setMessageReactions] = useState<{ [key: string]: string }>({});
 
   const isSending = useRef(false);
 
@@ -83,8 +83,8 @@ const Chatbox: React.FC = () => {
     ]);
   };
 
-  const handleSend = async () => {
-    if (!input.trim() || isSending.current) return;
+  const handleSend = async (replyToId?: string, attachments?: string[]) => {
+    if ((!input.trim() && (!attachments || attachments.length === 0)) || isSending.current) return;
 
     const messageToSend = input;
     setInput('');
@@ -92,7 +92,7 @@ const Chatbox: React.FC = () => {
 
     try {
       if (showInput && chatId) {
-        await sendRealMessage(messageToSend); 
+        await sendRealMessage(messageToSend, replyToId, attachments);
       } else {
         const matched = await getAnswerByQuestion(messageToSend);
         setMessages((prev) => [
@@ -100,8 +100,7 @@ const Chatbox: React.FC = () => {
           { sender: 'user', text: messageToSend },
           {
             sender: 'bot',
-            text:
-              matched?.answer || 'Xin lỗi, tôi chưa có câu trả lời phù hợp.',
+            text: matched?.answer || 'Xin lỗi, tôi chưa có câu trả lời phù hợp.',
           },
         ]);
       }
@@ -116,7 +115,11 @@ const Chatbox: React.FC = () => {
         try {
           // Lấy danh sách tin nhắn chưa đọc
           const allMessages = await getMessages(chatId);
-          const unreadMessages = allMessages.filter((msg: any) => !msg.read_at && msg.sender !== 'user');
+          const unreadMessages = allMessages.filter((msg) => {
+            const readAt = (msg as { read_at?: string | null }).read_at;
+            const sender = (msg as { sender?: 'user' | 'bot' | string }).sender;
+            return !readAt && sender !== 'user';
+          });
           for (const msg of unreadMessages) {
             await markMessageAsRead(chatId, msg._id);
           }
@@ -136,13 +139,14 @@ const Chatbox: React.FC = () => {
           messages={showInput ? realMessages : messages}
           input={input}
           onInputChange={setInput}
-          onSend={handleSend}
+          onSend={(replyToId?: string, attachments?: string[]) => handleSend(replyToId, attachments)}
           onClose={toggleChat}
           showInput={showInput}
           onShowInput={toggleShowInput}
           onFAQClick={handleFAQClick}
           faqList={faqs.map((f) => f.question)}
           currentUserId={userId ?? undefined}
+          chatId={chatId ?? undefined}
           faqs={faqs}
           onInputKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
             if (e.key === 'Enter') {

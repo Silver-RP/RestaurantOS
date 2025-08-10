@@ -1,7 +1,8 @@
+
 import React, { useEffect, useState } from 'react';
 import ProductInfoSection from '@components/pages/checkout/ProductInfoSection';
 import ShippingAddressSection from '@components/pages/checkout/ShippingAddressSection';
-import { Address } from '@components/pages/checkout/ModalSelectAddress';
+import { Address } from '@/types/Address.type';
 import { DeliveryTime } from '@components/pages/checkout/ModalSelectDeliveryTime';
 import { useGetCart } from '@hooks/useCart';
 import { useNavigate } from 'react-router-dom';
@@ -91,7 +92,11 @@ const CheckoutPage = () => {
   const [discountAmount, setDiscountAmount] = useState<number>(0);
   const [loyaltyDiscountPercent, setLoyaltyDiscountPercent] =
     useState<number>(0);
-
+const getProvinceName = (code?: string) => {
+  if (!code) return '';
+  if (code === '79') return 'TP. Hồ Chí Minh';
+  return code;
+}
   useEffect(() => {
     const selectedItemsStr = localStorage.getItem('selectedCartItems');
 
@@ -131,8 +136,8 @@ const CheckoutPage = () => {
   useEffect(() => {
     setAddresses(fetchedAddresses);
     setSelectedId(
-      fetchedAddresses.find((addr) => addr.is_default)?._id ||
-        fetchedAddresses[0]?._id ||
+      fetchedAddresses.find((addr) => addr.is_default)?.id ||
+        fetchedAddresses[0]?.id ||
         null,
     );
   }, [fetchedAddresses]);
@@ -146,10 +151,10 @@ const CheckoutPage = () => {
       .catch(() => setLoyaltyDiscountPercent(0));
   }, []);
 
-  const handleAddAddress = async (newAddr: Omit<Address, '_id'>) => {
+  const handleAddAddress = async (newAddr: Omit<Address, 'id'>) => {
     const newAddress: Address = {
       ...newAddr,
-      _id: crypto.randomUUID(), // generate a temporary string ID
+      id: crypto.randomUUID(), // generate a temporary string ID
     };
 
     setAddresses((prevAddresses) => {
@@ -162,7 +167,7 @@ const CheckoutPage = () => {
       return [...prevAddresses, newAddress];
     });
 
-    setSelectedId(newAddress._id);
+    setSelectedId(newAddress.id);
   };
 
   const handleDeliveryTimeChange = (time: DeliveryTime) => {
@@ -190,7 +195,7 @@ const CheckoutPage = () => {
     };
     setProducts(updatedProducts);
   };
-  const selectedAddress = addresses.find((addr) => addr._id === selectedId);
+  const selectedAddress = addresses.find((addr) => addr.id === selectedId);
 
   const handleVoucherChange = (voucher: UserVoucherDisplay | null) => {
     setSelectedVoucher(voucher);
@@ -276,14 +281,14 @@ const CheckoutPage = () => {
     };
     if (deliveryMethod === 'delivery') {
       if (selectedAddress) {
-        orderData.address_id = selectedAddress._id;
+        orderData.address_id = selectedAddress.id;
         orderData.address = {
           full_name: selectedAddress.full_name,
           phone: selectedAddress.phone,
           street_address: selectedAddress.street_address || '',
           ward: selectedAddress.ward || '',
           district: selectedAddress.district || '',
-          province: selectedAddress.province || '',
+          province: getProvinceName(selectedAddress.province) || '',
         };
       }
     }

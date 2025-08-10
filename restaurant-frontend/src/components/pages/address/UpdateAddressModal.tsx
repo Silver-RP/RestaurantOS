@@ -1,18 +1,26 @@
 import React, { useEffect, useState } from 'react';
-import { useDebounce } from 'use-debounce';
 import { useForm, Controller } from 'react-hook-form';
 import { FiChevronDown } from 'react-icons/fi';
-import { AddressInput } from './AddressInput';
-import { MapDisplay } from './MapDisplay';
 import { updateAddress } from '@/api/AddressApi';
 import { Listbox, ListboxButton, ListboxOptions } from '@headlessui/react';
-import { useDistricts, useProvinces, useWards } from '@/hooks/useAddress';
+import { useDistricts, useWards } from '@/hooks/useAddress';
 
+interface AddressData {
+  id: string;
+  name: string;
+  phone: string;
+  street_address: string;
+  ward?: string;
+  district?: string;
+  province?: string;
+  is_default?: boolean;
+  full_name?: string;
+}
 
 interface UpdateAddressModalProps {
   isOpen: boolean;
   onClose: () => void;
-  address: any;
+  address: AddressData;
   onSave: () => void;
 }
 
@@ -33,26 +41,18 @@ export const UpdateAddressModal: React.FC<UpdateAddressModalProps> = ({
   address,
   onSave,
 }) => {
-  const { provinces } = useProvinces();
-  const [selectedProvinceCode, setSelectedProvinceCode] = useState('79');
-  const { districts } = useDistricts(selectedProvinceCode);
+  const { districts } = useDistricts('79');
   const [selectedDistrictCode, setSelectedDistrictCode] = useState('');
   const { wards } = useWards(selectedDistrictCode);
-  const [locationError, setLocationError] = useState('');
   const [district, setDistrict] = useState('');
   const [ward, setWard] = useState('');
-  const [lat, setLat] = useState(0);
-  const [lon, setLon] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [addressError, setAddressError] = useState<string | null>(null);
 
   const {
     control,
     handleSubmit,
     formState: { errors },
     setValue,
-    watch,
-    reset,
   } = useForm<FormValues>({
     defaultValues: {
       full_name: '',
@@ -67,88 +67,60 @@ export const UpdateAddressModal: React.FC<UpdateAddressModalProps> = ({
   });
 
   useEffect(() => {
-    if (address) {
-      console.log('Địa chỉ được truyền vào:', address);
-      // Luôn ưu tiên lấy từ trường riêng, không tách chuỗi nếu đã có
-      reset({
-        full_name: address.name || address.full_name || '',
-        phone: address.phone || '',
-        street_address: address.street_address || '',
-        ward: address.ward || '',
-        district: address.district || '',
-        province: address.province || 'TP. Hồ Chí Minh',
-        address_type: address.address_type || 'HOME',
-        is_default: address.is_default || false,
-      });
-      setDistrict(address.district || '');
-      setWard(address.ward || '');
-      setLat(address.lat || 0);
-      setLon(address.lon || 0);
+    if (isOpen && address) {
+      console.log("address update", address);
+      setValue('full_name', address.name || address.full_name || '');
+      setValue('phone', address.phone || '');
+      setValue('street_address', address.street_address || '');
+      setValue('province', address.province || 'TP. Hồ Chí Minh');
+      setValue('is_default', address.is_default || false);
 
-      // Tìm code quận từ tên quận và set cho Listbox
+      // Find district code from name
+      let districtCode = '';
       if (address.district) {
         const foundDistrict = districts.find((d) => d.name === address.district);
         if (foundDistrict) {
-          setSelectedDistrictCode(foundDistrict.code);
+          districtCode = foundDistrict.code;
+          setValue('district', districtCode);
+          setSelectedDistrictCode(districtCode);
         } else {
+          setValue('district', '');
           setSelectedDistrictCode('');
         }
       } else {
+        setValue('district', '');
         setSelectedDistrictCode('');
       }
     }
-  }, [address, reset]);
-
-  const watchedStreet = watch('street_address');
-  const [debouncedStreet] = useDebounce(watchedStreet, 600);
+  }, [isOpen, address, districts, setValue]);
 
   useEffect(() => {
-    setAddressError(null);
-    if (debouncedStreet && debouncedStreet.length > 5 && ward && district) {
-      const full = `${debouncedStreet}, ${ward}, ${district}, TP. Hồ Chí Minh`;
-      (async () => {
-        try {
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(full)}&format=json`,
-          );
-          const json = await res.json();
-          if (json.length > 0) {
-            setLat(parseFloat(json[0].lat));
-            setLon(parseFloat(json[0].lon));
-          } else {
-            setLat(0);
-            setLon(0);
-            setAddressError('Không tìm thấy đường này trên bản đồ');
-          }
-        } catch (e) {
-          console.error('Lỗi tìm kiếm toạ độ:', e);
-          setAddressError('Lỗi khi tìm địa chỉ. Vui lòng thử lại.');
-        }
-      })();
+    if (wards.length > 0 && address && address.ward) {
+      const foundWard = wards.find((w) => w.name === address.ward);
+      if (foundWard) {
+        setWard(foundWard.code);
+        setValue('ward', foundWard.code);
+      } else {
+        setWard('');
+        setValue('ward', '');
+      }
     }
-  }, [debouncedStreet, ward, district]);
+  }, [wards, address, setValue]);
 
   const onSubmit = async (data: FormValues) => {
-    if (!district || !ward) {
-      alert('Vui lòng nhập đầy đủ quận và phường');
-      return;
-    }
-
+    const selectedDistrict = districts.find((d) => d.code === data.district);
+    const selectedWardObj = wards.find((w) => w.code === data.ward);
     try {
       setIsSubmitting(true);
       const response = await updateAddress(address.id, {
         ...data,
-        district,
-        ward,
-        province: 'TP. Hồ Chí Minh',
-        lat: lat || undefined,
-        lon: lon || undefined, // Gửi lên, BE sẽ tự xử nếu thiếu
+        district: selectedDistrict?.name || '',
+        ward: selectedWardObj?.name || '',
+        province: 'TP. Hồ Chí Minh'
       });
-
       if (response?.data) {
-        console.log(' Địa chỉ sau khi chuẩn hóa:', response.data);
+        console.log('Địa chỉ sau khi chuẩn hóa:', response.data);
       }
-
       onSave();
     } catch (err) {
       console.error('Lỗi cập nhật địa chỉ:', err);
@@ -235,80 +207,103 @@ export const UpdateAddressModal: React.FC<UpdateAddressModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="text-gray-400">Tỉnh / Thành phố</label>
-              <div className="w-full border-b border-gray-500 py-2 text-white">
-                TP. Hồ Chí Minh
+              <div className="border-b border-gray-500 py-2 text-white text-sm md:text-base">
+                <span className="truncate capitalize">
+                  {
+                    (districts?.[0]?.province ?? 'Hồ Chí Minh')
+                      .replace(/^\s*(Thành phố|TP\.?|Tp\.?)\s+/i, '')
+                      .trim()
+                  }
+                </span>
               </div>
             </div>
-
-            <div className="flex flex-col">
-              <label className="text-gray-400 text-sm md:text-base mb-1">Quận</label>
-              <Listbox
-                value={selectedDistrictCode}
-                onChange={(value) => {
-                  setSelectedDistrictCode(value);
-                  setDistrict(districts.find((d) => d.code === value)?.name || '');
-                  setWard('');
-                  setValue('ward', '');
-                }}
-              >
-                <div className="relative">
-                  <ListboxButton className="w-full bg-transparent border-b border-gray-500 text-white py-1.5 flex items-center justify-between text-sm md:text-base">
-                    <span className="truncate capitalize">
-                      {districts.find((d) => d.code === selectedDistrictCode)?.name || 'Chọn quận'}
-                    </span>
-                    <FiChevronDown className="ml-2 text-white" />
-                  </ListboxButton>
-
-                  <ListboxOptions className="absolute w-full mt-1 bg-bodyBackground border border-white/20 rounded-md shadow-lg z-10 max-h-60 overflow-auto text-sm">
-                    {districts.map((district) => (
-                      <Listbox.Option
-                        key={district.code}
-                        value={district.code}
-                        className={({ active, selected }) =>
-                          `p-2 cursor-pointer rounded-md transition ${active ? 'bg-white/10' : ''
-                          } ${selected ? 'border-l-4 border-secondaryColor' : ''}`
-                        }
-                      >
-                        {district.name}
-                      </Listbox.Option>
-                    ))}
-                  </ListboxOptions>
+            <Controller
+              name="district"
+              control={control}
+              rules={{ required: 'Vui lòng chọn Quận' }}
+              render={({ field }) => (
+                <div className="flex flex-col">
+                  <label className="text-gray-400 text-sm md:text-base mb-1">Quận</label>
+                  <Listbox
+                    value={field.value}
+                    onChange={(value) => {
+                      field.onChange(value);
+                      setSelectedDistrictCode(value);
+                      setValue('ward', '');
+                      setWard('');
+                    }}
+                  >
+                    <div className="relative">
+                      <ListboxButton className="w-full bg-transparent border-b border-gray-500 text-white py-1.5 flex items-center justify-between text-sm md:text-base">
+                        <span className="truncate capitalize">
+                          {districts.find((d) => d.code === field.value)?.name || 'Chọn quận'}
+                        </span>
+                        <FiChevronDown className="ml-2 text-white" />
+                      </ListboxButton>
+                      <ListboxOptions className="absolute w-full mt-1 bg-bodyBackground border border-white/20 rounded-md shadow-lg z-10 max-h-60 overflow-auto text-sm">
+                        {districts.map((district) => (
+                          <Listbox.Option
+                            key={district.code}
+                            value={district.code}
+                            className={({ active, selected }) =>
+                              `p-2 cursor-pointer rounded-md transition ${active ? 'bg-white/10' : ''} ${selected ? 'border-l-4 border-secondaryColor' : ''}`
+                            }
+                          >
+                            {district.name}
+                          </Listbox.Option>
+                        ))}
+                      </ListboxOptions>
+                    </div>
+                  </Listbox>
+                  {errors.district && (
+                    <span className="text-red-500 text-[14px] mt-1">{errors.district.message}</span>
+                  )}
                 </div>
-              </Listbox>
-            </div>
+              )}
+            />
 
-            <div className="flex flex-col">
-              <label className="text-gray-400 text-sm md:text-base mb-1">Phường / Xã</label>
-              <Listbox
-                value={ward}
-                onChange={(value) => {
-                  setWard(value);
-                  setValue('ward', value);
-                }}
-              >
-                <div className="relative">
-                  <ListboxButton className="w-full bg-transparent border-b border-gray-500 text-white py-1.5 flex items-center justify-between text-sm md:text-base">
-                    <span className="truncate capitalize">
-                      {wards.find((w) => w.code === ward)?.name || 'Chọn phường'}
-                    </span>
-                    <FiChevronDown className="ml-2 text-white" />
-                  </ListboxButton>
-                  <ListboxOptions className="absolute w-full mt-1 bg-bodyBackground border border-white/20 rounded-md shadow-lg z-10 max-h-60 overflow-auto text-sm">
-                    {wards.map((wardItem) => (
-                      <Listbox.Option
-                        key={wardItem.code}
-                        value={wardItem.code}
-                        className={({ active, selected }) =>
-                          `p-2 cursor-pointer rounded-md transition ${active ? 'bg-white/10' : ''} ${selected ? 'border-l-4 border-secondaryColor' : ''}`
-                        }
-                      >
-                        {wardItem.name}
-                      </Listbox.Option>
-                    ))}
-                  </ListboxOptions>
+            <Controller
+              name="ward"
+              control={control}
+              rules={{ required: 'Vui lòng chọn Phường/Xã' }}
+              render={({ field }) => (
+                <div className="flex flex-col">
+                  <label className="text-gray-400 text-sm md:text-base mb-1">Phường / Xã</label>
+                  <Listbox
+                    value={field.value}
+                    onChange={(value) => {
+                      field.onChange(value);
+                      setWard(value);
+                    }}
+                  >
+                    <div className="relative">
+                      <ListboxButton className="w-full bg-transparent border-b border-gray-500 text-white py-1.5 flex items-center justify-between text-sm md:text-base">
+                        <span className="truncate capitalize">
+                          {wards.find((w) => w.code === field.value)?.name || 'Chọn phường'}
+                        </span>
+                        <FiChevronDown className="ml-2 text-white" />
+                      </ListboxButton>
+                      <ListboxOptions className="absolute w-full mt-1 bg-bodyBackground border border-white/20 rounded-md shadow-lg z-10 max-h-60 overflow-auto text-sm">
+                        {wards.map((wardItem) => (
+                          <Listbox.Option
+                            key={wardItem.code}
+                            value={wardItem.code}
+                            className={({ active, selected }) =>
+                              `p-2 cursor-pointer rounded-md transition ${active ? 'bg-white/10' : ''} ${selected ? 'border-l-4 border-secondaryColor' : ''}`
+                            }
+                          >
+                            {wardItem.name}
+                          </Listbox.Option>
+                        ))}
+                      </ListboxOptions>
+                    </div>
+                  </Listbox>
+                  {errors.ward && (
+                    <span className="text-red-500 text-[14px] mt-1">{errors.ward.message}</span>
+                  )}
                 </div>
-              </Listbox>
-            </div>
+              )}
+            />
           </div>
 
           <div>
@@ -318,17 +313,11 @@ export const UpdateAddressModal: React.FC<UpdateAddressModalProps> = ({
               control={control}
               rules={{ required: 'Vui lòng nhập tên đường' }}
               render={({ field }) => (
-                <AddressInput
-                  value={field.value || ''}
-                  onChange={(e) => field.onChange(e)}
-                  onSelectLocation={(lat, lon, street) => {
-                    setLat(lat);
-                    setLon(lon);
-                    setValue('street_address', street);
-                  }}
-                  ward={ward}
-                  province="TP. Hồ Chí Minh"
-                  district={district}
+                <input
+                  {...field}
+                  type="text"
+                  placeholder="Nhập địa chỉ chi tiết, ví dụ: 123 Tô Ký"
+                  className="w-full bg-transparent border-b border-gray-500 text-white placeholder-gray-500 focus:outline-none focus:border-secondaryColor py-2"
                 />
               )}
             />
@@ -337,16 +326,7 @@ export const UpdateAddressModal: React.FC<UpdateAddressModalProps> = ({
                 {errors.street_address.message}
               </p>
             )}
-            {addressError && (
-              <p className="text-red-500 text-sm mt-1">{addressError}</p>
-            )}
           </div>
-
-          {lat !== 0 && lon !== 0 && (
-            <div className="mt-3">
-              <MapDisplay lat={lat} lon={lon} street_address={watchedStreet} />
-            </div>
-          )}
 
           <div className="mt-4">
             <label className="text-gray-400">Loại địa chỉ</label>

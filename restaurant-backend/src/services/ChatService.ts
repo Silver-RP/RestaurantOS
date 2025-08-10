@@ -121,7 +121,7 @@ class ChatService {
           ...chat,
           lastMessage: lastMsg?.content || '',
           lastMessageTime: lastMsg?.sent_at || chat.updated_at,
-          unreadCount, 
+          unreadCount,
         };
       }),
     );
@@ -138,7 +138,7 @@ class ChatService {
     }
     await ChatMessageModel.updateOne(
       {
-        _id: new mongoose.Types.ObjectId(messageId), // ép kiểu rõ ràng ✅
+        _id: new mongoose.Types.ObjectId(messageId),
         chat_id: new mongoose.Types.ObjectId(chatId),
         read_at: null,
       },
@@ -295,6 +295,13 @@ class ChatService {
     }
     const isFirstMessage = !(await ChatMessageModel.exists({ chat_id: chat._id }));
 
+    const hasImageUrl =
+      Array.isArray((data as any).attachments) &&
+      (data as any).attachments.length > 0;
+
+    const messageType: 'text' | 'image' | 'file' =
+      hasImageUrl ? 'image' : data.message_type || 'text';
+
     const userMessage = await ChatMessageModel.create({
       chat_id: chat._id,
       sender_id: new mongoose.Types.ObjectId(data.senderId),
@@ -302,7 +309,8 @@ class ChatService {
       sender_role: senderRole,
       content: data.content,
       is_bot_reply: false,
-      message_type: 'text',
+      message_type: messageType,
+      attachments: hasImageUrl ? (data as any).attachments : [],
       sent_at: new Date(),
       read_at: null,
       reply_to: data.replyTo ? new mongoose.Types.ObjectId(data.replyTo) : null,
@@ -343,7 +351,7 @@ class ChatService {
       if (!chat.cashier_user_id) {
         console.log('[🤖 BOT] Không có cashier, bot reply ngay');
         await delay(2000);
-        
+
         const { getBotReply } = require('../utils/openaiBot');
         const botReply = await getBotReply(data.content);
 
@@ -375,9 +383,9 @@ class ChatService {
         chat.initiated_by = 'bot';
         chat.status = 'open';
         await chat.save();
-      } 
+      }
       else {
-        console.log('[🤖 BOT] Có cashier, đợi 12s cho cashier reply');
+        console.log('[🤖 BOT] Có cashier, đợi 1s cho cashier reply');
         setTimeout(async () => {
           try {
             const twelveSecondsAgo = new Date(Date.now() - 1000);
@@ -387,7 +395,7 @@ class ChatService {
               sent_at: { $gte: twelveSecondsAgo }
             });
             if (!hasCashierReply) {
-              console.log('[🤖 BOT] Cashier không reply trong 12s, bot reply');
+              console.log('[🤖 BOT] Cashier không reply trong 1s, bot reply');
               const { getBotReply } = require('../utils/openaiBot');
               const botReply = await getBotReply(data.content);
 
@@ -415,7 +423,7 @@ class ChatService {
                 });
               });
 
-              // Cập nhật trạng thái chat
+
               await ChatBoxModel.findByIdAndUpdate(chat._id, { status: 'open' });
             } else {
               console.log('[🤖 BOT] Cashier đã reply, không cần bot reply');
@@ -423,7 +431,7 @@ class ChatService {
           } catch (error) {
             console.error('❌ Bot reply error:', error);
           }
-        }, 12000); // Đợi 12 giây
+        }, 1000);
       }
     }
 

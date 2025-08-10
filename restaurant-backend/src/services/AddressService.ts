@@ -2,40 +2,34 @@ import mongoose from 'mongoose';
 import { Address } from '../models/AddressModel';
 import { IAddress } from '../types/address.type';
 class AddressService {
-  async createAddress(addressData: IAddress, userId: string): Promise<any> {
+  async createAddress(addressData: IAddress): Promise<any> {
     const {
       user_id,
       full_name,
+      district,
       phone,
       province,
       ward,
       street_address,
       address_type,
       is_default = false,
-      lat,
-      lon,
     } = addressData;
-    let finalLat = lat;
-    let finalLon = lon;
-    let finalProvince = province;
-    let finalWard = ward;
-    let finalStreet = street_address;
-
+    const finalProvince = province;
+    const finalWard = ward;
+    const finalStreet = street_address;
     if (is_default) {
       await Address.updateMany({ user_id, is_default: true }, { $set: { is_default: false } });
     }
-
     const newAddress = new Address({
       user_id,
       full_name,
+      district,
       phone,
       province: finalProvince,
       ward: finalWard,
       street_address: finalStreet,
       address_type,
       is_default,
-      lat: finalLat,
-      lon: finalLon,
     });
 
     await newAddress.save();
@@ -48,7 +42,11 @@ class AddressService {
     const addresses = await Address.find({ user_id });
     return addresses;
   }
-  async updateAddress(addressId: string, updateData: Partial<IAddress>, userId: string): Promise<any> {
+  async updateAddress(
+    addressId: string,
+    updateData: Partial<IAddress>,
+    userId: string,
+  ): Promise<any> {
     if (!mongoose.Types.ObjectId.isValid(addressId)) {
       throw new Error('Invalid address ID format');
     }
@@ -74,7 +72,6 @@ class AddressService {
       new: true,
       runValidators: true,
     });
-
     return updatedAddress;
   }
 

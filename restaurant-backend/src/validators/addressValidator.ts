@@ -7,8 +7,6 @@ export const CreateAddressSchema = z.object({
   street_address: z.string().min(1),
   address_type: z.enum(['HOME', 'WORK', 'OTHER']).default('HOME'),
   is_default: z.boolean().optional(),
-  lat: z.number().optional(),
-  lon: z.number().optional(),
   province_code: z.string().min(1),
   district_code: z.string().min(1),
   ward_code: z.string().min(1),
@@ -23,8 +21,6 @@ export const UpdateAddressSchema = z.object({
   street_address: z.string().min(1).optional(),
   address_type: z.enum(['HOME', 'WORK', 'OTHER']).optional(),
   is_default: z.boolean().optional(),
-  lat: z.number().optional(),
-  lon: z.number().optional(),
 });
 
 export const GetAllAddressesSchema = z.object({

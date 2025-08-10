@@ -32,12 +32,14 @@ export const sendMessage = async ({
   replyTo,
   senderId,
   role,
-}: SendMessageAPIRequest): Promise<ChatMessage> => {
+  attachments,
+}: SendMessageAPIRequest & { attachments?: string[] }): Promise<ChatMessage> => {
   const { data } = await axiosInstance.post(`/chat/${chatId}/message`, {
     content,
     replyTo,
     senderId,
     role,
+    attachments,
   });
   return data.message;
 };

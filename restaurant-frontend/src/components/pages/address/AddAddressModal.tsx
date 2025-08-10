@@ -3,14 +3,12 @@
 
 import React, { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { AddressInput } from './AddressInput';
-import { MapDisplay } from './MapDisplay';
 import { FiChevronDown } from 'react-icons/fi';
-import { createAddress, searchAddress } from '@/api/AddressApi';
+import { createAddress } from '@/api/AddressApi';
 import { toast } from 'react-toastify';
 import { Listbox, ListboxButton, ListboxOptions } from '@headlessui/react';
-import { useDistricts, useProvinces, useWards } from '@/hooks/useAddress';
-
+import { useDistricts, useWards } from '@/hooks/useAddress';
+import GlobalModal from '@/components/common/GlobalModal';
 interface AddAddressModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -19,16 +17,14 @@ interface AddAddressModalProps {
     ward: string,
     street_address: string,
     full_name: string,
-    lat: number,
-    lon: number,
     phone: string,
     addressType: string,
   ) => void;
   total: number;
 }
-
 interface FormValues {
   full_name: string;
+  district: string;
   province: string;
   ward: string;
   street_address: string;
@@ -41,21 +37,15 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
   onSave,
   total,
 }) => {
-  const { provinces } = useProvinces();
-  const [selectedProvinceCode, setSelectedProvinceCode] = useState('79');
+  const [selectedProvinceCode] = useState('79');
   const { districts } = useDistricts(selectedProvinceCode);
   const [selectedDistrictCode, setSelectedDistrictCode] = useState('');
   const { wards } = useWards(selectedDistrictCode);
-  const [locationError, setLocationError] = useState('');
-  const [addressResultObjects, setAddressResultObjects] = useState<any[]>([]);
-  const [addressSuggestions, setAddressSuggestions] = useState<string[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [lat, setLat] = useState(0);
-  const [lon, setLon] = useState(0);
   const [addressType, setAddressType] = useState('home');
   const [isDefault, setIsDefault] = useState(false);
   const [selectedWard, setSelectedWard] = useState('');
   const [isDuplicate, setIsDuplicate] = useState(false);
+  const [districtError, setDistrictError] = useState('');
   const {
     control,
     handleSubmit,
@@ -63,7 +53,7 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
     setValue,
     reset,
     trigger,
-    watch,
+
   } = useForm<FormValues>({
     defaultValues: {
       full_name: '',
@@ -73,92 +63,22 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
       phone: '',
     },
   });
-  const watchedAddress = watch('street_address');
+
+
   useEffect(() => {
     if (isOpen) {
-      setSelectedDistrictCode(''); 
+      setSelectedDistrictCode('');
     }
   }, [isOpen]);
-  useEffect(() => {
-    let active = true;
-    if (watchedAddress && watchedAddress.length > 3) {
-      setShowSuggestions(true);
-      const fetchSuggestions = async () => {
-        try {
-          const results = await searchAddress(watchedAddress);
-          if (active) {
-            setAddressResultObjects(results);
-            setAddressSuggestions(results.map((r: any) => r.display_name || r.address || r.formatted_address || r.name || ''));
-          }
-        } catch {
-          if (active) {
-            setAddressResultObjects([]);
-            setAddressSuggestions([]);
-          }
-        }
-      };
-      fetchSuggestions();
-    } else {
-      setAddressResultObjects([]);
-      setAddressSuggestions([]);
-      setShowSuggestions(false);
-    }
-    return () => {
-      active = false;
-    };
-  }, [watchedAddress, selectedWard, selectedProvinceCode]);
 
   useEffect(() => {
     if (isOpen) {
       setSelectedWard('');
-      setLat(0);
-      setLon(0);
       setIsDuplicate(false);
       reset();
     }
   }, [isOpen]);
-  const normalizeStreet = (input: string): string => {
-    const normalized = input
-      .replace(/\b(Phường|TP\.?|Thành phố|TP|Thủ Đức)\b/gi, '')
-      .replace(/[,]+/g, ',')
-      .replace(/,\s*,/g, ',')
-      .replace(/\s{2,}/g, ' ')
-      .replace(/^,|,$/g, '')
-      .trim();
-    return normalized;
-  };
 
-  useEffect(() => {
-    if (isDuplicate) setIsDuplicate(false);
-
-    const timeout = setTimeout(async () => {
-      const street = normalizeStreet(watchedAddress);
-
-      if (street.length > 5 && selectedWard) {
-        const fullAddress = `${street}, ${selectedWard}, ${selectedProvinceCode}`;
-
-        try {
-          const results = await searchAddress(fullAddress);
-          if (results.length > 0) {
-            const { lat, lon } = results[0];
-            setLat(Number(lat));
-            setLon(Number(lon));
-          }
-        } catch (error: any) {
-          if (error.response?.status === 504) {
-            toast.error('Hệ thống phản hồi chậm. Vui lòng thử lại sau.');
-          } else {
-            toast.error('Lỗi khi tìm địa chỉ');
-          }
-        }
-      } else {
-        setLat(0);
-        setLon(0);
-      }
-    }, 2000);
-
-    return () => clearTimeout(timeout);
-  }, [watchedAddress, selectedWard]);
 
   const validatePhone = (phone: string): boolean => {
     const phoneRegex = /^[0-9]{10}$/;
@@ -171,8 +91,17 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
       return;
     }
 
+    // Bắt lỗi chưa chọn quận
+    if (!selectedDistrictCode) {
+      setDistrictError('Vui lòng chọn quận/huyện!');
+      return;
+    } else {
+      setDistrictError('');
+    }
+
     const isValid = await trigger([
       'full_name',
+      'province',
       'phone',
       'ward',
       'street_address',
@@ -180,24 +109,9 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
 
     const missingWard = !data.ward;
 
-    if (missingWard) {
-      setLocationError(
-        'Vui lòng chọn Phường/Xã trước khi tiếp tục.',
-      );
-    } else {
-      setLocationError('');
-    }
-
     if (!isValid || missingWard) {
       return;
     }
-
-    if (!lat || !lon) {
-      toast.error('Không thể xác định vị trí. Vui lòng kiểm tra lại địa chỉ.');
-      return;
-    }
-
-    // Tìm mã code cho quận và phường từ danh sách đã chọn
     const selectedDistrict = districts.find((d) => d.code === selectedDistrictCode);
     const selectedWardObj = wards.find((w) => w.name === selectedWard);
     const fullSubmitData = {
@@ -209,11 +123,11 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
       district_code: selectedDistrictCode,
       ward: selectedWard,
       ward_code: selectedWardObj?.code || '',
-      street_address: normalizeStreet(data.street_address),
+      street_address: data.street_address,
       address_type: addressType.toUpperCase() as 'HOME' | 'WORK' | 'OTHER',
       is_default: isDefault || total === 0,
-      lat,
-      lon,
+      lat: 0, // Replace with actual latitude if available
+      lon: 0, // Replace with actual longitude if available
     };
 
     try {
@@ -229,10 +143,8 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
         onSave(
           selectedProvinceCode,
           selectedWard,
-          normalizeStreet(data.street_address),
+          data.street_address,
           data.full_name,
-          lat,
-          lon,
           data.phone,
           addressType,
         );
@@ -342,44 +254,61 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
                 Tỉnh / Thành Phố
               </label>
               <div className="border-b border-gray-500 py-1.5 text-white text-sm md:text-base">
-                Hồ Chí Minh
+                <span className="truncate capitalize">
+                  {
+                    (districts?.[0]?.province ?? 'Hồ Chí Minh')
+                      .replace(/^\s*(Thành phố|TP\.?|Tp\.?)\s+/i, '')
+                      .trim()
+                  }
+                </span>
               </div>
             </div>
-            <div className="flex flex-col">
-              <label className="text-gray-400 text-sm md:text-base mb-1">Quận/Huyện</label>
-              <Listbox
-                value={selectedDistrictCode}
-                onChange={(value) => {
-                  setSelectedDistrictCode(value);
-                  setSelectedWard('');
-                  setValue('ward', '');
-                }}
-              >
-                <div className="relative">
-                  <ListboxButton className="w-full bg-transparent border-b border-gray-500 text-white py-1.5 flex items-center justify-between text-sm md:text-base">
-                    <span className="truncate capitalize">
-                      {districts.find((d) => d.code === selectedDistrictCode)?.name || 'Chọn quận/huyện'}
-                    </span>
-                    <FiChevronDown className="ml-2 text-white" />
-                  </ListboxButton>
+            <Controller
+              name="district"
+              control={control}
+              rules={{ required: 'Vui lòng chọn Quận/Huyện' }}
+              render={({ field }) => (
+                <div className="flex flex-col">
+                  <label className="text-gray-400 text-sm md:text-base mb-1">Quận/Huyện</label>
+                  <Listbox
+                    value={field.value}
+                    onChange={(value) => {
+                      field.onChange(value);
+                      setSelectedDistrictCode(value);
+                      setSelectedWard('');
+                      setValue('ward', '');
+                    }}
+                  >
+                    <div className="relative">
+                      <ListboxButton className="w-full bg-transparent border-b border-gray-500 text-white py-1.5 flex items-center justify-between text-sm md:text-base">
+                        <span className="truncate capitalize">
+                          {districts.find((d) => d.code === field.value)?.name || 'Chọn quận/huyện'}
+                        </span>
+                        <FiChevronDown className="ml-2 text-white" />
+                      </ListboxButton>
 
-                  <ListboxOptions className="absolute w-full mt-1 bg-bodyBackground border border-white/20 rounded-md shadow-lg z-10 max-h-60 overflow-auto text-sm">
-                    {districts.map((district) => (
-                      <Listbox.Option
-                        key={district.code}
-                        value={district.code}
-                        className={({ active, selected }) =>
-                          `p-2 cursor-pointer rounded-md transition ${active ? 'bg-white/10' : ''
-                          } ${selected ? 'border-l-4 border-secondaryColor' : ''}`
-                        }
-                      >
-                        {district.name}
-                      </Listbox.Option>
-                    ))}
-                  </ListboxOptions>
+                      <ListboxOptions className="absolute w-full mt-1 bg-bodyBackground border border-white/20 rounded-md shadow-lg z-10 max-h-60 overflow-auto text-sm">
+                        {districts.map((district) => (
+                          <Listbox.Option
+                            key={district.code}
+                            value={district.code}
+                            className={({ active, selected }) =>
+                              `p-2 cursor-pointer rounded-md transition ${active ? 'bg-white/10' : ''
+                              } ${selected ? 'border-l-4 border-secondaryColor' : ''}`
+                            }
+                          >
+                            {district.name}
+                          </Listbox.Option>
+                        ))}
+                      </ListboxOptions>
+                    </div>
+                  </Listbox>
+                  {errors.district && (
+                    <span className="text-red-500 text-[12px] mt-1">{errors.district.message}</span>
+                  )}
                 </div>
-              </Listbox>
-            </div>
+              )}
+            />
             <Controller
               name="ward"
               control={control}
@@ -394,7 +323,6 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
                     onChange={(value) => {
                       field.onChange(value);
                       setSelectedWard(value);
-                      setLocationError('');
                     }}
                   >
                     <div className="relative">
@@ -423,7 +351,7 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
                   </Listbox>
 
                   {errors.ward && (
-                    <span className="text-red-500 text-xs sm:text-sm mt-1">
+                    <span className="text-red-500 text-[12px] mt-1">
                       {errors.ward.message}
                     </span>
                   )}
@@ -444,60 +372,12 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
                 rules={{ required: 'Địa chỉ không được để trống' }}
                 render={({ field }) => (
                   <div className="relative">
-                    <AddressInput
-                      value={field.value}
-                      onChange={(e) => {
-                        field.onChange(e);
-                        trigger('street_address');
-                        setShowSuggestions(true);
-                      }}
-                      onSelectLocation={(lat, lon, address) => {
-                        setLat(lat);
-                        setLon(lon);
-                        setValue('street_address', address);
-                        setShowSuggestions(false);
-                      }}
-                      ward={selectedWard}
-                      province={selectedProvinceCode}
-                      district={selectedDistrictCode}
+                    <input
+                      {...field}
+                      type="text"
+                      placeholder="Nhập địa chỉ chi tiết, ví dụ: 123 Tô Ký"
+                      className="w-full bg-transparent border-b border-gray-500 text-white placeholder-gray-500 focus:outline-none focus:border-secondaryColor py-1 md:py-2 text-sm md:text-base"
                     />
-                    {showSuggestions && (
-                      addressSuggestions.length > 0 ? (
-                        <ul className="absolute left-0 right-0 bg-bodyBackground border border-gray-700 rounded shadow-lg z-20 mt-1 max-h-48 overflow-auto text-sm">
-                          {addressSuggestions.map((suggestion, idx) => (
-                            <li
-                              key={idx}
-                              className="px-3 py-2 cursor-pointer hover:bg-secondaryColor hover:text-black transition"
-                              onClick={() => {
-                                const selectedObj = addressResultObjects.find(
-                                  (r: any) =>
-                                    r.display_name === suggestion ||
-                                    r.address === suggestion ||
-                                    r.formatted_address === suggestion ||
-                                    r.name === suggestion
-                                );
-                                if (selectedObj) {
-                                  setValue('street_address', suggestion);
-                                  setLat(Number(selectedObj.lat) || 0);
-                                  setLon(Number(selectedObj.lon) || 0);
-                                } else {
-                                  setValue('street_address', suggestion);
-                                  setLat(0);
-                                  setLon(0);
-                                }
-                                setShowSuggestions(false);
-                              }}
-                            >
-                              {suggestion}
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <div className="absolute left-0 right-0 bg-bodyBackground border border-gray-700 rounded shadow-lg z-20 mt-1 p-3 text-sm text-gray-400">
-                          Không có gợi ý địa chỉ phù hợp.
-                        </div>
-                      )
-                    )}
                   </div>
                 )}
               />
@@ -509,22 +389,7 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
               </span>
             )}
           </div>
-          {lat !== 0 &&
-            lon !== 0 &&
-            normalizeStreet(watchedAddress).length > 5 && (
-              <div className="mt-2 sm:mt-3 md:mt-4">
-                <MapDisplay
-                  lat={lat}
-                  lon={lon}
-                  street_address={normalizeStreet(watchedAddress)}
-                />
-              </div>
-            )}
-          {lat === 0 && normalizeStreet(watchedAddress).length > 5 && (
-            <p className="text-red-400 text-sm mt-2">
-              Không tìm thấy vị trí phù hợp. Vui lòng kiểm tra lại tên đường.
-            </p>
-          )}
+
           <div>
             <label className="text-gray-400 text-sm md:text-base mb-2 block">
               Loại Địa Chỉ
@@ -606,8 +471,7 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
             <button
               type="submit"
               disabled={isDuplicate}
-              className={`px-3 sm:px-4 md:px-6 py-1 md:py-2 border border-secondaryColor bg-secondaryColor text-headerBackground hover:bg-bodyBackground hover:text-white transition uppercase text-xs sm:text-sm md:text-base ${isDuplicate ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
+              className={`px-3 sm:px-4 md:px-6 py-1 md:py-2 border border-secondaryColor bg-secondaryColor text-headerBackground hover:bg-bodyBackground hover:text-white transition uppercase text-xs sm:text-sm md:text-base ${isDuplicate ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {isDuplicate ? 'Địa chỉ đã tồn tại' : 'Lưu'}
             </button>
@@ -617,4 +481,5 @@ export const AddAddressModal: React.FC<AddAddressModalProps> = ({
     </GlobalModal>
   );
 };
+
 
