@@ -26,8 +26,32 @@ export const useAdminChatbox = () => {
   useEffect(() => {
     const handleMessage = async (msg: ChatMessage) => {
       if (msg.chat_id === currentChat?._id) {
+        // Kiểm tra xem có phải tin nhắn từ chính mình không (để tránh duplicate)
+        const isMyMessage = msg.sender_id === currentChat?.cashier_user_id;
         const exists = messages.some((m) => m._id === msg._id);
-        if (!exists) setMessages((prev) => [...prev, msg]);
+        
+        if (!exists) {
+          // Nếu là tin nhắn của mình, kiểm tra xem có tin nhắn tạm thời tương ứng không
+          if (isMyMessage) {
+            const tempMessageIndex = messages.findIndex(m => 
+              m._id.startsWith('temp_') && m.content === msg.content
+            );
+            if (tempMessageIndex !== -1) {
+              // Thay thế tin nhắn tạm thời bằng tin nhắn thật
+              setMessages(prev => {
+                const newMessages = [...prev];
+                newMessages[tempMessageIndex] = msg;
+                return newMessages;
+              });
+            } else {
+              // Nếu không tìm thấy tin nhắn tạm thời, thêm tin nhắn mới
+              setMessages(prev => [...prev, msg]);
+            }
+          } else {
+            // Nếu là tin nhắn từ người khác, thêm bình thường
+            setMessages(prev => [...prev, msg]);
+          }
+        }
       }
       const list = await getAllUserChats();
       setSessions(list);
@@ -53,21 +77,20 @@ export const useAdminChatbox = () => {
     };
   }, []);
 
-  const handleSend = async (content: string) => {
+  // ... existing code ...
+  const handleSend = async (content: string, replyTo?: string) => {
     if (!currentChat || !content.trim()) return;
 
     try {
-      const sentMsg = await sendMessage({ chatId: currentChat._id, content });
-      setMessages((prev) => {
-        const exists = prev.some((m) => m._id === sentMsg._id);
-        return exists ? prev : [...prev, sentMsg];
-      });
+      await sendMessage({ chatId: currentChat._id, content, replyTo });
+      // Không cần làm gì ở đây vì socket sẽ xử lý việc thay thế tin nhắn tạm thời
     } catch (err: any) {
       const errorMsg = err?.response?.data?.message || 'Đã xảy ra lỗi khi gửi tin nhắn';
-      alert(errorMsg); 
+      alert(errorMsg);
       console.error('[LỖI GỬI TIN NHẮN]', err);
     }
   };
+  // ... existing code ...
 
   const selectChat = async (userId: string) => {
     const session = await getUserChatSession(userId);
@@ -82,6 +105,7 @@ export const useAdminChatbox = () => {
 
     const msgs = await getMessages(session._id);
     console.log('[MESSAGES]', msgs);
+    console.log('[MESSAGES WITH REPLY]', msgs.filter(m => m.reply_to));
     setMessages(msgs);
 
     // Đánh dấu tất cả tin nhắn chưa đọc từ user là đã đọc
@@ -110,8 +134,8 @@ export const useAdminChatbox = () => {
     });
     console.log('[SOCKET JOIN]', { userId: 'cashier', chatId: session._id, roles: 'cashier' });
   };
-  
-  const totalUnreadCount = sessions.reduce((sum, s) => sum + (s.unreadCount ?? 0), 0);  
+
+  const totalUnreadCount = sessions.reduce((sum, s) => sum + (s.unreadCount ?? 0), 0);
   return {
     sessions,
     currentChat,
@@ -121,5 +145,6 @@ export const useAdminChatbox = () => {
     messageEndRef,
     assignCashierSession,
     totalUnreadCount,
+    setMessages,
   };
 };

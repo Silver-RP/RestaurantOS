@@ -41,6 +41,7 @@ const ChatAdminPanel: React.FC = () => {
     selectChat,
     handleSend,
     messageEndRef,
+    setMessages,
   } = useAdminChatbox();
   console.log('[DEBUG] Current chat:', currentChat);
   console.log('[DEBUG] Messages:', messages);
@@ -85,7 +86,34 @@ const ChatAdminPanel: React.FC = () => {
 
   const onSend = () => {
     if (!input.trim() || !currentChat) return;
-    handleSend(input);
+    
+    // Tạo tin nhắn tạm thời để hiển thị ngay lập tức
+    const tempMessage: ChatMessage = {
+      _id: `temp_${Date.now()}`, // ID tạm thời để tránh duplicate
+      chat_id: currentChat._id,
+      content: input,
+      sender_id: currentChat.cashier_user_id || '',
+      receiver_id: currentChat.user_id,
+      sender_role: 'cashier',
+      sent_at: new Date().toISOString(),
+      message_type: 'text',
+      reply_to: replyingTo ? {
+        _id: replyingTo._id,
+        chat_id: replyingTo.chat_id,
+        content: replyingTo.content,
+        sender_id: replyingTo.sender_id,
+        receiver_id: replyingTo.receiver_id,
+        sender_role: replyingTo.sender_role,
+        sent_at: replyingTo.sent_at,
+        message_type: replyingTo.message_type
+      } : undefined
+    };
+    
+    // Thêm tin nhắn tạm thời vào danh sách
+    setMessages((prev: ChatMessage[]) => [...prev, tempMessage]);
+    
+    // Gửi tin nhắn lên server
+    handleSend(input, replyingTo?._id);
     setInput('');
     setReplyingTo(null);
   };
@@ -261,14 +289,14 @@ const ChatAdminPanel: React.FC = () => {
                       )}
                       <div
                         className={`relative group inline-block ${isMine ? 'px-4 py-2' : 'px-3 py-2'} rounded-2xl shadow-md whitespace-pre-wrap break-words max-w-[50%] ${isMine
-                          ? 'ml-auto bg-[#3B82F6] text-white hover:bg-[#2563EB]'
-                          : 'mr-auto bg-gray-100 text-gray-900'
+                          ? ' max-w-[50%] ml-auto mb-2 bg-[#3B82F6] text-white hover:bg-[#2563EB]'
+                          : 'mr-auto mb-2 bg-gray-100 text-gray-900'
                           }`}
                       >
                         {m.reply_to && typeof m.reply_to === 'object' && (
                           <div className={`mb-1 p-2 rounded bg-white border-l-4 ${isMine ? 'border-blue-300' : 'border-gray-300'} text-sm`}>
                             <div className="font-semibold text-gray-800 text-xs">
-                          {m.reply_to.sender_id === currentChat?.cashier_user_id ? 'Bạn' : getUserName(currentChat?.user_id as unknown)}
+                              {m.reply_to.sender_role === 'cashier' || m.reply_to.sender_id === currentChat?.cashier_user_id ? 'Bạn' : getUserName(m.reply_to.sender_id)}
                             </div>
                             <div className="text-gray-600 text-sm truncate">{m.reply_to.content}</div>
                           </div>

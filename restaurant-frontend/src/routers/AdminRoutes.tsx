@@ -104,6 +104,7 @@ const adminRoutes = [
       },
       { path: "chatbox", element: <ChatAdminPanel /> },
       { path: 'loyalty', element: <LoyaltyAdmin /> },
+      { path: 'chatbox', element: <ChatAdminPanel /> },
       { path: 'register-cashier', element: <RegisterCashier /> },
 
       { path: '*', element: <Navigate to="/admin" /> },

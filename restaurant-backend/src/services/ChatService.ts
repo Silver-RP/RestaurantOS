@@ -56,7 +56,7 @@ class ChatService {
     }
 
     const messages = await ChatMessageModel.find(filter)
-      .populate('reply_to', 'content sender_id')
+      .populate('reply_to', 'content sender_id sender_role')
       .sort({ _id: -1 }) // mới nhất trước
       .limit(limit)
       .lean();
@@ -73,6 +73,7 @@ class ChatService {
           ...msg.reply_to,
           _id: msg.reply_to._id?.toString(),
           sender_id: msg.reply_to.sender_id?.toString(),
+          sender_role: msg.reply_to.sender_role,
         }
         : null,
     })) as ChatMessage[];
