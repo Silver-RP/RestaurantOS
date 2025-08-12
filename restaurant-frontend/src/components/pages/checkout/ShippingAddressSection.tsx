@@ -150,13 +150,17 @@ const ShippingAddressSection = ({
     deliveryMethod,
     onValidationRef,
   ]);
-
+  const getProvinceName = (code?: string) => {
+    if (!code) return '';
+    if (code === '79') return 'TP. Hồ Chí Minh';
+    return code;
+  };
   const getFormattedAddress = (address: Address) => {
     return [
       address.street_address,
       address.ward,
       address.district,
-      address.province,
+      address.province ? getProvinceName(address.province) : '',
     ]
       .filter(Boolean)
       .join(', ');
