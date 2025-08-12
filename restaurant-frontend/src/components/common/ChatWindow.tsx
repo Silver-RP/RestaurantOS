@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { FiCornerDownLeft, FiMoreVertical, FiSend } from 'react-icons/fi';
+import { FiCornerDownLeft, FiMoreVertical, FiSend, FiArrowLeft, FiUser } from 'react-icons/fi';
+import { FaRobot } from 'react-icons/fa';
 import EmojiPicker, { Theme } from 'emoji-picker-react';
 import { socket } from '@/utils/socket';
 import { EmojiButton } from '@joeattardi/emoji-button';
@@ -14,7 +15,7 @@ type UnifiedMessage = {
   sent_at?: string | number;
   reactions?: { emoji: string; userId?: string }[];
   message_type?: 'text' | 'image' | 'file';
-  attachments?: string[];
+  image?: string[];
   _id?: string;
   reply_to?: { _id?: string; content?: string; sender_id?: string } | null;
 };
@@ -58,7 +59,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   const hideActionTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const actionHideTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reactionPickerRef = useRef<HTMLDivElement | null>(null);
-  const popularEmojis = ['❤️', '😆', '😮', '😢', '😡', '👍'];
+  const popularEmojis = ['❤️', '👍'];
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const messageEndRef = useRef<HTMLDivElement | null>(null);
   const emojiButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -75,7 +76,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     if (!reactions || reactions.length === 0) return { items: [] as { emoji: string; count: number }[], total: 0 };
     const counts = new Map<string, number>();
     reactions.forEach((r) => counts.set(r.emoji, (counts.get(r.emoji) || 0) + 1));
-    const order = ['❤️', '😆', '😮', '😢', '😡', '👍'];
+    const order = ['❤️', '👍'];
     const items = Array.from(counts.entries())
       .map(([emoji, count]) => ({ emoji, count }))
       .sort((a, b) => order.indexOf(a.emoji) - order.indexOf(b.emoji));
@@ -167,7 +168,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     setTimeout(() => {
       setExpandedFaq(idx);
       setLoadingFaq(null);
-    }, 400); // 400ms loading effect
+    }, 400);
   };
 
   useEffect(() => {
@@ -199,17 +200,15 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     }
   }, [expandedFaq, loadingFaq, faqs, faqList]);
   return (
-    <div className="w-[420px] h-[620px] text-white bg-gradient-to-b from-[#0B1020] to-[#0D1B2A] border border-white/10 rounded-2xl flex flex-col shadow-2xl overflow-hidden relative z-[1000] backdrop-blur-sm">
+    <div className="w-[420px] h-[620px] text-white bg-gradient-to-b from-[#0B1020] to-[#0D1B2A] border border-white/10 rounded-2xl flex flex-col shadow-2xl overflow-visible relative z-[1000] backdrop-blur-sm">
       {/* Header */}
       <div className="bg-gradient-to-r from-[#1B263B] to-[#0D1B2A] px-4 py-3 flex items-center justify-between border-b border-white/10">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center shadow-inner">🐮</div>
+          <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center shadow-inner overflow-hidden">
+            <img src="/assets/images/logo3.png" alt="BeefBeef Logo" className="w-7 h-7 object-contain" />
+          </div>
           <div className="leading-tight">
             <p className="text-sm font-semibold">Hỗ trợ BeefBeef</p>
-            <p className="text-xs text-white/60 flex items-center gap-1">
-              <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              Trực tuyến
-            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -217,9 +216,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             <button
               onClick={onShowInput}
               title="Quay lại câu hỏi"
-              className="px-2 py-1 rounded-lg text-xs bg-white/5 hover:bg-white/10 border border-white/10 transition"
+              aria-label="Quay lại"
+              className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center"
             >
-              Quay lại
+              <FiArrowLeft className="text-white" />
             </button>
           )}
           <button
@@ -288,16 +288,15 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         </div>
       ) : (
         <>
-          <div className="flex-1 overflow-y-auto hide-scrollbar px-4 py-3 space-y-3 text-sm scrollbar-thin scrollbar-thumb-yellow-400/80 scrollbar-track-transparent scrollbar-thumb-rounded-full hover:scrollbar-thumb-yellow-500 overflow-x-visible">
+          <div className="flex-1 relative overflow-y-auto px-4 py-3 space-y-3 text-sm hide-scrollbar scrollbar-thin scrollbar-thumb-yellow-400/80 scrollbar-track-transparent scrollbar-thumb-rounded-full hover:scrollbar-thumb-yellow-500 overflow-x-visible">
             {messages.map((msg, idx) => {
               const text = msg.text || msg.content || '';
               const senderId = msg.sender_id || '';
               const isMine = senderId === currentUserId || senderId === 'user';
               const messageType = msg.message_type || 'text';
-              // Nếu là tin nhắn ảnh, lấy từ trường image (backend trả về)
               const attachments = messageType === 'image'
-                ? (msg.image || msg.attachments || [])
-                : (msg.attachments || []);
+                ? (msg.image || msg.image || [])
+                : (msg.image || []);
 
               return (
                 <div
@@ -306,16 +305,14 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                 >
                   {/* Avatar trái */}
                   {!isMine && (
-                    <img
-                      src="/bot-avatar.png"
-                      alt="avatar"
-                      className="w-8 h-8 rounded-full mr-3 shrink-0 ring-2 ring-white/10"
-                    />
+                    <div className="w-8 h-8 rounded-full mr-3 shrink-0 ring-2 ring-white/10 bg-white/10 flex items-center justify-center">
+                      <FaRobot className="text-yellow-300" size={16} />
+                    </div>
                   )}
 
                   {/* Bubble + Emoji */}
                   <div
-                    className="relative group max-w-[75%]"
+                    className="relative group max-w-[55%]"
                     onMouseEnter={() => {
                       setHoveredIdx(idx);
                       // Hover vào bubble cũng giữ dải emoji
@@ -371,12 +368,12 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                       {/* Hiển thị hình ảnh nếu có */}
                       {messageType === 'image' && attachments.length > 0 && (
                         <div className="mt-3 space-y-2">
-                          {attachments.map((imageUrl, imgIdx) => (
+                          {attachments.map((imageUrl: string, imgIdx: number) => (
                             <div key={imgIdx} className="relative">
                               <img
                                 src={imageUrl}
                                 alt={`Hình ảnh ${imgIdx + 1}`}
-                                className="max-w-full h-auto rounded-xl border border-gray-200 cursor-pointer hover:opacity-90 transition-opacity"
+                                className={`h-auto rounded-xl border border-gray-200 cursor-pointer hover:opacity-90 transition-opacity ${isMine ? 'w-[169px]' : 'w-[169px]'}`}
                                 onClick={() => window.open(imageUrl, '_blank')}
                                 onError={(e) => {
                                   const target = e.target as HTMLImageElement;
@@ -499,13 +496,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                               {emoji}
                             </button>
                           ))}
-                          <button
-                            className="ml-1 w-7 h-7 rounded-full bg-gray-100 hover:bg-gray-200 border flex items-center justify-center text-lg"
-                            onClick={() => setReactionFullPickerIdx(idx)}
-                            title="Thêm emoji"
-                          >
-                            +
-                          </button>
                         </div>
                       )}
                       {reactionFullPickerIdx === idx && (
@@ -528,11 +518,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
                   {/* Avatar phải */}
                   {isMine && (
-                    <img
-                      src="/user-avatar.png"
-                      alt="avatar"
-                      className="w-8 h-8 rounded-full ml-3 shrink-0 ring-2 ring-white/10"
-                    />
+                    <div className="w-8 h-8 rounded-full ml-3 shrink-0 ring-2 ring-white/10 bg-white/10 flex items-center justify-center">
+                      <FiUser className="text-white" size={16} />
+                    </div>
                   )}
                 </div>
               );
