@@ -10,11 +10,11 @@ import {
   FaSearch,
   FaUserCheck,
 } from 'react-icons/fa';
+import { RootState } from '@/redux/store';
+import { useDispatch, useSelector } from 'react-redux';
 import { FiArrowRight } from 'react-icons/fi';
 import { MdInfo } from 'react-icons/md';
 import { useLocation, Link } from 'react-router-dom';
-import Cookies from 'js-cookie';
-import { useDispatch } from 'react-redux';
 import { openSearchModal } from '../../../redux/feature/modal/searchModalSlice';
 
 interface PrimarySidebarProps {
@@ -47,8 +47,7 @@ const PrimarySidebar: React.FC<PrimarySidebarProps> = ({ toggleSidebar }) => {
    
   ];
 
-  const userInfo = Cookies.get('userInfo');
-  const user = userInfo ? JSON.parse(userInfo) : null;
+  const user = useSelector((state: RootState) => state.auth.userInfo);
   const dispatch = useDispatch();
 
   const searchItem = {
