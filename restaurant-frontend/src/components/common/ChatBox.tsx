@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { toast } from 'react-toastify';
 import { socket } from '@/utils/socket';
 import ChatToggleButton from './ChatToggleButton';
 import ChatWindow from './ChatWindow';
@@ -7,6 +8,7 @@ import { getAnswerByQuestion } from '@/api/FaqApi';
 import { useChatbox } from '@/hooks/useUserChatbox';
 import { getUnreadMessageCount, markMessageAsRead } from '@/api/ChatboxApi';
 import { getMessages } from '@/api/ChatboxApi';
+import { isAuthenticated } from '@/utils/tokenHelpers';
 
 interface Message {
   sender: 'user' | 'bot';
@@ -58,13 +60,14 @@ const Chatbox: React.FC = () => {
   }, [isOpen]);
   const [input, setInput] = useState('');
   const [showInput, setShowInput] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-  // const [messageReactions, setMessageReactions] = useState<{ [key: string]: string }>({});
-
   const isSending = useRef(false);
 
   const toggleShowInput = () => setShowInput((prev) => !prev);
   const toggleChat = () => {
+    if (!isAuthenticated()) {
+      toast.error('Bạn vui lòng đăng nhập để sử dụng chatbox');
+      return;
+    }
     setIsOpen(!isOpen);
     setShowInput(false);
   };
@@ -158,14 +161,7 @@ const Chatbox: React.FC = () => {
         <ChatToggleButton unreadCount={unreadCount} onClick={toggleChat} />
       )}
 
-      {toastMessage && (
-        <div
-          onClick={() => setToastMessage(null)}
-          className="absolute -top-12 right-0 bg-yellow-300 text-black text-sm px-4 py-2 rounded shadow-lg cursor-pointer animate-fadeIn"
-        >
-          {toastMessage}
-        </div>
-      )}
+    
     </div>
   );
 };

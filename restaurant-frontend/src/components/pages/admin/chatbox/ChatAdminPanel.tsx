@@ -114,12 +114,9 @@ const ChatAdminPanel: React.FC = () => {
       console.error('Error saving reaction:', error);
     }
   };
-
   const handleReply = (msg: ChatMessage) => {
     setReplyingTo(msg);
   };
-
-
   const showReactionPicker = (idx: number) => {
     const picker = new EmojiButton({ position: 'top', theme: 'light' });
     picker.on('emoji', (selection) => {
@@ -276,7 +273,23 @@ const ChatAdminPanel: React.FC = () => {
                             <div className="text-gray-600 text-sm truncate">{m.reply_to.content}</div>
                           </div>
                         )}
-                        <div>{m.content}</div>
+                        {/* Hiển thị ảnh nếu là tin nhắn ảnh */}
+                        {m.message_type === 'image' && (Array.isArray(m.image) ? m.image.length > 0 : false) && (
+                          <div className="mt-2 space-y-2">
+                            {(m.image || []).map((imgUrl: string, imgIdx: number) => (
+                              <img
+                                key={imgIdx}
+                                src={imgUrl}
+                                alt={`Hình ảnh ${imgIdx + 1}`}
+                                className="max-w-full h-auto rounded-xl border border-gray-300 cursor-pointer hover:opacity-90 transition-opacity"
+                                onClick={() => window.open(imgUrl, '_blank')}
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                              />
+                            ))}
+                          </div>
+                        )}
+                        {/* Nếu không phải ảnh thì hiển thị content như cũ */}
+                        {m.message_type !== 'image' && <div>{m.content}</div>}
                         <div className="mt-1 flex justify-end">
                           <span className={`text-xs ${isMine ? 'text-white/70' : 'text-gray-500'}`}>
                             {new Date(m.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

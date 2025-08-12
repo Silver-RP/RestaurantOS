@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import {
   FaHome,
@@ -24,7 +23,10 @@ import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@/redux/hook';
 import { BsChatDots } from 'react-icons/bs';
+import React, { useState } from 'react';
+import FaceScanModal from '@/components/common/FaceScanModal';
 import { useAdminChatbox } from '@/hooks/useAdminChatbox';
+import ChatboxNavWithFaceScan from '../components/common/ChatboxNavWithFaceScan';
 
 const AdminLayout: React.FC = () => {
   const { totalUnreadCount } = useAdminChatbox();
@@ -46,19 +48,19 @@ const AdminLayout: React.FC = () => {
     const userInfo = JSON.parse(Cookies.get('userInfo') || '{}');
 
     if (userInfo) {
-        (window as any).google?.accounts.id.disableAutoSelect?.();
-        Cookies.remove('userInfo');
-        localStorage.removeItem('token');
-        clearAuthData();
-        setTimeout(() => {
-          navigate('/admin/login'); 
-        }, 1000);
+      (window as any).google?.accounts.id.disableAutoSelect?.();
+      Cookies.remove('userInfo');
+      localStorage.removeItem('token');
+      clearAuthData();
+      setTimeout(() => {
+        navigate('/admin/login');
+      }, 1000);
       return;
     }
-    
+
 
     try {
-      await dispatch(LogoutUser()).unwrap(); 
+      await dispatch(LogoutUser()).unwrap();
       console.log('LogoutUser called');
     } catch (err) {
       console.error('Logout failed:', err);
@@ -69,7 +71,7 @@ const AdminLayout: React.FC = () => {
     }
   };
 
- 
+
 
   return (
     <div className="flex min-h-screen bg-adminbg text-admintext">
@@ -167,8 +169,7 @@ const AdminLayout: React.FC = () => {
               expanded={isSidebarOpen}
               currentPath={location.pathname}
             />
-            <NavItem
-              href="/admin/chatbox"
+            <ChatboxNavWithFaceScan
               icon={
                 <div className="relative flex items-center justify-center" style={{ minWidth: 32, minHeight: 32 }}>
                   <BsChatDots className="text-2xl" />
@@ -183,6 +184,13 @@ const AdminLayout: React.FC = () => {
                 </div>
               }
               label="Chatbox"
+              expanded={isSidebarOpen}
+              currentPath={location.pathname}
+            />
+            <NavItem
+              href="/admin/register-cashier"
+              icon={<FaUser />}
+              label="Đăng ký nhân viên"
               expanded={isSidebarOpen}
               currentPath={location.pathname}
             />
@@ -205,7 +213,7 @@ const AdminLayout: React.FC = () => {
 
           </nav>
         </div>
-       
+
         <div className="my-5 flex justify-center">
           <NavItem
             onClick={handleLogout}
@@ -213,7 +221,7 @@ const AdminLayout: React.FC = () => {
             label="Đăng xuất"
             expanded={isSidebarOpen}
             className="text-red-400"
-            currentPath={location.pathname} href={''}          />
+            currentPath={location.pathname} href={''} />
         </div>
       </aside>
       {/* Main Content */}

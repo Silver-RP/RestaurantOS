@@ -21,7 +21,8 @@ export interface SendMessageDto {
   replyTo?: string;
   receiverId?: string;
   sender_role?: 'user' | 'cashier';
-  attachments?: string[];
+  image?: string[];
+  audio?: string[]; 
 }
 
 // Tin nhắn trả về

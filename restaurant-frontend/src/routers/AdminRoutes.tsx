@@ -41,6 +41,7 @@ import AdminLoginPage from '@/components/pages/admin/login/Index';
 import LoyaltyAdmin from '@/components/pages/admin/loyalty';
 import ChatAdminPanel from "../components/pages/admin/chatbox/ChatAdminPanel";
 import ContactPage from "../components/pages/admin/contact";
+import RegisterCashier from '@/components/pages/admin/register-cashier/RegisterCashier';
 
 
 const adminRoutes = [
@@ -103,6 +104,7 @@ const adminRoutes = [
       },
       { path: "chatbox", element: <ChatAdminPanel /> },
       { path: 'loyalty', element: <LoyaltyAdmin /> },
+      { path: 'register-cashier', element: <RegisterCashier /> },
 
       { path: '*', element: <Navigate to="/admin" /> },
     ],

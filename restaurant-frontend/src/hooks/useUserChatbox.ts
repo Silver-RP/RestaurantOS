@@ -19,14 +19,14 @@ export const useChatbox = () => {
       try {
         console.log('🔄 Đang khởi tạo chat session...');
         console.log('🔍 API Base URL:', 'https://api-beefbeef-restaurant.onrender.com/api');
-        
+
         // Kiểm tra token trước khi gọi API
         const token = document.cookie.split('; ').find(row => row.startsWith('accessToken='));
         console.log('🔑 Token exists:', !!token);
-        
+
         const chat = await getChatSession();
         console.log('✅ Chat session created:', chat);
-        
+
         setChatId(chat._id);
         setUserId(chat.user_id);
 
@@ -52,7 +52,7 @@ export const useChatbox = () => {
           url: err?.config?.url,
           method: err?.config?.method,
         });
-        
+
         // Kiểm tra các lỗi phổ biến
         if (err?.response?.status === 404) {
           console.error('❌ API endpoint không tồn tại hoặc server chưa chạy');
@@ -80,7 +80,7 @@ export const useChatbox = () => {
     socket.on('typing', ({ userId, typing }) => {
       setTypingUserId(typing ? userId : null);
     });
-    
+
     socket.on('messageReactionUpdated', ({ messageId, reactions }) => {
       setMessages((prev) =>
         prev.map((msg) =>
@@ -88,26 +88,31 @@ export const useChatbox = () => {
         )
       );
     });
-    
+
     return () => {
       socket.off('message');
       socket.off('typing');
-      socket.off('messageReactionUpdated'); 
+      socket.off('messageReactionUpdated');
     };
   }, []);
 
   const handleSend = async (content: string, replyTo?: string, attachments?: string[]) => {
-    if (!chatId || ( !content.trim() && (!attachments || attachments.length === 0) ) || isSending.current) return;
+    if (!chatId || (!content.trim() && (!attachments || attachments.length === 0)) || isSending.current) return;
 
     isSending.current = true;
     try {
-      await sendMessage({
+      const sentMsg = await sendMessage({
         chatId,
         content,
         replyTo,
         senderId: userId ?? undefined,
         role: 'user',
-        attachments,
+        image: attachments, // Đúng tên trường
+      });
+      // Thêm tin nhắn vừa gửi vào state nếu chưa có
+      setMessages((prev) => {
+        const exists = prev.some((m) => m._id === sentMsg._id);
+        return exists ? prev : [...prev, sentMsg];
       });
     } catch (error) {
       console.error('Send message failed:', error);

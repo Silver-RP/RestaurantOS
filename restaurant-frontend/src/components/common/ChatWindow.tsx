@@ -122,6 +122,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
   const handleSendClick = () => {
     if (selectedImage) {
+      const imageToSend = selectedImage;
+      setSelectedImage(null); // Reset trước khi đọc để tránh trùng
       const reader = new FileReader();
       reader.onloadend = () => {
         const dataUrl = reader.result as string;
@@ -129,8 +131,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         onSend(replyTarget?.id, [dataUrl]);
         setReplyTarget(null);
       };
-      reader.readAsDataURL(selectedImage);
-      setSelectedImage(null);
+      reader.readAsDataURL(imageToSend);
     } else {
       onSend(replyTarget?.id);
       setReplyTarget(null);
@@ -293,7 +294,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
               const senderId = msg.sender_id || '';
               const isMine = senderId === currentUserId || senderId === 'user';
               const messageType = msg.message_type || 'text';
-              const attachments = msg.attachments || [];
+              // Nếu là tin nhắn ảnh, lấy từ trường image (backend trả về)
+              const attachments = messageType === 'image'
+                ? (msg.image || msg.attachments || [])
+                : (msg.attachments || []);
 
               return (
                 <div

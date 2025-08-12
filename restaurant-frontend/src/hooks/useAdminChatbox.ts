@@ -57,7 +57,11 @@ export const useAdminChatbox = () => {
     if (!currentChat || !content.trim()) return;
 
     try {
-      await sendMessage({ chatId: currentChat._id, content });
+      const sentMsg = await sendMessage({ chatId: currentChat._id, content });
+      setMessages((prev) => {
+        const exists = prev.some((m) => m._id === sentMsg._id);
+        return exists ? prev : [...prev, sentMsg];
+      });
     } catch (err: any) {
       const errorMsg = err?.response?.data?.message || 'Đã xảy ra lỗi khi gửi tin nhắn';
       alert(errorMsg); 
@@ -106,11 +110,8 @@ export const useAdminChatbox = () => {
     });
     console.log('[SOCKET JOIN]', { userId: 'cashier', chatId: session._id, roles: 'cashier' });
   };
-  console.log('[DANH SÁCH PHIÊN CHAT]', sessions);
   
-  const totalUnreadCount = sessions.reduce((sum, s) => sum + (s.unreadCount ?? 0), 0);
-  console.log('[TỔNG SỐ TIN NHẮN CHƯA ĐỌC]', totalUnreadCount);
-  
+  const totalUnreadCount = sessions.reduce((sum, s) => sum + (s.unreadCount ?? 0), 0);  
   return {
     sessions,
     currentChat,

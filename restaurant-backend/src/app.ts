@@ -45,8 +45,9 @@ import { Server } from 'socket.io';
 import { initSocket } from './socket/socket';
 import ChatRoutes from './routes/ChatRoutes'; 
 import { scheduleLoyaltyYearlyJob } from './cron/loyaltyYearlyJob';
-import { scheduleBirthdayVoucherJob } from './cron/BirthdayVoucherJob';
-
+import { scheduleBirthdayVoucherJob } from './cron/BirthdayVoucherJob';// src/models/EmployeeFaceModel.ts
+import authFaceRouter from './routes/authFaceRouter';
+import { loadFaceApiModels } from './services/FaceRecognitionService';
 const app = express();
 const server = createServer(app);
 
@@ -143,7 +144,7 @@ app.use(passport.initialize());
 app.get('/', (req, res) => {
   res.send('API is running...');
 });
-
+app.use('/api/auth_cashier', authFaceRouter);
 app.use('/api/auth', AuthRoutes);
 app.use('/api/user', UserRoutes);
 app.use('/api/profile', AuthMiddleWare.verifyToken, ProfileRoutes);
@@ -187,12 +188,14 @@ app.use('/api/inventory', AuthMiddleWare.verifyToken, InventoryRoutes);
 app.use('/api/voucher', VoucherRoutes);
 app.use('/api/faq', FaqRoutes);
 app.use('/api/contact', ContactRoutes);
-
 app.use('/api/sidebar', SidebarRoutes);
-server.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
-  console.log(`Mongo URI: ${process.env.MONGO_URI ? 'Connected' : 'Not configured'}`);
-  console.log(`Swagger UI available at http://localhost:${port}/api-docs`);
-  console.log(`Socket.io server initialized`);
-  console.log(`Chat API available at http://localhost:${port}/api/chat`);
-});
+(async () => {
+  await loadFaceApiModels();
+  server.listen(port, () => {
+    console.log(`Server is running on http://localhost:${port}`);
+    console.log(`Mongo URI: ${process.env.MONGO_URI ? 'Connected' : 'Not configured'}`);
+    console.log(`Swagger UI available at http://localhost:${port}/api-docs`);
+    console.log(`Socket.io server initialized`);
+    console.log(`Chat API available at http://localhost:${port}/api/chat`);
+  });
+})();

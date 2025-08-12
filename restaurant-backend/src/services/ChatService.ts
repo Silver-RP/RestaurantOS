@@ -296,8 +296,8 @@ class ChatService {
     const isFirstMessage = !(await ChatMessageModel.exists({ chat_id: chat._id }));
 
     const hasImageUrl =
-      Array.isArray((data as any).attachments) &&
-      (data as any).attachments.length > 0;
+      Array.isArray((data as any).image ) &&
+      (data as any).image.length > 0;
 
     const messageType: 'text' | 'image' | 'file' =
       hasImageUrl ? 'image' : data.message_type || 'text';
@@ -310,7 +310,8 @@ class ChatService {
       content: data.content,
       is_bot_reply: false,
       message_type: messageType,
-      attachments: hasImageUrl ? (data as any).attachments : [],
+      image: hasImageUrl ? (data as any).image : [],
+      audio: Array.isArray((data as any).audio) ? (data as any).audio : [],
       sent_at: new Date(),
       read_at: null,
       reply_to: data.replyTo ? new mongoose.Types.ObjectId(data.replyTo) : null,
