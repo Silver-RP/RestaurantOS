@@ -260,7 +260,7 @@ const ChatAdminPanel: React.FC = () => {
                         </div>
                       )}
                       <div
-                        className={`relative group inline-block ${isMine ? 'px-4 py-2' : 'px-3 py-2'} rounded-2xl shadow-md whitespace-pre-wrap break-words max-w-[80%] ${isMine
+                        className={`relative group inline-block ${isMine ? 'px-4 py-2' : 'px-3 py-2'} rounded-2xl shadow-md whitespace-pre-wrap break-words max-w-[50%] ${isMine
                           ? 'ml-auto bg-[#3B82F6] text-white hover:bg-[#2563EB]'
                           : 'mr-auto bg-gray-100 text-gray-900'
                           }`}
@@ -281,7 +281,7 @@ const ChatAdminPanel: React.FC = () => {
                                 key={imgIdx}
                                 src={imgUrl}
                                 alt={`Hình ảnh ${imgIdx + 1}`}
-                                className="max-w-full h-auto rounded-xl border border-gray-300 cursor-pointer hover:opacity-90 transition-opacity"
+                                className="w-[120px] h-auto rounded-xl border border-gray-300 cursor-pointer hover:opacity-90 transition-opacity"
                                 onClick={() => window.open(imgUrl, '_blank')}
                                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                               />

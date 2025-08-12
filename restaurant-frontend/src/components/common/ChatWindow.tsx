@@ -5,6 +5,7 @@ import { FiCornerDownLeft, FiMoreVertical, FiSend, FiArrowLeft, FiUser } from 'r
 import { FaRobot } from 'react-icons/fa';
 import EmojiPicker, { Theme } from 'emoji-picker-react';
 import { socket } from '@/utils/socket';
+import { deleteMessage } from '@/api/ChatboxApi';
 import { EmojiButton } from '@joeattardi/emoji-button';
 
 type UnifiedMessage = {
@@ -18,6 +19,7 @@ type UnifiedMessage = {
   image?: string[];
   _id?: string;
   reply_to?: { _id?: string; content?: string; sender_id?: string } | null;
+  is_deleted?: boolean;
 };
 
 interface ChatWindowProps {
@@ -33,7 +35,7 @@ interface ChatWindowProps {
   currentUserId?: string;
   chatId?: string;
   faqs: { question: string; answer: string }[];
-    onInputKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  onInputKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 
 }
 const ChatWindow: React.FC<ChatWindowProps> = ({
@@ -59,6 +61,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   const hideActionTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const actionHideTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reactionPickerRef = useRef<HTMLDivElement | null>(null);
+  const moreMenuRef = useRef<HTMLDivElement | null>(null);
   const popularEmojis = ['❤️', '👍'];
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const messageEndRef = useRef<HTMLDivElement | null>(null);
@@ -71,7 +74,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   const typingInterval = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [faqAnswers, setFaqAnswers] = useState<{ [key: number]: string }>({});
   const [replyTarget, setReplyTarget] = useState<{ id: string; preview: string } | null>(null);
-  
+  const [moreMenuIdx, setMoreMenuIdx] = useState<number | null>(null);
+  const [hiddenForMe, setHiddenForMe] = useState<Set<string>>(new Set());
+
   const aggregateReactions = (reactions?: { emoji: string; userId?: string }[]) => {
     if (!reactions || reactions.length === 0) return { items: [] as { emoji: string; count: number }[], total: 0 };
     const counts = new Map<string, number>();
@@ -83,7 +88,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     const total = reactions.length;
     return { items, total };
   };
-  
+
   const formatTime = (value?: string | number) => {
     try {
       if (!value) return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -104,6 +109,12 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         setReactionPickerLock(false);
         setReactionPickerIdx(null);
       }
+      if (
+        moreMenuRef.current &&
+        !moreMenuRef.current.contains(event.target as Node)
+      ) {
+        setMoreMenuIdx(null);
+      }
     }
     if (reactionPickerLock) {
       document.addEventListener('mousedown', handleClickOutside);
@@ -115,6 +126,33 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       if (hideActionTimeout.current) clearTimeout(hideActionTimeout.current);
     };
   }, [reactionPickerLock]);
+
+  // Load/Save locally hidden messages per chat
+  useEffect(() => {
+    const key = chatId ? `chat_hidden_${chatId}` : '';
+    if (!key) return;
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw) setHiddenForMe(new Set(JSON.parse(raw)));
+    } catch {
+      // ignore
+    }
+  }, [chatId]);
+
+  const hideMessageForMe = (messageId?: string) => {
+    if (!chatId || !messageId) return;
+    const key = `chat_hidden_${chatId}`;
+    setHiddenForMe((prev) => {
+      const next = new Set(prev);
+      next.add(messageId);
+      try {
+        localStorage.setItem(key, JSON.stringify(Array.from(next)));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  };
 
   // Tự cuộn xuống khi có tin nhắn mới hoặc đổi chế độ
   useEffect(() => {
@@ -147,6 +185,27 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       userId: currentUserId,
       chatId,
     });
+  };
+
+  const handleCopyMessage = async (text?: string) => {
+    try {
+      if (!text) return;
+      await navigator.clipboard.writeText(text);
+      // optional: toast here if needed
+    } catch (e) {
+      console.error('Không thể sao chép', e);
+    }
+  };
+
+  const handleDownloadImage = (url: string) => {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'image.jpg';
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
   };
   const showReactionPicker = (idx: number, messageId: string) => {
     if (reactionPickerIdx === idx && reactionPickerLock) {
@@ -252,7 +311,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                 {loadingFaq === idx && (
                   <div className="flex items-start mt-1">
                     {/* Avatar bot */}
-                    <span className="text-2xl mr-3">🤖</span>
+                    <span className="text-2xl mr-3">                    <FaRobot className="text-yellow-300" size={16} />
+                    </span>
                     {/* Bubble loading */}
                     <div className="relative group max-w-[75%]">
                       <div className="inline-block min-w-[80px] px-4 py-3 rounded-2xl shadow bg-white text-black">
@@ -282,7 +342,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             onClick={onShowInput}
             className="mt-4 text-sm underline hover:text-yellow-300 flex items-center gap-2"
           >
-            <span>🤖</span>
+            <span>                      <FaRobot className="text-yellow-300" size={16} />
+            </span>
             <span>Trợ lý bằng AI</span>
           </button>
         </div>
@@ -297,7 +358,24 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
               const attachments = messageType === 'image'
                 ? (msg.image || msg.image || [])
                 : (msg.image || []);
+              const replyPreview: string | undefined = (() => {
+                const reply = (msg as unknown as { reply_to?: { _id?: string; id?: string; content?: string; text?: string } }).reply_to;
+                if (!reply) return undefined;
+                const inline = reply.content || reply.text;
+                if (inline && inline.trim().length > 0) return inline;
+                const replyId = reply._id || reply.id;
+                if (!replyId) return undefined;
+                const found = (messages as unknown as Array<{ _id?: string; text?: string; content?: string; message_type?: string }>).find(
+                  (m) => m._id === replyId,
+                );
+                if (!found) return undefined;
+                if (found.message_type === 'image') return '[image]';
+                return found.text || found.content;
+              })();
 
+              if (msg.is_deleted || (msg._id && hiddenForMe.has(msg._id))) {
+                return null;
+              }
               return (
                 <div
                   key={idx}
@@ -349,6 +427,13 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                         ${!isMine ? 'max-h-[320px] overflow-y-auto' : ''}
                       `}
                     >
+                      {/* Reply preview inside bubble */}
+                      {msg.reply_to && (
+                        <div className={`${isMine ? 'bg-amber-100/70 border-amber-300/70' : 'bg-gray-100/80 border-gray-300/70'} text-[11px] rounded-lg mb-2 px-2 py-1 border-l-4 ${isMine ? 'border-l-yellow-400' : 'border-l-gray-400'}`}>
+                          <span className="opacity-70 mr-1">Trả lời:</span>
+                          <span className="line-clamp-2 break-words">{replyPreview || 'Tin nhắn'}</span>
+                        </div>
+                      )}
                       {/* Nội dung text */}
                       {(!isMine && messageType === 'text') ? (
                         <ReactMarkdown
@@ -373,7 +458,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                               <img
                                 src={imageUrl}
                                 alt={`Hình ảnh ${imgIdx + 1}`}
-                                className={`h-auto rounded-xl border border-gray-200 cursor-pointer hover:opacity-90 transition-opacity ${isMine ? 'w-[169px]' : 'w-[169px]'}`}
+                                className="w-[120px] h-auto rounded-xl border border-gray-200 cursor-pointer hover:opacity-90 transition-opacity"
                                 onClick={() => window.open(imageUrl, '_blank')}
                                 onError={(e) => {
                                   const target = e.target as HTMLImageElement;
@@ -397,9 +482,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                       const { items, total } = aggregateReactions(msg.reactions);
                       return (
                         <div
-                          className={`absolute text-[13px] font-medium ${
-                            isMine ? 'bottom-[-14px] left-[-6px]' : 'bottom-[-14px] right-[-6px]'
-                          } bg-white rounded-full border border-gray-200 shadow px-1.5 py-[2px] flex items-center gap-1`}
+                          className={`absolute text-[13px] font-medium ${isMine ? 'bottom-[-14px] left-[-6px]' : 'bottom-[-14px] right-[-6px]'
+                            } bg-white rounded-full border border-gray-200 shadow px-1.5 py-[2px] flex items-center gap-1`}
                         >
                           {items.map(({ emoji }, i) => (
                             <span key={i} className="leading-none">{emoji}</span>
@@ -451,16 +535,85 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                         😊
                       </button>
                       <button
-                        onClick={() => alert('More')}
+                        onClick={() => setMoreMenuIdx((prev) => (prev === idx ? null : idx))}
                         className="action-btn w-8 h-8 rounded-full bg-white border border-gray-200 shadow flex items-center justify-center hover:scale-110 transition"
                         title="More"
                       >
                         <FiMoreVertical className="text-gray-800" />
                       </button>
+                      {moreMenuIdx === idx && (
+                        <div
+                          ref={moreMenuRef}
+                          className={`absolute top-8 ${isMine ? 'right-0' : 'left-0'} z-[999] bg-white border border-gray-200 shadow-lg text-xs min-w-[150px] text-gray-800 `}
+                        >
+                          <button
+                            className="w-full text-left px-3 py-2 hover:bg-gray-100 text-gray-800 normal-case"
+                            onClick={() => {
+                              setReplyTarget(null);
+                              setMoreMenuIdx(null);
+                              const text = msg.text || msg.content || '';
+                              handleCopyMessage(text);
+                            }}
+                          >
+                            Sao chép nội dung
+                          </button>
+                          {messageType === 'image' && attachments.length > 0 && (
+                            <button
+                              className="w-full text-left px-3 py-2 hover:bg-gray-100 text-gray-800 normal-case"
+                              onClick={() => {
+                                setMoreMenuIdx(null);
+                                handleDownloadImage(attachments[0]);
+                              }}
+                            >
+                              Tải ảnh xuống
+                            </button>
+                          )}
+                          {msg._id && (
+                            <button
+                              className="w-full text-left px-3 py-2 hover:bg-gray-100 text-gray-800 normal-case"
+                              onClick={() => {
+                                setReplyTarget({ id: msg._id as string, preview: (msg.text || msg.content || '').slice(0, 120) });
+                                setMoreMenuIdx(null);
+                              }}
+                            >
+                              Trả lời tin nhắn
+                            </button>
+                          )}
+                          {msg._id && (
+                            <>
+                              <button
+                                className="w-full text-left px-3 py-2 hover:bg-gray-100 text-red-600 normal-case"
+                                onClick={async () => {
+                                  if (!chatId) return;
+                                  try {
+                                    await deleteMessage(chatId, msg._id as string);
+                                    hideMessageForMe(msg._id as string);
+                                    setMoreMenuIdx(null);
+                                  } catch (e) {
+                                    console.error('Xoá tin nhắn thất bại', e);
+                                  }
+                                }}
+                              >
+                                Thu hồi (xóa cho tất cả)
+                              </button>
+                              <button
+                                className="w-full text-left px-3 py-2 hover:bg-gray-100 text-gray-700 normal-case"
+                                onClick={() => {
+                                  hideMessageForMe(msg._id as string);
+                                  setMoreMenuIdx(null);
+                                }}
+                              >
+                                Ẩn ở phía tôi
+                              </button>
+                            </>
+                          )}
+                        
+                        </div>
+                      )}
                       {reactionPickerIdx === idx && reactionPickerLock && (
                         <div
                           ref={reactionPickerRef}
-                          className={`absolute -top-12 ${isMine ? 'right-0' : 'left-0'} z-[9999] bg-white rounded-full shadow-lg flex items-center gap-2 px-2.5 py-1.5 border border-gray-200`} 
+                          className={`absolute -top-12 ${isMine ? 'right-0' : 'left-0'} z-[9999] bg-white rounded-full shadow-lg flex items-center gap-2 px-2.5 py-1.5 border border-gray-200`}
                           style={{ pointerEvents: 'auto' }}
                           onMouseEnter={() => {
                             // Hover vào dải emoji thì giữ lại, clear timeout
@@ -545,48 +698,48 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             )}
             <div className="flex items-center gap-2 relative z-20">
               <div className="flex items-center gap-1 relative z-20">
-              <button
-                className="text-white/90 hover:text-yellow-300 text-lg focus:outline-none focus:ring-2 focus:ring-yellow-300 rounded-lg px-2"
-                style={{ zIndex: 30 }}
-                onClick={() => setShowEmojiPicker((prev) => !prev)}
-                tabIndex={0}
-                aria-label="Chọn emoji"
-              >
-                😊
-              </button>
-              <label className="cursor-pointer text-white/90 hover:text-yellow-300 text-lg rounded-lg px-2" style={{ zIndex: 30 }}>
-                📷
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  hidden
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) setSelectedImage(file);
-                  }}
-                />
-              </label>
-              <button
-                onClick={() => alert('🚧 Tính năng ghi âm sẽ sớm ra mắt')}
-                className="text-white/90 hover:text-yellow-300 text-lg rounded-lg px-2"
-                style={{ zIndex: 30 }}
-                tabIndex={0}
-                aria-label="Ghi âm"
-              >
-                🎤
-              </button>
-              <button
-                onClick={() => alert('🔗 Gửi link sẽ sớm được hỗ trợ')}
-                className="text-white/90 hover:text-yellow-300 text-lg rounded-lg px-2"
-                style={{ zIndex: 30 }}
-                tabIndex={0}
-                aria-label="Đính kèm liên kết"
-              >
-                🔗
-              </button>
-            </div>
-              
+                <button
+                  className="text-white/90 hover:text-yellow-300 text-lg focus:outline-none focus:ring-2 focus:ring-yellow-300 rounded-lg px-2"
+                  style={{ zIndex: 30 }}
+                  onClick={() => setShowEmojiPicker((prev) => !prev)}
+                  tabIndex={0}
+                  aria-label="Chọn emoji"
+                >
+                  😊
+                </button>
+                <label className="cursor-pointer text-white/90 hover:text-yellow-300 text-lg rounded-lg px-2" style={{ zIndex: 30 }}>
+                  📷
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) setSelectedImage(file);
+                    }}
+                  />
+                </label>
+                <button
+                  onClick={() => alert('🚧 Tính năng ghi âm sẽ sớm ra mắt')}
+                  className="text-white/90 hover:text-yellow-300 text-lg rounded-lg px-2"
+                  style={{ zIndex: 30 }}
+                  tabIndex={0}
+                  aria-label="Ghi âm"
+                >
+                  🎤
+                </button>
+                <button
+                  onClick={() => alert('🔗 Gửi link sẽ sớm được hỗ trợ')}
+                  className="text-white/90 hover:text-yellow-300 text-lg rounded-lg px-2"
+                  style={{ zIndex: 30 }}
+                  tabIndex={0}
+                  aria-label="Đính kèm liên kết"
+                >
+                  🔗
+                </button>
+              </div>
+
               <div className="flex-1 flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-3 py-2 min-w-0">
                 <input
                   value={input}

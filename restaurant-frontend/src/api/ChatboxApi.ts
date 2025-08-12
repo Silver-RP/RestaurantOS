@@ -120,3 +120,7 @@ export const getUnreadMessageCount = async (): Promise<number> => {
 export const markMessageAsRead = async (chatId: string, messageId: string): Promise<void> => {
   await axiosInstance.patch(`/chat/${chatId}/read`, { messageId });
 };
+
+export const deleteMessage = async (chatId: string, messageId: string): Promise<void> => {
+  await axiosInstance.delete(`/chat/${chatId}/message/${messageId}`);
+};
