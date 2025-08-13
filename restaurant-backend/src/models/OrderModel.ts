@@ -1,6 +1,7 @@
 import { Schema, model, Document, Types, PaginateModel } from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
-import { IAddress } from './AddressModel';
+// import { IAddress } from './AddressModel';
+import { IAddress } from '../types/address.type';
 import { IOrderDetail } from './OrderDetailModel';
 
 export interface IOrderPopulated extends Omit<IOrder, 'address_id'> {
@@ -81,8 +82,8 @@ const OrderSchema = new Schema<IOrder>(
       phone: { type: String, required: true },
       province: { type: String, required: true },
       district: { type: String, required: true },
-      street_address: { type: String, required: true },
       ward: { type: String, required: true },
+      street_address: { type: String, required: true },
       address_type: { type: String, enum: ['HOME', 'WORK', 'OTHER'], default: 'HOME' },
     },
     status: {

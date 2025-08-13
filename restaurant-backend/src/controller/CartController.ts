@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import cartService from '../services/CartService';
-import { IUser } from '../models/UserModel';
+import { IUser } from '../types/user.type';
 
 class CartController {
   static async getCartItems(req: Request, res: Response): Promise<void> {
