@@ -36,8 +36,6 @@ class AddressService {
       is_default,
     });
 
-    console.log('Creating new address:', newAddress);
-
     await newAddress.save();
     return newAddress;
   }
