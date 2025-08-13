@@ -14,11 +14,15 @@ class AddressService {
       address_type,
       is_default = false,
     } = addressData;
-    const finalProvince = province;
+    let finalProvince = province;
     const finalWard = ward;
     const finalStreet = street_address;
     if (is_default) {
       await Address.updateMany({ user_id, is_default: true }, { $set: { is_default: false } });
+    }
+
+    if(finalProvince == '79'){
+      finalProvince = 'TP. Hồ Chí Minh';
     }
     const newAddress = new Address({
       user_id,
@@ -32,9 +36,12 @@ class AddressService {
       is_default,
     });
 
+    console.log('Creating new address:', newAddress);
+
     await newAddress.save();
     return newAddress;
   }
+
   async getAllAddresses(user_id: string): Promise<any[]> {
     if (!mongoose.Types.ObjectId.isValid(user_id)) {
       throw new Error('Invalid user_id format');
@@ -42,6 +49,7 @@ class AddressService {
     const addresses = await Address.find({ user_id });
     return addresses;
   }
+
   async updateAddress(
     addressId: string,
     updateData: Partial<IAddress>,
