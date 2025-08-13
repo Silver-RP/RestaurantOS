@@ -16,7 +16,7 @@ const EnterOTP = () => {
   const navigate = useNavigate();
   const email = location.state?.email || "";
 
-  const [countdown, setCountdown] = useState(60); // ⏳ 60 giây đếm ngược
+  const [countdown, setCountdown] = useState(180); // ⏳ 3 phút đếm ngược
   const [resendLoading, setResendLoading] = useState(false);
   const loginPath = location.state?.loginPath || "/login";
 
@@ -73,7 +73,7 @@ const EnterOTP = () => {
       setResendLoading(true);
       await authApi.sendOtpEmail(email);
       toast.success("Đã gửi lại mã OTP!");
-      setCountdown(60); // Reset lại 60 giây
+      setCountdown(180); // Reset lại 3 phút
     } catch (err: any) {
       toast.error("Gửi lại OTP thất bại!");
     } finally {
@@ -133,7 +133,7 @@ const EnterOTP = () => {
           <p className="text-gray-300">
             {countdown > 0 ? (
               <>
-                Mã OTP sẽ hết hạn sau: <strong>{countdown}s</strong>
+                Mã OTP sẽ hết hạn sau: <strong>{Math.floor(countdown / 60)}:{String(countdown % 60).padStart(2, '0')}</strong>
               </>
             ) : (
               <span className="text-red-400">Mã OTP đã hết hạn.</span>

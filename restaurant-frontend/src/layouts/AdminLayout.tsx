@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import {
   FaHome,
@@ -24,10 +23,9 @@ import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@/redux/hook';
 import { BsChatDots } from 'react-icons/bs';
-import { useAdminChatbox } from '@/hooks/useAdminChatbox';
+import React from 'react';
 
 const AdminLayout: React.FC = () => {
-  const { totalUnreadCount } = useAdminChatbox();
   const { isSidebarOpen, toggleSidebarExtend } = useAdminSidebar();
   const location = useLocation();
   const navigate = useNavigate();
@@ -46,19 +44,19 @@ const AdminLayout: React.FC = () => {
     const userInfo = JSON.parse(Cookies.get('userInfo') || '{}');
 
     if (userInfo) {
-        (window as any).google?.accounts.id.disableAutoSelect?.();
-        Cookies.remove('userInfo');
-        localStorage.removeItem('token');
-        clearAuthData();
-        setTimeout(() => {
-          navigate('/admin/login'); 
-        }, 1000);
+      (window as any).google?.accounts.id.disableAutoSelect?.();
+      Cookies.remove('userInfo');
+      localStorage.removeItem('token');
+      clearAuthData();
+      setTimeout(() => {
+        navigate('/admin/login');
+      }, 1000);
       return;
     }
-    
+
 
     try {
-      await dispatch(LogoutUser()).unwrap(); 
+      await dispatch(LogoutUser()).unwrap();
       console.log('LogoutUser called');
     } catch (err) {
       console.error('Logout failed:', err);
@@ -69,7 +67,7 @@ const AdminLayout: React.FC = () => {
     }
   };
 
- 
+
 
   return (
     <div className="flex min-h-screen bg-adminbg text-admintext">
@@ -169,19 +167,7 @@ const AdminLayout: React.FC = () => {
             />
             <NavItem
               href="/admin/chatbox"
-              icon={
-                <div className="relative flex items-center justify-center" style={{ minWidth: 32, minHeight: 32 }}>
-                  <BsChatDots className="text-2xl" />
-                  {totalUnreadCount > 0 && (
-                    <span
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold z-10 border-2 border-white shadow"
-                      style={{ minWidth: 20, minHeight: 20 }}
-                    >
-                      {totalUnreadCount}
-                    </span>
-                  )}
-                </div>
-              }
+              icon={<BsChatDots />}
               label="Chatbox"
               expanded={isSidebarOpen}
               currentPath={location.pathname}
@@ -189,7 +175,14 @@ const AdminLayout: React.FC = () => {
             <NavItem
               href="/admin/loyalty"
               icon={<FaCrown />}
-              label="Tích điểm"
+              label="Loyalty"
+              expanded={isSidebarOpen}
+              currentPath={location.pathname}
+            />
+            <NavItem
+              href="/admin/register-cashier"
+              icon={<FaUser />}
+              label="Đăng ký nhân viên"
               expanded={isSidebarOpen}
               currentPath={location.pathname}
             />
@@ -205,7 +198,7 @@ const AdminLayout: React.FC = () => {
 
           </nav>
         </div>
-       
+
         <div className="my-5 flex justify-center">
           <NavItem
             onClick={handleLogout}
@@ -213,7 +206,7 @@ const AdminLayout: React.FC = () => {
             label="Đăng xuất"
             expanded={isSidebarOpen}
             className="text-red-400"
-            currentPath={location.pathname} href={''}          />
+            currentPath={location.pathname} href={''} />
         </div>
       </aside>
       {/* Main Content */}

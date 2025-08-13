@@ -37,7 +37,7 @@ export const verifyChatPermission = async (
     if (hasRole('superadmin') || hasRole('manager')) {
 
       // fu
-       } else if (hasRole('cashier')) {
+    } else if (hasRole('cashier')) {
       if (!isCashierChat) {
         res.status(403).json({ message: 'Bạn không phải nhân viên xử lý phiên chat này' });
         return;

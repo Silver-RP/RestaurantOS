@@ -14,7 +14,8 @@ export interface IChatMessage extends Document {
   is_deleted?: boolean;
   edited?: boolean;
   edited_at?: Date;
-  attachments: string[];
+  image: string[];
+  audio: string[];
   status: 'sending' | 'sent' | 'failed';
   reactions: {
     user_id: mongoose.Types.ObjectId;
@@ -38,7 +39,8 @@ const ChatMessageSchema: Schema = new Schema({
   edited: { type: Boolean, default: false },
   edited_at: { type: Date },
   is_system: { type: Boolean, default: false },
-  attachments: { type: [String], default: [] },
+  image: { type: [String], default: [] },
+  audio: { type: [String], default: [] },
   status: { type: String, enum: ['sending', 'sent', 'failed'], default: 'sent' },
   reactions: [
     {

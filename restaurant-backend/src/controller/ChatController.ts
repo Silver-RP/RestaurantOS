@@ -2,8 +2,11 @@ import { Request, Response } from 'express';
 import { SendMessageDto } from '../types/chatbox.types';
 import ChatService from '../services/ChatService';
 import { Server as SocketIOServer } from 'socket.io';
+import upload from '../middleware/UploadMiddleWare';
+import cloudinary from '../config/cloudinary';
 
 const ChatController = {
+
   async getMyChat(req: Request, res: Response): Promise<void> {
     try {
       const user = req.user as any;
@@ -45,16 +48,61 @@ const ChatController = {
     try {
       const { chatId } = req.params;
       const user = req.user as any;
-
       if (!user || !user.id) {
         res.status(403).json({ message: 'Unauthorized' });
         return;
       }
-
       const userId = user.id;
-      const { content, replyTo, attachments } = req.body;
+      let { content, replyTo, image } = req.body;
 
-      if (!content?.trim() && (!attachments || attachments.length === 0)) {
+      const uploadFiles = async (files: Express.Multer.File[] | undefined, resourceType: 'image' | 'video') => {
+        if (!files) return [];
+        const urls: string[] = [];
+        for (const file of files) {
+          const url = await new Promise<string>((resolve, reject) => {
+            const stream = cloudinary.uploader.upload_stream({ resource_type: resourceType }, (error, result) => {
+              if (error) {
+                console.error('Cloudinary upload error:', error);
+                reject(error);
+              } else {
+                resolve(result?.secure_url || '');
+              }
+            });
+            stream.end(file.buffer);
+          });
+          if (url) urls.push(url);
+        }
+        return urls;
+      };
+
+      let imageUrls: string[] = await uploadFiles(
+        req.files && typeof req.files === 'object' && !Array.isArray(req.files) ? req.files['image'] : undefined,
+        'image'
+      );
+      let audioUrls: string[] = await uploadFiles(
+        req.files && typeof req.files === 'object' && !Array.isArray(req.files) ? req.files['audio'] : undefined,
+        'video'
+      );
+
+      if (image && typeof image === 'string') {
+        try {
+          image = JSON.parse(image);
+        } catch { }
+      }
+      if (Array.isArray(image)) {
+        imageUrls = [...imageUrls, ...image];
+      }
+      if (!req.file && req.body && req.headers['content-type']?.includes('application/json')) {
+        if (Array.isArray(req.body.image)) {
+          imageUrls = [...imageUrls, ...req.body.image];
+        }
+      }
+
+      // Nếu không có content nhưng có ảnh hoặc audio, gán content mặc định
+      if (!content?.trim() && (imageUrls.length > 0 || audioUrls.length > 0)) {
+        content = '[image]';
+      }
+      if (!content?.trim() && imageUrls.length === 0 && audioUrls.length === 0) {
         res.status(400).json({ message: 'Nội dung không được để trống' });
         return;
       }
@@ -71,14 +119,13 @@ const ChatController = {
         content,
         replyTo,
         role,
-        attachments,
+        image: imageUrls,
+        audio: audioUrls,
       };
 
       const savedMessage = await ChatService.sendMessage(message);
-
       const io = req.app.get('io') as SocketIOServer;
       io.to(chatId).emit('message', savedMessage);
-
       res.status(201).json({ message: savedMessage });
     } catch (error) {
       console.error('sendMessage error:', error);

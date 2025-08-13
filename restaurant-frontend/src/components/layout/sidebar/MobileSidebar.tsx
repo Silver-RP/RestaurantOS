@@ -28,6 +28,7 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
 
   const { data: cart } = useGetCart();
   const countCart = cart?.items?.length || 0;
+  const user = useSelector((state: RootState) => state.auth.userInfo);
   const favoriteCount = useSelector(
     (state: RootState) => state.favorite.items.length,
   );

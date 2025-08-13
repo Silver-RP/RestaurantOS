@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
   Category,
   CategoryResponse,
@@ -21,14 +21,17 @@ export const useCategories = (type?: string | string[]) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadCategories = async () => {
+  const loadCategories = useCallback(async () => {
     try {
       setLoading(true);
+      console.log('Loading categories with type:', type);
       const data = await fetchAllCategories({
         type: Array.isArray(type) ? type.join(',') : type,
       });
+      console.log('Categories loaded:', data);
       setCategories(data);
     } catch (err) {
+      console.error('Error loading categories:', err);
       const axiosError = err as AxiosError<{ message: string }>;
       const message =
         axiosError.response?.data?.message || 'Đã xảy ra lỗi khi tải danh mục';
@@ -36,13 +39,11 @@ export const useCategories = (type?: string | string[]) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [type]);
 
   useEffect(() => {
-    if (type) {
-      loadCategories();
-    }
-  }, [type]);
+    loadCategories();
+  }, [loadCategories]);
 
   return {
     categories,
@@ -213,7 +214,7 @@ export const useCategoriesNew = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadCategories = async () => {
+  const loadCategories = useCallback(async () => {
     try {
       setLoading(true);
       const data = await fetAllCategoryNew();
@@ -226,11 +227,11 @@ export const useCategoriesNew = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadCategories();
-  }, [setCategories]);
+  }, [loadCategories]);
 
   return {
     categories,

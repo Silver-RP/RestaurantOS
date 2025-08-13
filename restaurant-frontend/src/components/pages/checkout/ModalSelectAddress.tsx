@@ -39,7 +39,6 @@ const ModalSelectAddress = ({
 const getProvinceName = (code?: string) => {
   if (!code) return '';
   if (code === '79') return 'TP. Hồ Chí Minh';
-  // Thêm các mã khác nếu cần
   return code;
 };
   const getFormattedAddress = (address: Address) => {
