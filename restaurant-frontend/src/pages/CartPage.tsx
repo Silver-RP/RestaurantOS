@@ -15,6 +15,7 @@ interface CartItem {
   dishId: {
     _id: number;
     name: string;
+    slug: string;
     price: number;
     discount_price?: number;
     images: string[];
@@ -32,6 +33,7 @@ const CartPage = () => {
   const cartItems = cartItemsRaw.map((item) => ({
     id: item.dishId._id,
     name: item.dishId.name,
+    slug: item.dishId.slug,
     price: item.dishId.price,
     discountedPrice: item.dishId.discount_price || item.dishId.price,
     quantity: item.quantity,
