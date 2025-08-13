@@ -1,6 +1,7 @@
 import mongoose, { Types } from 'mongoose';
 import OrderValidator from '../validators/orderValidator';
-import { Address, IAddress } from '../models/AddressModel';
+import { Address } from '../models/AddressModel';
+import { IAddress } from '../types/address.type';
 import { Order, IOrder } from '../models/OrderModel';
 import { OrderDetail } from '../models/OrderDetailModel';
 import Cart from '../models/CartModel';
@@ -15,7 +16,9 @@ import { createPayPalOrder } from '../services/payments/PaypalService';
 
 import axios from 'axios';
 import MailerService from './MailerService';
-import User, { IUser } from '../models/UserModel';
+import User from '../models/UserModel';
+import { IUser } from '../types/user.type';
+
 import Voucher from '../models/VoucherModel';
 import LoyaltyService from './LoyaltyService';
 
@@ -99,7 +102,7 @@ class OrderService {
     if (address) {
       const newAddress = new Address({ user_id: userId, ...address });
       const savedAddress = await newAddress.save({ session });
-      return (savedAddress._id as string).toString();
+      return (savedAddress._id as unknown as string).toString();
     }
   }
 
@@ -143,6 +146,7 @@ class OrderService {
         ward: addressDoc.ward,
         address_type: addressDoc.address_type,
       };
+
     }
 
     const newOrder = new Order({
@@ -171,23 +175,32 @@ class OrderService {
   }
 
   async updateDishCounts(orderItems: any[], session: any) {
-    const updateDishPromises = orderItems.map((item) => {
-      return Dish.updateOne(
+    const updateDishPromises = orderItems.map(async (item) => {
+      const dish = await Dish.findById(item.dish_id).session(session);
+  
+      if (!dish) return;
+  
+      const newCountInStock = dish.countInStock - item.quantity;
+  
+      await Dish.updateOne(
         { _id: item.dish_id },
         {
           $inc: {
             ordered_count: 1,
             totalSoldQuantity: item.quantity,
-            countInStock: -1 * item.quantity,
+          },
+          $set: {
+            countInStock: newCountInStock,
+            ...(newCountInStock <= 0 ? { status: 'soldout' } : {}),
           },
         },
-        { session },
+        { session }
       );
     });
-
+  
     await Promise.all(updateDishPromises);
   }
-
+  
   async updateCart(userId: string, orderedDishIds: string[], session: any) {
     await Cart.updateOne(
       { userId },
@@ -947,7 +960,11 @@ class OrderService {
         }
       }
 
-      await order.save();
+      await Order.updateOne(
+        { _id: orderId },
+        { $set: { status, delivered_at: status === Status.DELIVERED ? new Date() : order.delivered_at } }
+      );
+      
 
       return order;
     } catch (error: any) {

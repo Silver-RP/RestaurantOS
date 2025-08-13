@@ -8,7 +8,7 @@ class CartService {
       throw new Error('Invalid userId');
     }
     // tôi muốn lấy ra tên category của dish
-    const cart = await Cart.findOne({ userId }).populate({
+    let cart = await Cart.findOne({ userId }).populate({
       path: 'items.dishId',
       populate: {
         path: 'categories',
@@ -18,7 +18,19 @@ class CartService {
     });
 
     if (!cart) {
-      throw new Error('Cart not found');
+      cart = await Cart.create({
+        userId,
+        items: [], 
+      });
+  
+      cart = await cart.populate({
+        path: 'items.dishId',
+        populate: {
+          path: 'categories',
+          model: 'categories',
+          select: 'Cate_name Cate_slug',
+        },
+      });
     }
 
     return cart;

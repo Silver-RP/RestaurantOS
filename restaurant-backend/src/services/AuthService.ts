@@ -105,6 +105,11 @@ class AuthService {
     if (user.status === 'block') {
       throw new Error('Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.');
     }
+    if (!user.isEmailVerified) {
+      throw new Error(
+        'Email của bạn chưa được xác minh. Vui lòng kiểm tra email để xác minh hoặc yêu cầu gửi lại OTP.',
+      );
+    }
 
     const isMatch = await bcrypt.compare(password, user.password || '');
     if (!isMatch) {
@@ -168,10 +173,10 @@ class AuthService {
       const remainingSeconds = Math.floor(remainingMs / 1000);
 
       // Nếu thời gian còn lại quá ít (< 1h), cấp lại full thời hạn (có thể tùy chỉnh logic)
-      const newRefreshTokenExpiresIn = remainingSeconds > 3600 ? 
-      remainingSeconds : oldToken.rememberMe
-      ? 21 * 24 * 60 * 60   
-      : 2 * 24 * 60 * 60;
+      const newRefreshTokenExpiresIn = remainingSeconds > 3600 ?
+        remainingSeconds : oldToken.rememberMe
+          ? 21 * 24 * 60 * 60
+          : 2 * 24 * 60 * 60;
 
       const newAccessToken = accessToken(
         { id: user._id, roles: user.roles },
