@@ -96,8 +96,9 @@ export const useChatbox = () => {
     };
   }, []);
 
-  const handleSend = async (content: string, replyTo?: string, attachments?: string[]) => {
-    if (!chatId || (!content.trim() && (!attachments || attachments.length === 0)) || isSending.current) return;
+  // attachments: image, audio
+  const handleSend = async (content: string, replyTo?: string, attachments?: string[], audio?: string[]) => {
+    if (!chatId || (!content.trim() && (!attachments || attachments.length === 0) && (!audio || audio.length === 0)) || isSending.current) return;
 
     isSending.current = true;
     try {
@@ -107,9 +108,9 @@ export const useChatbox = () => {
         replyTo,
         senderId: userId ?? undefined,
         role: 'user',
-        image: attachments, // Đúng tên trường
+        image: attachments,
+        audio: audio,
       });
-      // Thêm tin nhắn vừa gửi vào state nếu chưa có
       setMessages((prev) => {
         const exists = prev.some((m) => m._id === sentMsg._id);
         return exists ? prev : [...prev, sentMsg];

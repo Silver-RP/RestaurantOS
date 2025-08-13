@@ -15,8 +15,9 @@ type UnifiedMessage = {
   content?: string;
   sent_at?: string | number;
   reactions?: { emoji: string; userId?: string }[];
-  message_type?: 'text' | 'image' | 'file';
+  message_type?: 'text' | 'image' | 'file' | 'audio';
   image?: string[];
+  audio?: string[];
   _id?: string;
   reply_to?: { _id?: string; content?: string; sender_id?: string } | null;
   is_deleted?: boolean;
@@ -26,7 +27,7 @@ interface ChatWindowProps {
   messages: UnifiedMessage[];
   input: string;
   onInputChange: (value: string) => void;
-  onSend: (replyToId?: string, attachments?: string[]) => void;
+  onSend: (replyToId?: string, attachments?: string[], audio?: string[]) => void;
   onClose: () => void;
   showInput: boolean;
   onShowInput: () => void;
@@ -76,6 +77,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   const [replyTarget, setReplyTarget] = useState<{ id: string; preview: string } | null>(null);
   const [moreMenuIdx, setMoreMenuIdx] = useState<number | null>(null);
   const [hiddenForMe, setHiddenForMe] = useState<Set<string>>(new Set());
+  const [recording, setRecording] = useState(false);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [pendingAudioMsg, setPendingAudioMsg] = useState<string | null>(null);
 
   const aggregateReactions = (reactions?: { emoji: string; userId?: string }[]) => {
     if (!reactions || reactions.length === 0) return { items: [] as { emoji: string; count: number }[], total: 0 };
@@ -162,15 +168,25 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   const handleSendClick = () => {
     if (selectedImage) {
       const imageToSend = selectedImage;
-      setSelectedImage(null); // Reset trước khi đọc để tránh trùng
+      setSelectedImage(null);
       const reader = new FileReader();
       reader.onloadend = () => {
         const dataUrl = reader.result as string;
         onInputChange('');
-        onSend(replyTarget?.id, [dataUrl]);
+        onSend(replyTarget?.id, [dataUrl]); // image
         setReplyTarget(null);
       };
       reader.readAsDataURL(imageToSend);
+    } else if (audioBlob) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const audioDataUrl = reader.result as string;
+        onSend(replyTarget?.id, undefined, [audioDataUrl]);
+        setAudioBlob(null);
+        setAudioUrl(null);
+        setReplyTarget(null);
+      };
+      reader.readAsDataURL(audioBlob);
     } else {
       onSend(replyTarget?.id);
       setReplyTarget(null);
@@ -258,6 +274,39 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       };
     }
   }, [expandedFaq, loadingFaq, faqs, faqList]);
+  function handleStartRecording(event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert('Trình duyệt không hỗ trợ ghi âm.');
+      return;
+    }
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then((stream) => {
+        const mediaRecorder = new window.MediaRecorder(stream);
+        mediaRecorderRef.current = mediaRecorder;
+        setRecording(true);
+        const audioChunks: BlobPart[] = [];
+        mediaRecorder.ondataavailable = (e) => {
+          audioChunks.push(e.data);
+        };
+        mediaRecorder.onstop = () => {
+          const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+          setAudioBlob(audioBlob);
+          setAudioUrl(URL.createObjectURL(audioBlob));
+          setRecording(false);
+        };
+        mediaRecorder.start();
+      })
+      .catch(() => {
+        alert('Không thể truy cập micro.');
+      });
+  }
+
+  function handleStopRecording(event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
+    if (mediaRecorderRef.current && recording) {
+      mediaRecorderRef.current.stop();
+      setRecording(false);
+    }
+  }
   return (
     <div className="w-[420px] h-[620px] text-white bg-gradient-to-b from-[#0B1020] to-[#0D1B2A] border border-white/10 rounded-2xl flex flex-col shadow-2xl overflow-visible relative z-[1000] backdrop-blur-sm">
       {/* Header */}
@@ -469,6 +518,15 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                                 📸 Click để xem ảnh gốc
                               </div>
                             </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Hiển thị audio nếu có */}
+                      {messageType === 'audio' && msg.audio && msg.audio.length > 0 && (
+                        <div>
+                          {msg.audio.map((audioUrl: string, audioIdx: number) => (
+                            <audio key={audioIdx} controls src={audioUrl} />
                           ))}
                         </div>
                       )}
@@ -685,7 +743,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
           {/* Input */}
           <div className="border-t border-white/10 p-3 bg-[#0D1B2A]/80 flex flex-col gap-2 relative overflow-visible">
             {replyTarget && (
-              <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs">
+              <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs mb-2">
                 <div className="flex items-start gap-2">
                   <span className="mt-0.5">↩️</span>
                   <div className="text-white/80 truncate max-w-[270px]">
@@ -694,6 +752,12 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                   </div>
                 </div>
                 <button className="text-white/60 hover:text-white" onClick={() => setReplyTarget(null)} title="Bỏ trả lời">✕</button>
+              </div>
+            )}
+            {audioBlob && (
+              <div className="flex items-center bg-white/10 border border-white/20 rounded-lg px-3 py-2 mb-2">
+                <audio controls src={audioUrl || undefined} className="w-full" />
+                <button className="ml-2 text-xs text-red-400" onClick={() => { setAudioBlob(null); setAudioUrl(null); }}>✕</button>
               </div>
             )}
             <div className="flex items-center gap-2 relative z-20">
@@ -720,15 +784,27 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                     }}
                   />
                 </label>
-                <button
-                  onClick={() => alert('🚧 Tính năng ghi âm sẽ sớm ra mắt')}
-                  className="text-white/90 hover:text-yellow-300 text-lg rounded-lg px-2"
-                  style={{ zIndex: 30 }}
-                  tabIndex={0}
-                  aria-label="Ghi âm"
-                >
-                  🎤
-                </button>
+                {!recording ? (
+                  <button
+                    onClick={handleStartRecording}
+                    className="text-white/90 hover:text-yellow-300 text-lg rounded-lg px-2"
+                    style={{ zIndex: 30 }}
+                    tabIndex={0}
+                    aria-label="Ghi âm"
+                  >
+                    🎤
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleStopRecording}
+                    className="text-white/90 hover:text-yellow-300 text-lg rounded-lg px-2"
+                    style={{ zIndex: 30 }}
+                    tabIndex={0}
+                    aria-label="Dừng ghi âm"
+                  >
+                    ⏹️
+                  </button>
+                )}
                 <button
                   onClick={() => alert('🔗 Gửi link sẽ sớm được hỗ trợ')}
                   className="text-white/90 hover:text-yellow-300 text-lg rounded-lg px-2"
