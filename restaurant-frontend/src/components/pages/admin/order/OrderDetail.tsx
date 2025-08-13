@@ -83,7 +83,11 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
   function handlePaymentConfirmed(updatedOrder: Order) {
     setOrderPayment(updatedOrder);
   }
-
+  const getProvinceName = (code?: string) => {
+    if (!code) return '';
+    if (code === '79') return 'TP. Hồ Chí Minh';
+    return code;
+  };
   const formatDate = (dateString: string) => {
     try {
       return format(new Date(dateString), 'HH:mm - dd/MM/yyyy', {
@@ -193,7 +197,9 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
                 <p className="text-gray-600">Địa chỉ giao hàng</p>
                 <p className="font-medium">
                   {order.address_id?.street_address}, {order.address_id?.ward},{' '}
-                  {order.address_id?.district}, {order.address_id?.province}
+                  {order.address_id?.district},{order.address_id?.province
+                    ? getProvinceName(order.address_id.province)
+                    : ''}
                 </p>
               </div>
             </div>
