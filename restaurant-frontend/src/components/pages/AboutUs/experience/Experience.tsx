@@ -52,7 +52,7 @@ const Experience = () => {
                   Liên hệ đặt bàn
                 </p>
                 <p className="text-3xl lg:text-4xl text-secondaryColor font-semibold">
-                  +84-0239991255
+                  0239991255
                 </p>
                 <ButtonComponents
                   variant="filled"

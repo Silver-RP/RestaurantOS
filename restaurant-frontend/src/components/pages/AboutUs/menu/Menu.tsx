@@ -58,10 +58,10 @@ const Menu = () => {
                 </h2>
                 <div className="mt-3">
                   <p className="text-gray-300 text-sm sm:text-base">
-                    T2 - T7: 5a.m - 11p.m
+                    T2 - T6: 8:00 AM - 10:00 PM
                   </p>
                   <p className="text-gray-300 text-sm sm:text-base">
-                    CN: 7a.m - 11p.m
+                    T7 - CN: 8:00 AM - 11:00 PM
                   </p>
                 </div>
               </div>
@@ -85,10 +85,10 @@ const Menu = () => {
                 </h2>
                 <div className="mt-3">
                   <p className="text-gray-300 text-sm sm:text-base">
-                    +39-066-666999
+                  0239991255
                   </p>
                   <p className="text-gray-300 text-sm sm:text-base">
-                    demo@demo.com
+                  beefbeefrestaurant.hcm@gmail.com
                   </p>
                 </div>
               </div>

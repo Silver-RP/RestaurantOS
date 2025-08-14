@@ -17,7 +17,7 @@ const Invoice: React.FC<InvoiceProps> = ({ orderId }) => {
     name: 'CÔNG TY TNHH BEEFBEEF',
     address: '161 Quốc Hương, P. Thảo Điền, Quận 2, Tp. HCM',
     phone: '0239991255',
-    email: 'beefbeef@gmail.com',
+    email: 'beefbeefrestaurant.hcm@gmail.com',
     logo: '/assets/images/logo.png',
   };
 
