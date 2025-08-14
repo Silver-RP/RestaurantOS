@@ -18,6 +18,7 @@ export interface IReservation {
   payment_method: string;
   paid_at?: string;
   order_items: IReservationDetail[];
+  cancelled_reason?: string;
   createdAt?: string;
   updatedAt?: string;
 }

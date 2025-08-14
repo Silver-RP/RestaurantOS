@@ -184,7 +184,7 @@ const MailerService = {
           quantity: item.quantity,
           price: item.price.toLocaleString('vi-VN') + '₫',
         })) || [],
-      reservationDetailUrl: `${process.env.CLIENT_BASE_URL || '#'}/profile/reservations?reservationId=${_id}`,
+      reservationDetailUrl: `${process.env.CLIENT_BASE_URL || '#'}/reservation/lookup-reservation`,
     };
 
     await this.sendTemplateEmail({
