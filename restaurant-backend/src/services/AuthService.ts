@@ -69,7 +69,7 @@ class AuthService {
     const { username, email, password } = userData;
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      throw new Error('Email đã tồn tại trong hệ thống');
+      throw new Error('Email này đã được đăng ký, vui lòng sử dụng email khác');
     }
     const hashedPassword = await bcrypt.hash(password, 10);
     const defaultRole = await Roles.findOne({ name: 'user' });
@@ -106,8 +106,9 @@ class AuthService {
       throw new Error('Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.');
     }
     if (!user.isEmailVerified) {
+      await this.resendVerificationEmail(email);
       throw new Error(
-        'Email của bạn chưa được xác minh. Vui lòng kiểm tra email để xác minh hoặc yêu cầu gửi lại OTP.',
+        'Email của bạn chưa được xác minh. Vui lòng kiểm tra email để nhận mã xác minh.',
       );
     }
 
@@ -437,8 +438,8 @@ class AuthService {
     const mailOptions = {
       from: process.env.MAIL_FROM_ADDRESS,
       to: email,
-      subject: 'Verify Your Email Address',
-      text: `Your verification OTP is ${otp}. It will expire in 3 minutes.`,
+      subject: 'Xác thực địa chỉ email của bạn',
+      text: `Mã xác thực OTP của bạn là ${otp}. Mã này sẽ hết hạn trong 3 phút.`,
     };
 
     await transporter.sendMail(mailOptions);
