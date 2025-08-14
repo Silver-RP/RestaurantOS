@@ -12,8 +12,10 @@ import { toast } from 'react-toastify';
 import { useChangePasswordProfile } from '@/hooks/useAuth';
 import { useCheckPassword } from '@/hooks/useUsers';
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
+import { HiOutlineMenu } from 'react-icons/hi';
 import Container from '@/components/common/Container';
 import UserLoyaltyTier from '@/components/pages/proflie/UserLoyaltyTier';
+import MobileDrawer from '@/components/common/MobileDrawer';
 
 const ProfilePage = () => {
   const [touchedFields, setTouchedFields] = useState({
@@ -56,6 +58,9 @@ const ProfilePage = () => {
     newPassword: '',
     confirmPassword: '',
   });
+
+  // Sidebar mobile toggle
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
@@ -311,12 +316,35 @@ const ProfilePage = () => {
 
   return (
     <div className="flex flex-col bg-bodyBackground text-white font-sans">
-      <Container className="flex gap-6 py-10">
-        <div className="w-1/3 hidden md:block">
+      <Container className="flex flex-col md:flex-row gap-0, sm:gap-6 py-10">
+        {/* Mobile MENU button to toggle sidebar */}
+        <div className="md:hidden mb-4 order-0">
+          <button
+            type="button"
+            onClick={() => setMobileSidebarOpen((v) => !v)}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded border border-[#FFE0A0] text-[#FFE0A0] hover:bg-[#FFE0A0] hover:text-[#082635] transition"
+            aria-label="Mở menu tài khoản"
+            aria-expanded={mobileSidebarOpen}
+            aria-controls="mobile-profile-drawer"
+          >
+            <HiOutlineMenu className="text-xl" />
+            <span className="font-medium">MENU</span>
+          </button>
+        </div>
+        {/* Sidebar for desktop (always visible on ≥md) */}
+        <div className="hidden md:block md:w-1/3 order-1 md:order-1">
           <ProfileSidebar />
         </div>
-
-        <div className="flex-1 w-2/3 bg-bodyBackground p-10 border border-[#FFE0A0]">
+        {/* Mobile Drawer for Profile Sidebar (reusable component) */}
+        <MobileDrawer
+          open={mobileSidebarOpen}
+          onClose={() => setMobileSidebarOpen(false)}
+          title="Tài khoản"
+          drawerId="mobile-profile-drawer"
+        >
+          <ProfileSidebar />
+        </MobileDrawer>
+        <div className="flex-1 w-full md:w-2/3 order-2 md:order-2 bg-bodyBackground p-10 sm:p-10 border border-[#FFE0A0]">
           <UserLoyaltyTier />
           <h2 className="text-3xl font-restora font-bold text-white mb-8">
             Thông tin tài khoản
@@ -413,21 +441,23 @@ const ProfilePage = () => {
             <div className="border-t border-gray-600"></div>
 
             <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-6 items-start">
-                <p className="text-gray-400 mt-3">Email</p>
-                <p className="font-medium mt-3">{accountInfo.email}</p>
+              <div className="grid grid-cols-3 gap-2 sm:gap-6 items-start">
+                <p className="text-gray-400  mt-3">Email</p>
+                <p className="font-medium col-span-2 mt-3">
+                  {accountInfo.email}
+                </p>
 
                 {!isEditingAccount && (
                   <>
                     <p className="text-gray-400 mt-3">Mật khẩu</p>
-                    <p className="font-medium mt-3">**********</p>
+                    <p className="font-medium col-span-2 mt-3">**********</p>
                   </>
                 )}
 
                 {isEditingAccount && (
                   <>
                     <p className="text-gray-400">Mật khẩu hiện tại</p>
-                    <div className="relative">
+                    <div className="relative col-span-2">
                       <input
                         type={showPassword ? 'text' : 'password'}
                         name="password"
@@ -456,7 +486,7 @@ const ProfilePage = () => {
                     </div>
 
                     <p className="text-gray-400">Mật khẩu mới</p>
-                    <div className="relative">
+                    <div className="relative col-span-2">
                       <input
                         type={showNewPassword ? 'text' : 'password'}
                         name="newPassword"
@@ -484,7 +514,7 @@ const ProfilePage = () => {
                     </div>
 
                     <p className="text-gray-400">Xác nhận mật khẩu mới</p>
-                    <div className="relative">
+                    <div className="relative col-span-2">
                       <input
                         type={showConfirmPassword ? 'text' : 'password'}
                         name="confirmPassword"
