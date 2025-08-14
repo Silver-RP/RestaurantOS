@@ -184,10 +184,8 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
 
   const order = data.order;
   const formatPrice = (price: number) => price.toLocaleString('vi-VN') + ' VND';
-  const address =
-    typeof order?.address_id === 'object' && order?.address_id !== null
-      ? order?.address_id
-      : null;
+  console.log('Order Detail:', order);
+  const address = order.addressSnapshot ? order.addressSnapshot : null;
 
   const discountAmount = (order as any).discount_amount || 0;
   const voucherCode =
