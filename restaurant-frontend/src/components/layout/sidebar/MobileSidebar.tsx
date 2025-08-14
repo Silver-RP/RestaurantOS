@@ -24,7 +24,6 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
     navigate(path);
     toggleSidebar();
   };
-
   const { data: cart } = useGetCart();
   const countCart = cart?.items?.length || 0;
   const user = useSelector((state: RootState) => state.auth.userInfo);

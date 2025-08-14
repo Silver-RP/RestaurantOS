@@ -6,8 +6,7 @@ import {
   setAuthData, 
   clearAuthCookies, 
   setAccessToken,
-  setRefreshToken,
-  setUserInfo 
+  setRefreshToken, 
 } from '../../../utils/tokenHelpers';
 import { clearFavorites } from '../favorite/favoriteSlice';
 
@@ -26,6 +25,7 @@ const apiRequest = async (
       headers: { 'Content-Type': 'application/json' },
       withCredentials: true,
     });
+    console.log(`API Request: `, response.data );
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {

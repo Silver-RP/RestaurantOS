@@ -83,7 +83,11 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
   function handlePaymentConfirmed(updatedOrder: Order) {
     setOrderPayment(updatedOrder);
   }
-
+  const getProvinceName = (code?: string) => {
+    if (!code) return '';
+    if (code === '79') return 'TP. Hồ Chí Minh';
+    return code;
+  };
   const formatDate = (dateString: string) => {
     try {
       return format(new Date(dateString), 'HH:mm - dd/MM/yyyy', {
@@ -137,6 +141,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
   }
 
   const { order } = orderDetail;
+  console.log('Order Detail:', order);
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -167,7 +172,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
               <div>
                 <p className="text-gray-600">Tên khách hàng</p>
                 <p className="font-medium">
-                  {order.receiver ||
+                  {order.user_id.username ||
                     order.address_id?.full_name ||
                     'Khách vãng lai'}
                 </p>
@@ -175,12 +180,19 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
               <div>
                 <p className="text-gray-600">Số điện thoại</p>
                 <p className="font-medium">
-                  {order.address_id?.phone ||
-                    order.receiver_phone ||
-                    'Chưa có số điện thoại'}
+                  {order.user_id?.phone ||
+                    order.address_id?.phone ||
+                      order.receiver_phone ||
+                        'Chưa có số điện thoại'}
                 </p>
               </div>
             </div>
+            <div className="mt-4">
+              <p className="text-gray-600">Email</p>
+              <p className="font-medium">
+                {order.user_id?.email || 'Chưa có email'}
+              </p>
+              </div>
           </div>
 
           {/* Thông tin giao hàng */}
@@ -190,11 +202,54 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
                 Thông tin giao hàng
               </h3>
               <div>
-                <p className="text-gray-600">Địa chỉ giao hàng</p>
-                <p className="font-medium">
-                  {order.address_id?.street_address}, {order.address_id?.ward},{' '}
-                  {order.address_id?.district}, {order.address_id?.province}
+              {order.addressSnapshot ? (
+                <div className="space-y-3">
+                  {/* Người nhận */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-500">👤</span>
+                    <p className="font-medium text-gray-800">
+                      {order.addressSnapshot.full_name}
+                    </p>
+                  </div>
+
+                  {/* Số điện thoại */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-500">📞</span>
+                    <p className="text-gray-700">
+                      {order.addressSnapshot.phone}
+                    </p>
+                  </div>
+
+                  {/* Loại địa chỉ */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-500">🏷</span>
+                    <span className="text-sm px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+                      {order.addressSnapshot.address_type}
+                    </span>
+                  </div>
+
+                  {/* Địa chỉ */}
+                  <div className="flex items-start gap-2">
+                    <span className="text-gray-500">📍</span>
+                    <div className="text-gray-700 leading-snug">
+                      <p>{order.addressSnapshot.street_address}</p>
+                      <p>
+                        {order.addressSnapshot.ward},{' '}
+                        {order.addressSnapshot.district}
+                      </p>
+                      <p>
+                        {order.addressSnapshot.province
+                          ? getProvinceName(order.addressSnapshot.province)
+                          : ''}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-gray-500 italic">
+                  Chưa có thông tin giao hàng
                 </p>
+              )}
               </div>
             </div>
           )}

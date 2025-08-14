@@ -29,13 +29,25 @@ export const useAdminChatbox = () => {
         // Kiểm tra xem có phải tin nhắn từ chính mình không (để tránh duplicate)
         const isMyMessage = msg.sender_id === currentChat?.cashier_user_id;
         const exists = messages.some((m) => m._id === msg._id);
-        
+
         if (!exists) {
           // Nếu là tin nhắn của mình, kiểm tra xem có tin nhắn tạm thời tương ứng không
           if (isMyMessage) {
-            const tempMessageIndex = messages.findIndex(m => 
-              m._id.startsWith('temp_') && m.content === msg.content
-            );
+            const tempMessageIndex = messages.findIndex(m => {
+              if (!m._id.startsWith('temp_')) return false;
+              // So sánh content, loại tin nhắn, và mảng ảnh (nếu có)
+              const sameContent = m.content === msg.content;
+              const sameType = m.message_type === msg.message_type;
+              if (m.message_type === 'image' && Array.isArray(m.image) && Array.isArray(msg.image)) {
+                // So sánh số lượng và từng base64
+                if (m.image.length !== msg.image.length) return false;
+                for (let i = 0; i < m.image.length; i++) {
+                  if (m.image[i] !== msg.image[i]) return false;
+                }
+                return sameContent && sameType;
+              }
+              return sameContent && sameType;
+            });
             if (tempMessageIndex !== -1) {
               // Thay thế tin nhắn tạm thời bằng tin nhắn thật
               setMessages(prev => {
@@ -78,11 +90,16 @@ export const useAdminChatbox = () => {
   }, []);
 
   // ... existing code ...
-  const handleSend = async (content: string, replyTo?: string) => {
-    if (!currentChat || !content.trim()) return;
+  const handleSend = async (content: string, replyTo?: string, images?: string[]) => {
+    if (!currentChat || (!content.trim() && (!images || images.length === 0))) return;
 
     try {
-      await sendMessage({ chatId: currentChat._id, content, replyTo });
+      await sendMessage({
+        chatId: currentChat._id,
+        content,
+        replyTo,
+        image: images,
+      });
       // Không cần làm gì ở đây vì socket sẽ xử lý việc thay thế tin nhắn tạm thời
     } catch (err: any) {
       const errorMsg = err?.response?.data?.message || 'Đã xảy ra lỗi khi gửi tin nhắn';

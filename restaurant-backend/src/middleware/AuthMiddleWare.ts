@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { IUser } from '../models/UserModel';
+import { IUser } from '../types/user.type';
 import Roles from '../models/RoleModel';
 import RefreshToken from '../models/RefreshToken';
 

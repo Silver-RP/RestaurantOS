@@ -42,6 +42,19 @@ const Login = () => {
   }, []);
 
   useEffect(() => {
+    if (error) {
+      setTimeout(()=>{
+        navigate('/verify-otp-email', { state: { email: formData.email } });
+      }, 5000);
+      dispatch(clearStatus({}));
+    }
+    if (error) {
+      // toast.error(error);
+      dispatch(clearStatus({}));
+    }
+  }, [success, error, navigate, dispatch]);
+
+  useEffect(() => {
     if (success) {
       navigate('/');
     }

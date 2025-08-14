@@ -3,6 +3,7 @@ import ReviewModel, { IReview } from '../models/ReviewModel';
 import { Order } from '../models/OrderModel';
 import { Types } from 'mongoose';
 import { OrderDetail } from '../models/OrderDetailModel';
+import { Dish } from '../models/DishModel';
 
 export const ReviewService = {
   async createReview({
@@ -42,6 +43,20 @@ export const ReviewService = {
       comment,
       isVerifiedPurchase: true,
     });
+
+    // === Incremental Update ===
+    const dish = await Dish.findById(productId).select('rating_count rating');
+
+    if (dish) {
+      const newCount = dish.rating_count + 1;
+      const newTotalRating = dish.rating + rating;
+      const newAverage = Number((newTotalRating / newCount).toFixed(1));
+
+      await Dish.findByIdAndUpdate(productId, {
+        $inc: { rating_count: 1, rating: rating },
+        $set: { average_rating: newAverage },
+      });
+    }
 
     return review.save();
   },

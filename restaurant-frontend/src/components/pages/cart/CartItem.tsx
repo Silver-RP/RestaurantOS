@@ -1,10 +1,12 @@
 import React from 'react';
 import { useDeleteCartItem, useUpdateCartItem } from '@hooks/useCart';
+import { Link } from 'react-router-dom';
 
 interface CartItemProps {
   item: {
     id: number;
     name: string;
+    slug: string;
     price: number;
     discountedPrice: number;
     quantity: number;
@@ -31,15 +33,20 @@ const CartItem: React.FC<CartItemProps> = ({ item, selected, onSelect }) => {
 
       {/* Ảnh + Tên */}
       <td className="flex items-center gap-2 sm:gap-4 py-2 sm:py-4 align-middle whitespace-normal max-w-[200px] sm:max-w-[300px]">
-  <img
-    src={item.imageUrl}
-    alt={item.name}
-    className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded shrink-0"
-  />
-  <span className="font-medium text-sm sm:text-base break-words">
-    {item.name}
-  </span>
-</td>
+        <Link
+          to={`/foods/${item.slug}`}
+          className="flex items-center gap-2 sm:gap-4 hover:underline"
+        >
+          <img
+            src={item.imageUrl}
+            alt={item.name}
+            className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded shrink-0"
+          />
+          <span className="font-medium text-sm sm:text-base break-words">
+            {item.name}
+          </span>
+        </Link>
+      </td>
 
       {/* Giá */}
       <td className="align-middle whitespace-nowrap">
@@ -60,17 +67,33 @@ const CartItem: React.FC<CartItemProps> = ({ item, selected, onSelect }) => {
       {/* Số lượng */}
       <td className="align-middle">
         <div className="flex items-center border border-gray-600 w-fit rounded overflow-hidden">
-          <button className="px-2 py-1 hover:bg-secondaryColor hover:text-black transition" onClick={() => updateCartItem({ dishId: item.id.toString(), quantity: item.quantity - 1 })}>
+          <button
+            className="px-2 py-1 hover:bg-secondaryColor hover:text-black transition"
+            onClick={() =>
+              updateCartItem({
+                dishId: item.id.toString(),
+                quantity: item.quantity - 1,
+              })
+            }
+          >
             −
           </button>
           <span className="px-3">{item.quantity}</span>
-          <button className="px-2 py-1 hover:bg-secondaryColor hover:text-black transition" onClick={() => updateCartItem({ dishId: item.id.toString(), quantity: item.quantity + 1 })}>
+          <button
+            className="px-2 py-1 hover:bg-secondaryColor hover:text-black transition"
+            onClick={() =>
+              updateCartItem({
+                dishId: item.id.toString(),
+                quantity: item.quantity + 1,
+              })
+            }
+          >
             +
           </button>
         </div>
       </td>
 
-      {/* Tạm tính */}  
+      {/* Tạm tính */}
       <td className="align-middle whitespace-nowrap">
         {(
           (item.discountedPrice || item.price) * item.quantity

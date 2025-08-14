@@ -17,7 +17,7 @@ const Invoice: React.FC<InvoiceProps> = ({ orderId }) => {
     name: 'CÔNG TY TNHH BEEFBEEF',
     address: '161 Quốc Hương, P. Thảo Điền, Quận 2, Tp. HCM',
     phone: '0239991255',
-    email: 'beefbeef@gmail.com',
+    email: 'beefbeefrestaurant.hcm@gmail.com',
     logo: '/assets/images/logo.png',
   };
 
@@ -74,7 +74,7 @@ const Invoice: React.FC<InvoiceProps> = ({ orderId }) => {
     number: order._id || '',
     date: order.createdAt || '',
     customer: {
-      name: order.address_id?.full_name || order.receiver || 'Khách vãng lai',
+      name: order.user_id?.username || order.receiver || 'Khách vãng lai',
       address: order.address_id
         ? `${order.address_id.street_address}, ${order.address_id.ward}, ${order.address_id.district}, ${order.address_id.province}`
         : '',

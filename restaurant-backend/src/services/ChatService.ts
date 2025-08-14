@@ -296,12 +296,12 @@ class ChatService {
     }
     const isFirstMessage = !(await ChatMessageModel.exists({ chat_id: chat._id }));
 
-    const hasImageUrl =
-      Array.isArray((data as any).image ) &&
-      (data as any).image.length > 0;
-
-    const messageType: 'text' | 'image' | 'file' =
-      hasImageUrl ? 'image' : data.message_type || 'text';
+  const hasImageUrl = Array.isArray((data as any).image) && (data as any).image.length > 0;
+  const hasAudioUrl = Array.isArray((data as any).audio) && (data as any).audio.length > 0;
+  let messageType: 'text' | 'image' | 'file' | 'audio' = 'text';
+  if (hasImageUrl) messageType = 'image';
+  else if (hasAudioUrl) messageType = 'audio';
+  else messageType = data.message_type || 'text';
 
     const userMessage = await ChatMessageModel.create({
       chat_id: chat._id,
@@ -324,11 +324,12 @@ class ChatService {
     chat.updated_at = new Date();
     await chat.save();
 
+    const populatedMessage = await userMessage.populate('reply_to', 'content sender_id sender_role');
     globalThis.io?.to(data.chatId).emit('message', {
-      ...userMessage.toObject(),
-      _id: String(userMessage._id),
-      sender_id: String(userMessage.sender_id),
-      receiver_id: String(userMessage.receiver_id),
+      ...populatedMessage.toObject(),
+      _id: String(populatedMessage._id),
+      sender_id: String(populatedMessage.sender_id),
+      receiver_id: String(populatedMessage.receiver_id),
       sender_role: senderRole,
     });
 
@@ -387,17 +388,17 @@ class ChatService {
         await chat.save();
       }
       else {
-        console.log('[🤖 BOT] Có cashier, đợi 1s cho cashier reply');
+        console.log('[🤖 BOT] Có cashier, đợi 4s cho cashier reply');
         setTimeout(async () => {
           try {
-            const twelveSecondsAgo = new Date(Date.now() - 1000);
+            const fourSecondsAgo = new Date(Date.now() - 4000);
             const hasCashierReply = await ChatMessageModel.exists({
               chat_id: chat._id,
               sender_role: 'cashier',
-              sent_at: { $gte: twelveSecondsAgo }
+              sent_at: { $gte: fourSecondsAgo }
             });
             if (!hasCashierReply) {
-              console.log('[🤖 BOT] Cashier không reply trong 1s, bot reply');
+              console.log('[🤖 BOT] Cashier không reply trong 4s, bot reply');
               const { getBotReply } = require('../utils/openaiBot');
               const botReply = await getBotReply(data.content);
 
@@ -425,7 +426,6 @@ class ChatService {
                 });
               });
 
-
               await ChatBoxModel.findByIdAndUpdate(chat._id, { status: 'open' });
             } else {
               console.log('[🤖 BOT] Cashier đã reply, không cần bot reply');
@@ -433,7 +433,7 @@ class ChatService {
           } catch (error) {
             console.error('❌ Bot reply error:', error);
           }
-        }, 1000);
+        }, 4000);
       }
     }
 

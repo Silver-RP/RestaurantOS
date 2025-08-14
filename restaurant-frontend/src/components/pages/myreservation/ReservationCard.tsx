@@ -1,9 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { IReservation } from '@/types/Reservation.type';
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
 import { useDispatch } from 'react-redux';
 import { openReservationModal } from '@/redux/feature/modal/reservationModalSlice';
+import {
+  useHandleRetryPayment,
+  useHandleChangePaymentMethod,
+} from '@/hooks/useOrder';
+import PaymentMethodSelector from '../checkout/PaymentMethodSelector';
+import { paymentMethods } from '../../pages/trackingReservation/TrackingReservationResult';
+
 interface Props {
   reservation: IReservation;
   onView: () => void;
@@ -36,6 +43,36 @@ const ReservationCard: React.FC<Props> = ({ reservation, onCancel }) => {
   const reservationCode = (
     reservation._id?.slice(-6) || '000000'
   ).toUpperCase();
+  const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
+  const [showSelector, setShowSelector] = useState(false);
+  const { mutate: retryPaymentMutate, isPending: retrying } =
+    useHandleRetryPayment();
+  const handleRetryPayment = () => {
+    retryPaymentMutate({ type: 'reservation', id: reservation?._id || '' });
+  };
+  const {
+    mutate: changePaymentMethodMutate,
+    isSuccess,
+    data: changeMethodResult,
+    isPending: changingMethod,
+  } = useHandleChangePaymentMethod();
+
+  const handleChangePaymentMethod = () => {
+    setShowSelector(true);
+  };
+
+  const handleConfirmChangePaymentMethod = () => {
+    if (!selectedMethod || selectedMethod === reservation?.payment_method)
+      return;
+
+    if (reservation?._id) {
+      changePaymentMethodMutate({
+        objectId: reservation._id,
+        paymentMethod: selectedMethod,
+        objectType: 'reservation',
+      });
+    }
+  };
 
   const tableTypeName =
     seatingMap[reservation.table_type] || reservation.table_type;
@@ -87,6 +124,22 @@ const ReservationCard: React.FC<Props> = ({ reservation, onCancel }) => {
         );
       },
     });
+  };
+
+  const paymentMethodLabels: Record<string, string> = {
+    CASH: 'Tiền mặt',
+    VNPAY: 'VNPay',
+    CREDIT_CARD: 'Thẻ tín dụng (Paypal)',
+    BANK_TRANSFER: 'Chuyển khoản',
+    MOMO: 'Momo (QR)',
+    MOMO_ATM: 'Momo ATM/Thẻ',
+  };
+
+  const paymentStatusLabel: Record<string, string> = {
+    PAID: 'Đã thanh toán',
+    UNPAID: 'Chưa thanh toán',
+    FAILED: 'Thanh toán thất bại',
+    REFUNDED: 'Đã hoàn tiền',
   };
 
   return (
@@ -172,8 +225,8 @@ const ReservationCard: React.FC<Props> = ({ reservation, onCancel }) => {
             <span className="text-secondaryColor uppercase font-semibold">
               Phương thức thanh toán:
             </span>
-            <span className="text-white/90">
-              {reservation.payment_method || '—'}
+            <span className="text-md text-white/90">
+              {paymentMethodLabels[reservation.payment_method] || '-'}
             </span>
           </p>
           <p className="text-sm flex items-center gap-2">
@@ -181,7 +234,7 @@ const ReservationCard: React.FC<Props> = ({ reservation, onCancel }) => {
               Trạng thái thanh toán:
             </span>
             <span className="text-white/90">
-              {reservation.payment_status || '—'}
+              {paymentStatusLabel[reservation.payment_status] || '-'}
             </span>
           </p>
           <p className="text-sm flex items-center gap-2">
@@ -194,6 +247,69 @@ const ReservationCard: React.FC<Props> = ({ reservation, onCancel }) => {
                 : '—'}
             </span>
           </p>
+          {reservation.payment_status !== 'PAID' && reservation.status !== 'CANCELLED' && (
+  <>
+    {reservation.payment_method !== 'CASH' && (
+      <div className="bg-yellow-100 text-yellow-800 text-xs rounded-md px-3 py-2 mb-3 max-w-md text-justify leading-relaxed">
+        {reservation.cancelled_reason ||
+          'Đặt bàn của bạn sẽ bị hủy sau 60 phút nếu thanh toán không được hoàn tất. Hãy thanh toán sớm để giữ chỗ.'}
+      </div>
+    )}
+
+    {!showSelector ? (
+      <div className="flex gap-2">
+        {reservation.payment_method !== 'CASH' && (
+          <button
+            disabled={retrying}
+            className="px-4 py-1.5 text-xs bg-secondaryColor border border-secondaryColor text-black font-normal font-sans hover:bg-bodyBackground hover:text-white disabled:opacity-50"
+            onClick={handleRetryPayment}
+          >
+            {retrying ? 'Đang xử lý...' : 'Thanh toán lại'}
+          </button>
+        )}
+        <button
+          disabled={changingMethod}
+          className="px-4 py-1.5 text-xs bg-secondaryColor border border-secondaryColor text-black font-normal font-sans hover:bg-bodyBackground hover:text-white disabled:opacity-50"
+          onClick={handleChangePaymentMethod}
+        >
+          {changingMethod ? 'Đang cập nhật...' : 'Thay đổi phương thức'}
+        </button>
+      </div>
+    ) : (
+      <>
+        <PaymentMethodSelector
+          selectedMethod={selectedMethod}
+          onChange={setSelectedMethod}
+          size="sm"
+          methods={paymentMethods}
+        />
+        <div className="flex gap-2 mt-2">
+          <button
+            onClick={handleConfirmChangePaymentMethod}
+            disabled={
+              changingMethod ||
+              !selectedMethod ||
+              selectedMethod === reservation.payment_method
+            }
+            className="px-4 py-1.5 text-xs bg-secondaryColor border border-secondaryColor text-black font-normal font-sans hover:bg-bodyBackground hover:text-white disabled:opacity-50"
+          >
+            Xác nhận
+          </button>
+          <button
+            onClick={() => {
+              setShowSelector(false);
+              setSelectedMethod(reservation.payment_method);
+            }}
+            className="px-4 py-1.5 text-xs bg-bodyBackground border border-secondaryColor text-white font-normal font-sans hover:bg-secondaryColor hover:text-black disabled:opacity-50"
+          >
+            Hủy
+          </button>
+        </div>
+      </>
+    )}
+  </>
+)}
+
         </div>
       </div>
 

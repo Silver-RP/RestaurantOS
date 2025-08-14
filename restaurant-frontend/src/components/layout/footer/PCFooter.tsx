@@ -15,8 +15,8 @@ const Footer = () => {
                   />
             <div className="text-center xl:text-left space-y-4 px-6 xs:px-0">
               <p className="text-sm">Nhà Hàng BeefBeef, 161 đường Quốc Hương, Thảo Điền, Quận 2</p>
-              <p className="text-sm font-semibold text-white">+84 - 0239991255, +84 - 0239991256</p>
-              <p className="text-sm">beefbeef@gmail.com</p>
+              <p className="text-sm font-semibold text-white">0239991255, 0239991256</p>
+              <p className="text-sm">beefbeefrestaurant.hcm@gmail.com</p>
               <div className="flex justify-center xl:justify-start space-x-4">
                 {[FaFacebookF, FaTwitter, FaYoutube, FaPinterest, FaInstagram].map((Icon, index) => (
                   <a key={index} href="#" className="text-gray-400 hover:text-secondaryColor transition">
@@ -64,7 +64,7 @@ const Footer = () => {
         <div className="border-t border-gray-700 col-span-4 mt-10 pt-4">
           <div className="flex flex-col lg:flex-row justify-between items-center space-y-4 lg:space-y-0">
             <p className="text-xs hover:text-secondaryColor transition">
-              Copyright © {new Date().getFullYear()} Delicioz. All rights reserved.
+              Copyright © {new Date().getFullYear()} BeefBeef Restaurant. All rights reserved.
             </p>
             <p className="text-xs">
               <a href="#" className="hover:text-secondaryColor transition">Privacy & Cookie Policy | Terms of Service</a>

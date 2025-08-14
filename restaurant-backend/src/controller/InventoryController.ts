@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import InventoryService from '../services/InventoryService';
-import { IUser } from '../models/UserModel';
+import { IUser } from '../types/user.type';
 import { Types } from 'mongoose';
 
 class InventoryController {

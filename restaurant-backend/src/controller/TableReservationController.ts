@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import TableReservationService from '../services/TableReservationService';
-import { IUser } from '../models/UserModel';
+import { IUser } from '../types/user.type';
 
 const TableReservationController = {
   getAllStatus: async (_req: Request, res: Response) => {

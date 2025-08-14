@@ -2,7 +2,7 @@ import FoodService from '../services/FoodService';
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import { Types } from 'mongoose';
-import { IUser } from '../models/UserModel';
+import { IUser } from '../types/user.type';
 import { parseFoodQueryParams } from '../utils/queryParser';
 import jwt from 'jsonwebtoken';
 class FoodController {

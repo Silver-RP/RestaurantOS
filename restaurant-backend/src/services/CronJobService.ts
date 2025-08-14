@@ -123,7 +123,8 @@ class CronJobService {
   // Hàm hủy đơn đặt bàn sau 30 phút chưa xác nhận
   private async cancelPendingReservations() {
     try {
-      const expireTime = new Date(Date.now() - 5 * 60 * 1000); // 1 phút trước
+      const expireTime = new Date(Date.now() - 5 * 60 * 1000); // 1 phút trước (dùng cho development)
+      // const expireTime = new Date(Date.now() - 60 * 60 * 1000); // 60 phút trước (dùng cho production)
 
       const pendingReservations = await Reservation.find({
         status: 'PENDING',

@@ -5,6 +5,7 @@ import CartItem from './CartItem';
 interface ItemType {
   id: number;
   name: string;
+  slug: string;
   price: number;
   discountedPrice: number;
   quantity: number;

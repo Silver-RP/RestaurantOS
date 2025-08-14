@@ -47,7 +47,7 @@ const ReportPostsPage = () => {
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
-    <div className="max-w-4xl mx-auto">
+    <div className="w-full mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-gray-900">Báo cáo bài viết</h2>
           <button
@@ -96,14 +96,14 @@ const ReportPostsPage = () => {
                       >
                         <FiTrash2 className="inline-block w-5 h-5" />
                       </button>
-                      <button
+                      {/* <button
                         className="text-orange-600 hover:text-orange-900"
                         title="Xóa bài viết"
                         onClick={() => handleDeletePost(report.post_id?._id)}
                         disabled={!report.post_id?._id}
                       >
                         <span className="inline-block w-5 h-5">🗑️</span>
-                      </button>
+                      </button> */}
                     </td>
                   </tr>
                 ))}

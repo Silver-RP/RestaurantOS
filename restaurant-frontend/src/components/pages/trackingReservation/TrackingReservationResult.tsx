@@ -333,63 +333,71 @@ const ReservationCard: React.FC<Props> = ({ onCancel }) => {
               </span>
             </div>
           </div>
-          {reservation.payment_method !== 'CASH' && (
-            <div className="bg-yellow-100 text-yellow-800 text-xs rounded-md px-3 py-2 mb-3 max-w-md text-justify leading-relaxed">
-              Đặt bàn của bạn sẽ <strong>bị hủy sau 60 phút</strong> nếu thanh
-              toán không được hoàn tất. Hãy thanh toán sớm để giữ chỗ.
-            </div>
-          )}
-          {!showSelector ? (
-            <div className="flex gap-2">
-              {reservation.payment_method !== 'CASH' && (
-                <button
-                  disabled={retrying}
-                  className="px-4 py-1.5 text-xs bg-secondaryColor border border-secondaryColor text-black font-normal font-sans hover:bg-bodyBackground hover:text-white focus:ring-bodyBackground active:bg-bodyBackground/90 active:text-headerBackground disabled:opacity-50"
-                  onClick={handleRetryPayment}
-                >
-                  {retrying ? 'Đang xử lý...' : 'Thanh toán lại'}
-                </button>
-              )}
-              <button
-                disabled={changingMethod}
-                className="px-4 py-1.5 text-xs bg-secondaryColor border border-secondaryColor text-black font-normal font-sans hover:bg-bodyBackground hover:text-white focus:ring-bodyBackground active:bg-bodyBackground/90 active:text-headerBackground disabled:opacity-50"
-                onClick={handleChangePaymentMethod}
-              >
-                {changingMethod ? 'Đang cập nhật...' : 'Thay đổi phương thức'}
-              </button>
+          {reservation?.status === 'CANCELLED' ? (
+            <div className="bg-red-100 text-red-800 text-xs rounded-md px-3 py-2 mb-3 max-w-md text-justify leading-relaxed">
+              <span>Lý do: </span>
+              {reservation.cancelled_reason || 'Đơn đặt bàn đã bị hủy.'}
             </div>
           ) : (
-            <>
-              <PaymentMethodSelector
-                selectedMethod={selectedMethod}
-                onChange={setSelectedMethod}
-                size="sm"
-                methods={paymentMethods}
-              />
-              <div className="flex gap-2 mt-2">
+            reservation?.payment_method !== 'CASH' && (
+              <div className="bg-yellow-100 text-yellow-800 text-xs rounded-md px-3 py-2 mb-3 max-w-md text-justify leading-relaxed">
+                {reservation.cancelled_reason ||
+                  'Đặt bàn của bạn sẽ bị hủy sau 60 phút nếu thanh toán không được hoàn tất. Hãy thanh toán sớm để giữ chỗ.'}
+              </div>
+            )
+          )}
+          {reservation.status !== 'CANCELLED' &&
+            (!showSelector ? (
+              <div className="flex gap-2">
+                {reservation.payment_method !== 'CASH' && (
+                  <button
+                    disabled={retrying}
+                    className="px-4 py-1.5 text-xs bg-secondaryColor border border-secondaryColor text-black font-normal font-sans hover:bg-bodyBackground hover:text-white focus:ring-bodyBackground active:bg-bodyBackground/90 active:text-headerBackground disabled:opacity-50"
+                    onClick={handleRetryPayment}
+                  >
+                    {retrying ? 'Đang xử lý...' : 'Thanh toán lại'}
+                  </button>
+                )}
                 <button
-                  onClick={handleConfirmChangePaymentMethod}
-                  disabled={
-                    changingMethod ||
-                    !selectedMethod ||
-                    selectedMethod === reservation.payment_method
-                  }
+                  disabled={changingMethod}
                   className="px-4 py-1.5 text-xs bg-secondaryColor border border-secondaryColor text-black font-normal font-sans hover:bg-bodyBackground hover:text-white focus:ring-bodyBackground active:bg-bodyBackground/90 active:text-headerBackground disabled:opacity-50"
+                  onClick={handleChangePaymentMethod}
                 >
-                  Xác nhận
-                </button>
-                <button
-                  onClick={() => {
-                    setShowSelector(false);
-                    setSelectedMethod(reservation.payment_method);
-                  }}
-                  className="px-4 py-1.5 text-xs bg-bodyBackground border border-secondaryColor text-white font-normal font-sans hover:bg-secondaryColor hover:text-black focus:ring-bodyBackground active:bg-bodyBackground/90 active:text-headerBackground disabled:opacity-50"
-                >
-                  Hủy
+                  {changingMethod ? 'Đang cập nhật...' : 'Thay đổi phương thức'}
                 </button>
               </div>
-            </>
-          )}
+            ) : (
+              <>
+                <PaymentMethodSelector
+                  selectedMethod={selectedMethod}
+                  onChange={setSelectedMethod}
+                  size="sm"
+                  methods={paymentMethods}
+                />
+                <div className="flex gap-2 mt-2">
+                  <button
+                    onClick={handleConfirmChangePaymentMethod}
+                    disabled={
+                      changingMethod ||
+                      !selectedMethod ||
+                      selectedMethod === reservation.payment_method
+                    }
+                    className="px-4 py-1.5 text-xs bg-secondaryColor border border-secondaryColor text-black font-normal font-sans hover:bg-bodyBackground hover:text-white focus:ring-bodyBackground active:bg-bodyBackground/90 active:text-headerBackground disabled:opacity-50"
+                  >
+                    Xác nhận
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowSelector(false);
+                      setSelectedMethod(reservation.payment_method);
+                    }}
+                    className="px-4 py-1.5 text-xs bg-bodyBackground border border-secondaryColor text-white font-normal font-sans hover:bg-secondaryColor hover:text-black focus:ring-bodyBackground active:bg-bodyBackground/90 active:text-headerBackground disabled:opacity-50"
+                  >
+                    Hủy
+                  </button>
+                </div>
+              </>
+            ))}
         </div>
       )}
 

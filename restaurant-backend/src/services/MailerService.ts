@@ -1,8 +1,8 @@
 /* eslint-disable no-useless-escape */
 import transporter from '../config/mailer';
 import { IOrder, IOrderPopulated } from '../models/OrderModel';
-import { IUser } from '../models/UserModel';
-import { IAddress } from '../models/AddressModel';
+import { IUser } from '../types/user.type';
+import { IAddress } from '../types/address.type';
 import { IOrderDetail } from '../models/OrderDetailModel';
 import { IPayment } from '../models/PaymentModel';
 import { IVoucher } from '../models/VoucherModel';
@@ -184,7 +184,7 @@ const MailerService = {
           quantity: item.quantity,
           price: item.price.toLocaleString('vi-VN') + '₫',
         })) || [],
-      reservationDetailUrl: `${process.env.CLIENT_BASE_URL || '#'}/profile/reservations?reservationId=${_id}`,
+      reservationDetailUrl: `${process.env.CLIENT_BASE_URL || '#'}/reservation/lookup-reservation`,
     };
 
     await this.sendTemplateEmail({
@@ -349,7 +349,7 @@ const MailerService = {
         name: 'CÔNG TY TNHH BEEFBEEF',
         address: '161 Quốc Hương, P. Thảo Điền, Quận 2, Tp. HCM',
         phone: '0239991255',
-        email: 'beefbeef@gmail.com',
+        email: 'beefbeefrestaurant.hcm@gmail.com',
         logo: 'https://res.cloudinary.com/dw8c7oz6q/image/upload/v1748798728/logo_tmawjo.png',
       };
 
@@ -370,7 +370,7 @@ const MailerService = {
             createdAt: order.createdAt,
           },
           customer: {
-            name: order.address_id?.full_name || order.receiver || 'Khách vãng lai',
+            name: order.user_id?.username || order.receiver || 'Khách vãng lai',
             address: order.address_id
               ? `${order.address_id.street_address}, ${order.address_id.ward}, ${order.address_id.district}, ${order.address_id.province}`
               : '',

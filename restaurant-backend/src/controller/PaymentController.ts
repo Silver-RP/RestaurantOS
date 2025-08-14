@@ -5,7 +5,7 @@ import OrderService from '../services/OrderService';
 import Payment from '../models/PaymentModel';
 import { capturePayPalOrder } from '../services/payments/PaypalService';
 import ReservationService from '../services/ReservationService';
-import { IUser } from '../models/UserModel';
+import { IUser } from '../types/user.type';
 import mongoose, { Types } from 'mongoose';
 
 const CLIENT_BASE_URL = process.env.CLIENT_BASE_URL || 'http://localhost:5173';

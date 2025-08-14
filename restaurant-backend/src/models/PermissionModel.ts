@@ -11,5 +11,5 @@ const PermissionSchema = new mongoose.Schema({
   roles: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Roles' }],
 });
 
-const PermissionsModel = mongoose.model<IPermission>('Permissions', PermissionSchema); // Sửa tên mô hình thành 'Permissions'
+const PermissionsModel = mongoose.model<IPermission>('Permissions', PermissionSchema); 
 export default PermissionsModel;

@@ -1,5 +1,5 @@
 export interface IAddress {
-  user_id: string;
+  user_id: typeof import('mongoose').Types.ObjectId;
   full_name: string;
   phone: string;
 
