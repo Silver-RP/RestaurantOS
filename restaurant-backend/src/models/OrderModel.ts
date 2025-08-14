@@ -1,6 +1,5 @@
 import { Schema, model, Document, Types, PaginateModel } from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
-// import { IAddress } from './AddressModel';
 import { IAddress } from '../types/address.type';
 import { IOrderDetail } from './OrderDetailModel';
 

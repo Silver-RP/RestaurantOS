@@ -821,7 +821,7 @@ class OrderService {
     try {
       const order = await Order.findById(orderId)
         .populate('address_id')
-        .populate('user_id', 'email')
+        .populate('user_id', 'email username phone')
         .lean();
 
       if (!order) {

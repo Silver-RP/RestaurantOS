@@ -4,7 +4,7 @@ import mongoose, { Document, Types } from 'mongoose';
 import { Dish } from '../models/DishModel';
 import MailerService from './MailerService';
 import TableReservationService from './TableReservationService';
-import { IUser } from '../models/UserModel';
+import { IUser } from '../types/user.type';
 import { Table } from '../models/TableModel';
 import { IReservation } from '../types/reservation.types';
 import Payment from '../models/PaymentModel';

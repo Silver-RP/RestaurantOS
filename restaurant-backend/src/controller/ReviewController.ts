@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { ReviewService } from '../services/ReviewService';
-import { IUser } from '../models/UserModel';
+import { IUser } from '../types/user.type';
 import { Types } from 'mongoose';
 export const ReviewController = {
   create: async (req: Request, res: Response): Promise<void> => {

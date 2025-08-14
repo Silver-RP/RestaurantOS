@@ -270,8 +270,8 @@ const OrderTable: React.FC = () => {
   };
 
   const getCustomerName = (order: AllOrder) => {
-    if (order.address_id?.full_name) {
-      const name = order.address_id?.full_name;
+    if (order.user_id?.username) {
+      const name = order.user_id?.username;
       return name;
     }
     if (order.receiver) {
