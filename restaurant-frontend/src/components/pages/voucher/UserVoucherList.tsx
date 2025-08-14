@@ -19,7 +19,7 @@ const UserVoucherList: React.FC = () => {
 
   return (
     <div className="flex flex-col bg-bodyBackground text-white font-sans">
-      <Container className="flex gap-6 py-10">
+      <Container className="flex gap-6 sm:py-10">
         <div className="w-1/3 hidden md:block">
           <ProfileSidebar />
         </div>

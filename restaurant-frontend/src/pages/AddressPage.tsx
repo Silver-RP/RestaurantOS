@@ -7,7 +7,7 @@ const AddressPage: React.FC = () => {
   return (
     <>
       <div className="min-h-screen bg-bodyBackground font-sans">
-        <Container className="flex gap-6 py-10">
+        <Container className="flex gap-6 sm:py-10">
           <div className="w-1/3 hidden md:block">
             <ProfileSidebar />
           </div>

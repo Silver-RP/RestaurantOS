@@ -12,10 +12,8 @@ import { toast } from 'react-toastify';
 import { useChangePasswordProfile } from '@/hooks/useAuth';
 import { useCheckPassword } from '@/hooks/useUsers';
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
-import { HiOutlineMenu } from 'react-icons/hi';
 import Container from '@/components/common/Container';
 import UserLoyaltyTier from '@/components/pages/proflie/UserLoyaltyTier';
-import MobileDrawer from '@/components/common/MobileDrawer';
 
 const ProfilePage = () => {
   const [touchedFields, setTouchedFields] = useState({
@@ -34,10 +32,7 @@ const ProfilePage = () => {
     useChangePasswordProfile();
 
   const { user } = useSelector((state: RootState) => state.user);
-  console.log('user in profile', user);
-
   const [formattedBirthday, setFormattedBirthday] = useState('');
-
   const [isEditingPersonal, setIsEditingPersonal] = useState(false);
   const [isEditingAccount, setIsEditingAccount] = useState(false);
   const [passwordErrors, setPasswordErrors] = useState({
@@ -307,6 +302,7 @@ const ProfilePage = () => {
       }
     }
   };
+
   const handlePersonalChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
@@ -316,34 +312,11 @@ const ProfilePage = () => {
 
   return (
     <div className="flex flex-col bg-bodyBackground text-white font-sans">
-      <Container className="flex flex-col md:flex-row gap-0, sm:gap-6 py-10">
-        {/* Mobile MENU button to toggle sidebar */}
-        <div className="md:hidden mb-4 order-0">
-          <button
-            type="button"
-            onClick={() => setMobileSidebarOpen((v) => !v)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded border border-[#FFE0A0] text-[#FFE0A0] hover:bg-[#FFE0A0] hover:text-[#082635] transition"
-            aria-label="Mở menu tài khoản"
-            aria-expanded={mobileSidebarOpen}
-            aria-controls="mobile-profile-drawer"
-          >
-            <HiOutlineMenu className="text-xl" />
-            <span className="font-medium">MENU</span>
-          </button>
-        </div>
-        {/* Sidebar for desktop (always visible on ≥md) */}
-        <div className="hidden md:block md:w-1/3 order-1 md:order-1">
-          <ProfileSidebar />
-        </div>
-        {/* Mobile Drawer for Profile Sidebar (reusable component) */}
-        <MobileDrawer
-          open={mobileSidebarOpen}
-          onClose={() => setMobileSidebarOpen(false)}
-          title="Tài khoản"
-          drawerId="mobile-profile-drawer"
-        >
-          <ProfileSidebar />
-        </MobileDrawer>
+      <Container className="flex flex-col md:flex-row gap-0, sm:gap-6 sm:py-10">
+        {/* Sidebar desktop */}
+      <div className="hidden md:block md:w-1/3 order-1 md:order-1">
+        <ProfileSidebar />
+      </div>
         <div className="flex-1 w-full md:w-2/3 order-2 md:order-2 bg-bodyBackground p-10 sm:p-10 border border-[#FFE0A0]">
           <UserLoyaltyTier />
           <h2 className="text-3xl font-restora font-bold text-white mb-8">
