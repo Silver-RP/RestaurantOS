@@ -8,11 +8,13 @@ const Footer = () => {
       <div className="w-11/12 md:w-container95 lg:w-container95 xl:w-container95 2xl:w-mainContainer  mx-auto">
         <div className="grid grid-cols-8 xl:grid-cols-15 gap-3">
           <div className="flex flex-col col-span-8 xl:col-span-4  items-center xl:items-start">
-              <img
-                    src="/assets/images/logo.png"
-                    alt="Logo"
-                    className="w-48 h-20 object-cover mb-4"
-                  />
+            <Link to="/">
+                <img
+                      src="/assets/images/logo.png"
+                      alt="Logo"
+                      className="w-48 h-20 object-cover mb-4"
+                    />
+            </Link>
             <div className="text-center xl:text-left space-y-4 px-6 xs:px-0">
               <p className="text-sm">Nhà Hàng BeefBeef, 161 đường Quốc Hương, Thảo Điền, Quận 2</p>
               <p className="text-sm font-semibold text-white">0239991255, 0239991256</p>

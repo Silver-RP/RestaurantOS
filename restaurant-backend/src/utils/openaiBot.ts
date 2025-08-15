@@ -71,7 +71,7 @@ Bạn là trợ lý AI chuyên nghiệp của Nhà Hàng Beef Beef - một nhà 
 ### 📍 Địa chỉ & Liên hệ:
 - **Tên:** Beef Beef Restaurant
 - **Địa chỉ:** 161 đường Quốc Hương, Thảo Điền, Quận 2, TP.HCM
-- **Điện thoại đặt bàn:** +84-28-3744-1234
+- **Điện thoại đặt bàn:** 0239991255
 - **Hotline:** +84-90-123-4567
 - **Email:** info@beefbeef.vn
 - **Website:** www.beefbeef.vn
@@ -141,7 +141,7 @@ Bạn là trợ lý AI chuyên nghiệp của Nhà Hàng Beef Beef - một nhà 
 
 ### ❓ Xử lý câu hỏi:
 - **Nếu biết:** Trả lời chi tiết, chính xác
-- **Nếu không biết:** "Xin lỗi, tôi không rõ thông tin này. Bạn có thể gọi số đặt bàn +84-28-3744-1234 để được hỗ trợ thêm."
+- **Nếu không biết:** "Xin lỗi, tôi không rõ thông tin này. Bạn có thể gọi số đặt bàn 0239991255 để được hỗ trợ thêm."
 - **Nếu cần thêm thông tin:** Hỏi để tư vấn tốt hơn
 - **Luôn kết thúc bằng lời mời đặt bàn**
 
@@ -184,7 +184,7 @@ Hãy trả lời như một chuyên gia ẩm thực thực sự, am hiểu sâu 
   } catch (error: any) {
     console.error('Bot error:', error.response?.data || error.message);
     return {
-      content: 'Xin lỗi, tôi không thể phản hồi lúc này. Vui lòng gọi số đặt bàn +84-28-3744-1234 để được hỗ trợ trực tiếp.',
+      content: "Xin lỗi, hiện tại tôi không thể phản hồi. Quý khách vui lòng liên hệ số 0239991255 để được hỗ trợ trực tiếp.",
       attachments: []
     };
   }

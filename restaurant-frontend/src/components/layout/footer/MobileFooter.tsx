@@ -13,13 +13,15 @@ const MobileFooter = () => {
   return (
     <footer className="bg-black text-white py-8 px-4">
       <div className="flex justify-center mb-6 overflow-hidden h-[80px]">
-        <img
+        <Link to="/">
+          <img
           src="/assets/images/logo.png"
           alt="BeefBeef Logo"
           width={160}
           height={100}
           className="object-contain"
         />
+        </Link>
       </div>
 
       <div>
