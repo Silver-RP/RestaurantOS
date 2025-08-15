@@ -38,17 +38,11 @@ const handleAuthFailure = (reason: string = 'Token expired') => {
   if (window.location.pathname === '/login') return;
   if (checkCallHandleAuthFailure) return;
   
-  console.log(`🔒 Auth failure: ${reason}`);
   store.dispatch(forceLogout(reason));
   clearAuthCookies();
-  // toast.error('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.');
   toast.warning('Hãy đăng nhập để trải nghiệm dịch vụ một cách trọn vẹn ♨️.');
 
   checkCallHandleAuthFailure = true;
-  
-  // setTimeout(() => {
-  //   window.location.href = '/login';
-  // }, 1500);
 };
 
 axiosInstance.interceptors.request.use(
@@ -65,16 +59,26 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
+    if (!error.config) {
+      console.error("❌ Request failed without config:", error);
+      return Promise.reject(error);
+    }
+
     const originalRequest = error.config;
+
+    if (!store.getState().auth.isAuthenticated) {
+      processQueue(new Error('User logged out'), null); 
+      return Promise.reject(error);
+    }
     
     if (error.response?.status === 401 && !originalRequest._retry) {
-      
-      if (originalRequest.url?.includes('/auth/refresh')) {
-        handleAuthFailure('Hãy đăng nhập để tiếp tục');
+
+      if (originalRequest.url?.includes('/auth/logout')) {
         return Promise.reject(error);
       }
       
-      if (originalRequest.url?.includes('/auth/logout')) {
+      if (originalRequest.url?.includes('/auth/refresh')) {
+        handleAuthFailure('Hãy đăng nhập để tiếp tục');
         return Promise.reject(error);
       }
       

@@ -43,9 +43,6 @@ const Login = () => {
 
   useEffect(() => {
     if (error) {
-      console.error('Login error:', error);
-  
-      // Chỉ điều hướng khi lỗi liên quan đến chưa xác minh email
       if (error.includes('Email của bạn chưa được xác minh')) {
         setTimeout(() => {
           navigate('/verify-otp-email', { state: { email: formData.email } });

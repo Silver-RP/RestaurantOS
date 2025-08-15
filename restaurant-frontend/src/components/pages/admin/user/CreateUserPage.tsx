@@ -15,14 +15,14 @@ const CreateUserPage: React.FC = () => {
       const res = await addUser(userData); 
 
       if (res.status === 'OK') {
-        toast.success(res.message || 'Thêm người dùng thành công!');
+        toast.success(res.message || 'Thêm thành công!');
         navigate('/admin/users');
       } else {
-        toast.error(res.message || 'Thêm người dùng thất bại');
+        toast.error(res.message || 'Thêm thất bại');
       }
     } catch (error: any) {
       toast.error(
-        error?.response?.data?.message || 'Đã xảy ra lỗi khi tạo người dùng',
+        error?.response?.data?.message || 'Đã xảy ra lỗi khi tạo tài khoản mới',
       );
       console.error('Failed to create user:', error);
     }
