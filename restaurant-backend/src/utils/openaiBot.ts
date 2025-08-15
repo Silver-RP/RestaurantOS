@@ -6,18 +6,18 @@ dotenv.config();
 export const getBotReply = async (userMessage: string): Promise<{ content: string; attachments: string[] }> => {
   try {
     const dishKeywords = [
-      'món ăn', 'thực đơn', 'menu', 'thịt bò', 'steak', 'wagyu', 'angus', 
+      'món ăn', 'thực đơn', 'menu', 'thịt bò', 'steak', 'wagyu', 'angus',
       'ribeye', 'tenderloin', 'món ngon', 'đặc sản', 'signature', 'nổi bật',
       'món mới', 'khuyến nghị', 'giá bao nhiêu', 'bao nhiêu tiền'
     ];
 
-    const isDishQuestion = dishKeywords.some(keyword => 
+    const isDishQuestion = dishKeywords.some(keyword =>
       userMessage.toLowerCase().includes(keyword)
     );
 
     if (isDishQuestion) {
       const dishes = await BotService.findDishesByKeyword(userMessage);
-      
+
       if (dishes.length > 0) {
         if (dishes.length === 1) {
           return BotService.createDishMessage(dishes[0]);
@@ -55,7 +55,7 @@ export const getBotReply = async (userMessage: string): Promise<{ content: strin
     if (priceMatch) {
       const minPrice = parseInt(priceMatch[1]) * (priceMatch[3].toLowerCase().includes('triệu') ? 1000000 : 1000);
       const maxPrice = parseInt(priceMatch[2]) * (priceMatch[3].toLowerCase().includes('triệu') ? 1000000 : 1000);
-      
+
       const priceDishes = await BotService.getDishesByPriceRange(minPrice, maxPrice);
       if (priceDishes.length > 0) {
         return BotService.createDishesListMessage(priceDishes, `Món ăn trong khoảng giá ${BotService.formatPrice(minPrice)} - ${BotService.formatPrice(maxPrice)}`);
@@ -63,37 +63,66 @@ export const getBotReply = async (userMessage: string): Promise<{ content: strin
     }
 
     // --- NEW: xử lý yêu cầu "tôi muốn gặp nhân viên" ---
-    const staffKeywords = [
-      'tôi muốn gặp nhân viên',
-      'muốn gặp nhân viên',
-      'gặp nhân viên',
-      'kết nối nhân viên',
-      'cho tôi gặp nhân viên',
-      'gặp phục vụ',
-      'gặp thu ngân',
-      'gặp quản lý',
-      'gặp bếp'
+    // Hàm chuẩn hóa tin nhắn: xóa dấu, ký tự đặc biệt, gộp khoảng trắng
+    const normalizeText = (text: string): string => {
+      return text
+        .normalize('NFD')                // tách dấu tiếng Việt
+        .replace(/[\u0300-\u036f]/g, '')  // xóa dấu
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, '')      // bỏ ký tự đặc biệt
+        .replace(/\s+/g, ' ')             // gộp khoảng trắng
+        .trim();
+    };
+
+    // --- Từ khóa nhận diện yêu cầu gặp nhân viên ---
+    const staffKeywords: string[] = [
+      'toi muon gap nhan vien',
+      'muon gap nhan vien',
+      'gap nhan vien',
+      'ket noi nhan vien',
+      'cho toi gap nhan vien',
+      'gap phuc vu',
+      'gap thu ngan',
+      'gap quan ly',
+      'gap bep',
+      'toi muon gap nhan vien',
     ];
 
-    const lower = userMessage.toLowerCase();
-    const isStaffRequest = staffKeywords.some(k => lower.includes(k));
+    interface StaffResponse {
+      content: string;
+      attachments: any[]; 
+    }
 
-    if (isStaffRequest) {
-      // nếu nội dung liên quan "bạn trai" trả lời khác (theo yêu cầu)
-      if (lower.includes('bạn trai')) {
+    // Hàm xử lý yêu cầu gặp nhân viên
+    const handleStaffRequest = (userMessage: string): StaffResponse | null => {
+      const normalized = normalizeText(userMessage);
+
+      const isStaffRequest = staffKeywords.some(k => normalized.includes(k));
+
+      if (isStaffRequest) {
         return {
           content:
-            'Vui lòng cho biết bạn muốn gặp nhân viên nào (phục vụ / thu ngân / quản lý) và cung cấp thêm một chút thông tin (ví dụ: thời gian hoặc tên) để chúng tôi kết nối một cách riêng tư và chu đáo.',
+            'Xin vui lòng chờ trong giây lát, chúng tôi sẽ kết nối bạn với nhân viên.',
           attachments: []
         };
       }
+      return null;
+    };
 
-      // trả lời khôn ngoan
-      return {
-        content:
-          'Chúng tôi có đội ngũ nhân viên chuyên nghiệp sẵn sàng phục vụ bạn. Bạn cần hỗ trợ gì?',
-        attachments: []
-      };
+    // --- Ví dụ sử dụng ---
+    const testMessages = [
+      'Tôi muốn gặp nhân viên',
+      'Gap nhan vien',
+      'Cho tôi gặp phục vụ',
+      'Muốn gặp bạn trai nhân viên',
+      'Tôi muốn gặp bếp.',
+      'Gap   nhan  vien !',
+      'Tôi muốn gặp nhân viên',
+    ];
+
+    for (const msg of testMessages) {
+      const result = handleStaffRequest(msg);
+      console.log(msg, '=>', result);
     }
 
     // Nếu không phải câu hỏi về món ăn, sử dụng OpenAI
