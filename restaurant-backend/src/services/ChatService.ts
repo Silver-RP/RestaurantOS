@@ -388,17 +388,17 @@ class ChatService {
         await chat.save();
       }
       else {
-        console.log('[🤖 BOT] Có cashier, đợi 4s cho cashier reply');
+        console.log('[🤖 BOT] Có cashier, đợi 1s cho cashier reply');
         setTimeout(async () => {
           try {
-            const fourSecondsAgo = new Date(Date.now() - 4000);
+            const fourSecondsAgo = new Date(Date.now() - 1000);
             const hasCashierReply = await ChatMessageModel.exists({
               chat_id: chat._id,
               sender_role: 'cashier',
               sent_at: { $gte: fourSecondsAgo }
             });
             if (!hasCashierReply) {
-              console.log('[🤖 BOT] Cashier không reply trong 4s, bot reply');
+              console.log('[🤖 BOT] Cashier không reply trong 1s, bot reply');
               const { getBotReply } = require('../utils/openaiBot');
               const botReply = await getBotReply(data.content);
 
@@ -433,7 +433,7 @@ class ChatService {
           } catch (error) {
             console.error('❌ Bot reply error:', error);
           }
-        }, 4000);
+        }, 1000);
       }
     }
 

@@ -15,6 +15,7 @@ import { BsChatDots } from 'react-icons/bs';
 import { useAdminChatbox } from '@/hooks/useAdminChatbox';
 import { socket } from '@/utils/socket';
 import { ChatMessage, ChatSessionResponse } from '@/types/Chatbox.type';
+import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 
 const getUserObj = (u: unknown): { _id?: string; username?: string; isOnline?: boolean } | null => {
   return typeof u === 'object' && u !== null ? (u as { _id?: string; username?: string; isOnline?: boolean }) : null;
@@ -52,6 +53,8 @@ const ChatAdminPanel: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const [reactionPopupIdx, setReactionPopupIdx] = useState<number | null>(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const emojiPickerRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -62,6 +65,16 @@ const ChatAdminPanel: React.FC = () => {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutsideEmoji = (event: MouseEvent) => {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
+        setShowEmojiPicker(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutsideEmoji);
+    return () => document.removeEventListener('mousedown', handleClickOutsideEmoji);
   }, []);
 
   useEffect(() => {
@@ -115,6 +128,11 @@ const ChatAdminPanel: React.FC = () => {
   };
   const handleReply = (msg: ChatMessage) => {
     setReplyingTo(msg);
+  };
+
+  const onEmojiClick = (emojiData: EmojiClickData) => {
+    setInput((prev) => prev + emojiData.emoji);
+    setShowEmojiPicker(false);
   };
 
   return (
@@ -463,26 +481,29 @@ const ChatAdminPanel: React.FC = () => {
                   if (file) console.log('Attached file:', file.name);
                 }}
               />
+              <div className="relative">
+                <FiSmile
+                  onClick={() => setShowEmojiPicker(prev => !prev)}
+                  className="text-gray-500 cursor-pointer"
+                  title="Emoji"
+                />
+                {showEmojiPicker && (
+                  <div ref={emojiPickerRef} className="absolute bottom-12 left-0 z-50">
+                    <EmojiPicker onEmojiClick={onEmojiClick} />
+                  </div>
+                )}
+              </div>
               <FiImage
                 onClick={() => document.getElementById('imageUpload')?.click()}
                 className="text-gray-500 cursor-pointer"
                 title="Gửi ảnh"
               />
-              <FiPaperclip
-                onClick={() => document.getElementById('fileUpload')?.click()}
-                className="text-gray-500 cursor-pointer"
-                title="Attach File"
-              />
-              <FiSmile
-                onClick={() => setInput((prev) => prev + '😊')}
-                className="text-gray-500 cursor-pointer"
-                title="Emoji"
-              />
-              <FiMic
+              
+              {/* <FiMic
                 onClick={() => setRecording(!recording)}
                 className={`cursor-pointer ${recording ? 'text-red-500' : 'text-gray-500'}`}
                 title="Record"
-              />
+              /> */}
               {/* Hiển thị ảnh đã chọn trước khi gửi */}
               {images.length > 0 && (
                 <div className="flex gap-2">

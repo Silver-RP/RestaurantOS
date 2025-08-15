@@ -158,7 +158,7 @@ Hãy trả lời như một chuyên gia ẩm thực thực sự, am hiểu sâu 
       'https://openrouter.ai/api/v1/chat/completions',
       {
         model: 'openai/gpt-4o',
-        max_tokens: 450,
+        max_tokens: 400,
         messages: [
           {
             role: 'system',
