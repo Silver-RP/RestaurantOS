@@ -125,7 +125,6 @@ export const getBotReply = async (userMessage: string): Promise<{ content: strin
       console.log(msg, '=>', result);
     }
 
-    // Nếu không phải câu hỏi về món ăn, sử dụng OpenAI
     const context = `
 Bạn là trợ lý AI chuyên nghiệp của Nhà Hàng Beef Beef - một nhà hàng cao cấp chuyên về các món thịt bò và ẩm thực Âu-Á. Bạn có kiến thức sâu rộng về ẩm thực, dịch vụ khách hàng và văn hóa nhà hàng.
 

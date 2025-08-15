@@ -95,8 +95,8 @@ const ChatAdminPanel: React.FC = () => {
     if ((!input.trim() && images.length === 0) || !currentChat) return;
 
 
-  // Gửi tin nhắn lên server, truyền thêm images
-  handleSend(input, replyingTo?._id, images);
+    // Gửi tin nhắn lên server, truyền thêm images
+    handleSend(input, replyingTo?._id, images);
     setInput('');
     setReplyingTo(null);
     setImages([]);
@@ -154,8 +154,8 @@ const ChatAdminPanel: React.FC = () => {
             className="w-full appearance-none px-3 py-2 pr-10 border border-gray-300 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
           >
             <option value="all">Tất cả</option>
-            <option value="unread">Đã đọc</option>
-            <option value="read">Chưa đọc</option>
+            <option value="unread">Chưa đọc</option>
+            <option value="read">Đã đọc</option>
           </select>
           <div className="absolute top-1/2 right-3 transform -translate-y-1/2 pointer-events-none text-gray-500">
             <FiChevronDown />
@@ -258,7 +258,11 @@ const ChatAdminPanel: React.FC = () => {
             <div className="flex-1 overflow-y-auto px-6 py-4 text-sm">
               <div className="flex flex-col gap-y-2">
                 {messages.map((m, idx) => {
-                  const isMine = m.sender_id === currentChat?.cashier_user_id;
+                  // treat message as "mine" (right side) when it's from the cashier
+                  const isMine =
+                    m.sender_role === 'cashier' ||
+                    m.sender_role === 'bot' ||
+                    m.sender_id === currentChat?.cashier_user_id;
                   return (
                     <div className="flex items-end gap-2" key={idx}
                       onMouseEnter={() => setHoveredIdx(idx)}
@@ -498,7 +502,7 @@ const ChatAdminPanel: React.FC = () => {
                 className="text-gray-500 cursor-pointer"
                 title="Gửi ảnh"
               />
-              
+
               {/* <FiMic
                 onClick={() => setRecording(!recording)}
                 className={`cursor-pointer ${recording ? 'text-red-500' : 'text-gray-500'}`}
