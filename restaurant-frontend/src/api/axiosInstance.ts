@@ -133,6 +133,7 @@ axiosInstance.interceptors.response.use(
     
     if (error.response?.status === 403) {
       toast.error('Bạn không có quyền thực hiện hành động này');
+      console.log('🚫 Access denied: You do not have permission to perform this action');
     }
     
     return Promise.reject(error);
