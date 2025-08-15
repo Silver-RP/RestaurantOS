@@ -62,7 +62,6 @@ export const getBotReply = async (userMessage: string): Promise<{ content: strin
       }
     }
 
-    // --- NEW: xử lý yêu cầu "tôi muốn gặp nhân viên" ---
     const staffKeywords = [
       'tôi muốn gặp nhân viên',
       'muốn gặp nhân viên',
@@ -74,21 +73,10 @@ export const getBotReply = async (userMessage: string): Promise<{ content: strin
       'gặp quản lý',
       'gặp bếp'
     ];
-
     const lower = userMessage.toLowerCase();
     const isStaffRequest = staffKeywords.some(k => lower.includes(k));
 
     if (isStaffRequest) {
-      // nếu nội dung liên quan "bạn trai" trả lời khác (theo yêu cầu)
-      if (lower.includes('bạn trai')) {
-        return {
-          content:
-            'Vui lòng cho biết bạn muốn gặp nhân viên nào (phục vụ / thu ngân / quản lý) và cung cấp thêm một chút thông tin (ví dụ: thời gian hoặc tên) để chúng tôi kết nối một cách riêng tư và chu đáo.',
-          attachments: []
-        };
-      }
-
-      // trả lời khôn ngoan
       return {
         content:
           'Chúng tôi có đội ngũ nhân viên chuyên nghiệp sẵn sàng phục vụ bạn. Bạn cần hỗ trợ gì?',
@@ -96,7 +84,6 @@ export const getBotReply = async (userMessage: string): Promise<{ content: strin
       };
     }
 
-    // Nếu không phải câu hỏi về món ăn, sử dụng OpenAI
     const context = `
 Bạn là trợ lý AI chuyên nghiệp của Nhà Hàng Beef Beef - một nhà hàng cao cấp chuyên về các món thịt bò và ẩm thực Âu-Á. Bạn có kiến thức sâu rộng về ẩm thực, dịch vụ khách hàng và văn hóa nhà hàng.
 
