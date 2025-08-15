@@ -155,8 +155,8 @@ const Login = () => {
 
       Cookies.set('userInfo', JSON.stringify(result.user), { expires: 1 });
 
-      // ✅ Gọi fetchCurrentUser
-      dispatch(fetchCurrentUser({ userId: result.user._id })); // ← THÊM DÒNG NÀY
+    
+      dispatch(fetchCurrentUser({ userId: result.user._id }));
 
       toast.success('Đăng nhập Google thành công!');
       navigate('/');

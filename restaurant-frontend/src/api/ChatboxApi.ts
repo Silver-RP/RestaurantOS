@@ -96,7 +96,27 @@ export const getUserChatSession = async (
 ): Promise<ChatSessionResponse> => {
   const { data } = await axiosInstance.get(`/chat/user/${userId}`);
   console.log('getUserChatSession response:', data);
-  return data.chat;
+
+  const chat = data.chat as any;
+
+  // nếu backend đã populate user object thì trả luôn
+  if (chat?.user && (typeof chat.user === 'object')) {
+    return chat as ChatSessionResponse;
+  }
+
+  // nếu backend trả user_id (objectId/string) -> gọi thêm API lấy user info
+  const userIdFromChat = chat?.user_id || chat?.userId || userId;
+  if (userIdFromChat) {
+    try {
+      const { data: userData } = await axiosInstance.get(`/users/${String(userIdFromChat)}`);
+      chat.user = userData.user || userData; // tùy backend shape
+    } catch (err) {
+      console.warn('Failed to fetch user detail for chat; continuing with chat as-is', err);
+      // không ném lỗi để UI vẫn hiện phần chat (có thể thiếu info)
+    }
+  }
+
+  return chat as ChatSessionResponse;
 };
 
 // Cashier xem danh sách các phiên chat

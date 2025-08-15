@@ -12,6 +12,7 @@ import RefreshToken from '../models/RefreshToken';
 import { GoogleUser } from '../types/auth.types';
 import Role from '../models/RoleModel';
 import { ObjectId } from 'mongoose';
+import { UserDefinedMessageInstance } from 'twilio/lib/rest/api/v2010/account/call/userDefinedMessage';
 
 dotenv.config();
 
@@ -234,16 +235,29 @@ class AuthService {
         await user.save();
       }
 
+      // populate roles to get names
+      const populatedUser = await User.findById(user._id).populate('roles', 'name');
+      console.log("Populated User:", populatedUser);
+
+      const roleNames: string[] = Array.isArray(populatedUser?.roles)
+        ? (populatedUser!.roles as any[]).map(r => r.name).filter(Boolean)
+        : [];
+
       const accessTokenExpiresIn = rememberMe ? 60 * 60 * 2 : 60 * 60;
       const refreshTokenExpiresIn = rememberMe ? 21 * 24 * 60 * 60 : 2 * 24 * 60 * 60;
 
-      const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN || '', {
-        expiresIn: accessTokenExpiresIn,
-      });
+      // include roles (names) in token payload
+      const accessToken = jwt.sign(
+        { id: user._id, roles: roleNames },
+        process.env.ACCESS_TOKEN || '',
+        { expiresIn: accessTokenExpiresIn },
+      );
 
-      const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN || '', {
-        expiresIn: refreshTokenExpiresIn,
-      });
+      const refreshToken = jwt.sign(
+        { id: user._id, roles: roleNames },
+        process.env.REFRESH_TOKEN || '',
+        { expiresIn: refreshTokenExpiresIn },
+      );
 
       await RefreshToken.create({
         token: refreshToken,
@@ -254,8 +268,12 @@ class AuthService {
         rememberMe,
       });
 
+      // return user object with role names in a separate property
+      const userObj = populatedUser ? populatedUser.toObject() : user.toObject();
+      userObj.roleNames = roleNames;
+
       return {
-        user,
+        user: userObj,
         accessToken,
         refreshToken,
         refreshTokenExpiresIn,
