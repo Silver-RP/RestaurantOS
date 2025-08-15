@@ -16,5 +16,4 @@ const UserVoucherSchema = new Schema<IUserVoucher>(
   {
   timestamps: true,
 });
-
 export default mongoose.model<IUserVoucher>('UserVoucher', UserVoucherSchema); 
