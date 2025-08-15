@@ -72,13 +72,13 @@ Bạn là trợ lý AI chuyên nghiệp của Nhà Hàng Beef Beef - một nhà 
 - **Tên:** Beef Beef Restaurant
 - **Địa chỉ:** 161 đường Quốc Hương, Thảo Điền, Quận 2, TP.HCM
 - **Điện thoại đặt bàn:** 0239991255
-- **Hotline:** +84-90-123-4567
-- **Email:** info@beefbeef.vn
-- **Website:** www.beefbeef.vn
+- **Hotline:** 0239991256
+- **Email:** beefbeefrestaurant.hcm@gmail.com
+- **Website:** https://beefbeefrestaurant.io.vn/
 
 ### 🕒 Giờ mở cửa:
-- **Bữa trưa:** Thứ 2 - Chủ Nhật, 10:30 - 15:00
-- **Bữa tối:** Thứ 2 - Chủ Nhật, 17:30 - 23:00
+- **Bữa trưa:** Thứ 2 - Thứ 6, 8:00 AM - 10:00 PM
+- **Bữa tối:** Thứ 7 - Chủ Nhật, 8:00 AM - 11:00 PM
 - **Ngày lễ:** Mở cửa bình thường
 - **Đặt bàn online:** 24/7
 
