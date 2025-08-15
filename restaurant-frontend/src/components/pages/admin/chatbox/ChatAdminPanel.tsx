@@ -35,21 +35,14 @@ const ChatAdminPanel: React.FC = () => {
     setMessages,
   } = useAdminChatbox();
 
-  // State lưu ảnh đã chọn
+
   const [images, setImages] = useState<string[]>([]);
-  console.log('[DEBUG] Current chat:', currentChat);
-  console.log('[DEBUG] Messages:', messages);
-  console.log('[DEBUG] Sessions:', sessions);
-
-
   const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null);
   const [input, setInput] = useState('');
   const [search, setSearch] = useState('');
   const [filterUnread, setFilterUnread] = useState<'all' | 'read' | 'unread'>('all');
-  const [recording, setRecording] = useState(false);
   const [filteredSessions, setFilteredSessions] = useState<ChatSessionResponse[]>(sessions as ChatSessionResponse[]);
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
-  const emojiButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const [reactionPopupIdx, setReactionPopupIdx] = useState<number | null>(null);

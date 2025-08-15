@@ -36,9 +36,17 @@ const Chatbox: React.FC = () => {
   
   // Kiểm tra role của user
   const hasAdminRole = () => {
-    if (!userInfo?.roles) return false;
-    const roleNames = userInfo.roles.map(role => role.name.toLowerCase());
-    return roleNames.some(role => ['cashier', 'manager', 'superadmin'].includes(role));
+    const roles = userInfo?.roles ?? [];
+    if (!Array.isArray(roles) || roles.length === 0) return false;
+
+    return roles.some((roleItem) => {
+      // roleItem có thể là string hoặc object { name: string }
+      const name = typeof roleItem === 'string' ? roleItem : roleItem?.name;
+      console.log('User role chatbox:', name);
+
+      return typeof name === 'string' && name.toLowerCase() === 'admin'
+        || typeof name === 'string' && ['cashier','manager','superadmin'].includes(name.toLowerCase());
+    });
   };
 
   useEffect(() => {
