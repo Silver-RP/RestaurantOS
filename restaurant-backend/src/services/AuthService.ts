@@ -405,7 +405,7 @@ class AuthService {
     const now = new Date();
     const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
     if (user.otpSentCount >= 5 && user.lastOtpSentAt > oneHourAgo) {
-      throw new Error('You have exceeded the OTP request limit. Please try again later.');
+      throw new Error('Bạn đã vượt quá số lần yêu cầu OTP. Vui lòng thử lại sau.');
     }
 
     user.emailVerificationOtp = otp;
