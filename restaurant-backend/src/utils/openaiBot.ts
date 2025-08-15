@@ -62,6 +62,40 @@ export const getBotReply = async (userMessage: string): Promise<{ content: strin
       }
     }
 
+    // --- NEW: xử lý yêu cầu "tôi muốn gặp nhân viên" ---
+    const staffKeywords = [
+      'tôi muốn gặp nhân viên',
+      'muốn gặp nhân viên',
+      'gặp nhân viên',
+      'kết nối nhân viên',
+      'cho tôi gặp nhân viên',
+      'gặp phục vụ',
+      'gặp thu ngân',
+      'gặp quản lý',
+      'gặp bếp'
+    ];
+
+    const lower = userMessage.toLowerCase();
+    const isStaffRequest = staffKeywords.some(k => lower.includes(k));
+
+    if (isStaffRequest) {
+      // nếu nội dung liên quan "bạn trai" trả lời khác (theo yêu cầu)
+      if (lower.includes('bạn trai')) {
+        return {
+          content:
+            'Vui lòng cho biết bạn muốn gặp nhân viên nào (phục vụ / thu ngân / quản lý) và cung cấp thêm một chút thông tin (ví dụ: thời gian hoặc tên) để chúng tôi kết nối một cách riêng tư và chu đáo.',
+          attachments: []
+        };
+      }
+
+      // trả lời khôn ngoan
+      return {
+        content:
+          'Chúng tôi có đội ngũ nhân viên chuyên nghiệp sẵn sàng phục vụ bạn. Bạn cần hỗ trợ gì?',
+        attachments: []
+      };
+    }
+
     // Nếu không phải câu hỏi về món ăn, sử dụng OpenAI
     const context = `
 Bạn là trợ lý AI chuyên nghiệp của Nhà Hàng Beef Beef - một nhà hàng cao cấp chuyên về các món thịt bò và ẩm thực Âu-Á. Bạn có kiến thức sâu rộng về ẩm thực, dịch vụ khách hàng và văn hóa nhà hàng.
@@ -71,14 +105,13 @@ Bạn là trợ lý AI chuyên nghiệp của Nhà Hàng Beef Beef - một nhà 
 ### 📍 Địa chỉ & Liên hệ:
 - **Tên:** Beef Beef Restaurant
 - **Địa chỉ:** 161 đường Quốc Hương, Thảo Điền, Quận 2, TP.HCM
-- **Điện thoại đặt bàn:** 0239991255
-- **Hotline:** 0239991256
+- **Hotline:** 0239 991 255 – 0239 991 256
 - **Email:** beefbeefrestaurant.hcm@gmail.com
 - **Website:** https://beefbeefrestaurant.io.vn/
 
 ### 🕒 Giờ mở cửa:
-- **Bữa trưa:** Thứ 2 - Thứ 6, 8:00 AM - 10:00 PM
-- **Bữa tối:** Thứ 7 - Chủ Nhật, 8:00 AM - 11:00 PM
+- Thứ 2 – Thứ 6: 8:00 AM – 10:00 PM
+- Thứ 7 – Chủ Nhật: 8:00 AM – 11:00 PM
 - **Ngày lễ:** Mở cửa bình thường
 - **Đặt bàn online:** 24/7
 
@@ -88,12 +121,6 @@ Bạn là trợ lý AI chuyên nghiệp của Nhà Hàng Beef Beef - một nhà 
 - **Món chay:** Có thực đơn chay riêng biệt
 - **Đồ uống:** Rượu vang, cocktail, mocktail cao cấp
 - **Tráng miệng:** Bánh ngọt tự làm, kem artisan
-
-### 💰 Giá cả & Dịch vụ:
-- **Phạm vi giá:** 200.000đ - 2.000.000đ/người
-- **Phí dịch vụ:** 10% VAT + 5% service charge
-- **Thanh toán:** Tiền mặt, thẻ, QR code, ví điện tử
-- **Ưu đãi:** Giảm 15% cho khách VIP, 20% cho sinh nhật
 
 ### 🚗 Dịch vụ & Tiện ích:
 - **Đặt bàn:** Online, điện thoại, walk-in
