@@ -15,6 +15,7 @@ import { BsChatDots } from 'react-icons/bs';
 import { useAdminChatbox } from '@/hooks/useAdminChatbox';
 import { socket } from '@/utils/socket';
 import { ChatMessage, ChatSessionResponse } from '@/types/Chatbox.type';
+import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 
 const getUserObj = (u: unknown): { _id?: string; username?: string; isOnline?: boolean } | null => {
   return typeof u === 'object' && u !== null ? (u as { _id?: string; username?: string; isOnline?: boolean }) : null;
@@ -34,24 +35,19 @@ const ChatAdminPanel: React.FC = () => {
     setMessages,
   } = useAdminChatbox();
 
-  // State lưu ảnh đã chọn
+
   const [images, setImages] = useState<string[]>([]);
-  console.log('[DEBUG] Current chat:', currentChat);
-  console.log('[DEBUG] Messages:', messages);
-  console.log('[DEBUG] Sessions:', sessions);
-
-
   const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null);
   const [input, setInput] = useState('');
   const [search, setSearch] = useState('');
   const [filterUnread, setFilterUnread] = useState<'all' | 'read' | 'unread'>('all');
-  const [recording, setRecording] = useState(false);
   const [filteredSessions, setFilteredSessions] = useState<ChatSessionResponse[]>(sessions as ChatSessionResponse[]);
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
-  const emojiButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const [reactionPopupIdx, setReactionPopupIdx] = useState<number | null>(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const emojiPickerRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -62,6 +58,16 @@ const ChatAdminPanel: React.FC = () => {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutsideEmoji = (event: MouseEvent) => {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
+        setShowEmojiPicker(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutsideEmoji);
+    return () => document.removeEventListener('mousedown', handleClickOutsideEmoji);
   }, []);
 
   useEffect(() => {
@@ -82,8 +88,8 @@ const ChatAdminPanel: React.FC = () => {
     if ((!input.trim() && images.length === 0) || !currentChat) return;
 
 
-  // Gửi tin nhắn lên server, truyền thêm images
-  handleSend(input, replyingTo?._id, images);
+    // Gửi tin nhắn lên server, truyền thêm images
+    handleSend(input, replyingTo?._id, images);
     setInput('');
     setReplyingTo(null);
     setImages([]);
@@ -117,6 +123,11 @@ const ChatAdminPanel: React.FC = () => {
     setReplyingTo(msg);
   };
 
+  const onEmojiClick = (emojiData: EmojiClickData) => {
+    setInput((prev) => prev + emojiData.emoji);
+    setShowEmojiPicker(false);
+  };
+
   return (
     <div className="flex h-[640px] border border-gray-200 rounded-2xl shadow-lg overflow-hidden bg-[#f7f9fc]">
       <div className="w-80 border-r p-4 flex flex-col bg-white">
@@ -136,8 +147,8 @@ const ChatAdminPanel: React.FC = () => {
             className="w-full appearance-none px-3 py-2 pr-10 border border-gray-300 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
           >
             <option value="all">Tất cả</option>
-            <option value="unread">Đã đọc</option>
-            <option value="read">Chưa đọc</option>
+            <option value="unread">Chưa đọc</option>
+            <option value="read">Đã đọc</option>
           </select>
           <div className="absolute top-1/2 right-3 transform -translate-y-1/2 pointer-events-none text-gray-500">
             <FiChevronDown />
@@ -240,7 +251,11 @@ const ChatAdminPanel: React.FC = () => {
             <div className="flex-1 overflow-y-auto px-6 py-4 text-sm">
               <div className="flex flex-col gap-y-2">
                 {messages.map((m, idx) => {
-                  const isMine = m.sender_id === currentChat?.cashier_user_id;
+                  // treat message as "mine" (right side) when it's from the cashier
+                  const isMine =
+                    m.sender_role === 'cashier' ||
+                    m.sender_role === 'bot' ||
+                    m.sender_id === currentChat?.cashier_user_id;
                   return (
                     <div className="flex items-end gap-2" key={idx}
                       onMouseEnter={() => setHoveredIdx(idx)}
@@ -463,26 +478,29 @@ const ChatAdminPanel: React.FC = () => {
                   if (file) console.log('Attached file:', file.name);
                 }}
               />
+              <div className="relative">
+                <FiSmile
+                  onClick={() => setShowEmojiPicker(prev => !prev)}
+                  className="text-gray-500 cursor-pointer"
+                  title="Emoji"
+                />
+                {showEmojiPicker && (
+                  <div ref={emojiPickerRef} className="absolute bottom-12 left-0 z-50">
+                    <EmojiPicker onEmojiClick={onEmojiClick} />
+                  </div>
+                )}
+              </div>
               <FiImage
                 onClick={() => document.getElementById('imageUpload')?.click()}
                 className="text-gray-500 cursor-pointer"
                 title="Gửi ảnh"
               />
-              <FiPaperclip
-                onClick={() => document.getElementById('fileUpload')?.click()}
-                className="text-gray-500 cursor-pointer"
-                title="Attach File"
-              />
-              <FiSmile
-                onClick={() => setInput((prev) => prev + '😊')}
-                className="text-gray-500 cursor-pointer"
-                title="Emoji"
-              />
-              <FiMic
+
+              {/* <FiMic
                 onClick={() => setRecording(!recording)}
                 className={`cursor-pointer ${recording ? 'text-red-500' : 'text-gray-500'}`}
                 title="Record"
-              />
+              /> */}
               {/* Hiển thị ảnh đã chọn trước khi gửi */}
               {images.length > 0 && (
                 <div className="flex gap-2">

@@ -43,17 +43,16 @@ const Login = () => {
 
   useEffect(() => {
     if (error) {
-      setTimeout(()=>{
-        navigate('/verify-otp-email', { state: { email: formData.email } });
-      }, 5000);
+      if (error.includes('Email của bạn chưa được xác minh')) {
+        setTimeout(() => {
+          navigate('/verify-otp-email', { state: { email: formData.email } });
+        }, 5000);
+      }
+  
       dispatch(clearStatus({}));
     }
-    if (error) {
-      // toast.error(error);
-      dispatch(clearStatus({}));
-    }
-  }, [success, error, navigate, dispatch]);
-
+  }, [error, navigate, dispatch, formData.email]);
+  
   useEffect(() => {
     if (success) {
       navigate('/');
@@ -156,8 +155,8 @@ const Login = () => {
 
       Cookies.set('userInfo', JSON.stringify(result.user), { expires: 1 });
 
-      // ✅ Gọi fetchCurrentUser
-      dispatch(fetchCurrentUser({ userId: result.user._id })); // ← THÊM DÒNG NÀY
+    
+      dispatch(fetchCurrentUser({ userId: result.user._id }));
 
       toast.success('Đăng nhập Google thành công!');
       navigate('/');

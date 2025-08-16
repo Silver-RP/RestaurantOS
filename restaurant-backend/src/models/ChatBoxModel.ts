@@ -27,7 +27,6 @@ const ChatSchema: Schema = new Schema(
   },
 );
 
-// Index status for filter
 ChatSchema.index({ status: 1 });
 ChatSchema.index({ user_id: 1, status: 1 });
 

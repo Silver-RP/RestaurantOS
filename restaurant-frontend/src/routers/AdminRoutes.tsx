@@ -102,10 +102,9 @@ const adminRoutes = [
         path: 'warehouse/transaction-view',
         element: <WarehouseTransactionViewPage />,
       },
-      { path: "chatbox", element: <ChatAdminPanel /> },
       { path: 'loyalty', element: <LoyaltyAdmin /> },
-      { path: 'chatbox', element: <ChatAdminPanel /> },
-      { path: 'register-cashier', element: <RegisterCashier /> },
+      { path: 'chatbox', element: <ProtectedRoute allowedRoles={['cashier']}><ChatAdminPanel /></ProtectedRoute> },
+      { path: 'register-cashier', element: <ProtectedRoute allowedRoles={['manager']}><RegisterCashier /></ProtectedRoute> },
 
       { path: '*', element: <Navigate to="/admin" /> },
     ],

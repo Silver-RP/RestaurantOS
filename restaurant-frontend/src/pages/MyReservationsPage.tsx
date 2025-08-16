@@ -42,7 +42,7 @@ const MyReservationsPage: React.FC = () => {
   return (
     <>
       <Container>
-        <div className="w-full mx-auto min-h-[600px)] py-10 text-white space-y-6">
+        <div className="w-full mx-auto min-h-[600px)] sm:py-10 text-white space-y-6">
           <NavigationReservation
             activeTab={activeTab}
             onTabChange={(tab) => {

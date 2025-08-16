@@ -60,7 +60,7 @@ const OrderPage: React.FC = () => {
 
   return (
     <>
-      <div className="flex py-10 bg-bodyBackground min-h-auto text-white flex-col">
+      <div className="flex sm:py-10 bg-bodyBackground min-h-auto text-white flex-col">
         <div className="w-11/12 md:w-container95 min-h-[calc(100vh-668px)] lg:w-container95 xl:w-container95 2xl:w-mainContainer mx-auto space-y-6">
           <NavigationOrder
             activeTab={activeTab}

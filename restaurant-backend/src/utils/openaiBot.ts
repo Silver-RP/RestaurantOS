@@ -6,18 +6,18 @@ dotenv.config();
 export const getBotReply = async (userMessage: string): Promise<{ content: string; attachments: string[] }> => {
   try {
     const dishKeywords = [
-      'món ăn', 'thực đơn', 'menu', 'thịt bò', 'steak', 'wagyu', 'angus', 
+      'món ăn', 'thực đơn', 'menu', 'thịt bò', 'steak', 'wagyu', 'angus',
       'ribeye', 'tenderloin', 'món ngon', 'đặc sản', 'signature', 'nổi bật',
       'món mới', 'khuyến nghị', 'giá bao nhiêu', 'bao nhiêu tiền'
     ];
 
-    const isDishQuestion = dishKeywords.some(keyword => 
+    const isDishQuestion = dishKeywords.some(keyword =>
       userMessage.toLowerCase().includes(keyword)
     );
 
     if (isDishQuestion) {
       const dishes = await BotService.findDishesByKeyword(userMessage);
-      
+
       if (dishes.length > 0) {
         if (dishes.length === 1) {
           return BotService.createDishMessage(dishes[0]);
@@ -55,14 +55,76 @@ export const getBotReply = async (userMessage: string): Promise<{ content: strin
     if (priceMatch) {
       const minPrice = parseInt(priceMatch[1]) * (priceMatch[3].toLowerCase().includes('triệu') ? 1000000 : 1000);
       const maxPrice = parseInt(priceMatch[2]) * (priceMatch[3].toLowerCase().includes('triệu') ? 1000000 : 1000);
-      
+
       const priceDishes = await BotService.getDishesByPriceRange(minPrice, maxPrice);
       if (priceDishes.length > 0) {
         return BotService.createDishesListMessage(priceDishes, `Món ăn trong khoảng giá ${BotService.formatPrice(minPrice)} - ${BotService.formatPrice(maxPrice)}`);
       }
     }
 
-    // Nếu không phải câu hỏi về món ăn, sử dụng OpenAI
+    // --- NEW: xử lý yêu cầu "tôi muốn gặp nhân viên" ---
+    // Hàm chuẩn hóa tin nhắn: xóa dấu, ký tự đặc biệt, gộp khoảng trắng
+    const normalizeText = (text: string): string => {
+      return text
+        .normalize('NFD')                // tách dấu tiếng Việt
+        .replace(/[\u0300-\u036f]/g, '')  // xóa dấu
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, '')      // bỏ ký tự đặc biệt
+        .replace(/\s+/g, ' ')             // gộp khoảng trắng
+        .trim();
+    };
+
+    // --- Từ khóa nhận diện yêu cầu gặp nhân viên ---
+    const staffKeywords: string[] = [
+      'toi muon gap nhan vien',
+      'muon gap nhan vien',
+      'gap nhan vien',
+      'ket noi nhan vien',
+      'cho toi gap nhan vien',
+      'gap phuc vu',
+      'gap thu ngan',
+      'gap quan ly',
+      'gap bep',
+      'toi muon gap nhan vien',
+    ];
+
+    interface StaffResponse {
+      content: string;
+      attachments: any[]; 
+    }
+
+    // Hàm xử lý yêu cầu gặp nhân viên
+    const handleStaffRequest = (userMessage: string): StaffResponse | null => {
+      const normalized = normalizeText(userMessage);
+
+      const isStaffRequest = staffKeywords.some(k => normalized.includes(k));
+
+      if (isStaffRequest) {
+        return {
+          content:
+            'Xin vui lòng chờ trong giây lát, chúng tôi sẽ kết nối bạn với nhân viên.',
+          attachments: []
+        };
+      }
+      return null;
+    };
+
+    // --- Ví dụ sử dụng ---
+    const testMessages = [
+      'Tôi muốn gặp nhân viên',
+      'Gap nhan vien',
+      'Cho tôi gặp phục vụ',
+      'Muốn gặp bạn trai nhân viên',
+      'Tôi muốn gặp bếp.',
+      'Gap   nhan  vien !',
+      'Tôi muốn gặp nhân viên',
+    ];
+
+    for (const msg of testMessages) {
+      const result = handleStaffRequest(msg);
+      console.log(msg, '=>', result);
+    }
+
     const context = `
 Bạn là trợ lý AI chuyên nghiệp của Nhà Hàng Beef Beef - một nhà hàng cao cấp chuyên về các món thịt bò và ẩm thực Âu-Á. Bạn có kiến thức sâu rộng về ẩm thực, dịch vụ khách hàng và văn hóa nhà hàng.
 
@@ -71,14 +133,13 @@ Bạn là trợ lý AI chuyên nghiệp của Nhà Hàng Beef Beef - một nhà 
 ### 📍 Địa chỉ & Liên hệ:
 - **Tên:** Beef Beef Restaurant
 - **Địa chỉ:** 161 đường Quốc Hương, Thảo Điền, Quận 2, TP.HCM
-- **Điện thoại đặt bàn:** +84-28-3744-1234
-- **Hotline:** +84-90-123-4567
-- **Email:** info@beefbeef.vn
-- **Website:** www.beefbeef.vn
+- **Hotline:** 0239 991 255 – 0239 991 256
+- **Email:** beefbeefrestaurant.hcm@gmail.com
+- **Website:** https://beefbeefrestaurant.io.vn/
 
 ### 🕒 Giờ mở cửa:
-- **Bữa trưa:** Thứ 2 - Chủ Nhật, 10:30 - 15:00
-- **Bữa tối:** Thứ 2 - Chủ Nhật, 17:30 - 23:00
+- Thứ 2 – Thứ 6: 8:00 AM – 10:00 PM
+- Thứ 7 – Chủ Nhật: 8:00 AM – 11:00 PM
 - **Ngày lễ:** Mở cửa bình thường
 - **Đặt bàn online:** 24/7
 
@@ -88,12 +149,6 @@ Bạn là trợ lý AI chuyên nghiệp của Nhà Hàng Beef Beef - một nhà 
 - **Món chay:** Có thực đơn chay riêng biệt
 - **Đồ uống:** Rượu vang, cocktail, mocktail cao cấp
 - **Tráng miệng:** Bánh ngọt tự làm, kem artisan
-
-### 💰 Giá cả & Dịch vụ:
-- **Phạm vi giá:** 200.000đ - 2.000.000đ/người
-- **Phí dịch vụ:** 10% VAT + 5% service charge
-- **Thanh toán:** Tiền mặt, thẻ, QR code, ví điện tử
-- **Ưu đãi:** Giảm 15% cho khách VIP, 20% cho sinh nhật
 
 ### 🚗 Dịch vụ & Tiện ích:
 - **Đặt bàn:** Online, điện thoại, walk-in
@@ -141,7 +196,7 @@ Bạn là trợ lý AI chuyên nghiệp của Nhà Hàng Beef Beef - một nhà 
 
 ### ❓ Xử lý câu hỏi:
 - **Nếu biết:** Trả lời chi tiết, chính xác
-- **Nếu không biết:** "Xin lỗi, tôi không rõ thông tin này. Bạn có thể gọi số đặt bàn +84-28-3744-1234 để được hỗ trợ thêm."
+- **Nếu không biết:** "Xin lỗi, tôi không rõ thông tin này. Bạn có thể gọi số đặt bàn 0239991255 để được hỗ trợ thêm."
 - **Nếu cần thêm thông tin:** Hỏi để tư vấn tốt hơn
 - **Luôn kết thúc bằng lời mời đặt bàn**
 
@@ -158,7 +213,7 @@ Hãy trả lời như một chuyên gia ẩm thực thực sự, am hiểu sâu 
       'https://openrouter.ai/api/v1/chat/completions',
       {
         model: 'openai/gpt-4o',
-        max_tokens: 450,
+        max_tokens: 400,
         messages: [
           {
             role: 'system',
@@ -184,7 +239,7 @@ Hãy trả lời như một chuyên gia ẩm thực thực sự, am hiểu sâu 
   } catch (error: any) {
     console.error('Bot error:', error.response?.data || error.message);
     return {
-      content: 'Xin lỗi, tôi không thể phản hồi lúc này. Vui lòng gọi số đặt bàn +84-28-3744-1234 để được hỗ trợ trực tiếp.',
+      content: "Xin lỗi, hiện tại tôi không thể phản hồi. Quý khách vui lòng liên hệ số 0239991255 để được hỗ trợ trực tiếp.",
       attachments: []
     };
   }

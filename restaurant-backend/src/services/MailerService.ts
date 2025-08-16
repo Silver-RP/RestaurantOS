@@ -122,7 +122,7 @@ const MailerService = {
         expiryDate: voucher.end_date
           ? new Date(voucher.end_date).toLocaleDateString('vi-VN')
           : 'Không xác định',
-        voucherWalletUrl: `${process.env.CLIENT_BASE_URL || '#'}/profile/vouchers`,
+        voucherWalletUrl: `${process.env.CLIENT_BASE_URL || '#'}/profile/user-vouchers`,
       },
     });
   },

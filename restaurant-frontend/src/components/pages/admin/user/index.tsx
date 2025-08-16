@@ -10,6 +10,8 @@ import {
   FaArrowUp,
   FaArrowDown,
   FaEye,
+  FaCheckCircle,
+  FaExclamationCircle,
 } from 'react-icons/fa';
 import { toggleUserBlockStatus } from '@/api/UserApi';
 import { toast } from 'react-toastify';
@@ -32,7 +34,7 @@ const UserIndexPage: React.FC = () => {
     setSearchParams,
     fetchUsers,
   } = useUsers();
-  
+
   const [search, setSearch] = useState(searchParams.get('keyword') || '');
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const navigate = useNavigate();
@@ -58,7 +60,7 @@ const UserIndexPage: React.FC = () => {
       toast.error('Không được chỉnh sửa chính mình');
       return;
     }
-    
+
     if (isSuperadmin && targetRoles.includes('user')) {
       return toast.error(
         'Superadmin không được chỉnh sửa người dùng role user',
@@ -149,7 +151,7 @@ const UserIndexPage: React.FC = () => {
         draggable: false,
         closeOnClick: false,
         hideProgressBar: true,
-        theme: 'light', 
+        theme: 'light',
       },
     );
   };
@@ -236,7 +238,7 @@ const UserIndexPage: React.FC = () => {
             onClick={() => navigate('/admin/users/create')}
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
-            + Thêm người dùng
+            + Thêm nhân viên
           </button>
         </div>
       </div>
@@ -342,39 +344,52 @@ const UserIndexPage: React.FC = () => {
                     {user.birthday?.slice(0, 10) || '—'}
                   </td>
                   <td className="px-4 py-2">{user.gender || '—'}</td>
+
                   <td className="px-4 py-2">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                        user.isVerified
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-yellow-100 text-yellow-800'
-                      }`}
-                    >
-                      {user.isVerified ? 'Đã xác minh' : 'Chưa xác minh'}
-                    </span>
+                    <div className="relative inline-block group">
+                      <span
+                        className={`inline-flex items-center justify-center p-2 rounded-full transition ${
+                          user.isVerified
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-yellow-200 text-yellow-700'
+                        }`}
+                      >
+                        {user.isVerified ? (
+                          <FaCheckCircle />
+                        ) : (
+                          <FaExclamationCircle />
+                        )}
+                      </span>
+
+                      {/* Tooltip */}
+                      <span className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 px-2 py-1 text-white text-xs rounded bg-gray-800 opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition">
+                        {user.isVerified ? 'Đã xác minh' : 'Chưa xác minh'}
+                      </span>
+                    </div>
                   </td>
+
                   <td className="px-4 py-2">
-                    <button
-                      onClick={() =>
-                        handleToggleBlock(user._id, user.status === 'block')
-                      }
-                      className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold transition hover:opacity-80 ${
-                        user.status === 'block'
-                          ? 'bg-red-100 text-red-700'
-                          : 'bg-green-100 text-green-700'
-                      }`}
-                    >
-                      {user.status === 'block' ? (
-                        <>
-                          <FaLock /> Đã khóa
-                        </>
-                      ) : (
-                        <>
-                          <FaLockOpen /> khóa
-                        </>
-                      )}
-                    </button>
+                    <div className="relative inline-block group">
+                      <button
+                        onClick={() =>
+                          handleToggleBlock(user._id, user.status === 'block')
+                        }
+                        className={`inline-flex items-center justify-center p-2 rounded-full text-xs font-semibold transition hover:opacity-80 ${
+                          user.status === 'block'
+                            ? 'bg-red-100 text-red-700'
+                            : 'bg-green-100 text-green-700'
+                        }`}
+                      >
+                        {user.status === 'block' ? <FaLock /> : <FaLockOpen />}
+                      </button>
+
+                      {/* Tooltip */}
+                      <span className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 px-2 py-1 text-white text-xs rounded bg-gray-800 opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition">
+                        {user.status === 'block' ? 'Đã khóa' : 'Khóa'}
+                      </span>
+                    </div>
                   </td>
+
                   <td className="px-4 py-2">
                     {Array.isArray(user.roles) && user.roles.length > 0 ? (
                       <div className="flex flex-wrap gap-1">
@@ -400,9 +415,7 @@ const UserIndexPage: React.FC = () => {
                     )}
                   </td>
                   <td className="px-4 py-2">{user.ordersCount || 0}</td>
-
-
-                  <td className="px-4 py-2 space-x-2">                 
+                  <td className="pt-[15px] flex items-center space-x-2 whitespace-nowrap">
                     <button
                       onClick={() => setLoyaltyModalUser(user)}
                       className="text-blue-600 hover:text-blue-800 ml-2"
@@ -451,25 +464,34 @@ const UserIndexPage: React.FC = () => {
             >
               ×
             </button>
-            <h2 className="text-lg font-bold mb-4 text-center">Thông tin tích điểm</h2>
+            <h2 className="text-lg font-bold mb-4 text-center">
+              Thông tin tích điểm
+            </h2>
             <div className="space-y-2">
               <div>
                 <span className="font-semibold">Hạng thành viên: </span>
-                {loyaltyModalUser.loyalty_tier?.tier_name
-                  ? loyaltyModalUser.loyalty_tier.tier_name.toUpperCase()
-                  : <span className="italic text-gray-500">Chưa có</span>}
+                {loyaltyModalUser.loyalty_tier?.tier_name ? (
+                  loyaltyModalUser.loyalty_tier.tier_name.toUpperCase()
+                ) : (
+                  <span className="italic text-gray-500">Chưa có</span>
+                )}
               </div>
               <div>
                 <span className="font-semibold">Tổng chi tiêu: </span>
-                {typeof loyaltyModalUser.loyalty_total_spent === 'number'
-                  ? loyaltyModalUser.loyalty_total_spent.toLocaleString('vi-VN') + ' đ'
-                  : <span className="italic text-gray-500">Chưa có</span>}
+                {typeof loyaltyModalUser.loyalty_total_spent === 'number' ? (
+                  loyaltyModalUser.loyalty_total_spent.toLocaleString('vi-VN') +
+                  ' đ'
+                ) : (
+                  <span className="italic text-gray-500">Chưa có</span>
+                )}
               </div>
               <div>
                 <span className="font-semibold">Số điểm tích lũy: </span>
-                {typeof loyaltyModalUser.loyalty_total_points === 'number'
-                  ? loyaltyModalUser.loyalty_total_points
-                  : <span className="italic text-gray-500">Chưa có</span>}
+                {typeof loyaltyModalUser.loyalty_total_points === 'number' ? (
+                  loyaltyModalUser.loyalty_total_points
+                ) : (
+                  <span className="italic text-gray-500">Chưa có</span>
+                )}
               </div>
               {loyaltyModalUser.loyalty_tier?.benefits && (
                 <div>

@@ -7,7 +7,9 @@ interface RelatedProductListProps {
   categories: string[];
 }
 
-const RelatedProductList: React.FC<RelatedProductListProps> = ({ categories }) => {
+const RelatedProductList: React.FC<RelatedProductListProps> = ({
+  categories,
+}) => {
   const categoryId = categories?.[0];
 
   if (!categoryId) return null;
@@ -16,29 +18,29 @@ const RelatedProductList: React.FC<RelatedProductListProps> = ({ categories }) =
   const [slideIndex, setSlideIndex] = useState(0);
   const [itemsPerSlide, setItemsPerSlide] = useState(1);
 
-  const products: ProductCardProps[] = foods.map((food) => ({ 
-  id: food._id,
-  name: food.name,
-  price: food.discount_price || food.price,
-  originalPrice: food.discount_price ? food.price : undefined,
-  imageUrl: food.images?.[0] || '',
-  hoverImage: food.images?.[1] || '',
-  isNew: true,
-  discount: food.discount_price
-    ? `${Math.round(((food.price - food.discount_price) / food.price) * 100)}% OFF`
-    : undefined,
-  slug: food.slug,
-  description: food.description || '',
-  views: food.views || 0,
-  categories: food.categories || [],
-  cate: food.categories?.[0]?.Cate_name,
-  ordered_count: food.ordered_count || 0,
-  rating_count: food.rating_count || 0,
-  rating: food.average_rating || 4,
-  favorites_count: food.favorites_count || 0,
-  countInStock: food.countInStock || 10,
-  onAddToFavorite: () => {},
-}));
+  const products: ProductCardProps[] = foods.map((food) => ({
+    id: food._id,
+    name: food.name,
+    price: food.discount_price || food.price,
+    originalPrice: food.discount_price ? food.price : undefined,
+    imageUrl: food.images?.[0] || '',
+    hoverImage: food.images?.[1] || '',
+    isNew: true,
+    discount: food.discount_price
+      ? `${Math.round(((food.price - food.discount_price) / food.price) * 100)}% OFF`
+      : undefined,
+    slug: food.slug,
+    description: food.description || '',
+    views: food.views || 0,
+    categories: food.categories || [],
+    cate: food.categories?.[0]?.Cate_name,
+    ordered_count: food.ordered_count || 0,
+    rating_count: food.rating_count || 0,
+    rating: food.average_rating || 4,
+    favorites_count: food.favorites_count || 0,
+    countInStock: food.countInStock || 10,
+    onAddToFavorite: () => {},
+  }));
 
   useEffect(() => {
     const updateItemsPerSlide = () => {
@@ -58,6 +60,7 @@ const RelatedProductList: React.FC<RelatedProductListProps> = ({ categories }) =
   const handlePrev = () => setSlideIndex((prev) => Math.max(prev - 1, 0));
   const handleNext = () =>
     setSlideIndex((prev) => Math.min(prev + 1, maxSlideIndex));
+  const handleDotClick = (index: number) => setSlideIndex(index);
 
   return (
     <div className="py-10 relative">
@@ -87,6 +90,21 @@ const RelatedProductList: React.FC<RelatedProductListProps> = ({ categories }) =
               .map((product) => (
                 <ProductCardGrid key={product.id} {...product} />
               ))}
+          </div>
+
+          {/* Pagination Dots */}
+          <div className="flex justify-center mt-10 gap-2">
+            {Array.from({ length: maxSlideIndex + 1 }).map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => handleDotClick(idx)}
+                className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                  idx === slideIndex
+                    ? 'bg-secondaryColor scale-110'
+                    : 'bg-gray-400 hover:bg-gray-300'
+                }`}
+              />
+            ))}
           </div>
         </div>
 

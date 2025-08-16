@@ -784,7 +784,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                     }}
                   />
                 </label>
-                {!recording ? (
+                {/* {!recording ? (
                   <button
                     onClick={handleStartRecording}
                     className="text-white/90 hover:text-yellow-300 text-lg rounded-lg px-2"
@@ -813,7 +813,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                   aria-label="Đính kèm liên kết"
                 >
                   🔗
-                </button>
+                </button> */}
               </div>
 
               <div className="flex-1 flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-3 py-2 min-w-0">
