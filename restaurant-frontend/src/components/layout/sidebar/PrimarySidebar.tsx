@@ -79,11 +79,13 @@ const PrimarySidebar: React.FC<PrimarySidebarProps> = ({ toggleSidebar }) => {
           </button>
         </div>
         <div className="p-2 w-20 h-20 flex items-center justify-center mb-6">
-          <img
-            src="/assets/images/logo.png"
-            alt="Logo"
-            className="w-10 h-auto mx-auto"
-          />
+          <Link to="/">
+            <img
+              src="/assets/images/logo.png"
+              alt="Logo"
+              className="w-10 h-auto mx-auto"
+            />
+          </Link>
         </div>
         <div className="space-y-4 sm:space-y-6">
           {menuItemsMain.map((item, index) => (

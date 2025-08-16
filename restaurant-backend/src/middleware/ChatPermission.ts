@@ -11,6 +11,12 @@ export const verifyChatPermission = async (
   try {
     const { chatId } = req.params;
     const user = req.user as any;
+
+    if (!user) {
+      res.status(401).json({ message: 'Người dùng chưa xác thực' });
+      return;
+    }
+
     const userId = user._id?.toString() || user.id?.toString() || user.userId?.toString();
 
     if (!mongoose.Types.ObjectId.isValid(chatId)) {
@@ -24,10 +30,21 @@ export const verifyChatPermission = async (
       return;
     }
 
-    const userRoles = Array.isArray(user.roles) ? user.roles : [user.roles];
-    const roleNames = await Roles.find({ _id: { $in: userRoles } }).then((roles) =>
-      roles.map((r) => r.name?.toLowerCase()),
-    );
+    const userRolesRaw = Array.isArray(user.roles) ? user.roles : user.roles ? [user.roles] : [];
+
+    // Nếu user.roles là ObjectId string -> lookup theo _id,
+    // nếu là tên role (ví dụ "user") -> dùng trực tiếp
+    let roleNames: string[] = [];
+    const allAreIds = userRolesRaw.length > 0 && userRolesRaw.every((r: any) => mongoose.Types.ObjectId.isValid(String(r)));
+
+    if (allAreIds) {
+      const roles = await Roles.find({ _id: { $in: userRolesRaw } }).select('name');
+      roleNames = roles.map((r) => String(r.name).toLowerCase());
+    } else {
+      roleNames = userRolesRaw
+        .map((r: any) => (typeof r === 'string' ? r.toLowerCase() : r?.name?.toLowerCase()))
+        .filter(Boolean);
+    }
 
     const hasRole = (role: string) => roleNames.includes(role.toLowerCase());
 
@@ -35,8 +52,7 @@ export const verifyChatPermission = async (
     const isCashierChat = chat.cashier_user_id?.toString() === userId;
 
     if (hasRole('superadmin') || hasRole('manager')) {
-
-      // fu
+      // allow
     } else if (hasRole('cashier')) {
       if (!isCashierChat) {
         res.status(403).json({ message: 'Bạn không phải nhân viên xử lý phiên chat này' });
@@ -55,7 +71,7 @@ export const verifyChatPermission = async (
     (req as any).chat = chat;
     next();
   } catch (err: any) {
-    console.error('verifyChatPermission error:', err.message || err);
+    console.error('verifyChatPermission error:', err?.message || err);
     res.status(500).json({ message: 'Lỗi xác thực quyền truy cập phiên chat' });
   }
 };

@@ -71,11 +71,13 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
 
       <div className="h-screen flex flex-col relative">
         <div className="p-6 flex-shrink-0">
-          <img
-            src="/assets/images/logo.png"
-            alt="Logo Beef Beef"
-            className="w-40 md:w-48 lg:w-56 h-auto mx-auto"
-          />
+          <Link to="/">
+            <img
+              src="/assets/images/logo.png"
+              alt="Logo Beef Beef"
+              className="w-40 md:w-48 lg:w-56 h-auto mx-auto"
+            />
+          </Link>
           <h1 className={`text-center ${fontSize} font-restora font-normal`}>
             Beef Beef
           </h1>
@@ -123,7 +125,7 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
                   />
                 </Link>
                 <span className="absolute -top-1 -right-2 bg-secondaryColor text-black text-xs rounded-full px-1">
-                {countCart}
+                  {countCart}
                   {/* {isAuthenticated ? countCart : 0} */}
                 </span>
               </div>
@@ -148,8 +150,7 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
             <div className="text-center text-sm text-white">
               <p>Đặt bàn tại</p>
               <p>Nhà Hàng BeefBeef, 161 đường Quốc Hương, Thảo Điền, Quận 2</p>
-              <p>+84 - 0239991255</p>
-              <p>beefbeef@gmail.com</p>
+              <p>0239991255</p>
             </div>
             <div className="flex justify-center space-x-4 mt-4">
               <a

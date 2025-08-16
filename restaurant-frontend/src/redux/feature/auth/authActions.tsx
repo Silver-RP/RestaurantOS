@@ -6,8 +6,7 @@ import {
   setAuthData, 
   clearAuthCookies, 
   setAccessToken,
-  setRefreshToken,
-  setUserInfo 
+  setRefreshToken, 
 } from '../../../utils/tokenHelpers';
 import { clearFavorites } from '../favorite/favoriteSlice';
 
@@ -26,6 +25,7 @@ const apiRequest = async (
       headers: { 'Content-Type': 'application/json' },
       withCredentials: true,
     });
+    console.log(`API Request: `, response.data );
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
@@ -124,7 +124,6 @@ export const LogoutUser = createAsyncThunk(
 export const forceLogout = createAsyncThunk(
   'auth/forceLogout',
   async (reason: string = 'Token expired', { dispatch }) => {
-    console.log(`🔒 Force logout triggered: ${reason}`);
     
     // Don't call logout API since tokens are already invalid
     dispatch(clearFavorites());
@@ -154,22 +153,48 @@ export const LoginWithGoogle = createAsyncThunk(
 
       const { accessToken, refreshToken, user } = response.data;
 
-      setAccessToken(accessToken);
-      setRefreshToken(refreshToken, rememberMe); // Only test
+      if (!accessToken) {
+        return rejectWithValue('Missing access token from server');
+      }
 
-      const userInfoWithGoogleFlag = { ...user, isGoogleLogin: true };
-      Cookies.set('userInfo', JSON.stringify(userInfoWithGoogleFlag), {
+      // Normalize roles -> array of role names (strings)
+      const normalizedRoles: string[] = Array.isArray(user?.roles)
+        ? user.roles.map((r: any) => {
+            if (!r) return '';
+            if (typeof r === 'string') return r;
+            if (typeof r === 'object') return r.name ?? (r._id ? String(r._id) : '');
+            return '';
+          }).filter(Boolean)
+        : user?.role
+          ? [user.role]
+          : [];
+
+      const normalizedUser = { ...user, roles: normalizedRoles };
+      console.log(normalizedUser);
+
+      // Persist tokens + user consistently (use helper if available)
+      try {
+        setAuthData(accessToken, refreshToken, normalizedUser, rememberMe);
+      } catch {
+        setAccessToken(accessToken);
+        setRefreshToken(refreshToken, rememberMe);
+      }
+
+      // Ensure axios sends Authorization for subsequent protected calls
+      axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+
+      // Save sanitized user info cookie
+      Cookies.set('userInfo', JSON.stringify({ ...normalizedUser, isGoogleLogin: true }), {
         path: '/',
         sameSite: 'Lax',
+        expires: rememberMe ? 30 : undefined,
       });
 
-      console.log('Saved userInfoWithGoogleFlag: ', userInfoWithGoogleFlag);
-      const userInfo = JSON.parse(Cookies.get('userInfo') || '{}');
-      console.log('Saved userInfo: ', userInfo);
+      console.log('Saved userInfoWithGoogleFlag: ', normalizedUser);
 
       return {
         token: accessToken,
-        user,
+        user: normalizedUser,
         message: 'Đăng nhập Google thành công',
       };
     } catch (error: unknown) {

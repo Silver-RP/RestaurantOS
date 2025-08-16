@@ -4,6 +4,7 @@ import Payment from '../models/PaymentModel';
 import cron from 'node-cron';
 import MailerService from './MailerService';
 import User from '../models/UserModel';
+import { Dish } from '../models/DishModel';
 import PostsService from './PostsServices';
 import { OrderDetail } from '../models/OrderDetailModel';
 import { Reservation } from '../models/ReservationModel';
@@ -14,6 +15,7 @@ class CronJobService {
   private publishPostTask: any;
   private cancelReservationTask: any;
   private resetHeldTableTask: any;
+  private checkDishesStatusTask: any;
   constructor() {
     // Cron job hủy đơn hàng chưa thanh toán trong 30 phút
     this.cancelOrderTask = cron.schedule('* * * * *', async () => {
@@ -43,6 +45,13 @@ class CronJobService {
       } catch (error: any) {
         console.error('Lỗi trong cron job đăng bài viết đã lên lịch:', error.message);
       }
+    });
+
+    this.checkDishesStatusTask = cron.schedule('0 0 * * *', async () => {
+      console.log('🆕/⭐/💸 Chạy cron job kiểm tra hạn Dish: new/recommend/discount...');
+      await this.checkDiscountUntil();
+      await this.checkNewUntil();
+      await this.checkRecommendUntil();
     });
   }
 
@@ -123,7 +132,8 @@ class CronJobService {
   // Hàm hủy đơn đặt bàn sau 30 phút chưa xác nhận
   private async cancelPendingReservations() {
     try {
-      const expireTime = new Date(Date.now() - 5 * 60 * 1000); // 1 phút trước
+      const expireTime = new Date(Date.now() - 5 * 60 * 1000); // 1 phút trước (dùng cho development)
+      // const expireTime = new Date(Date.now() - 60 * 60 * 1000); // 60 phút trước (dùng cho production)
 
       const pendingReservations = await Reservation.find({
         status: 'PENDING',
@@ -197,11 +207,75 @@ class CronJobService {
     }
   }
 
+  private async checkDiscountUntil() {
+    try {
+      const now = new Date();
+      const expiredDishes = await Dish.find({
+        discountUntil: { $lte: now },
+        discount_price: { $ne: null }
+      });
+
+      if (expiredDishes.length === 0) return;
+
+      for (const dish of expiredDishes) {
+        dish.discount_price = null || 0; 
+        await dish.save();
+      }
+
+      console.log(`💸: Đã xử lý ${expiredDishes.length} món hết hạn discount.`);
+    } catch (err: any) {
+      console.error('Lỗi trong checkDiscountUntil:', err.message);
+    }
+  }
+
+  private async checkNewUntil() {
+    try {
+      const now = new Date();
+      const expiredNewDishes = await Dish.find({
+        newUntil: { $lte: now },
+        isDishNew: true
+      });
+
+      if (expiredNewDishes.length === 0) return;
+
+      for (const dish of expiredNewDishes) {
+        dish.isDishNew = false;
+        await dish.save();
+      }
+
+      console.log(`🆕: Đã xử lý ${expiredNewDishes.length} món hết hạn "mới".`);
+    } catch (err: any) {
+      console.error('Lỗi trong checkNewUntil:', err.message);
+    }
+  }
+
+  private async checkRecommendUntil() {
+    try {
+      const now = new Date();
+      const expiredRecommendDishes = await Dish.find({
+        recommendUntil: { $lte: now },
+        isRecommend: true
+      });
+
+      if (expiredRecommendDishes.length === 0) return;
+
+      for (const dish of expiredRecommendDishes) {
+        dish.isRecommend = false;
+        await dish.save();
+      }
+
+      console.log(`⭐: Đã xử lý ${expiredRecommendDishes.length} món hết hạn recommend.`);
+    } catch (err: any) {
+      console.error('Lỗi trong checkRecommendUntil:', err.message);
+    }
+  }
+
   public start() {
     this.cancelOrderTask.start();
     this.publishPostTask.start();
     this.cancelReservationTask.start();
     this.resetHeldTableTask.start();
+    this.checkDishesStatusTask.start();
   }
 
   public stop() {
@@ -209,6 +283,7 @@ class CronJobService {
     this.publishPostTask.stop();
     this.cancelReservationTask.stop();
     this.resetHeldTableTask.stop();
+    this.checkDishesStatusTask.stop();
   }
 }
 

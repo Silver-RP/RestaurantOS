@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import { IUser } from '../models/UserModel';
+import { IUser } from '../types/user.type';
 
 interface User {
   roles: mongoose.Types.ObjectId[];

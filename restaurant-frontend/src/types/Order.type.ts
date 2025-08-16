@@ -114,7 +114,16 @@ export interface Order {
     createdAt: string;
     updatedAt: string;
     id: string;
-  } | null; // Cho phép null
+  } | null; 
+  addressSnapshot?: {
+    address_type: string;
+    full_name: string;
+    phone: string;
+    province: string;
+    district: string;
+    ward: string;
+    street_address: string;
+  } | null; 
   cashier_order_id: string | null;
   payment_method: string;
   delivery_type: string;

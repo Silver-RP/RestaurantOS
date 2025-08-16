@@ -74,7 +74,7 @@ const ProductDetail: React.FC = () => {
 
   return (
     <>
-      <section className="bg-bodyBackground w-full text-white py-16">
+      <section className="bg-bodyBackground w-full text-white pt-16 pb-8">
         <div className="w-11/12 md:w-container95 lg:w-container95 xl:w-container95 2xl:w-mainContainer mx-auto">
           <div className="flex flex-col lg:flex-row gap-8">
             <div className="w-full lg:w-7/12">

@@ -32,10 +32,7 @@ const ProfilePage = () => {
     useChangePasswordProfile();
 
   const { user } = useSelector((state: RootState) => state.user);
-  console.log('user in profile', user);
-
   const [formattedBirthday, setFormattedBirthday] = useState('');
-
   const [isEditingPersonal, setIsEditingPersonal] = useState(false);
   const [isEditingAccount, setIsEditingAccount] = useState(false);
   const [passwordErrors, setPasswordErrors] = useState({
@@ -56,6 +53,9 @@ const ProfilePage = () => {
     newPassword: '',
     confirmPassword: '',
   });
+
+  // Sidebar mobile toggle
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
@@ -302,6 +302,7 @@ const ProfilePage = () => {
       }
     }
   };
+
   const handlePersonalChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
@@ -311,12 +312,12 @@ const ProfilePage = () => {
 
   return (
     <div className="flex flex-col bg-bodyBackground text-white font-sans">
-      <Container className="flex gap-6 py-10">
-        <div className="w-1/3 hidden md:block">
-          <ProfileSidebar />
-        </div>
-
-        <div className="flex-1 w-2/3 bg-bodyBackground p-10 border border-[#FFE0A0]">
+      <Container className="flex flex-col md:flex-row gap-0, sm:gap-6 sm:py-10">
+        {/* Sidebar desktop */}
+      <div className="hidden md:block md:w-1/3 order-1 md:order-1">
+        <ProfileSidebar />
+      </div>
+        <div className="flex-1 w-full md:w-2/3 order-2 md:order-2 bg-bodyBackground p-10 sm:p-10 border border-[#FFE0A0]">
           <UserLoyaltyTier />
           <h2 className="text-3xl font-restora font-bold text-white mb-8">
             Thông tin tài khoản
@@ -413,21 +414,23 @@ const ProfilePage = () => {
             <div className="border-t border-gray-600"></div>
 
             <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-6 items-start">
-                <p className="text-gray-400 mt-3">Email</p>
-                <p className="font-medium mt-3">{accountInfo.email}</p>
+              <div className="grid grid-cols-3 gap-2 sm:gap-6 items-start">
+                <p className="text-gray-400  mt-3">Email</p>
+                <p className="font-medium col-span-2 mt-3">
+                  {accountInfo.email}
+                </p>
 
                 {!isEditingAccount && (
                   <>
                     <p className="text-gray-400 mt-3">Mật khẩu</p>
-                    <p className="font-medium mt-3">**********</p>
+                    <p className="font-medium col-span-2 mt-3">**********</p>
                   </>
                 )}
 
                 {isEditingAccount && (
                   <>
                     <p className="text-gray-400">Mật khẩu hiện tại</p>
-                    <div className="relative">
+                    <div className="relative col-span-2">
                       <input
                         type={showPassword ? 'text' : 'password'}
                         name="password"
@@ -456,7 +459,7 @@ const ProfilePage = () => {
                     </div>
 
                     <p className="text-gray-400">Mật khẩu mới</p>
-                    <div className="relative">
+                    <div className="relative col-span-2">
                       <input
                         type={showNewPassword ? 'text' : 'password'}
                         name="newPassword"
@@ -484,7 +487,7 @@ const ProfilePage = () => {
                     </div>
 
                     <p className="text-gray-400">Xác nhận mật khẩu mới</p>
-                    <div className="relative">
+                    <div className="relative col-span-2">
                       <input
                         type={showConfirmPassword ? 'text' : 'password'}
                         name="confirmPassword"

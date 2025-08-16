@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { Address } from '../models/AddressModel';
 import mongoose from 'mongoose';
-import { IUser } from '../models/UserModel';
+import { IUser } from '../types/user.type';
 import { Types } from 'mongoose';
 
 export const checkAddressOwner = async (

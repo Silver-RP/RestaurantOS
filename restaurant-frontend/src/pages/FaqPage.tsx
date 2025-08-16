@@ -172,7 +172,7 @@ export default function FaqPage() {
 
   return (
     <div className="min-h-screen bg-bodyBackground">
-      <div className="min-h-auto bg-bodyBackground py-16 flex justify-center">
+      <div className="min-h-auto bg-bodyBackground sm:py-10 flex justify-center">
         <div className="w-11/12 md:w-container95 lg:w-container95 xl:w-container95 2xl:w-mainContainer mx-auto">
           <motion.div
             variants={containerVariants}

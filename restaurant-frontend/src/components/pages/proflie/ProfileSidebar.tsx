@@ -6,7 +6,7 @@ import { useAppDispatch } from '../../../redux/hook';
 import Cookies from 'js-cookie';
 import React from 'react';
 import { socket } from '../../../utils/socket'; 
-const sidebarItems = [
+export const sidebarItems = [
   { title: 'Thông tin tài khoản', icon: <FaUser />, path: '/profile' },
   { title: 'Lịch sử đơn hàng', icon: <FaClipboardList />, path: '/profile/orders' },
   { title: 'Lịch sử đặt bàn', icon: <FaRegClock />, path: '/profile/my-reservation' },
@@ -17,7 +17,7 @@ const sidebarItems = [
 ];
 
 
-const ProfileSidebar = () => {
+const ProfileSidebar: React.FC<{ onItemClick: () => void }> = ({ onItemClick }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -89,6 +89,7 @@ const ProfileSidebar = () => {
                 : 'bg-transparent text-white hover:bg-[#FFE0A0]/20 hover:text-headerBackground'}
               border-[#FFE0A0]
             `}
+            onClick={onItemClick}
           >
             <span className="text-lg">{item.icon}</span>
             <span>{item.title}</span>

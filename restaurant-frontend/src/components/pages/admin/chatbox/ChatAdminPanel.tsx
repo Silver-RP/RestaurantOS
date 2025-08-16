@@ -13,26 +13,17 @@ import {
 import { BsChatDots } from 'react-icons/bs';
 // import { ReactMic } from 'react-mic';
 import { useAdminChatbox } from '@/hooks/useAdminChatbox';
-import { EmojiButton } from '@joeattardi/emoji-button';
 import { socket } from '@/utils/socket';
 import { ChatMessage, ChatSessionResponse } from '@/types/Chatbox.type';
+import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 
-// Helpers cho kiểu user có thể là string hoặc object
 const getUserObj = (u: unknown): { _id?: string; username?: string; isOnline?: boolean } | null => {
   return typeof u === 'object' && u !== null ? (u as { _id?: string; username?: string; isOnline?: boolean }) : null;
 };
-// const getUserId = (u: unknown): string => getUserObj(u)?._id ?? String(u ?? '');
 const getUserName = (u: unknown): string => getUserObj(u)?.username ?? `User ${String(u ?? '').slice(-4)}`;
 const getUserOnline = (u: unknown): boolean => Boolean(getUserObj(u)?.isOnline);
 
-// type ChatSession = {
-//   _id: string;
-//   user_id: User;
-//   unreadCount?: number;
-//   lastMessage?: string;
-//   lastMessageTime?: string;
-//   cashier_user_id?: string;
-// };
+
 const ChatAdminPanel: React.FC = () => {
   const {
     sessions,
@@ -43,21 +34,20 @@ const ChatAdminPanel: React.FC = () => {
     messageEndRef,
     setMessages,
   } = useAdminChatbox();
-  console.log('[DEBUG] Current chat:', currentChat);
-  console.log('[DEBUG] Messages:', messages);
-  console.log('[DEBUG] Sessions:', sessions);
-  
-    
+
+
+  const [images, setImages] = useState<string[]>([]);
   const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null);
   const [input, setInput] = useState('');
   const [search, setSearch] = useState('');
   const [filterUnread, setFilterUnread] = useState<'all' | 'read' | 'unread'>('all');
-  const [recording, setRecording] = useState(false);
   const [filteredSessions, setFilteredSessions] = useState<ChatSessionResponse[]>(sessions as ChatSessionResponse[]);
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
-  const emojiButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const [reactionPopupIdx, setReactionPopupIdx] = useState<number | null>(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const emojiPickerRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -68,6 +58,16 @@ const ChatAdminPanel: React.FC = () => {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutsideEmoji = (event: MouseEvent) => {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
+        setShowEmojiPicker(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutsideEmoji);
+    return () => document.removeEventListener('mousedown', handleClickOutsideEmoji);
   }, []);
 
   useEffect(() => {
@@ -85,37 +85,14 @@ const ChatAdminPanel: React.FC = () => {
   }, [messages]);
 
   const onSend = () => {
-    if (!input.trim() || !currentChat) return;
-    
-    // Tạo tin nhắn tạm thời để hiển thị ngay lập tức
-    const tempMessage: ChatMessage = {
-      _id: `temp_${Date.now()}`, // ID tạm thời để tránh duplicate
-      chat_id: currentChat._id,
-      content: input,
-      sender_id: currentChat.cashier_user_id || '',
-      receiver_id: currentChat.user_id,
-      sender_role: 'cashier',
-      sent_at: new Date().toISOString(),
-      message_type: 'text',
-      reply_to: replyingTo ? {
-        _id: replyingTo._id,
-        chat_id: replyingTo.chat_id,
-        content: replyingTo.content,
-        sender_id: replyingTo.sender_id,
-        receiver_id: replyingTo.receiver_id,
-        sender_role: replyingTo.sender_role,
-        sent_at: replyingTo.sent_at,
-        message_type: replyingTo.message_type
-      } : undefined
-    };
-    
-    // Thêm tin nhắn tạm thời vào danh sách
-    setMessages((prev: ChatMessage[]) => [...prev, tempMessage]);
-    
-    // Gửi tin nhắn lên server
-    handleSend(input, replyingTo?._id);
+    if ((!input.trim() && images.length === 0) || !currentChat) return;
+
+
+    // Gửi tin nhắn lên server, truyền thêm images
+    handleSend(input, replyingTo?._id, images);
     setInput('');
     setReplyingTo(null);
+    setImages([]);
   };
 
   // Gửi tin nhắn khi nhấn Enter
@@ -145,12 +122,10 @@ const ChatAdminPanel: React.FC = () => {
   const handleReply = (msg: ChatMessage) => {
     setReplyingTo(msg);
   };
-  const showReactionPicker = (idx: number) => {
-    const picker = new EmojiButton({ position: 'top', theme: 'light' });
-    picker.on('emoji', (selection) => {
-      handleReaction(selection.emoji, idx);
-    });
-    if (emojiButtonRefs.current[idx]) picker.togglePicker(emojiButtonRefs.current[idx]!);
+
+  const onEmojiClick = (emojiData: EmojiClickData) => {
+    setInput((prev) => prev + emojiData.emoji);
+    setShowEmojiPicker(false);
   };
 
   return (
@@ -172,8 +147,8 @@ const ChatAdminPanel: React.FC = () => {
             className="w-full appearance-none px-3 py-2 pr-10 border border-gray-300 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
           >
             <option value="all">Tất cả</option>
-            <option value="unread">Đã đọc</option>
-            <option value="read">Chưa đọc</option>
+            <option value="unread">Chưa đọc</option>
+            <option value="read">Đã đọc</option>
           </select>
           <div className="absolute top-1/2 right-3 transform -translate-y-1/2 pointer-events-none text-gray-500">
             <FiChevronDown />
@@ -186,49 +161,49 @@ const ChatAdminPanel: React.FC = () => {
             filteredSessions
               .filter((s) => s.user_id)
               .map((s: ChatSessionResponse) => {
-              const lastMsg: string = s.lastMessage
-                ? (typeof s.lastMessage === 'string' ? s.lastMessage : (s.lastMessage as ChatMessage).content)
-                : 'Không có tin nhắn nào';
-              const lastDate = s.lastMessageTime
-                ? new Date(s.lastMessageTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                : '';
+                const lastMsg: string = s.lastMessage
+                  ? (typeof s.lastMessage === 'string' ? s.lastMessage : (s.lastMessage as ChatMessage).content)
+                  : 'Không có tin nhắn nào';
+                const lastDate = s.lastMessageTime
+                  ? new Date(s.lastMessageTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                  : '';
 
-              return (
-                <div
-                  key={s._id}
-                  onClick={() => selectChat(typeof s.user_id === 'string' ? s.user_id : String((getUserObj(s.user_id)?._id) || ''))}
-                  className={`relative flex gap-3 items-center p-2 rounded-lg cursor-pointer transition-all duration-150 ${currentChat?._id === s._id ? 'bg-[#dce9fa]' : 'hover:bg-[#f0f3f7]'
-                    }`}
-                >
-                  {/* Avatar + Status Dot */}
-                  <div className="relative w-10 h-10">
-                    <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-white text-sm font-semibold">
-                      {getUserName(s.user_id).charAt(0).toUpperCase()}
+                return (
+                  <div
+                    key={s._id}
+                    onClick={() => selectChat(typeof s.user_id === 'string' ? s.user_id : String((getUserObj(s.user_id)?._id) || ''))}
+                    className={`relative flex gap-3 items-center p-2 rounded-lg cursor-pointer transition-all duration-150 ${currentChat?._id === s._id ? 'bg-[#dce9fa]' : 'hover:bg-[#f0f3f7]'
+                      }`}
+                  >
+                    {/* Avatar + Status Dot */}
+                    <div className="relative w-10 h-10">
+                      <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-white text-sm font-semibold">
+                        {getUserName(s.user_id).charAt(0).toUpperCase()}
+                      </div>
+                      <span
+                        className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${getUserOnline(s.user_id) ? 'bg-green-400' : 'bg-red-500'
+                          }`}
+                      />
                     </div>
-                    <span
-                      className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${getUserOnline(s.user_id) ? 'bg-green-400' : 'bg-red-500'
-                        }`}
-                    />
-                  </div>
 
-                  {/* Nội dung chat */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-center">
-                      <div className="truncate text-sm text-gray-800 font-medium">{getUserName(s.user_id)}</div>
-                  <div className="text-[10px] text-gray-400 ml-2 whitespace-nowrap">{lastDate}</div>
+                    {/* Nội dung chat */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-center">
+                        <div className="truncate text-sm text-gray-800 font-medium">{getUserName(s.user_id)}</div>
+                        <div className="text-[10px] text-gray-400 ml-2 whitespace-nowrap">{lastDate}</div>
+                      </div>
+                      <div className="truncate text-xs text-gray-500">{lastMsg}</div>
                     </div>
-                     <div className="truncate text-xs text-gray-500">{lastMsg}</div>
-                  </div>
 
-                  {/* Badge unread */}
-                  {(s.unreadCount ?? 0) > 0 && (
-                    <span className="ml-auto text-xs bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center">
-                      {s.unreadCount}
-                    </span>
-                  )}
-                </div>
-              );
-            })
+                    {/* Badge unread */}
+                    {(s.unreadCount ?? 0) > 0 && (
+                      <span className="ml-auto text-xs bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center">
+                        {s.unreadCount}
+                      </span>
+                    )}
+                  </div>
+                );
+              })
           )}
         </div>
 
@@ -276,7 +251,11 @@ const ChatAdminPanel: React.FC = () => {
             <div className="flex-1 overflow-y-auto px-6 py-4 text-sm">
               <div className="flex flex-col gap-y-2">
                 {messages.map((m, idx) => {
-                   const isMine = m.sender_id === currentChat?.cashier_user_id;
+                  // treat message as "mine" (right side) when it's from the cashier
+                  const isMine =
+                    m.sender_role === 'cashier' ||
+                    m.sender_role === 'bot' ||
+                    m.sender_id === currentChat?.cashier_user_id;
                   return (
                     <div className="flex items-end gap-2" key={idx}
                       onMouseEnter={() => setHoveredIdx(idx)}
@@ -294,11 +273,23 @@ const ChatAdminPanel: React.FC = () => {
                           }`}
                       >
                         {m.reply_to && typeof m.reply_to === 'object' && (
-                          <div className={`mb-1 p-2 rounded bg-white border-l-4 ${isMine ? 'border-blue-300' : 'border-gray-300'} text-sm`}>
-                            <div className="font-semibold text-gray-800 text-xs">
-                              {m.reply_to.sender_role === 'cashier' || m.reply_to.sender_id === currentChat?.cashier_user_id ? 'Bạn' : getUserName(m.reply_to.sender_id)}
+                          <div
+                            className={`mb-1 p-2 rounded bg-white border-l-4 ${isMine ? 'border-blue-300' : 'border-gray-300'} text-sm max-w-[220px]`}
+                            style={{ wordBreak: 'break-word', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                          >
+                            <div className="font-semibold text-gray-800 text-xs truncate">
+                              {(() => {
+                                if (m.reply_to.sender_role === 'bot') return 'Bot';
+                                if (m.reply_to.sender_role === 'cashier') return getUserName(currentChat?.cashier_user_id);
+                                if (m.reply_to.sender_role === 'user') return getUserName(currentChat?.user_id);
+                                return getUserName(m.reply_to.sender_id);
+                              })()}
                             </div>
-                            <div className="text-gray-600 text-sm truncate">{m.reply_to.content}</div>
+                            <div className="text-gray-600 text-sm truncate max-w-[200px]">
+                              {m.reply_to.content.length > 50
+                                ? m.reply_to.content.slice(0, 50) + '...'
+                                : m.reply_to.content}
+                            </div>
                           </div>
                         )}
                         {/* Hiển thị ảnh nếu là tin nhắn ảnh */}
@@ -328,7 +319,7 @@ const ChatAdminPanel: React.FC = () => {
                         {m.reactions && m.reactions.length > 0 && (
                           <div className={`absolute bottom-[-14px] ${isMine ? 'right-[-6px]' : 'left-[-6px]'} bg-white rounded-full border border-gray-200 shadow px-1.5 py-[2px] text-[12px] flex items-center gap-1`}
                           >
-                            {[...new Map((m.reactions ?? []).map((r: { emoji: string }) => [r.emoji, true])).keys()].slice(0,5).map((emoji, i) => (
+                            {[...new Map((m.reactions ?? []).map((r: { emoji: string }) => [r.emoji, true])).keys()].slice(0, 5).map((emoji, i) => (
                               <span key={i}>{emoji}</span>
                             ))}
                             <span className="text-gray-500">{(m.reactions ?? []).length}</span>
@@ -350,12 +341,27 @@ const ChatAdminPanel: React.FC = () => {
 
                               {/* 2. Emoji */}
                               <button
-                                ref={(el) => (emojiButtonRefs.current[idx] = el)}
-                                onClick={() => showReactionPicker(idx)}
+                                onClick={() => setReactionPopupIdx(idx)}
                                 className="w-8 h-8 rounded-full bg-white border border-gray-200 shadow flex items-center justify-center hover:scale-110 transition"
                               >
                                 😊
                               </button>
+
+                              {/* Popup reaction */}
+                              {reactionPopupIdx === idx && (
+                                <div className="absolute top-[-48px] left-1/2 -translate-x-1/2 flex gap-2 bg-white border rounded-lg shadow px-2 py-1 z-50">
+                                  <button
+                                    onClick={() => { handleReaction('❤️', idx); setReactionPopupIdx(null); }}
+                                    className="text-xl hover:scale-125 transition"
+                                    title="Thả tim"
+                                  >❤️</button>
+                                  <button
+                                    onClick={() => { handleReaction('👍', idx); setReactionPopupIdx(null); }}
+                                    className="text-xl hover:scale-125 transition"
+                                    title="Like"
+                                  >👍</button>
+                                </div>
+                              )}
 
                               {/* 3. Reply */}
                               <button
@@ -377,12 +383,27 @@ const ChatAdminPanel: React.FC = () => {
 
                               {/* 2. Emoji */}
                               <button
-                                ref={(el) => (emojiButtonRefs.current[idx] = el)}
-                                onClick={() => showReactionPicker(idx)}
+                                onClick={() => setReactionPopupIdx(idx)}
                                 className="w-8 h-8 rounded-full bg-white border border-gray-200 shadow flex items-center justify-center hover:scale-110 transition"
                               >
                                 😊
                               </button>
+
+                              {/* Popup reaction */}
+                              {reactionPopupIdx === idx && (
+                                <div className="absolute top-[-48px] left-1/2 -translate-x-1/2 flex gap-2 bg-white border rounded-lg shadow px-2 py-1 z-50">
+                                  <button
+                                    onClick={() => { handleReaction('❤️', idx); setReactionPopupIdx(null); }}
+                                    className="text-xl hover:scale-125 transition"
+                                    title="Thả tim"
+                                  >❤️</button>
+                                  <button
+                                    onClick={() => { handleReaction('👍', idx); setReactionPopupIdx(null); }}
+                                    className="text-xl hover:scale-125 transition"
+                                    title="Like"
+                                  >👍</button>
+                                </div>
+                              )}
 
                               {/* 3. Dấu 3 chấm */}
                               <button className="w-8 h-8 rounded-full bg-white border border-gray-200 shadow flex items-center justify-center hover:scale-110 transition">
@@ -405,14 +426,16 @@ const ChatAdminPanel: React.FC = () => {
             </div>
             {replyingTo && (
               <div className="px-5 py-2 border-t bg-gray-50">
-                <div className="px-4 py-2 rounded-lg bg-gray-100 border-l-4 border-blue-400 text-sm relative">
+                <div className="px-4 py-2 rounded-lg bg-gray-100 border-l-4 border-blue-400 text-sm relative max-w-xs">
                   <div className="text-gray-600 mb-1">
                     Đang trả lời: <span className="font-medium text-blue-600">
                       {replyingTo.sender_role === 'cashier' ? 'Bạn' : getUserName(currentChat?.user_id as unknown)}
                     </span>
                   </div>
-                  <div className="text-gray-800 italic truncate max-w-[90%]">
-                    {replyingTo.content}
+                  <div className="text-gray-800 italic truncate max-w-[180px]">
+                    {replyingTo.content.length > 50
+                      ? replyingTo.content.slice(0, 50) + '...'
+                      : replyingTo.content}
                   </div>
                   <button
                     onClick={() => setReplyingTo(null)}
@@ -429,10 +452,21 @@ const ChatAdminPanel: React.FC = () => {
                 type="file"
                 id="imageUpload"
                 accept="image/*"
+                multiple
                 hidden
                 onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) console.log('Selected image:', file.name);
+                  const files = e.target.files;
+                  if (files) {
+                    Array.from(files).forEach(file => {
+                      const reader = new FileReader();
+                      reader.onload = (ev) => {
+                        if (ev.target?.result) {
+                          setImages(prev => [...prev, ev.target!.result as string]);
+                        }
+                      };
+                      reader.readAsDataURL(file);
+                    });
+                  }
                 }}
               />
               <input
@@ -444,26 +478,44 @@ const ChatAdminPanel: React.FC = () => {
                   if (file) console.log('Attached file:', file.name);
                 }}
               />
+              <div className="relative">
+                <FiSmile
+                  onClick={() => setShowEmojiPicker(prev => !prev)}
+                  className="text-gray-500 cursor-pointer"
+                  title="Emoji"
+                />
+                {showEmojiPicker && (
+                  <div ref={emojiPickerRef} className="absolute bottom-12 left-0 z-50">
+                    <EmojiPicker onEmojiClick={onEmojiClick} />
+                  </div>
+                )}
+              </div>
               <FiImage
                 onClick={() => document.getElementById('imageUpload')?.click()}
                 className="text-gray-500 cursor-pointer"
-                title="Send Image"
+                title="Gửi ảnh"
               />
-              <FiPaperclip
-                onClick={() => document.getElementById('fileUpload')?.click()}
-                className="text-gray-500 cursor-pointer"
-                title="Attach File"
-              />
-              <FiSmile
-                onClick={() => setInput((prev) => prev + '😊')}
-                className="text-gray-500 cursor-pointer"
-                title="Emoji"
-              />
-              <FiMic
+
+              {/* <FiMic
                 onClick={() => setRecording(!recording)}
                 className={`cursor-pointer ${recording ? 'text-red-500' : 'text-gray-500'}`}
                 title="Record"
-              />
+              /> */}
+              {/* Hiển thị ảnh đã chọn trước khi gửi */}
+              {images.length > 0 && (
+                <div className="flex gap-2">
+                  {images.map((img, idx) => (
+                    <div key={idx} className="relative">
+                      <img src={img} alt={`Ảnh ${idx + 1}`} className="w-12 h-12 object-cover rounded" />
+                      <button
+                        type="button"
+                        className="absolute top-0 right-0 bg-white rounded-full text-xs px-1 text-red-500"
+                        onClick={() => setImages(prev => prev.filter((_, i) => i !== idx))}
+                      >✕</button>
+                    </div>
+                  ))}
+                </div>
+              )}
               <input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}

@@ -45,11 +45,13 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
       >
         <div className="flex flex-col h-full relative">
           <div className="p-6">
-            <img
-              src="/assets/images/logo.png"
-              alt="Logo Beef Beef"
-              className="w-40 mx-auto"
-            />
+            <Link to="/">
+              <img
+                src="/assets/images/logo.png"
+                alt="Logo Beef Beef"
+                className="w-40 mx-auto"
+              />
+            </Link>
             <h1 className="text-center text-xl font-restora">Beef Beef</h1>
             <p className="text-center text-xs text-gray-400 font-restora">
               Restaurant & Bar

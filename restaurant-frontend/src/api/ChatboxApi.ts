@@ -34,7 +34,8 @@ export const sendMessage = async ({
   role,
   image,
   audio,
-}: SendMessageAPIRequest & { image?: string[]; audio?: string[] }): Promise<ChatMessage> => {
+  clientTempId,
+}: SendMessageAPIRequest & { image?: string[]; audio?: string[]; clientTempId?: string }): Promise<ChatMessage> => {
   let dataToSend: any = {};
   let config: any = {};
 
@@ -45,6 +46,7 @@ export const sendMessage = async ({
     if (replyTo) formData.append('replyTo', replyTo);
     if (senderId) formData.append('senderId', senderId);
     if (role) formData.append('role', role);
+    if (clientTempId) formData.append('clientTempId', clientTempId);
     if (image) {
       image.forEach((img, idx) => {
         if (img.startsWith('data:')) {
@@ -79,7 +81,8 @@ export const sendMessage = async ({
     config = { headers: { 'Content-Type': 'multipart/form-data' } };
   } else {
     // Nếu không có ảnh/audio, gửi JSON như cũ
-    dataToSend = { content, replyTo, senderId, role };
+  dataToSend = { content, replyTo, senderId, role };
+  if (clientTempId) dataToSend.clientTempId = clientTempId;
     config = {};
   }
 
@@ -93,7 +96,27 @@ export const getUserChatSession = async (
 ): Promise<ChatSessionResponse> => {
   const { data } = await axiosInstance.get(`/chat/user/${userId}`);
   console.log('getUserChatSession response:', data);
-  return data.chat;
+
+  const chat = data.chat as any;
+
+  // nếu backend đã populate user object thì trả luôn
+  if (chat?.user && (typeof chat.user === 'object')) {
+    return chat as ChatSessionResponse;
+  }
+
+  // nếu backend trả user_id (objectId/string) -> gọi thêm API lấy user info
+  const userIdFromChat = chat?.user_id || chat?.userId || userId;
+  if (userIdFromChat) {
+    try {
+      const { data: userData } = await axiosInstance.get(`/users/${String(userIdFromChat)}`);
+      chat.user = userData.user || userData; // tùy backend shape
+    } catch (err) {
+      console.warn('Failed to fetch user detail for chat; continuing with chat as-is', err);
+      // không ném lỗi để UI vẫn hiện phần chat (có thể thiếu info)
+    }
+  }
+
+  return chat as ChatSessionResponse;
 };
 
 // Cashier xem danh sách các phiên chat

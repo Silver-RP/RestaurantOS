@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { IUser } from '../models/UserModel';
+import { IUser } from '../types/user.type';
 import ReservationService from '../services/ReservationService';
 import { Types } from 'mongoose';
 
