@@ -4,3 +4,5 @@ insertData.ts
 
 importData/
 dist
+
+src/firebase/serviceAccountKey.json
