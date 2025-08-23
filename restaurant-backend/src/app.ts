@@ -6,16 +6,16 @@ import AuthRoutes from './routes/AuthRoutes';
 import UserRoutes from './routes/UserRoutes';
 import RoleRoutes from './routes/RoleRouter';
 import CateRoutes from './routes/CategoryRoutes';
-import ReservationContactRoutes from './routes/ReservationContactRoutes';
-import ReservationDetailContactRoutes from './routes/ReservationDetailContactRoutes';
 import ProfileRoutes from './routes/ProfileRoutes';
 import ReservationRoutes from './routes/ReservationRouter';
-import TableReservationRouter from './routes/TableReservationRouter';
-import TableRoutes from './routes/TableRouters';
+import TablesRouters from './routes/TableRouters';
 import BannerRoutes from './routes/BannerRoutes';
 import PostsRoutes from './routes/PostsRoutes';
 import PostReportRoutes from './routes/PostReportRoutes';
 import commentPostRoutes from './routes/CommentPostRoutes';
+
+import SidebarRoutes from './routes/sidebar.routes';
+
 import StaffRoutes from './routes/StaffRoutes';
 import FoodRoutes from './routes/FoodRoutes';
 import PermissionRoutes from './routes/PermissionRoutes';
@@ -27,25 +27,47 @@ import AddressRouter from './routes/AddressRoutes';
 import PaymentRoutes from './routes/PaymentRoutes';
 import InventoryRoutes from './routes/InventoryRoutes';
 import DashboardRoutes from './routes/DashboardRoutes';
-import IngredientsRouter from './routes/IngredientsRouter';
+import IngredientsRouter from './routes/ingredientsRouter';
 import VoucherRoutes from './routes/VoucherRoutes';
 import ReviewRoutes from './routes/ReviewRoutes';
 import LoyaltyRoutes from './routes/LoyaltyRoutes';
-
-
+import FaqRoutes from './routes/FaqRoutes';
+import ContactRoutes from './routes/ContactRoutes';
 import dotenv from 'dotenv';
 import connectDB from './config/db';
 import cookieParser from 'cookie-parser';
 import passport from 'passport';
 import cors from 'cors';
 import path from 'path';
-
-// Thêm dòng này để import và khởi động cron-job loyalty
+import CronJobService from './services/CronJobService';
+import { createServer} from 'http'; 
+import { Server } from 'socket.io'; 
+import { initSocket } from './socket/socket';
+import ChatRoutes from './routes/ChatRoutes'; 
 import { scheduleLoyaltyYearlyJob } from './cron/loyaltyYearlyJob';
-
+import { scheduleBirthdayVoucherJob } from './cron/BirthdayVoucherJob';// src/models/EmployeeFaceModel.ts
+import authFaceRouter from './routes/authFaceRouter';
+import { loadFaceApiModels } from './services/FaceRecognitionService';
 const app = express();
+const server = createServer(app);
 
-// Import file authSwagger để đăng ký metadata
+// Cấu hình Socket.io
+const io = new Server(server, {
+  cors: {
+    origin: [
+      "https://beefbeefrestaurant.io.vn", 
+      "http://localhost:5173",
+     
+    ],
+    credentials: true,
+    methods: ["GET", "POST"]
+  }
+});
+
+initSocket(io); 
+app.set('io', io); 
+
+
 import './swaggers/AuthSwagger';
 import './swaggers/OrderSwagger';
 import './swaggers/FoodSwagger';
@@ -53,22 +75,29 @@ import './swaggers/CartSwagger';
 import './swaggers/StaffSwagger';
 import './swaggers/UserSwagger';
 import './swaggers/CategorySwagger';
-
+import TableReservationRouter from './routes/TableReservationRouter';
 
 dotenv.config();
 connectDB();
 
-// Khởi động cron-job loyalty
 scheduleLoyaltyYearlyJob();
+scheduleBirthdayVoucherJob();
+
+CronJobService.start();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
-    origin: 'http://localhost:5173',
+    origin: [
+      'https://beefbeefrestaurant.io.vn',   
+      'http://localhost:5173',
+      'http://localhost:3000'         
+    ],
     credentials: true,
-  }),
+  })
 );
+app.use(cookieParser());
 app.engine('.hbs', engine({ extname: '.hbs', defaultLayout: false }));
 app.set('view engine', '.hbs');
 app.set('views', path.join(__dirname, 'views'));
@@ -85,8 +114,12 @@ const swaggerDefinition = {
   },
   servers: [
     {
+      url: 'https://api-beefbeef-restaurant.onrender.com/api',
+      description: 'Production server (Render)',
+    },
+    {
       url: `http://localhost:${port}/api`,
-      description: 'Development server',
+      description: 'Local development server',
     },
   ],
   components: {
@@ -107,14 +140,11 @@ const swaggerSpec = generateSwaggerSpec(allRoutes, swaggerDefinition);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use(passport.initialize());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
 
 app.get('/', (req, res) => {
   res.send('API is running...');
 });
-
+app.use('/api/auth_cashier', authFaceRouter);
 app.use('/api/auth', AuthRoutes);
 app.use('/api/user', UserRoutes);
 app.use('/api/profile', AuthMiddleWare.verifyToken, ProfileRoutes);
@@ -126,13 +156,13 @@ app.use(
 );
 app.use('/api/permission', PermissionRoutes);
 app.use('/api/category', CateRoutes);
+app.use('/api/reservation', AuthMiddleWare.verifyToken, ReservationRoutes);
+app.use('/api/banner', BannerRoutes);
+app.use('/api/tables', TablesRouters);
 app.use('/api/reservation', ReservationRoutes);
 app.use('/api/my-reservations', AuthMiddleWare.verifyToken, ReservationRoutes);
-app.use('/api/tables', TableRoutes);
 app.use('/api/table-reservations', TableReservationRouter);
-app.use('/api/banner', BannerRoutes);
-app.use('/api/reservationcontact', ReservationContactRoutes);
-app.use('/api/reservationdetailcontact', ReservationDetailContactRoutes);
+
 app.use(
   '/api/staff',
   AuthMiddleWare.verifyToken,
@@ -142,9 +172,8 @@ app.use(
 
 app.use('/api/food', FoodRoutes);
 app.use('/api/posts', PostsRoutes);
-app.use('/api/posts', commentPostRoutes);
 app.use('/api/post-reports', PostReportRoutes);
-app.use('/api/loyalty', LoyaltyRoutes);
+app.use('/api/posts', commentPostRoutes);
 app.use('/api/order', AuthMiddleWare.verifyToken, OrderRoutes);
 app.use('/api/cart', AuthMiddleWare.verifyToken, CartRouter);
 app.use('/api/dashboard', AuthMiddleWare.verifyToken, DashboardRoutes);
@@ -152,12 +181,21 @@ app.use('/api/favorite', AuthMiddleWare.verifyToken, FavoriteRoutes);
 app.use('/api/address', AuthMiddleWare.verifyToken, AddressRouter);
 app.use('/api/payment', PaymentRoutes);
 app.use('/api/review', ReviewRoutes);
-
+app.use('/api/loyalty', LoyaltyRoutes);
+app.use('/api/chat', AuthMiddleWare.verifyToken, ChatRoutes);
 app.use('/api/ingredients', AuthMiddleWare.verifyToken, IngredientsRouter);
 app.use('/api/inventory', AuthMiddleWare.verifyToken, InventoryRoutes);
 app.use('/api/voucher', VoucherRoutes);
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
-  console.log('Mongo URI:', process.env.MONGO_URI);
-  console.log(`Swagger UI available at http://localhost:${port}/api-docs`);
-});
+app.use('/api/faq', FaqRoutes);
+app.use('/api/contact', ContactRoutes);
+app.use('/api/sidebar', SidebarRoutes);
+(async () => {
+  await loadFaceApiModels();
+  server.listen(port, () => {
+    console.log(`Server is running on http://localhost:${port}`);
+    console.log(`Mongo URI: ${process.env.MONGO_URI ? 'Connected' : 'Not configured'}`);
+    console.log(`Swagger UI available at http://localhost:${port}/api-docs`);
+    console.log(`Socket.io server initialized`);
+    console.log(`Chat API available at http://localhost:${port}/api/chat`);
+  });
+})();

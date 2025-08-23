@@ -190,7 +190,7 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
 
           <div className="relative group/tooltip">
             <button
-              onClick={() => dispatch(openQuickView(productDetail))}
+              onClick={() => dispatch(openQuickView({ product: productDetail }))}
               className="p-1.5 sm:p-2 bg-white text-[#002B40] rounded-full shadow-md 
                  hover:bg-secondaryColor hover:text-white hover:-translate-y-1 transition-all duration-300"
             >

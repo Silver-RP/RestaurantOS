@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { FavoriteItem } from '@/types/Dish.types';
+import Cookies from 'js-cookie';
 
 interface FavoriteState {
   items: FavoriteItem[];
@@ -7,6 +8,11 @@ interface FavoriteState {
 
 const initialState: FavoriteState = {
   items: [],
+};
+
+export const checkIsLoggedIn = (): boolean => {
+  const userInfo = Cookies.get('userInfo');
+  return !!userInfo;
 };
 
 export const favoriteSlice = createSlice({
@@ -23,11 +29,12 @@ export const favoriteSlice = createSlice({
       state.items = state.items.filter(item => item._id !== action.payload);
     },
     removeFavoriteSuccess: (state, action) => {
-        state.items = state.items.filter(item => item._id !== action.payload);
-      }
+      state.items = state.items.filter(item => item._id !== action.payload);
+    },
+    clearFavorites: () => initialState,
   },
 });
 
-export const { setFavorites, addFavorite, removeFavorite,removeFavoriteSuccess } = favoriteSlice.actions;
+export const { setFavorites, addFavorite, removeFavorite, removeFavoriteSuccess, clearFavorites } = favoriteSlice.actions;
 
 export default favoriteSlice.reducer;

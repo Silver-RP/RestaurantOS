@@ -1,6 +1,6 @@
 import React from 'react';
 import { PostType } from '../../../../types/PostType';
-import PostContent from '../../PostDetails/PostContent';
+import ContentPreview from './ContentPreview';
 
 interface PostPreviewModalProps {
   post: PostType;
@@ -19,7 +19,7 @@ const PostPreviewModal: React.FC<PostPreviewModalProps> = ({ post, onClose, isOp
           <button onClick={onClose} className="text-gray-400 hover:text-white text-3xl">&times;</button>
         </div>
         <div className="flex-grow overflow-y-auto custom-scrollbar">
-          <PostContent post={post} />
+          <ContentPreview post={post} />
         </div>
       </div>
     </div>

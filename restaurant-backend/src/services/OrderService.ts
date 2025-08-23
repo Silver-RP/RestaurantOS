@@ -1,13 +1,14 @@
 import mongoose, { Types } from 'mongoose';
 import OrderValidator from '../validators/orderValidator';
-import { Address, IAddress } from '../models/AddressModel';
+import { Address } from '../models/AddressModel';
+import { IAddress } from '../types/address.type';
 import { Order, IOrder } from '../models/OrderModel';
 import { OrderDetail } from '../models/OrderDetailModel';
 import Cart from '../models/CartModel';
 import { Dish } from '../models/DishModel';
 import DishIngredient from '../models/DishIngredientModel';
 import { InventoryTransaction } from '../models/InventoryTransactionModel';
-import Payment from '../models/PaymentModel';
+import Payment, { IPayment } from '../models/PaymentModel';
 import SearchService from './SearchService';
 import { createVNPayPaymentUrl } from '../services/payments/VnPayService';
 import { createMomoPaymentUrl } from '../services/payments/MomoService';
@@ -15,7 +16,9 @@ import { createPayPalOrder } from '../services/payments/PaypalService';
 
 import axios from 'axios';
 import MailerService from './MailerService';
-import User, { IUser } from '../models/UserModel';
+import User from '../models/UserModel';
+import { IUser } from '../types/user.type';
+
 import Voucher from '../models/VoucherModel';
 import LoyaltyService from './LoyaltyService';
 
@@ -99,7 +102,7 @@ class OrderService {
     if (address) {
       const newAddress = new Address({ user_id: userId, ...address });
       const savedAddress = await newAddress.save({ session });
-      return (savedAddress._id as string).toString();
+      return (savedAddress._id as unknown as string).toString();
     }
   }
 
@@ -125,11 +128,33 @@ class OrderService {
     const vat_amount = items_price * 0.08;
     const total_price = items_price + vat_amount + shipping_fee - (discount_amount || 0);
 
+    let addressSnapshot = null;
+
+    if (delivery_type === 'DELIVERY' && finalAddressId) {
+      const addressDoc = await Address.findById(finalAddressId).lean();
+      if (!addressDoc) {
+        throw { statusCode: 400, message: 'Invalid address for snapshot' };
+      }
+
+      // Copy fields để snapshot
+      addressSnapshot = {
+        full_name: addressDoc.full_name,
+        phone: addressDoc.phone,
+        province: addressDoc.province,
+        district: addressDoc.district,
+        street_address: addressDoc.street_address,
+        ward: addressDoc.ward,
+        address_type: addressDoc.address_type,
+      };
+
+    }
+
     const newOrder = new Order({
       user_id: userId,
       address_id: finalAddressId,
       payment_method,
       delivery_type,
+      addressSnapshot,
       items_price,
       vat_amount,
       shipping_fee,
@@ -150,23 +175,32 @@ class OrderService {
   }
 
   async updateDishCounts(orderItems: any[], session: any) {
-    const updateDishPromises = orderItems.map((item) => {
-      return Dish.updateOne(
+    const updateDishPromises = orderItems.map(async (item) => {
+      const dish = await Dish.findById(item.dish_id).session(session);
+  
+      if (!dish) return;
+  
+      const newCountInStock = dish.countInStock - item.quantity;
+  
+      await Dish.updateOne(
         { _id: item.dish_id },
         {
           $inc: {
             ordered_count: 1,
             totalSoldQuantity: item.quantity,
-            countInStock: -1 * item.quantity,
+          },
+          $set: {
+            countInStock: newCountInStock,
+            ...(newCountInStock <= 0 ? { status: 'soldout' } : {}),
           },
         },
-        { session },
+        { session }
       );
     });
-
+  
     await Promise.all(updateDishPromises);
   }
-
+  
   async updateCart(userId: string, orderedDishIds: string[], session: any) {
     await Cart.updateOne(
       { userId },
@@ -207,9 +241,9 @@ class OrderService {
     const payment_method = order.payment_method;
     let redirectUrl: string | null = null;
     let bankingInfo = null;
-  
+
     const amount = order.total_price || 0;
-  
+
     // Tạo bản ghi thanh toán
     const newPayment = await Payment.create({
       orderId: order._id,
@@ -219,14 +253,14 @@ class OrderService {
       transaction_code: null,
       bankingInfo: null,
     });
-  
+
     const paymentTransactionId = newPayment._id.toString();
     const transactionCode = this.generateTransactionCode(payment_method, paymentTransactionId);
-  
+
     await Payment.findByIdAndUpdate(paymentTransactionId, {
       transaction_code: transactionCode,
     });
-  
+
     // BANKING
     if (payment_method === 'BANKING') {
       const bank_name = 'Vietcombank';
@@ -234,7 +268,7 @@ class OrderService {
       const account_number = '0123456789';
       const account_name = 'Công ty TNHH BeefBeef';
       const transfer_note = `ORDER-${order._id}`;
-  
+
       const qrRes = await axios.post('https://api.vietqr.io/v2/generate', {
         accountNo: account_number,
         accountName: account_name,
@@ -243,9 +277,9 @@ class OrderService {
         addInfo: transfer_note,
         format: 'base64',
       });
-  
+
       const qr_base64 = qrRes?.data?.data?.qrDataURL;
-  
+
       bankingInfo = {
         bank_name,
         account_number,
@@ -253,10 +287,10 @@ class OrderService {
         qr_code: qr_base64,
         transfer_note,
       };
-  
+
       await Payment.findByIdAndUpdate(paymentTransactionId, { bankingInfo });
     }
-  
+
     // Các cổng thanh toán điện tử
     switch (payment_method) {
       case 'MOMO':
@@ -268,7 +302,7 @@ class OrderService {
           objectType: 'order',
         });
         break;
-  
+
       case 'MOMO_ATM':
         redirectUrl = await createMomoPaymentUrl({
           amount,
@@ -278,7 +312,7 @@ class OrderService {
           objectType: 'order',
         });
         break;
-  
+
       case 'VNPAY':
         redirectUrl = createVNPayPaymentUrl({
           amount,
@@ -288,17 +322,17 @@ class OrderService {
           objectType: 'order',
         });
         break;
-  
+
       case 'CREDIT_CARD':
         const orderWithItems = await this.getOrderById(order._id); // chứa order_items
         redirectUrl = await createPayPalOrder(orderWithItems as any, paymentTransactionId);
         break;
-  
+
       default:
         redirectUrl = null;
         break;
     }
-  
+
     return {
       type: payment_method,
       redirectUrl,
@@ -368,7 +402,7 @@ class OrderService {
   async exportInventoryFromOrder(
     orderItems: { dish_id: Types.ObjectId; quantity: number }[],
     orderId: Types.ObjectId,
-    userId: Types.ObjectId, 
+    userId: Types.ObjectId,
     session: mongoose.ClientSession
   ) {
 
@@ -376,23 +410,23 @@ class OrderService {
     const dishIngredients = await DishIngredient.find({
       dishId: { $in: dishIds },
     }).lean();
-  
+
     const ingredientQuantityMap = new Map<string, number>();
-  
+
     for (const item of orderItems) {
       const ingredientsForDish = dishIngredients.filter(
         (di) => di.dishId.toString() === item.dish_id.toString()
       );
-    
+
       for (const di of ingredientsForDish) {
         const totalQty =
           (ingredientQuantityMap.get(di.ingredientId.toString()) || 0) +
           di.quantity * item.quantity;
-    
+
         ingredientQuantityMap.set(di.ingredientId.toString(), totalQty);
       }
     }
-  
+
     const transactions: any[] = [];
     for (const [ingredientId, quantity] of ingredientQuantityMap.entries()) {
       transactions.push({
@@ -408,7 +442,7 @@ class OrderService {
 
     await InventoryTransaction.insertMany(transactions, { session });
   }
-  
+
   async placeOrder(input: any) {
     const {
       userId,
@@ -490,7 +524,7 @@ class OrderService {
       });
 
       const formattedOrderItems = orderItems.map(item => ({
-        dish_id: new Types.ObjectId(item.dish_id as string), 
+        dish_id: new Types.ObjectId(item.dish_id as string),
         quantity: item.quantity,
       }));
 
@@ -621,7 +655,7 @@ class OrderService {
     filters: any;
   }) {
     try {
-    const { page, limit, sortBy, sortOrder, filters } = options;
+      const { page, limit, sortBy, sortOrder, filters } = options;
 
       const searchOptions = {
         page,
@@ -653,7 +687,7 @@ class OrderService {
 
       const result = await SearchService.search(Order, searchOptions);
 
-    return {
+      return {
         orders: result.items,
         total: result.total,
         currentPage: result.currentPage,
@@ -785,7 +819,10 @@ class OrderService {
 
   async getOrderById(orderId: mongoose.Types.ObjectId) {
     try {
-      const order = await Order.findById(orderId).populate('address_id').lean();
+      const order = await Order.findById(orderId)
+        .populate('address_id')
+        .populate('user_id', 'email username phone')
+        .lean();
 
       if (!order) {
         throw { statusCode: 404, message: 'Order not found' };
@@ -923,7 +960,11 @@ class OrderService {
         }
       }
 
-      await order.save();
+      await Order.updateOne(
+        { _id: orderId },
+        { $set: { status, delivered_at: status === Status.DELIVERED ? new Date() : order.delivered_at } }
+      );
+      
 
       return order;
     } catch (error: any) {
@@ -1032,7 +1073,7 @@ class OrderService {
   }
 
   async sendOrderPaymentSuccessEmail(paymentId: Types.ObjectId) {
-    const payment = await Payment.findById(paymentId).populate('orderId').lean();
+    const payment = await Payment.findById(paymentId).populate('orderId').lean() as IPayment;
     if (!payment) throw new Error('Payment not found');
     if (!payment.orderId) throw new Error('Order not found in payment');
 
@@ -1043,7 +1084,7 @@ class OrderService {
     if (!user || !user.email) throw new Error('User or email not found');
 
     await MailerService.sendOrderPaymentSuccess({
-      payment,
+      payment: payment as IPayment,
       order,
       userEmail: user.email,
     });

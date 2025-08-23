@@ -1,4 +1,4 @@
-export type ReservationStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'DONE';
+export type ReservationStatus = 'PENDING' | 'BOOKED' | 'CANCELLED' | 'DONE';
 
 export interface IReservation {
   _id?: string;
@@ -18,6 +18,7 @@ export interface IReservation {
   payment_method: string;
   paid_at?: string;
   order_items: IReservationDetail[];
+  cancelled_reason?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -57,7 +58,7 @@ export type ReservationFormData = {
   note: string;
   table_type: string;
   seatingName: string;
-  tableCategory?: string; // Loại bàn thực tế: 'vip', 'group', 'standard', 'quiet'
+  tableCategory?: string;
   menu: string;
   selectedItems: ReservationOrderItem[];
 };

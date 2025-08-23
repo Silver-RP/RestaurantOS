@@ -1,8 +1,21 @@
 import api from './axiosInstance';
-import { Category, CategoryResponse, CategoryCreatePayload } from '../types/Category.type';
+import {
+  Category,
+  CategoryResponse,
+  CategoryCreatePayload,
+} from '../types/Category.type';
 
-export const fetchAllCategories = async (): Promise<CategoryResponse> => {
-  const res = await api.get<CategoryResponse>('/category/getallcategory');
+export const fetchAllCategories = async (params?: {
+  type?: string | string[];
+}): Promise<CategoryResponse> => {
+  const res = await api.get<CategoryResponse>('/category/getallcategory', {
+    params,
+  });
+  return res.data;
+};
+
+export const fetAllCategoryNew = async (): Promise<CategoryResponse> => {
+  const res = await api.get<CategoryResponse>('/category/getallcategorynew');
   return res.data;
 };
 
@@ -11,7 +24,9 @@ export const fetchCategoryById = async (id: string): Promise<Category> => {
   return res.data;
 };
 
-export const addCategory = async (formData: FormData): Promise<CategoryCreatePayload> => {
+export const addCategory = async (
+  formData: FormData,
+): Promise<CategoryCreatePayload> => {
   const res = await api.post('/category/addcategory', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
@@ -30,8 +45,9 @@ export const updateCategory = async (id: string, formData: FormData) => {
   return res.data;
 };
 
-
-export const deleteCategory = async (id: string): Promise<{ message: string }> => {
+export const deleteCategory = async (
+  id: string,
+): Promise<{ message: string }> => {
   const res = await api.delete(`/category/delete/${id}`);
   return res.data;
 };

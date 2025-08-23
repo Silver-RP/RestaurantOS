@@ -8,7 +8,7 @@ export const registerSchema = z
       .string()
       .min(8)
       .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/,
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/,
         'Password must contain at least 8 characters, 1 uppercase, 1 lowercase, and 1 number',
       ),
     confirmPassword: z.string(),

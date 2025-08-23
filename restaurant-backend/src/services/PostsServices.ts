@@ -2,17 +2,24 @@ import { Post } from '../models/PostsModel';
 import mongoose from 'mongoose';
 import cloudinary from '../config/cloudinary';
 import streamifier from 'streamifier';
-import { IUser } from '../models/UserModel';
 import { Request } from 'express';
 import AuthMiddleWare from '../middleware/AuthMiddleWare';
 import { Types } from 'mongoose';
 import UploadImageService from '../services/UploadImageService';
 
 class PostsService {
-  async getAllPosts(page = 1, limit = 10, search = '', sortBy = 'createdAt', sortOrder: 'asc' | 'desc' = 'desc', status?: string) {
+  async getAllPosts(
+    page = 1,
+    limit = 10,
+    search = '',
+    sortBy = 'createdAt',
+    sortOrder: 'asc' | 'desc' = 'desc',
+    status?: string,
+    categoryId?: string,
+  ) {
     try {
       const query: any = {};
-      
+
       // Add search functionality
       if (search) {
         query.$or = [
@@ -24,6 +31,11 @@ class PostsService {
       // Add status filter
       if (status) {
         query.status = status;
+      }
+
+      // Add category filter
+      if (categoryId && mongoose.Types.ObjectId.isValid(categoryId)) {
+        query.categories_id = new mongoose.Types.ObjectId(categoryId);
       }
 
       const skip = (page - 1) * limit;
@@ -94,8 +106,8 @@ class PostsService {
   }
   async createPost(req: Request, userId: string) {
     try {
-      const { title, desc, content, categories_id, status = 'draft', images: imageUrls, tags, scheduledAt } = req.body;
-      
+      const { title, desc, content, categories_id, status, images: imageUrls, tags, scheduledAt } = req.body;
+
       let images: string[] = [];
 
       if (!mongoose.Types.ObjectId.isValid(categories_id)) {
@@ -114,7 +126,7 @@ class PostsService {
       // Xử lý upload files
       if (req.files || req.file) {
         let filesToUpload: Express.Multer.File[] = [];
-        
+
         if (Array.isArray(req.files)) {
           filesToUpload = req.files;
         } else if (req.files && typeof req.files === 'object') {
@@ -164,6 +176,10 @@ class PostsService {
         .replace(/\s+/g, '-')
         .replace(/--+/g, '-');
 
+      const tagsArray = Array.isArray(tags)
+        ? tags
+        : (typeof tags === 'string' ? tags.split(',').map((t: string) => t.trim()).filter(Boolean) : []);
+      let finalStatus = status;
       const post = await Post.create({
         title,
         slug,
@@ -172,8 +188,8 @@ class PostsService {
         images,
         categories_id: new Types.ObjectId(categories_id),
         user_id: userId,
-        status: scheduledAt ? 'draft' : status, // If scheduled, set status to draft initially
-        tags: Array.isArray(tags) ? tags : (typeof tags === 'string' ? JSON.parse(tags) : []),
+        status: finalStatus,
+        tags: tagsArray,
         scheduledAt: scheduledAt ? new Date(scheduledAt) : null, // Save scheduledAt if provided
       });
 
@@ -194,11 +210,7 @@ class PostsService {
       if (!post) {
         throw new Error('Không tìm thấy bài viết');
       }
-      
-      // Check if user is the owner of the post
-      if (post.user_id.toString() !== userId) {
-        throw new Error('Bạn không có quyền chỉnh sửa bài viết này');
-      }
+
 
       const updateData: any = {
         title: req.body.title,
@@ -207,23 +219,11 @@ class PostsService {
         categories_id: req.body.categories_id,
         status: req.body.status || post.status,
         updatedAt: new Date(),
-        tags: Array.isArray(req.body.tags) ? req.body.tags : (typeof req.body.tags === 'string' ? JSON.parse(req.body.tags) : []), // Ensure tags are updated correctly
+        tags: Array.isArray(req.body.tags)
+          ? req.body.tags
+          : (typeof req.body.tags === 'string' ? req.body.tags.split(',').map((t: string) => t.trim()).filter(Boolean) : []),
       };
 
-      // Handle scheduledAt logic during update
-      if (req.body.scheduledAt) {
-        updateData.scheduledAt = new Date(req.body.scheduledAt);
-        // If a scheduledAt is set, ensure status is draft until published by cron
-        updateData.status = 'draft'; 
-      } else if (req.body.status === 'published' && post.scheduledAt) {
-        // If status is explicitly set to published and there was a scheduledAt, clear scheduledAt
-        updateData.scheduledAt = null;
-      } else if (req.body.status === 'published' && !req.body.scheduledAt) {
-        updateData.scheduledAt = null;
-      } else if (req.body.status === 'draft' && !req.body.scheduledAt && post.scheduledAt) {
-        // If status is draft but scheduledAt is cleared, explicitly set scheduledAt to null
-        updateData.scheduledAt = null;
-      }
 
       // If slug should be updated (e.g., if title changed)
       if (req.body.title) {
@@ -258,7 +258,7 @@ class PostsService {
         const newImages = await Promise.all(uploadPromises);
         const existingImages = req.body.existingImages ? JSON.parse(req.body.existingImages) : [];
         const updatedImages = [...existingImages, ...newImages];
-        
+
         // Delete removed images from Cloudinary
         const removedImages = post.images.filter(img => !existingImages.includes(img));
         if (removedImages.length > 0) {
@@ -273,19 +273,26 @@ class PostsService {
         updateData.images = updatedImages;
       }
 
+      // Handle scheduledAt logic during update
+      if (req.body.status === 'pending' && req.body.scheduledAt) {
+        updateData.scheduledAt = new Date(req.body.scheduledAt);
+      } else if (!req.body.scheduledAt) {
+        updateData.scheduledAt = null;
+      }
+
       const updatedPost = await Post.findByIdAndUpdate(
         id,
         updateData,
         { new: true }
       )
-      .populate({
-        path: 'categories_id',
-        select: 'Cate_name Cate_slug Cate_img Cate_type',
-      })
-      .populate({
-        path: 'user_id',
-        select: 'username email avatar',
-      });
+        .populate({
+          path: 'categories_id',
+          select: 'Cate_name Cate_slug Cate_img Cate_type',
+        })
+        .populate({
+          path: 'user_id',
+          select: 'username email avatar',
+        });
 
       return updatedPost;
     } catch (error) {
@@ -302,11 +309,7 @@ class PostsService {
     if (!post) {
       throw new Error('Không tìm thấy bài viết để xóa');
     }
-    
-    // Check if user is the owner of the post
-    if (post.user_id.toString() !== userId) {
-      throw new Error('Bạn không có quyền xóa bài viết này');
-    }
+
 
     // Delete images from Cloudinary if they exist
     if (post.images && post.images.length > 0) {
@@ -367,9 +370,9 @@ class PostsService {
       // Kiểm tra xem người dùng đã like bài viết chưa
       const userIdObj = new mongoose.Types.ObjectId(userId);
       const userLikedIndex = post.likedBy.findIndex(id => id.equals(userIdObj));
-      
+
       let liked = false;
-      
+
       if (userLikedIndex !== -1) {
         // Nếu đã like, thì bỏ like
         post.likedBy.splice(userLikedIndex, 1);
@@ -419,8 +422,14 @@ class PostsService {
     }
   }
 
-  async getPostsByTag(tag: string, page = 1, limit = 10) {
-    const query = { tags: { $in: [tag] } };
+  async getPostsByTag(tag: string, page = 1, limit = 10, search = '') {
+    const query: any = { tags: { $in: [tag] } };
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { desc: { $regex: search, $options: 'i' } }
+      ];
+    }
     const skip = (page - 1) * limit;
     const totalDocs = await Post.countDocuments(query);
     const totalPages = Math.ceil(totalDocs / limit);
@@ -445,12 +454,30 @@ class PostsService {
     };
   }
 
+  async getAllTags() {
+    try {
+      const tags: string[] = await Post.distinct('tags', { tags: { $exists: true, $ne: [] } });
+      // Normalize and filter empty values
+      const uniqueTags = Array.from(
+        new Set(
+          tags
+            .filter(Boolean)
+            .map((t) => (typeof t === 'string' ? t.trim() : ''))
+            .filter((t) => t.length > 0)
+        )
+      ).sort((a, b) => a.localeCompare(b, 'vi'));
+      return uniqueTags;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async publishScheduledPosts() {
     try {
       const now = new Date();
       const result = await Post.updateMany(
         {
-          status: 'draft',
+          status: 'pending',
           scheduledAt: { $ne: null, $lte: now },
         },
         {

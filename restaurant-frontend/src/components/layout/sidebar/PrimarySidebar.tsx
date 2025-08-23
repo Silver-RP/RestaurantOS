@@ -10,11 +10,11 @@ import {
   FaSearch,
   FaUserCheck,
 } from 'react-icons/fa';
+import { RootState } from '@/redux/store';
+import { useDispatch, useSelector } from 'react-redux';
 import { FiArrowRight } from 'react-icons/fi';
 import { MdInfo } from 'react-icons/md';
 import { useLocation, Link } from 'react-router-dom';
-import Cookies from 'js-cookie';
-import { useDispatch } from 'react-redux';
 import { openSearchModal } from '../../../redux/feature/modal/searchModalSlice';
 
 interface PrimarySidebarProps {
@@ -41,13 +41,13 @@ const PrimarySidebar: React.FC<PrimarySidebarProps> = ({ toggleSidebar }) => {
   const menuItemsMain = [
     { icon: <FaHome />, label: 'Trang chủ', link: '/' },
     { icon: <FaUtensils />, label: 'Thực đơn', link: '/menu' },
-    { icon: <FaRegListAlt />, label: 'Bài viết', link: '/post' },
+    { icon: <FaRegListAlt />, label: 'Bài viết', link: '/posts' },
     { icon: <MdInfo />, label: 'Giới thiệu', link: '/aboutus' },
     { icon: <FaPhoneAlt />, label: 'Liên hệ', link: '/contact' },
+   
   ];
 
-  const userInfo = Cookies.get('userInfo');
-  const user = userInfo ? JSON.parse(userInfo) : null;
+  const user = useSelector((state: RootState) => state.auth.userInfo);
   const dispatch = useDispatch();
 
   const searchItem = {
@@ -79,11 +79,13 @@ const PrimarySidebar: React.FC<PrimarySidebarProps> = ({ toggleSidebar }) => {
           </button>
         </div>
         <div className="p-2 w-20 h-20 flex items-center justify-center mb-6">
-          <img
-            src="/assets/images/logo.png"
-            alt="Logo"
-            className="w-10 h-auto mx-auto"
-          />
+          <Link to="/">
+            <img
+              src="/assets/images/logo.png"
+              alt="Logo"
+              className="w-10 h-auto mx-auto"
+            />
+          </Link>
         </div>
         <div className="space-y-4 sm:space-y-6">
           {menuItemsMain.map((item, index) => (

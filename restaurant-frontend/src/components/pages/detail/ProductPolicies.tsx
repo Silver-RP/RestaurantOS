@@ -1,24 +1,25 @@
-import React from "react";
-import { FaShieldAlt, FaTruck, FaUndo } from "react-icons/fa";
+import React from 'react';
+import { FaShieldAlt, FaTruck, FaUndo } from 'react-icons/fa';
 
 const policies = [
-    {
-      icon: <FaShieldAlt className="text-white mt-1" />,
-      title: "Chính sách bảo mật",
-      description: "Thông tin khách hàng được bảo mật tuyệt đối theo chính sách bảo mật của chúng tôi.",
-    },
-    {
-      icon: <FaTruck className="text-white mt-1" />,
-      title: "Chính sách giao hàng",
-      description: "Giao hàng trong vòng 30 phút làm việc.",
-    },
-    {
-      icon: <FaUndo className="text-white mt-1" />,
-      title: "Chính sách hoàn trả",
-      description: "Hỗ trợ đổi/trả sản phẩm trong vòng ngay nếu có lỗi từ nhà hàng.",
-    },
- ]; 
-  
+  {
+    icon: <FaShieldAlt className="text-white mt-1" />,
+    title: 'Chính sách bảo mật',
+    description:
+      'Thông tin khách hàng được bảo mật tuyệt đối theo chính sách bảo mật của chúng tôi.',
+  },
+  {
+    icon: <FaTruck className="text-white mt-1" />,
+    title: 'Chính sách giao hàng',
+    description: 'Giao hàng trong vòng 30 phút làm việc.',
+  },
+  {
+    icon: <FaUndo className="text-white mt-1" />,
+    title: 'Chính sách hoàn trả',
+    description:
+      'Hỗ trợ đổi/trả sản phẩm trong vòng ngay nếu có lỗi từ nhà hàng.',
+  },
+];
 
 const ProductPolicies: React.FC = () => {
   return (

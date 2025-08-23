@@ -7,8 +7,8 @@ import { toast } from 'react-toastify';
 import { RegisterUser } from '../redux/feature/auth/authActions';
 import { clearStatus } from '../redux/feature/auth/authSlice';
 import { useAppDispatch, useAppSelector } from '../redux/hook';
-import ButtonComponent from '../components/pages/login/ButtonComponents';
-import InputComponent from '../components/pages/login/InputComponents'; 
+import ButtonComponent from '../components/pages/Login/ButtonComponents';
+import InputComponent from '../components/pages/Login/InputComponents'; 
 const Register = () => {
   const usernameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
@@ -63,7 +63,7 @@ const Register = () => {
       }));
     }
     if (name === 'email') {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const emailRegex = /^[a-zA-Z0-9](\.?[a-zA-Z0-9_-])*[a-zA-Z0-9]@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
       setErrors((prev) => ({
         ...prev,
         email: emailRegex.test(value) ? '' : 'Email không hợp lệ',
@@ -94,11 +94,11 @@ const Register = () => {
     if (success) {
       toast.success('Đăng ký thành công! Vui lòng xác minh email của bạn.');
       navigate('/verify-otp-email', { state: { email: formData.email } });
-      dispatch(clearStatus());
+      dispatch(clearStatus({}));
     }
     if (error) {
       // toast.error(error);
-      dispatch(clearStatus());
+      dispatch(clearStatus({}));
     }
   }, [success, error, navigate, dispatch]);
   const handleSubmit = (e: React.FormEvent) => {
@@ -174,7 +174,7 @@ const Register = () => {
           <InputComponent
             type="text"
             value={formData.username}
-            placeholder="Tên tài khoản"
+            placeholder="Tên người dùng"
             name="username"
             onChange={handleChange}
             ref={usernameRef}

@@ -7,16 +7,22 @@ import streamifier from 'streamifier';
 class CategoryService {
   async GetAllCategory(req: Request, res: Response): Promise<any> {
     try {
-      const { page = 1, limit = 10 } = req.query;
+      const { page = 1, limit = 10, type } = req.query;
 
       const pageNumber = parseInt(page as string, 10);
       const limitNumber = parseInt(limit as string, 10);
 
       const skip = (pageNumber - 1) * limitNumber;
 
-      const totalCategories = await Category.countDocuments();
+      const filter: any = {};
+      if (type) {
+        const typeList = typeof type === 'string' ? type.split(',') : [];
+        filter.Cate_type = { $in: typeList };
+      }
 
-      const categories = await Category.find().skip(skip).limit(limitNumber);
+      const totalCategories = await Category.countDocuments(filter);
+
+      const categories = await Category.find(filter).skip(skip).limit(limitNumber);
 
       if (categories.length === 0) {
         return res.status(404).json({ message: 'No categories found!' });
@@ -26,7 +32,7 @@ class CategoryService {
         categories.map(async (category) => {
           const foodCount = await Dish.countDocuments({
             categories: category._id,
-            status: { $ne: 'hidden' }, 
+            status: { $ne: 'hidden' },
             isDeleted: false,
           });
           return {
@@ -53,7 +59,7 @@ class CategoryService {
     const { Cate_name, Cate_slug, Cate_type, parentCate } = req.body;
     const type = Cate_type?.trim().toLowerCase();
 
-    if (!['dish', 'drink'].includes(type)) {
+    if (!['dish', 'drink', 'new'].includes(type)) {
       throw new Error('Cate_type không hợp lệ!');
     }
     const existingCategory = await Category.findOne({ Cate_name });
@@ -116,7 +122,7 @@ class CategoryService {
     const { Cate_name, Cate_slug, Cate_type, parentCate } = req.body;
 
     const type = Cate_type?.trim().toLowerCase();
-    if (!['dish', 'drink'].includes(type)) {
+    if (!['dish', 'drink', 'new'].includes(type)) {
       throw new Error('Cate_type không hợp lệ!');
     }
 
@@ -189,6 +195,22 @@ class CategoryService {
       return res.status(200).json({ message: 'Đã xoá danh mục thành công!' });
     } catch (error) {
       return res.status(500).json({ message: 'Lỗi khi xoá danh mục', error });
+    }
+  }
+
+  async GetAllNewCategory(req: Request, res: Response): Promise<any> {
+    try {
+      const categories = await Category.find({ Cate_type: 'new' });
+      if (categories.length === 0) {
+        return res.status(404).json({ message: 'No new categories found!' });
+      }
+      return res.status(200).json({
+        total: categories.length,
+        data: categories,
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: 'An error occurred', error });
     }
   }
 

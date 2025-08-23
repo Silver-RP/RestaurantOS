@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Request, Response, NextFunction } from 'express';
 import OrderService from '../services/OrderService';
-import { IUser } from '../models/UserModel';
+import { IUser } from '../types/user.type';
 import { Types } from 'mongoose';
 import OrderValidate from '../validators/orderValidator';
 import VoucherService from '../services/VoucherService';
+import MailerService from '../services/MailerService';
 
 class OrderController {
   async placeOrder(req: Request, res: Response): Promise<any> {
@@ -134,7 +135,7 @@ class OrderController {
         page, 
         limit,
         sortType,
-        searchTerm
+        searchTerm,
       );
 
       return res.status(200).json({
@@ -242,6 +243,27 @@ class OrderController {
     }
   }
 
+  async sendInvoiceEmail(req: Request, res: Response, next: NextFunction): Promise<any> {
+    try {
+      const { email } = req.body;
+      const orderId = new Types.ObjectId(req.params.id);
+      const order = await OrderService.getOrderById(orderId);
+
+      const targetEmail = email || order.user_id?.email;
+
+      await MailerService.sendInvoiceEmail(order, targetEmail);
+
+      return res.status(200).json({
+        message: 'Invoice email sent successfully',
+        email: targetEmail,
+      });
+    } catch (error: any) {
+      console.error('Error sending invoice email:', error.message);
+      return res
+        .status(error.statusCode || 500)
+        .json({ message: error.message || 'Internal Server Error' });
+    }
+  }
 }
 
 export default new OrderController();

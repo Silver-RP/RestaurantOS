@@ -18,19 +18,22 @@ const FavoriteItemCard: React.FC<Props> = ({ item, onRemove }) => {
   if (!dish) return null;
 
   return (
-    <div className="flex flex-row items-center gap-4 rounded-lg px-0 py-4 sm:p-4 shadow-2xl hover:shadow-[0_12px_32px_rgba(0,0,0,0.4)] transition duration-300 h-[200px]">
-      <div className="h-full w-28 sm:w-32 flex-shrink-0 rounded overflow-hidden">
+    <div className="flex flex-col h-auto w-full bg-headerBackground rounded-lg overflow-hidden shadow-2xl hover:shadow-[0_12px_32px_rgba(0,0,0,0.4)] transition duration-300">
+      <div className="w-full h-1/2 flex-shrink-0">
         <img
           src={dish.images?.[0] || '/fallback-image.jpg'}
           alt={dish.name}
-          onClick={()=> navigate(`/foods/${dish.slug}`)}
+          onClick={() => navigate(`/foods/${dish.slug}`)}
           className="h-full w-full object-cover cursor-pointer"
         />
       </div>
 
-      <div className="flex-1 text-white flex flex-col justify-between h-full overflow-hidden">
+      <div className="w-full h-1/2 text-white flex flex-col justify-between px-3 py-2">
         <div>
-          <h2 className="text-lg leading-tight line-clamp-2 h-[48px] cursor-pointer"  onClick={()=> navigate(`/foods/${dish.slug}`)}>
+          <h2
+            className="text-lg truncate whitespace-nowrap overflow-hidden cursor-pointer"
+            onClick={() => navigate(`/foods/${dish.slug}`)}
+          >
             {dish.name}
           </h2>
 

@@ -90,6 +90,7 @@ interface User {
 
 export interface Order {
   postPayment: {
+    paymentId?: string;
     redirectUrl?: string;
     bankingInfo?: {
       accountNumber: string;
@@ -113,7 +114,16 @@ export interface Order {
     createdAt: string;
     updatedAt: string;
     id: string;
-  } | null; // Cho phép null
+  } | null; 
+  addressSnapshot?: {
+    address_type: string;
+    full_name: string;
+    phone: string;
+    province: string;
+    district: string;
+    ward: string;
+    street_address: string;
+  } | null; 
   cashier_order_id: string | null;
   payment_method: string;
   delivery_type: string;
@@ -141,6 +151,7 @@ export interface Order {
   order_items?: OrderItem[] | undefined;
   __v: number;
   discount_amount?: number;
+  discount?: number;
   voucher_code?: string;
 }
 

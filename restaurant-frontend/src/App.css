@@ -158,3 +158,21 @@ input:-webkit-autofill:focus {
   word-break: break-all;
   overflow-wrap: break-word;
 }
+
+@font-face {
+  font-family: 'Restora';
+  src: url('/fonts/Restora/RestoraExtraLight-v2.woff2') format('woff2'),
+       url('/fonts/Restora/RestoraExtraLight-v2.woff') format('woff');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Restora';
+  src: url('/fonts/Restora/RestoraThinItalic-v2.woff2') format('woff2'),
+       url('/fonts/Restora/RestoraThinItalic-v2.woff') format('woff');
+  font-weight: 100;
+  font-style: italic;
+  font-display: swap;
+}

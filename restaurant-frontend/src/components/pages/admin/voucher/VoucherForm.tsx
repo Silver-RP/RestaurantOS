@@ -17,9 +17,10 @@ const discountTypes = [
   { value: 'fixed', label: 'Số tiền cố định' },
 ];
 
-const VoucherForm: React.FC<VoucherFormProps> = ({
+const VoucherForm: React.FC<VoucherFormProps & { onAddUsers?: (userIds: string[]) => void }> = ({
   initialData,
   onSubmit,
+  onAddUsers,
 }) => {
   const navigate = useNavigate();
   const [code, setCode] = useState(initialData?.code || '');
@@ -45,10 +46,10 @@ const VoucherForm: React.FC<VoucherFormProps> = ({
     initialData?.end_date ? new Date(initialData.end_date).toISOString().split('T')[0] : '',
   );
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [userOptions, setUserOptions] = useState<User[]>([]);
   const [addUsers, setAddUsers] = useState<string[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (type === 'private') {
@@ -60,13 +61,22 @@ const VoucherForm: React.FC<VoucherFormProps> = ({
   }, [type]);
 
   useEffect(() => {
+    if (type === 'gift') {
+      // Auto-set values for gift vouchers to ensure they're always active
+      setQuantity(999999); // Set to maximum quantity
+      setStartDate(''); // No start date restriction
+      setEndDate(''); // No end date restriction
+    }
+  }, [type]);
+
+  useEffect(() => {
     if (initialData && initialData.type === 'private' && Array.isArray(initialData.userIds)) {
       setSelectedUsers(initialData.userIds);
       setAddUsers([]);
     }
   }, [initialData]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!code && !initialData) {
@@ -85,36 +95,35 @@ const VoucherForm: React.FC<VoucherFormProps> = ({
       toast.error('Số lượng voucher phải là số dương!');
       return;
     }
+    
+    // Validation for different types
+    if (type === 'private') {
     const allUserIds = [...selectedUsers, ...addUsers];
-    if (type === 'private' && allUserIds.length === 0) {
+      if (allUserIds.length === 0) {
       toast.error('Vui lòng chọn user nhận voucher!');
       return;
     }
-    if (type === 'private' && typeof quantity === 'number' && allUserIds.length > quantity) {
+      if (typeof quantity === 'number' && allUserIds.length > quantity) {
       toast.error('Tổng số user nhận voucher không được vượt quá số lượng voucher!');
       return;
+      }
     }
 
     const dataToSend: Partial<Voucher> = {
       code,
-      description: description,
+      description: description || undefined,
       type,
       discount_type: discountType,
       discount_value: discountValue,
       max_discount_value: typeof maxDiscountValue === 'number' ? maxDiscountValue : undefined,
       min_order_value: typeof minOrderValue === 'number' ? minOrderValue : undefined,
-      quantity: quantity,
-      start_date: startDate || undefined,
-      end_date: endDate || undefined,
-      ...(type === 'private' ? { userIds: allUserIds } : {}),
+      quantity: type === 'gift' ? 999999 : quantity, // Always maximum for gift vouchers
+      start_date: type === 'gift' ? undefined : (startDate || undefined), // No date restriction for gift
+      end_date: type === 'gift' ? undefined : (endDate || undefined), // No date restriction for gift
+      ...(type === 'private' ? { userIds: [...selectedUsers, ...addUsers] } : {}),
     };
 
-    setIsSubmitting(true);
-    try {
-      await onSubmit(dataToSend);
-    } finally {
-      setIsSubmitting(false);
-    }
+    onSubmit(dataToSend);
   };
 
   // Tạo danh sách user chưa sở hữu voucher
@@ -158,16 +167,28 @@ const VoucherForm: React.FC<VoucherFormProps> = ({
             <div className="relative">
               <select
                 value={type}
-                onChange={(e) => setType(e.target.value as 'public' | 'private')}
+                onChange={(e) => setType(e.target.value as 'public' | 'private' | 'gift' | 'birthday')}
                 className="appearance-none border rounded px-4 py-2 w-full pr-10 text-sm"
                 required={!initialData}
-                disabled={!!initialData}
+                disabled={!!initialData} // Không cho sửa khi edit
               >
                 <option value="public">Công khai</option>
                 <option value="private">Riêng tư</option>
+                <option value="gift">Quà tặng (Gift)</option>
+                <option value="birthday">Sinh nhật</option>
               </select>
               <FaChevronDown className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 pointer-events-none" />
             </div>
+            {type === 'gift' && (
+              <div className="text-xs text-blue-600 mt-1">
+                Voucher này sẽ được tự động gán cho mốc chi tiêu hàng năm
+              </div>
+            )}
+            {type === 'birthday' && (
+              <div className="text-xs text-blue-600 mt-1">
+                Voucher này sẽ tự động tặng cho user vào ngày sinh nhật
+              </div>
+            )}
           </div>
 
           {type === 'private' && (
@@ -301,9 +322,17 @@ const VoucherForm: React.FC<VoucherFormProps> = ({
               type="number"
               value={quantity}
               onChange={(e) => setQuantity(Number(e.target.value))}
-              className="border rounded px-4 py-2 w-full"
+              className={`border rounded px-4 py-2 w-full ${type === 'gift' || type === 'birthday' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
               required
+              disabled={type === 'gift' || type === 'birthday'}
             />
+            {(type === 'gift' || type === 'birthday') && (
+              <div className={`text-xs mt-1 ${type === 'gift' ? 'text-blue-600' : 'text-blue-600'}`}>
+                {type === 'gift'
+                  ? 'Số lượng được tự động set tối đa để voucher gift luôn hoạt động'
+                  : 'Số lượng luôn được hệ thống kiểm soát cho voucher sinh nhật'}
+              </div>
+            )}
           </div>
 
           <div>
@@ -314,9 +343,17 @@ const VoucherForm: React.FC<VoucherFormProps> = ({
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="border rounded px-4 py-2 w-full"
+              className={`border rounded px-4 py-2 w-full ${type === 'gift' || type === 'birthday' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
               min={new Date().toISOString().split('T')[0]}
+              disabled={type === 'gift' || type === 'birthday'}
             />
+            {(type === 'gift' || type === 'birthday') && (
+              <div className={`text-xs mt-1 ${type === 'gift' ? 'text-blue-600' : 'text-blue-600'}`}>
+                {type === 'gift'
+                  ? 'Không có giới hạn ngày bắt đầu để voucher gift luôn hoạt động'
+                  : 'Ngày bắt đầu luôn được hệ thống kiểm soát cho voucher sinh nhật'}
+              </div>
+            )}
           </div>
 
           <div>
@@ -327,9 +364,17 @@ const VoucherForm: React.FC<VoucherFormProps> = ({
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="border rounded px-4 py-2 w-full"
+              className={`border rounded px-4 py-2 w-full ${type === 'gift' || type === 'birthday' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
               min={startDate || new Date().toISOString().split('T')[0]}
+              disabled={type === 'gift' || type === 'birthday'}
             />
+            {(type === 'gift' || type === 'birthday') && (
+              <div className={`text-xs mt-1 ${type === 'gift' ? 'text-blue-600' : 'text-blue-600'}`}>
+                {type === 'gift'
+                  ? 'Không có giới hạn ngày kết thúc để voucher gift luôn hoạt động'
+                  : 'Ngày kết thúc luôn được hệ thống kiểm soát cho voucher sinh nhật'}
+              </div>
+            )}
           </div>
         </div>
 
@@ -344,9 +389,8 @@ const VoucherForm: React.FC<VoucherFormProps> = ({
           <button
             type="submit"
             className="px-4 py-2 bg-adminprimary text-white rounded hover:bg-blue-700"
-            disabled={isSubmitting}
           >
-            {isSubmitting ? 'Đang lưu...' : (initialData ? 'Cập nhật Voucher' : 'Lưu Voucher')}
+            {initialData ? 'Cập nhật Voucher' : 'Lưu Voucher'}
           </button>
         </div>
       </form>
@@ -354,4 +398,4 @@ const VoucherForm: React.FC<VoucherFormProps> = ({
   );
 };
 
-export default VoucherForm; 
+export default VoucherForm;

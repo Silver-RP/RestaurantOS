@@ -1,29 +1,26 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface PostSidebarProps {
-  className?: string;  
+  className?: string;
+  onSearch?: (value: string) => void;
 }
 
 const PostSidebar: React.FC<PostSidebarProps> = ({ className }) => {
   const [showPosts, setShowPosts] = useState(false);
   const [showCategories, setShowCategories] = useState(false);
+  const navigate = useNavigate();
+
+  // Hàm chuyển hướng khi click vào thể loại
+  const handleCategoryClick = (tag: string) => {
+    navigate(`/posts/tag/${encodeURIComponent(tag)}`);
+  };
 
   return (
-    <aside className={`w-full space-y-6 text-white lg:space-y-10 ${className} 
-      lg:relative fixed top-0 left-0 bg-[#012B40] lg:bg-transparent z-50 lg:w-[220px] xl:w-[250px]`}>
-      {/* Tìm kiếm */}
-      <div>
-        <h3 className="text-xl font-semibold mb-2">Tìm kiếm blog</h3>
-        <input
-          type="text"
-          placeholder="Tìm Kiếm..."
-          className="lg:w-full md:w-1/2 lg:px-4 w-full py-2 bg-transparent border border-hr text-white placeholder-slate-500 focus:outline-none"
-        />
-      </div>
-      <hr className="border border-hr" />
+    <aside className={`w-full space-y-6 text-white lg:space-y-10 ${className}`}>
       {/* Bài viết */}
       <div>
-        <div 
+        <div
           className="flex justify-between items-center cursor-pointer"
           onClick={() => setShowPosts(!showPosts)}
         >
@@ -37,9 +34,10 @@ const PostSidebar: React.FC<PostSidebarProps> = ({ className }) => {
         </ul>
       </div>
       <hr className="border border-hr" />
+
       {/* Thể loại blog */}
       <div>
-        <div 
+        <div
           className="flex justify-between items-center cursor-pointer"
           onClick={() => setShowCategories(!showCategories)}
         >
@@ -47,9 +45,24 @@ const PostSidebar: React.FC<PostSidebarProps> = ({ className }) => {
           <span className="text-2xl lg:hidden">{showCategories ? '-' : '+'}</span>
         </div>
         <ul className={`${showCategories ? 'block' : 'hidden'} lg:block space-y-2`}>
-          <li className="hover:text-secondaryColor transition cursor-pointer">Món ăn ngon</li>
-          <li className="hover:text-secondaryColor transition cursor-pointer">Món ăn dinh dưỡng</li>
-          <li className="hover:text-secondaryColor transition cursor-pointer">Món ăn gia đình</li>
+          <li
+            className="hover:text-secondaryColor transition cursor-pointer"
+            onClick={() => handleCategoryClick('Đồ uống có cồn')}
+          >
+            Đồ uống có cồn
+          </li>
+          <li
+            className="hover:text-secondaryColor transition cursor-pointer"
+            onClick={() => handleCategoryClick('Ẩm thực & món ngon')}
+          >
+            Ẩm thực & món ngon
+          </li>
+          <li
+            className="hover:text-secondaryColor transition cursor-pointer"
+            onClick={() => handleCategoryClick('Món ăn gia đình')}
+          >
+            Món ăn gia đình
+          </li>
         </ul>
       </div>
     </aside>

@@ -12,11 +12,11 @@ interface ChangePasswordPayload {
 }
 
 export const useAuth = () => {
-  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, userInfo } = useSelector((state: RootState) => state.auth);
   
   return {
     isAuthenticated,
-    user
+    userInfo
   };
 };
 

@@ -8,7 +8,9 @@ import {
   useHandleChangePaymentMethod,
 } from '@/hooks/useOrder';
 import { Order, OrderItem } from '@/types/Order.type';
-import PaymentMethodSelector, { paymentMethods } from '../checkout/PaymentMethodSelector';
+import PaymentMethodSelector, {
+  paymentMethods,
+} from '../checkout/PaymentMethodSelector';
 import { FiDownload } from 'react-icons/fi';
 
 interface OrderDetailModalProps {
@@ -48,7 +50,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
   }, [data?.order]);
 
   const handleRetryPayment = () => {
-    retryPaymentMutate({ type: 'order', id: orderId }); 
+    retryPaymentMutate({ type: 'order', id: orderId });
   };
   const handleChangePaymentMethod = () => {
     setShowSelector(true);
@@ -57,7 +59,11 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
   const handleConfirmChangePaymentMethod = () => {
     if (!selectedMethod || selectedMethod === data?.order?.payment_method)
       return;
-    changePaymentMethodMutate({ objectId: orderId, paymentMethod: selectedMethod, objectType: 'order' });
+    changePaymentMethodMutate({
+      objectId: orderId,
+      paymentMethod: selectedMethod,
+      objectType: 'order',
+    });
   };
 
   useEffect(() => {
@@ -149,6 +155,11 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
     navigate(`/foods/${slug}`);
   };
 
+  const handleNavigateToDetails = (slug: string, review = false) => {
+    onClose();
+    navigate(`/foods/${slug}${review ? '?review=true' : ''}`);
+  };
+
   if (isLoading || retrying || changingMethod)
     return (
       <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-[120]">
@@ -173,13 +184,12 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
 
   const order = data.order;
   const formatPrice = (price: number) => price.toLocaleString('vi-VN') + ' VND';
-  const address =
-    typeof order?.address_id === 'object' && order?.address_id !== null
-      ? order?.address_id
-      : null;
+  console.log('Order Detail:', order);
+  const address = order.addressSnapshot ? order.addressSnapshot : null;
 
   const discountAmount = (order as any).discount_amount || 0;
-  const voucherCode = (order as any).voucher_code || (order as any).voucher_id?.code || '';
+  const voucherCode =
+    (order as any).voucher_code || (order as any).voucher_id?.code || '';
 
   return (
     <div
@@ -350,13 +360,15 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                   </div>
                 )}
                 {order.payment_status !== 'PAID' &&
-                  ['ORDER_PLACED', 'ORDER_CONFIRMED'].includes(order.status) && (
-                    
+                  ['ORDER_PLACED', 'ORDER_CONFIRMED'].includes(
+                    order.status,
+                  ) && (
                     <div className="pt-2">
                       {order.payment_method !== 'CASH' && (
                         <div className="bg-yellow-100 text-yellow-800 text-xs rounded-md px-3 py-2 mb-3 max-w-md text-justify leading-relaxed">
-                          Đơn hàng sẽ tự động <strong>hủy sau 30 phút</strong> nếu không được thanh toán thành công.
-                          Vui lòng hoàn tất thanh toán càng sớm càng tốt để tránh bị hủy.
+                          Đơn hàng sẽ tự động <strong>hủy sau 30 phút</strong>{' '}
+                          nếu không được thanh toán thành công. Vui lòng hoàn
+                          tất thanh toán càng sớm càng tốt để tránh bị hủy.
                         </div>
                       )}
                       {!showSelector ? (
@@ -555,10 +567,14 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                   >
                     <div className="flex-shrink-0 flex justify-center items-center">
                       <img
-                        src={item.dish_id?.images?.[0] || '/placeholder-image.jpg'}
+                        src={
+                          item.dish_id?.images?.[0] || '/placeholder-image.jpg'
+                        }
                         alt={item.dish_name}
                         className="w-24 h-24 md:w-28 md:h-28 object-cover rounded-lg border-2 border-secondaryColor bg-white/10 cursor-pointer hover:opacity-90 transition-opacity"
-                        onClick={() => handleNavigateToDetail(item.dish_id?.slug || '')}
+                        onClick={() =>
+                          handleNavigateToDetail(item.dish_id?.slug || '')
+                        }
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.src = '/placeholder-image.jpg';
@@ -567,9 +583,11 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                     </div>
                     <div className="flex-grow flex flex-col justify-between">
                       <div>
-                        <p 
+                        <p
                           className="font-bold text-lg text-secondaryColor mb-1 cursor-pointer hover:text-secondaryColor/80 transition-colors"
-                          onClick={() => handleNavigateToDetail(item.dish_id?.slug || '')}
+                          onClick={() =>
+                            handleNavigateToDetail(item.dish_id?.slug || '')
+                          }
                         >
                           {item.dish_name}
                         </p>
@@ -588,10 +606,25 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                               <span className="font-semibold">Số lượng:</span>{' '}
                               {item.quantity}
                             </p>
-                            <p>
-                              <span className="font-semibold">Tổng:</span>{' '}
-                              {formatPrice(item.total_amount)}
-                            </p>
+                            <div className="flex justify-between items-center">
+                              <p>
+                                <span className="font-semibold">Tổng:</span>{' '}
+                                {formatPrice(item.total_amount)}
+                              </p>
+                              {order.status === 'DELIVERED' && (
+                                <button
+                                  className="ml-64 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium px-4 py-1 rounded"
+                                  onClick={() =>
+                                    handleNavigateToDetails(
+                                      item.dish_id?.slug || '',
+                                      true,
+                                    )
+                                  }
+                                >
+                                  Đánh giá
+                                </button>
+                              )}
+                            </div>
                           </div>
                           <div className="space-y-1 md:text-right flex-1">
                             {item.note && (

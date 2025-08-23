@@ -1,44 +1,56 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState } from 'react';
-import { Category, CategoryResponse, CategoryCreatePayload  } from '../types/Category.type';
+import { useEffect, useState, useCallback } from 'react';
+import {
+  Category,
+  CategoryResponse,
+  CategoryCreatePayload,
+} from '../types/Category.type';
 import { AxiosError } from 'axios';
-import { deleteCategory, fetchAllCategories, fetchCategoryById, updateCategory } from '../api/CategoryApi';
+import {
+  deleteCategory,
+  fetchAllCategories,
+  fetchCategoryById,
+  updateCategory,
+  fetAllCategoryNew,
+} from '../api/CategoryApi';
 import { addCategory } from '@/api/CategoryApi';
 import { toast } from 'react-toastify';
 
-
-
-export const useCategories = () => {
+export const useCategories = (type?: string | string[]) => {
   const [categories, setCategories] = useState<CategoryResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadCategories = async () => {
+  const loadCategories = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await fetchAllCategories();
+      console.log('Loading categories with type:', type);
+      const data = await fetchAllCategories({
+        type: Array.isArray(type) ? type.join(',') : type,
+      });
+      console.log('Categories loaded:', data);
       setCategories(data);
     } catch (err) {
+      console.error('Error loading categories:', err);
       const axiosError = err as AxiosError<{ message: string }>;
       const message =
-        axiosError.response?.data?.message ||
-        'Đã xảy ra lỗi khi tải danh mục';
+        axiosError.response?.data?.message || 'Đã xảy ra lỗi khi tải danh mục';
       setError(message);
     } finally {
       setLoading(false);
     }
-  };
+  }, [type]);
 
- useEffect(() => {
-  loadCategories();
-}, [setCategories]); 
+  useEffect(() => {
+    loadCategories();
+  }, [loadCategories]);
 
   return {
     categories,
     loading,
     error,
-    refetch: loadCategories, 
-    setCategories
+    refetch: loadCategories,
+    setCategories,
   };
 };
 
@@ -54,7 +66,8 @@ export const useCategoryDetail = (id: string) => {
         setCategory(data);
       } catch (err) {
         const axiosError = err as AxiosError<{ message: string }>;
-        const message = axiosError.response?.data?.message || 'Không thể tải danh mục';
+        const message =
+          axiosError.response?.data?.message || 'Không thể tải danh mục';
         setError(message);
       } finally {
         setLoading(false);
@@ -74,14 +87,13 @@ export const useAddCategory = () => {
 
   const addNewCategory = async (
     data: CategoryCreatePayload,
-    onSuccess?: () => void
+    onSuccess?: () => void,
   ) => {
     setLoading(true);
     setError(null);
     setSuccessMessage(null);
 
     try {
-      
       const formData = new FormData();
       formData.append('Cate_name', data.Cate_name);
       formData.append('Cate_slug', data.Cate_slug);
@@ -92,7 +104,7 @@ export const useAddCategory = () => {
       }
 
       if (data.Cate_img) {
-          formData.append('Cate_img', data.Cate_img);
+        formData.append('Cate_img', data.Cate_img);
       }
 
       const res = await addCategory(formData);
@@ -102,7 +114,7 @@ export const useAddCategory = () => {
       const message =
         err?.response?.data?.message || 'Đã xảy ra lỗi khi thêm danh mục';
       setError(message);
-         toast.error(message); 
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -124,7 +136,7 @@ export const useUpdateCategory = () => {
   const updateExistingCategory = async (
     id: string,
     data: CategoryCreatePayload,
-    onSuccess?: () => void
+    onSuccess?: () => void,
   ) => {
     setLoading(true);
     setError(null);
@@ -169,7 +181,7 @@ export const useDeleteCategory = () => {
     options?: {
       onSuccess?: () => void;
       refetch?: () => void;
-    }
+    },
   ) => {
     setLoading(true);
     setError(null);
@@ -179,8 +191,8 @@ export const useDeleteCategory = () => {
       const res = await deleteCategory(id);
       setSuccessMessage(res.message);
 
-      if (options?.refetch) options.refetch(); 
-      if (options?.onSuccess) options.onSuccess(); 
+      if (options?.refetch) options.refetch();
+      if (options?.onSuccess) options.onSuccess();
     } catch (err: any) {
       const message = err?.response?.data?.message || 'Lỗi khi xoá danh mục';
       setError(message);
@@ -194,5 +206,38 @@ export const useDeleteCategory = () => {
     loading,
     error,
     successMessage,
+  };
+};
+
+export const useCategoriesNew = () => {
+  const [categories, setCategories] = useState<CategoryResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadCategories = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await fetAllCategoryNew();
+      setCategories(data);
+    } catch (err) {
+      const axiosError = err as AxiosError<{ message: string }>;
+      const message =
+        axiosError.response?.data?.message || 'Đã xảy ra lỗi khi tải danh mục';
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadCategories();
+  }, [loadCategories]);
+
+  return {
+    categories,
+    loading,
+    error,
+    refetch: loadCategories,
+    setCategories,
   };
 };

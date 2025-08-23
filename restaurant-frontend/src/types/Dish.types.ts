@@ -1,4 +1,4 @@
-import { Category } from "./Category.type";
+import { Category } from './Category.type';
 
 export interface FoodType {
   _id: string;
@@ -13,7 +13,6 @@ export interface FoodType {
 }
 
 export interface FoodDetail {
-
   _id: string;
   name: string;
   slug: string;
@@ -46,7 +45,6 @@ export interface FoodDetail {
   isDeleted: boolean;
   deletedAt: string | number | Date;
 }
-
 
 export interface FoodResponse {
   docs: FoodDetail[];

@@ -35,7 +35,7 @@ export const getStatusColor = (status: string) => {
         case 'ORDER_PLACED':
           return 'Đơn hàng mới';
         case 'ORDER_CONFIRMED':
-          return 'Đã xác nhận đơn hàng';
+          return 'Đã xác nhận';
         case 'PENDING_PICKUP':
           return 'Đơn hàng đang chuẩn bị';
         case 'IN_TRANSIT':
@@ -63,7 +63,7 @@ export const getStatusColor = (status: string) => {
       case 'ORDER_PLACED':
         return 'Đơn hàng mới';
       case 'ORDER_CONFIRMED':
-        return 'Đã xác nhận đơn hàng';
+        return 'Đã xác nhận';
       case 'PENDING_PICKUP':
         return 'Chờ nhận hàng';
       case 'PICKED_UP':

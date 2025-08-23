@@ -4,22 +4,27 @@ import {
   FaSpinner,
   FaPaperPlane,
   FaRegCommentDots,
-  FaListAlt
+  FaListAlt,
 } from 'react-icons/fa';
 import useComment from '../../../hooks/useComment';
 import CommentItem from './CommentItem';
 import ButtonComponents from '../../common/ButtonComponents';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../redux/store';
+import Cookies from 'js-cookie';
 
 interface CommentSectionProps {
   postId: string;
 }
+export const isAuthenticated = (): boolean => {
+  const userInfo = Cookies.get('userInfo');
+  return !!userInfo;
+};
 
 const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
   const [commentContent, setCommentContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { isAuthenticated, userInfo } = useSelector((state: RootState) => state.auth);
+  const { userInfo } = useSelector((state: RootState) => state.auth);
 
   const {
     comments,
@@ -34,7 +39,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
     deleteComment,
     handlePageChange,
     startEditing,
-    cancelEditing
+    cancelEditing,
   } = useComment({ postId });
 
   const handleSubmitComment = async (e: React.FormEvent) => {
@@ -62,19 +67,21 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
             </button>
           )}
 
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-            <button
-              key={pageNum}
-              onClick={() => handlePageChange(pageNum)}
-              className={`px-4 py-2 rounded-md transition-colors ${
-                pageNum === page
-                  ? 'bg-secondaryColor text-headerBackground font-bold'
-                  : 'bg-[#012B40] border border-secondaryColor text-white hover:bg-[#034a6a]'
-              }`}
-            >
-              {pageNum}
-            </button>
-          ))}
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+            (pageNum) => (
+              <button
+                key={pageNum}
+                onClick={() => handlePageChange(pageNum)}
+                className={`px-4 py-2 rounded-md transition-colors ${
+                  pageNum === page
+                    ? 'bg-secondaryColor text-headerBackground font-bold'
+                    : 'bg-[#012B40] border border-secondaryColor text-white hover:bg-[#034a6a]'
+                }`}
+              >
+                {pageNum}
+              </button>
+            ),
+          )}
 
           {page < totalPages && (
             <button
@@ -92,14 +99,10 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
   return (
     <div className="mt-12">
       <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3 pb-2 border-b border-secondaryColor">
-        <FaCommentAlt className="text-secondaryColor" /> Bình luận ({totalComments})
+        <FaCommentAlt className="text-secondaryColor" /> Bình luận
       </h3>
 
       <div className="mb-10 p-6 rounded-lg border border-[#034a6a]">
-        <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-          <FaRegCommentDots className="text-secondaryColor" /> Để lại bình luận của bạn
-        </h3>
-
         {!isAuthenticated ? (
           <div className="bg-yellow-100 text-yellow-800 text-sm px-6 py-4 rounded-lg mb-6">
             <p className="font-semibold">Bạn cần đăng nhập để bình luận.</p>
@@ -117,14 +120,14 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
                   />
                 ) : (
                   <div className="w-12 h-12 rounded-full bg-[#023e5a] flex items-center justify-center border-2 border-secondaryColor">
-                    <FaCommentAlt className="w-6 h-6 text-secondaryColor" />
+                    <FaRegCommentDots className="w-6 h-6 text-secondaryColor" />
                   </div>
                 )}
               </div>
 
               <div className="flex-grow">
                 <textarea
-                  placeholder="Nhập bình luận của bạn..."
+                  placeholder="Để lại bình luận của bạn..."
                   value={commentContent}
                   onChange={(e) => setCommentContent(e.target.value)}
                   className="w-full px-4 py-3 text-white rounded-lg border border-secondaryColor bg-transparent focus:outline-none focus:ring-2 focus:ring-secondaryColor"
@@ -140,7 +143,11 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
                     disabled={isSubmitting || loading}
                     className="flex items-center gap-2 rounded-full px-6"
                   >
-                    {isSubmitting ? <FaSpinner className="animate-spin" /> : <FaPaperPlane />}
+                    {isSubmitting ? (
+                      <FaSpinner className="animate-spin" />
+                    ) : (
+                      <FaPaperPlane />
+                    )}
                     Gửi bình luận
                   </ButtonComponents>
                 </div>
@@ -152,7 +159,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
 
       <div className="pt-6">
         <h3 className="text-xl font-semibold text-white mb-6 flex items-center gap-2 border-b border-[#034a6a] pb-2">
-          <FaListAlt className="text-secondaryColor" /> Danh sách bình luận
+          <FaListAlt className="text-secondaryColor" /> Danh sách bình luận ({totalComments})
         </h3>
 
         {loading && (
@@ -170,9 +177,10 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
         )}
 
         {!loading && comments.length === 0 ? (
-          <div className="bg-green-100 text-green-800 px-6 py-8 rounded-lg mb-6 text-center">
-            <p className="font-semibold text-lg">✓ Chưa có bình luận nào!</p>
-            <p className="mt-2">Hãy là người đầu tiên bình luận về bài viết này.</p>
+          <div className="text-white-800 opacity-50 rounded-lg">
+            <p className="mt-2">
+              Hãy là người đầu tiên bình luận về bài viết này.
+            </p>
           </div>
         ) : (
           <div className="space-y-6">

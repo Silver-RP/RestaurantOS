@@ -38,7 +38,7 @@ const OrderOnlineSection: React.FC = () => {
     })) || [];
 
   return (
-    <section className="bg-bodyBackground w-full text-white py-16">
+    <section className="bg-bodyBackground w-full text-white py-8 sm:py-16">
       <Container>
         <img
           src="/assets/images/home/IconOnline.svg"

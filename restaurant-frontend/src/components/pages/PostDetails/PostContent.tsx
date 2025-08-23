@@ -1,24 +1,18 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
-import {
-  FaShareAlt,
-  FaFacebookF,
-  FaTwitter,
-  FaUser,
-  FaHeart,
-} from 'react-icons/fa';
+import { FaShareAlt, FaFacebookF, FaTwitter, FaUser } from 'react-icons/fa';
 import { IoList } from 'react-icons/io5';
 import { MdOutlineAccessTime } from 'react-icons/md';
-import { AiOutlineLike, AiFillLike } from "react-icons/ai";
-import { PiEyesDuotone } from "react-icons/pi";
-import ButtonComponents from '../../../components/common/ButtonComponents';
+import { AiOutlineLike, AiFillLike } from 'react-icons/ai';
+import { PiEyesDuotone } from 'react-icons/pi';
 import { PostType } from '../../../types/PostType';
 import CommentSection from './CommentSection';
 import { usePostById } from '../../../hooks/usePosts';
-import { useAuth } from '../../../hooks/useAuth';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import ReportModal from '../../../components/common/modals/ReportModal';
 import PostReportApi from '../../../api/PostReportApi';
+import Cookies from 'js-cookie';
 
 interface PostContentProps {
   post: PostType;
@@ -31,11 +25,16 @@ const DEFAULT_TAGS = [
   'Món phụ và ăn kèm',
   'Nước uống',
   'Món tráng miệng',
-  'Đồ uống có cồn'
+  'Đồ uống có cồn',
 ];
 
+export const isAuthenticated = (): boolean => {
+  const userInfo = Cookies.get('userInfo');
+  return !!userInfo;
+};
+
 const PostContent: React.FC<PostContentProps> = ({ post }) => {
-  const { isAuthenticated } = useAuth();
+  // const { isAuthenticated } = useAuth();
   const { isLiked, likesCount, toggleLike } = usePostById(post._id);
   const navigate = useNavigate();
   const [showReportModal, setShowReportModal] = useState(false); // State for report modal
@@ -65,18 +64,23 @@ const PostContent: React.FC<PostContentProps> = ({ post }) => {
 
   const handleReportSubmit = async (reportContent: string) => {
     try {
-      await PostReportApi.createReport({ post_id: post._id, reason: reportContent });
+      await PostReportApi.createReport({
+        post_id: post._id,
+        reason: reportContent,
+      });
       toast.success('Báo cáo của bạn đã được gửi. Cảm ơn phản hồi của bạn!');
       setShowReportModal(false);
-    } catch (error: any) {
+    } catch {
       toast.error('Gửi báo cáo thất bại!');
     }
   };
 
   return (
-    <section className="bg-[#012B40] text-white lg:py-16 px-6">
-      <div className="max-w-full lg:max-w-4xl mx-auto px-4 sm:px-6">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-4 break-words">{post.title}</h1>
+    <section className="bg-[#012B40] text-white lg:py-16 lg:px-6">
+      <div className=" mx-auto sm:px-6">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-4 break-words">
+          {post.title}
+        </h1>
 
         {/* Chia sẻ */}
         <div className="flex gap-4 mt-6 flex-wrap justify-start">
@@ -85,7 +89,12 @@ const PostContent: React.FC<PostContentProps> = ({ post }) => {
           </button>
           <button
             className="bg-white text-black px-3 py-1.5 text-xs flex items-center gap-1"
-            onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank')}
+            onClick={() =>
+              window.open(
+                `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`,
+                '_blank',
+              )
+            }
           >
             <FaFacebookF /> Facebook
           </button>
@@ -99,7 +108,7 @@ const PostContent: React.FC<PostContentProps> = ({ post }) => {
           <span className="flex items-center gap-2">
             <FaUser /> Đăng bởi: <strong>{post.user_id.username}</strong>
           </span>
-      
+
           <span className="flex items-center gap-2">
             <MdOutlineAccessTime />
             Ngày:{' '}
@@ -111,21 +120,26 @@ const PostContent: React.FC<PostContentProps> = ({ post }) => {
             })}
           </span>
           <span className="flex items-center gap-2">
-          <PiEyesDuotone /> Lượt xem: {post.views || 0}
+            <PiEyesDuotone /> Lượt xem: {post.views || 0}
           </span>
-          
-          <button 
-  onClick={handleLikeClick}
-  className="flex items-center gap-2 hover:text-blue-400 transition-colors normal-case"
->
-  {isLiked ? <AiFillLike className="text-blue-400" /> : <AiOutlineLike />} Like: {likesCount}
-</button>
-<button
-  onClick={handleReportClick}
-  className="flex items-center gap-2 hover:text-blue-400 transition-colors normal-case"
->
+
+          <button
+            onClick={handleLikeClick}
+            className="flex items-center gap-2 hover:text-blue-400 transition-colors normal-case"
+          >
+            {isLiked ? (
+              <AiFillLike className="text-blue-400" />
+            ) : (
+              <AiOutlineLike />
+            )}{' '}
+            Like: {likesCount}
+          </button>
+          <button
+            onClick={handleReportClick}
+            className="flex items-center gap-2 hover:text-blue-400 transition-colors normal-case"
+          >
             <IoList /> Báo cáo {post.categories_id.Cate_name}
-</button>
+          </button>
         </div>
 
         {/* Hình ảnh */}
@@ -135,7 +149,7 @@ const PostContent: React.FC<PostContentProps> = ({ post }) => {
               <img
                 src={post.images[0]}
                 alt={post.title}
-                className="rounded-lg shadow-lg w-full h-auto max-w-[800px] object-cover"
+                className="rounded-lg shadow-lg w-full h-auto  object-cover"
               />
             </div>
           )}
@@ -154,7 +168,7 @@ const PostContent: React.FC<PostContentProps> = ({ post }) => {
         </div>
 
         {/* Nội dung */}
-        <div className="prose prose-sm sm:prose-lg prose-invert max-w-none mb-12 overflow-hidden break-words">
+        <div className="text-base sm:text-lg max-w-none mb-12 overflow-hidden break-words whitespace-pre-line">
           <div dangerouslySetInnerHTML={{ __html: post.content }} />
         </div>
 
@@ -170,50 +184,6 @@ const PostContent: React.FC<PostContentProps> = ({ post }) => {
               {tag}
             </button>
           ))}
-        </div>
-
-        {/* Danh mục liên quan */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-gray-300 pt-6 mb-10">
-          <div>
-            <h3 className="font-semibold text-white mb-2">Trong cùng danh mục</h3>
-            <ul className="space-y-1">
-              <li className="pb-2 border-b border-white/30 hover:text-[#FFDEA0]">
-                Giá trị tuyệt vời với phong cách đẳng cấp, hãy thử ngay hôm nay
-              </li>
-              <li className="pb-2 border-b border-white/30 hover:text-[#FFDEA0]">
-                Thưởng thức món ăn tại không gian đậm chất Á Đông
-              </li>
-              <li className="pb-2 border-b border-white/30 hover:text-[#FFDEA0]">
-                Ẩm thực tinh tế, phong phú và hấp dẫn
-              </li>
-              <li className="pb-2 border-b border-white/30 hover:text-[#FFDEA0]">
-                Khám phá món mới mỗi tuần với đầu bếp 5 sao
-              </li>
-              <li className="pb-2 border-b border-white/30 hover:text-[#FFDEA0]">
-                Không gian ấm cúng, món ăn giàu dinh dưỡng
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="font-semibold text-white mb-2">Liên quan theo thẻ</h3>
-            <ul className="space-y-1">
-              <li className="pb-2 border-b border-white/30 hover:text-[#FFDEA0]">
-                Không gian ấm cúng, món ăn giàu dinh dưỡng
-              </li>
-              <li className="pb-2 border-b border-white/30 hover:text-[#FFDEA0]">
-                Thưởng thức món ăn tại không gian đậm chất Á Đông
-              </li>
-              <li className="pb-2 border-b border-white/30 hover:text-[#FFDEA0]">
-                Hương vị độc đáo, phong cách ẩm thực hiện đại
-              </li>
-              <li className="pb-2 border-b border-white/30 hover:text-[#FFDEA0]">
-                Giá trị tuyệt vời với phong cách đẳng cấp, hãy thử ngay hôm nay
-              </li>
-              <li className="pb-2 border-b border-white/30 hover:text-[#FFDEA0]">
-                Ẩm thực tinh tế, phong phú và hấp dẫn
-              </li>
-            </ul>
-          </div>
         </div>
 
         {/* Phần bình luận */}

@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import InputComponent from '../login/InputComponents';
-import ButtonComponent from '../login/ButtonComponents';
+import InputComponent from '../Login/InputComponents';
+import ButtonComponent from '../Login/ButtonComponents';
 import { getReservationReservationcodeAndPhoneNumber } from '@/api/ReservationApi';
 import axios from 'axios';
 import { toast } from 'react-toastify';
@@ -46,15 +47,15 @@ const TrackingReservationForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  
+
     if (!isFormValid()) {
       setFormError('Vui lòng điền đầy đủ mã đặt bàn và số điện thoại.');
       return;
     }
-  
+
     setFormError('');
     setIsSubmitting(true);
-  
+
     try {
       const data = await getReservationReservationcodeAndPhoneNumber(
         formData.reservationCode.toLowerCase(),
@@ -62,9 +63,11 @@ const TrackingReservationForm = () => {
       );
 
       console.log('Reservation data:', data);
-  
+
       if (data.success === true && data.data) {
-        navigate(`/reservation/lookup-reservation?reservationCode=${formData.reservationCode}&phone=${formData.phoneNumber}`);
+        navigate(
+          `/reservation/lookup-reservation?reservationCode=${formData.reservationCode}&phone=${formData.phoneNumber}`,
+        );
       } else {
         setFormError('Không tìm thấy đơn đặt bàn nào với thông tin đã nhập.');
       }
@@ -82,10 +85,9 @@ const TrackingReservationForm = () => {
       setIsSubmitting(false);
     }
   };
-  
 
   return (
-    <div className="flex justify-center items-center bg-gradient-to-br from-[#012B40] via-[#014866] to-[#021D2A] w-full h-screen relative">
+    <div className="flex justify-center items-center bg-gradient-to-br from-[#012B40] via-[#014866] to-[#021D2A] w-full h-[calc(100vh_-_80px)] md:h-[calc(100vh_-_180px)] relative">
       <div className="px-10 py-8 text-center rounded-xl shadow-xl w-full sm:w-10/12 md:w-9/12 lg:w-8/12 xl:w-6/12 max-w-3xl border border-[#FFDEA0]/30 backdrop-blur-md bg-white/5">
         <h1 className="text-white font-bold text-3xl mb-6">
           Tra cứu đơn đặt bàn

@@ -4,42 +4,54 @@ import { Link, useNavigate } from 'react-router-dom';
 import ButtonComponents from '../../common/ButtonComponents';
 import NavExtend from './NavExtend';
 import { BsPersonCheck } from 'react-icons/bs';
-import Cookies from 'js-cookie';
+import { motion } from 'framer-motion';
+import { useGetCart } from '@/hooks/useCart';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from '@/redux/store';
+import { openSearchModal } from '../../../redux/feature/modal/searchModalSlice';
 
 interface MobileSidebarProps {
   toggleSidebar: () => void;
   isOpen: boolean;
 }
 
-const userInfo = Cookies.get('userInfo');
-const user = userInfo ? JSON.parse(userInfo) : null;
-
 const MobileSidebar: React.FC<MobileSidebarProps> = ({
   toggleSidebar,
   isOpen,
 }) => {
   const navigate = useNavigate();
-
   const handleNavigate = (path: string) => {
     navigate(path);
     toggleSidebar();
   };
+  const { data: cart } = useGetCart();
+  const countCart = cart?.items?.length || 0;
+  const user = useSelector((state: RootState) => state.auth.userInfo);
+  const favoriteCount = useSelector(
+    (state: RootState) => state.favorite.items.length,
+  );
+
+  const dispatch = useDispatch();
 
   return (
     <div className="fixed inset-0 z-50 flex">
       {/* Sidebar */}
-      <div
-        className={`w-72 h-full bg-headerBackground text-white transform transition-transform duration-500 ease-in-out ${
-          isOpen ? 'translate-x-0' : '-translate-x-72'
-        }`}
+      <motion.div
+        initial={{ x: -288 }}
+        animate={{ x: isOpen ? 0 : -288 }}
+        exit={{ x: -288 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        className="w-72 h-full bg-headerBackground text-white fixed left-0 top-0 z-50"
       >
         <div className="flex flex-col h-full relative">
           <div className="p-6">
-            <img
-              src="/assets/images/logo.png"
-              alt="Logo Beef Beef"
-              className="w-40 mx-auto"
-            />
+            <Link to="/">
+              <img
+                src="/assets/images/logo.png"
+                alt="Logo Beef Beef"
+                className="w-40 mx-auto"
+              />
+            </Link>
             <h1 className="text-center text-xl font-restora">Beef Beef</h1>
             <p className="text-center text-xs text-gray-400 font-restora">
               Restaurant & Bar
@@ -69,7 +81,7 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
                 >
                   <FiHeart className="hover:text-secondaryColor" />
                   <span className="absolute -top-1 -right-2 bg-secondaryColor text-black text-xs rounded-full px-1">
-                    0
+                    { favoriteCount > 0 ? favoriteCount : 0 }
                   </span>
                 </Link>
                 <Link
@@ -80,10 +92,14 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
                 >
                   <FiShoppingCart className="hover:text-secondaryColor" />
                   <span className="absolute -top-1 -right-2 bg-secondaryColor text-black text-xs rounded-full px-1">
-                    0
+                    { countCart > 0 ? countCart : 0 }
                   </span>
                 </Link>
-                <FiSearch className="hover:text-secondaryColor" />
+                <FiSearch
+                onClick={() => dispatch(openSearchModal())}
+                className="hover:text-secondaryColor"
+                aria-label="Search"
+              />
               </div>
 
               <ButtonComponents
@@ -97,14 +113,16 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Overlay */}
-      <div
+      <motion.div
         onClick={toggleSidebar}
-        className={`flex-1 bg-black transition-all duration-500 ${
-          isOpen ? 'opacity-50' : 'opacity-0 pointer-events-none'
-        }`}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: isOpen ? 0.5 : 0 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.3 }}
+        className={`flex-1 bg-black fixed inset-0 z-40 ${isOpen ? '' : 'pointer-events-none'}`}
       />
     </div>
   );

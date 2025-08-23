@@ -85,7 +85,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
 
   return (
     <div className="w-full">
-      <h2 className="text-2xl md:text-3xl font-restora mb-4 md:mb-6">{name}</h2>
+      <h2 className="text-2xl md:text-3xl font-restora mb-4 md:mb-2">{name}</h2>
 
       <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-4">
         {originalPrice === price ? (

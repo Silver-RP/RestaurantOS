@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import CommentPostService from '../services/CommentPostService';
-import { IUser } from '../models/UserModel';
+import { IUser } from '../types/user.type';
 
 class CommentPostController {
   /**

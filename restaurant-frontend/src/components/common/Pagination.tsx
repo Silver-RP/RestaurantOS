@@ -20,17 +20,21 @@ const Pagination: React.FC<PaginationProps> = ({
   showLimit = true,
 }) => {
   const getPageNumbers = () => {
-    const maxVisible = 8;
+    // Limit to 4 visible page numbers on mobile (<768px), else 8
+    let maxVisible = 8;
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      maxVisible = 4;
+    }
     const start = Math.max(currentPage - Math.floor(maxVisible / 2), 1);
     const end = Math.min(start + maxVisible - 1, totalPages);
     return Array.from({ length: end - start + 1 }, (_, i) => start + i);
   };
 
   return (
-    <div className="flex justify-between items-center flex-wrap gap-4 md:gap-6">
+    <div className="flex items-start gap-4 flex-row md:items-center md:justify-between md:gap-6">
       {showLimit !== false && (
         <div className="flex items-center mb-4 md:mb-0 relative">
-          <span className="text-white mr-2">Hiển thị</span>
+          {/* <span className="text-white mr-2">Hiển thị</span> */}
           <div className="relative">
             <select
               value={limit}
@@ -45,11 +49,11 @@ const Pagination: React.FC<PaginationProps> = ({
             </select>
             <FiChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 text-white pointer-events-none" />
           </div>
-          <span className="text-white ml-2">món ăn mỗi trang</span>
+          {/* <span className="text-white ml-2">món ăn mỗi trang</span> */}
         </div>
       )}
 
-      <nav className="flex items-center justify-center flex-wrap gap-4">
+      <nav className="flex items-center justify-center flex-wrap gap-2 sm:gap-3 md:gap-4 w-full overflow-x-auto pb-1">
         {currentPage > 1 && (
           <button
             onClick={() => onPageChange(currentPage - 1)}
@@ -64,7 +68,7 @@ const Pagination: React.FC<PaginationProps> = ({
           <button
             key={page}
             onClick={() => onPageChange(page)}
-            className={`w-10 h-10 flex items-center justify-center text-sm font-semibold transition ${
+            className={`shrink-0 h-6 w-6 sm:w-10 sm:h-10 flex items-center justify-center text-sm font-semibold transition ${
               page === currentPage
                 ? 'border-2 border-[#FFDEA0] rounded-full text-white'
                 : 'text-white hover:text-secondaryColor'
@@ -78,14 +82,14 @@ const Pagination: React.FC<PaginationProps> = ({
           <button
             onClick={() => onPageChange(currentPage + 1)}
             aria-label="Next page"
-            className="text-white hover:text-secondaryColor transition px-3 py-2 rounded-md"
+            className="text-white hover:text-secondaryColor transition px-2 py-1 sm:px-3 sm:py-2 rounded-md"
           >
             <FaChevronRight />
           </button>
         )}
       </nav>
 
-      <div className="text-white text-sm md:text-base">
+      <div className="text-white text-xs md:text-base mt-1 md:mt-0">
         <span>
           Trang&nbsp;
           <span className="text-secondaryColor font-semibold">

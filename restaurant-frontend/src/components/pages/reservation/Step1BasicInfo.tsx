@@ -20,10 +20,15 @@ const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({
   const [selectedTime, setSelectedTime] = useState(formData.time);
   const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
   const [submitted, setSubmitted] = useState(false);
-
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   useEffect(() => {
     setFormData((prev) => ({ ...prev, time: selectedTime }));
   }, [selectedTime]);
+  useEffect(() => {
+    setSelectedTime(formData.time);
+  }, [formData.time]);
   useEffect(() => {
     const generateTimeOptions = () => {
       const options: string[] = [];
@@ -31,10 +36,10 @@ const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({
       const selectedDate = new Date(formData.date);
       const isToday = selectedDate.toDateString() === now.toDateString();
       const minTime = isToday
-        ? new Date(now.getTime() + 3 * 60 * 60 * 1000)
+        ? new Date(now.getTime() + 30 * 60 * 1000)
         : new Date(selectedDate.setHours(0, 0, 0, 0));
 
-      for (let hour = 9; hour <= 21; hour++) {
+      for (let hour = 9; hour <= 20; hour++) {
         for (let min = 0; min < 60; min += 15) {
           const time = new Date(selectedDate);
           time.setHours(hour, min, 0, 0);
@@ -157,7 +162,7 @@ const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className="px-4 sm:px-[50px] py-6 rounded text-left space-y-6"
+      className="px-4 sm:px-[50px] py-0 sm:py-6 rounded text-left space-y-6"
     >
       <div className="grid sm:grid-cols-3 gap-4">
         <div className="flex flex-col gap-2">

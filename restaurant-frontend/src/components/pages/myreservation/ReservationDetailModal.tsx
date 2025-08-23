@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { getReservationByIdApi } from '@/api/ReservationApi';
 import { IReservationDetail } from '@/types/Reservation.type';
-import Modal from '../../common/ModalComponents';
+import GlobalModal from '../../common/GlobalModal';
+import { HiOutlineClipboardList } from 'react-icons/hi';
 
 interface Props {
   reservationId: string;
@@ -30,65 +31,125 @@ const ReservationDetailModal: React.FC<Props> = ({
   const formatPrice = (price: number) => price.toLocaleString('vi-VN') + ' đ';
 
   return (
-    <Modal isOpen={true} title="Chi tiết món đã chọn" onClose={onClose}>
-      <div className="text-white">
-        {loading ? (
-          <p className="text-center py-4">Đang tải...</p>
-        ) : (
-          <>
-            <section className="mb-2">
+    <GlobalModal>
+      <div className="relative bg-headerBackground border-2 border-secondaryColor rounded-2xl shadow-2xl w-full max-w-2xl p-0 overflow-hidden">
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center rounded-full bg-secondaryColor text-headerBackground text-2xl font-bold shadow cursor-pointer transition z-10 hover:bg-secondaryColor/90"
+          aria-label="Đóng"
+        >
+          ×
+        </button>
+
+        {/* Header */}
+        <div className="px-8 py-6 text-white font-serif text-center border-b border-secondaryColor/30">
+          <h2 className="text-3xl text-secondaryColor mb-2 font-serif tracking-wide">
+            Chi tiết món đã chọn
+          </h2>
+          <p className="text-white/80 text-sm">
+            Danh sách các món ăn đã đặt cho bàn này
+          </p>
+        </div>
+
+        {/* Content */}
+        <div className="px-8 py-6 max-h-[60vh] overflow-y-auto scrollbar-custom">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-secondaryColor mb-4"></div>
+              <p className="text-white/80 text-base font-medium">
+                Đang tải thông tin...
+              </p>
+            </div>
+          ) : (
+            <>
               {details.length === 0 ? (
-                <p className="text-center py-4 text-white/70">
-                  Không có món nào được chọn.
-                </p>
+                <div className="flex flex-col items-center justify-center py-12 text-white/60">
+                  <HiOutlineClipboardList className="text-4xl mb-4 text-secondaryColor" />
+                  <p className="text-center text-lg font-medium mb-2">
+                    Không có món nào được chọn
+                  </p>
+                  <p className="text-center text-sm text-white/50">
+                    Bạn có thể thêm món ăn khi đặt bàn
+                  </p>
+                </div>
               ) : (
-                <div className="space-y-5">
+                <div className="space-y-4">
                   {details.map((item, idx) => (
                     <div
                       key={idx}
-                      className="flex flex-col md:flex-row gap-4 p-4 rounded-xl bg-[#1a3952] border border-white/10 shadow"
+                      className="flex gap-4 p-4 rounded-xl bg-bodyBackground border border-white/10 shadow-sm hover:border-secondaryColor/50 transition-all duration-300 group"
                     >
-                      {/* Ảnh món ăn nếu có */}
+                      {/* Food Image */}
                       {item.image && (
-                        <div className="w-full md:w-[110px] h-[110px] shrink-0">
+                        <div className="w-20 h-20 shrink-0 overflow-hidden rounded-lg border border-white/10 bg-white/5">
                           <img
                             src={item.image}
                             alt={item.dish_name}
-                            className="object-cover w-full h-full rounded-md border border-white/10"
+                            className="object-cover w-full h-full rounded-lg group-hover:scale-105 transition-transform duration-300"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                            }}
                           />
                         </div>
                       )}
 
-                      <div className="flex-grow flex flex-col justify-between">
-                        <div className="flex justify-between items-start gap-4 mb-2">
-                          <div>
-                            <p className="font-bold text-lg text-secondaryColor">
+                      {/* Food Details */}
+                      <div className="flex-grow flex flex-col justify-between min-w-0">
+                        <div className="mb-3">
+                          <div className="flex justify-between items-start gap-3 mb-2">
+                            <h3 className="font-semibold text-lg text-white leading-tight line-clamp-2 group-hover:text-secondaryColor transition-colors">
                               {item.dish_name}
-                            </p>
-                            {item.category && (
-                              <p className="text-sm text-white/80 italic">
-                                {item.category}
-                              </p>
-                            )}
+                            </h3>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className="text-xs text-white/60 bg-white/10 px-2 py-1 rounded-full">
+                                SL: {item.quantity}
+                              </span>
+                            </div>
                           </div>
-                          <p className="text-sm text-white/70 min-w-[140px] text-right">
-                            <span className="font-semibold">Ghi chú:</span>{' '}
-                            {item.note || '—'}
-                          </p>
+
+                          {item.category && (
+                            <p className="text-sm text-white/60 italic mb-2">
+                              {item.category}
+                            </p>
+                          )}
+
+                          {item.note && (
+                            <div className="mb-2">
+                              <span className="text-xs text-secondaryColor font-semibold uppercase tracking-wide">
+                                Ghi chú:
+                              </span>
+                              <p className="text-sm text-white/80 mt-1 italic">
+                                {item.note}
+                              </p>
+                            </div>
+                          )}
                         </div>
 
-                        <div className="flex flex-col md:flex-row md:gap-6 text-white/90 text-sm">
-                          <div className="space-y-1 min-w-[100px]">
-                            <p>
-                              <span className="font-semibold">Số lượng:</span>{' '}
-                              {item.quantity}
-                            </p>
-                            <p>
-                              <span className="font-semibold">
-                                Giá mỗi món:
-                              </span>{' '}
-                              {formatPrice(item.unit_price)}
-                            </p>
+                        {/* Price and Quantity */}
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-4 text-sm">
+                            <div>
+                              <span className="text-white/60">Số lượng: </span>
+                              <span className="font-semibold text-white">
+                                {item.quantity}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-white/60">Đơn giá: </span>
+                              <span className="font-semibold text-secondaryColor">
+                                {formatPrice(item.unit_price)}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-xs text-white/60">
+                              Thành tiền
+                            </div>
+                            <div className="text-lg font-bold text-secondaryColor">
+                              {formatPrice(item.unit_price * item.quantity)}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -96,11 +157,36 @@ const ReservationDetailModal: React.FC<Props> = ({
                   ))}
                 </div>
               )}
-            </section>
-          </>
+            </>
+          )}
+        </div>
+
+        {/* Footer */}
+        {details.length > 0 && (
+          <div className="px-8 py-4 border-t border-secondaryColor/30 bg-bodyBackground/50">
+            <div className="flex justify-between items-center">
+              <div className="text-white/80">
+                <span className="text-sm">Tổng cộng: </span>
+                <span className="text-lg font-bold text-secondaryColor">
+                  {details.length} món
+                </span>
+              </div>
+              <div className="text-right">
+                <div className="text-xs text-white/60">Tổng giá trị</div>
+                <div className="text-xl font-bold text-secondaryColor">
+                  {formatPrice(
+                    details.reduce(
+                      (total, item) => total + item.unit_price * item.quantity,
+                      0,
+                    ),
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
         )}
       </div>
-    </Modal>
+    </GlobalModal>
   );
 };
 

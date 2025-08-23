@@ -4,7 +4,7 @@ import ImageUploadPreview from '../ImageUploadPreview';
 import '@toast-ui/editor/dist/toastui-editor.css';
 import { Editor as ToastEditor } from '@toast-ui/react-editor';
 import PostPreviewModal from './PostPreviewModal';
-import { PostType } from '../../../types/PostType';
+import { PostType } from '@/types/PostType';
 
 interface PostFormProps {
   initialData?: {
@@ -44,9 +44,10 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
   const [status, setStatus] = useState(initialData?.status || 'draft');
   const [images, setImages] = useState<(File | string)[]>(initialData?.images || []);
   const [selectedTags, setSelectedTags] = useState<string[]>(initialData?.tags || []);
-  const [scheduledAt, setScheduledAt] = useState<string>(initialData?.scheduledAt || '');
+  const [scheduledAt, setScheduledAt] = useState(initialData?.scheduledAt || '');
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [previewPost, setPreviewPost] = useState<any>(null);
+  const [tagInput, setTagInput] = useState('');
 
   const onUploadImage = async (blob: Blob | File, callback: (url: string, altText: string) => void) => {
     try {
@@ -92,11 +93,33 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
     setSelectedTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
   };
 
+  const handleTagInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTagInput(e.target.value);
+  };
+
+  const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === ',' || e.key === 'Enter') {
+      e.preventDefault();
+      const tags = tagInput.split(',').map(t => t.trim()).filter(Boolean);
+      setSelectedTags(prev => Array.from(new Set([...prev, ...tags])));
+      setTagInput('');
+    }
+  };
+
+  const handleRemoveTag = (tag: string) => {
+    setSelectedTags(prev => prev.filter(t => t !== tag));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (selectedTags.length === 0) {
-      alert('Vui lòng chọn ít nhất một thẻ (tag) cho bài viết!');
+    // Gom tagInput vào mảng tạm thời, không dùng setState ở đây
+    let tagsToSubmit = selectedTags;
+    if (tagInput.trim()) {
+      const tags = tagInput.split(',').map(t => t.trim()).filter(Boolean);
+      tagsToSubmit = Array.from(new Set([...selectedTags, ...tags]));
+    }
+    if (tagsToSubmit.length === 0) {
+      alert('Vui lòng nhập ít nhất một thẻ (tag) cho bài viết!');
       return;
     }
 
@@ -106,7 +129,7 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
     formData.append('categories_id', category);
     formData.append('desc', desc);
     formData.append('status', status);
-    formData.append('tags', JSON.stringify(selectedTags));
+    formData.append('tags', tagsToSubmit.join(','));
     if (scheduledAt) {
       formData.append('scheduledAt', scheduledAt);
     }
@@ -144,7 +167,7 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <form onSubmit={handleSubmit} className="max-w-6xl mx-auto space-y-8">
+      <form onSubmit={handleSubmit} className=" space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Left Column */}
           <div className="md:col-span-2 space-y-6">
@@ -154,8 +177,9 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                className="w-full h-[40px] p-3 border border-gray-300 rounded shadow-sm focus:ring-blue-500 focus:border-blue-500"
                 required
+                placeholder='Nhập tiêu đề'
               />
             </div>
 
@@ -164,9 +188,10 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
               <textarea
                 value={desc}
                 onChange={(e) => setDesc(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                rows={4}
+                className="w-full p-3 border border-gray-300 rounded shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                rows={3}
                 required
+                placeholder='Nhâp mô tả'
               />
               <p className="mt-1 text-sm text-gray-500">Mô tả ngắn gọn về nội dung bài viết (tối đa 200 ký tự)</p>
             </div>
@@ -205,8 +230,8 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
                   title="Xem trước bài viết"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-indigo-600" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 4.5C7.305 4.5 3.302 7.918 2 12c1.302 4.082 5.305 7.5 10 7.5s8.698-3.418 10-7.5c-1.302-4.082-5.305-7.5-10-7.5zm0 12a4.5 4.5 0 110-9 4.5 4.5 0 010 9z"/>
-                    <circle cx="12" cy="12" r="2.5"/>
+                    <path d="M12 4.5C7.305 4.5 3.302 7.918 2 12c1.302 4.082 5.305 7.5 10 7.5s8.698-3.418 10-7.5c-1.302-4.082-5.305-7.5-10-7.5zm0 12a4.5 4.5 0 110-9 4.5 4.5 0 010 9z" />
+                    <circle cx="12" cy="12" r="2.5" />
                   </svg>
                 </button>
               </div>
@@ -217,7 +242,7 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-2 border border-gray-300 rounded shadow-sm focus:ring-blue-500 focus:border-blue-500"
                     required
                   >
                     <option value="">-- Chọn danh mục --</option>
@@ -232,44 +257,52 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
                   <select
                     value={status}
                     onChange={(e) => setStatus(e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-2 border border-gray-300 rounded shadow-sm focus:ring-blue-500 focus:border-blue-500"
                     required
                   >
-                    <option value="published">Đã đăng</option>
+                    <option value="published">Xuất bản</option>
                     <option value="draft">Nháp</option>
+                    <option value="pending">Lên lịch đăng bài</option>
                   </select>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Lịch đăng bài (tùy chọn)</label>
-                  <input
-                    type="datetime-local"
-                    value={scheduledAt}
-                    onChange={(e) => setScheduledAt(e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
+                {status === 'pending' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Thời gian xuất bản</label>
+                    <input
+                      type="datetime-local"
+                      value={scheduledAt}
+                      onChange={(e) => {
+                        setScheduledAt(e.target.value);
+                        if (e.target.value) setStatus('pending');
+                      }}
+                      className="w-full p-2 border border-gray-300 rounded shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                )}
 
+                {/* Thẻ bài viết (Tag) */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Thẻ bài viết (Tag) <span className="text-red-500">*</span></label>
-                  <div className="flex flex-wrap gap-2">
-                    {TAG_OPTIONS.map((tag) => (
-                      <label key={tag} className="flex items-center gap-1 text-sm bg-gray-100 px-2 py-1 rounded cursor-pointer">
-                        <input
-                          type="checkbox"
-                          value={tag}
-                          checked={selectedTags.includes(tag)}
-                          onChange={() => handleTagChange(tag)}
-                          className="accent-blue-500"
-                        />
+                  <input
+                    type="text"
+                    value={tagInput}
+                    onChange={handleTagInputChange}
+                    onKeyDown={handleTagInputKeyDown}
+                    placeholder="Nhập tag, ngăn cách bằng dấu phẩy (,)"
+                    className="w-full p-2 border border-gray-300 rounded shadow-sm focus:ring-gray-500 focus:border-blue-500"
+                  />
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {selectedTags.map((tag) => (
+                      <span key={tag} className="bg-blue-100 text-blue-700 px-2 py-1 rounded flex items-center gap-1">
                         {tag}
-                      </label>
+                        <button type="button" onClick={() => handleRemoveTag(tag)} className="ml-1 text-red-500">×</button>
+                      </span>
                     ))}
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Hình ảnh <span className="text-red-500">*</span></label>
                   <ImageUploadPreview images={images} onChange={handleImageChange} onRemove={handleRemoveImage} />
                 </div>
               </div>
@@ -287,9 +320,8 @@ const PostForm = ({ initialData, onSubmit, categories, isSubmitting = false }: P
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`px-4 py-2 rounded-md text-sm text-white ${
-                  isSubmitting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
-                }`}
+                className={`px-4 py-2 rounded-md text-sm text-white ${isSubmitting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+                  }`}
               >
                 {isSubmitting ? 'Đang xử lý...' : initialData ? 'Cập nhật' : 'Thêm bài viết'}
               </button>

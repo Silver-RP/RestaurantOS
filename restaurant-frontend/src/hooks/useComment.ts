@@ -53,11 +53,7 @@ const useComment = ({
       const response = await CommentApi.createComment(postId, content);
       
       if (response.success) {
-        toast.success('Bình luận của bạn đã được đăng thành công!', {
-          position: 'top-right',
-          autoClose: 3000
-        });
-        await fetchComments(); // Refresh comments after adding
+        await fetchComments(); 
       } else {
         toast.error('Không thể thêm bình luận');
       }
@@ -76,12 +72,8 @@ const useComment = ({
       const response = await CommentApi.updateComment(commentId, content);
       
       if (response.success) {
-        toast.success('Bình luận đã được cập nhật thành công!', {
-          position: 'top-right',
-          autoClose: 3000
-        });
         setEditingComment(null);
-        await fetchComments(); // Refresh comments after updating
+        await fetchComments(); 
       } else {
         toast.error('Không thể cập nhật bình luận');
       }
@@ -100,11 +92,7 @@ const useComment = ({
       const response = await CommentApi.deleteComment(commentId);
       
       if (response.success) {
-        toast.success('Bình luận đã được xóa thành công!', {
-          position: 'top-right',
-          autoClose: 3000
-        });
-        await fetchComments(); // Refresh comments after deleting
+        await fetchComments(); 
       } else {
         toast.error('Không thể xóa bình luận');
       }

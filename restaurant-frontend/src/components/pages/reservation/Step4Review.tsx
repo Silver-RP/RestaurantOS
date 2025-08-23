@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ReservationFormData } from '@/types/Reservation.type';
 import ButtonComponents from '@/components/common/ButtonComponents';
 import { toast } from 'react-toastify';
@@ -62,9 +62,11 @@ const Step4Review: React.FC<Step4ReviewProps> = ({
     (total, item) => total + item.price * item.quantity,
     0,
   );
-
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   return (
-    <div className="bg-bodyBackground text-white py-8 px-4 flex items-center justify-center min-h-screen">
+    <div className="bg-bodyBackground text-white py-0 sm:py-8 px-4 flex items-center justify-center min-h-screen">
       <div className="max-w-4xl w-full mx-auto">
         {/* Header với animation */}
         <motion.div
@@ -73,10 +75,10 @@ const Step4Review: React.FC<Step4ReviewProps> = ({
           transition={{ duration: 0.6 }}
           className="text-center mb-8"
         >
-          <h1 className="text-4xl mb-4 text-secondaryColor uppercase tracking-widest font-restora font-bold drop-shadow-lg">
-            Xác nhận thông tin đặt bàn
+          <h1 className="text-2xl sm:text-4xl mb-4 text-secondaryColor uppercase tracking-widest font-restora font-bold drop-shadow-lg">
+            Xác nhận thông tin
           </h1>
-          <p className="text-gray-300 text-lg w-full mx-auto">
+          <p className="text-base sm:text-lg text-gray-300 w-full mx-auto">
             Vui lòng kiểm tra lại thông tin đặt bàn trước khi tiếp tục. Đảm bảo
             mọi thông tin đều chính xác.
           </p>
@@ -89,45 +91,45 @@ const Step4Review: React.FC<Step4ReviewProps> = ({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <div className="bg-headerBackground/90 border border-secondaryColor/30 rounded-lg p-6 shadow-lg">
-              <h2 className="text-xl font-bold text-secondaryColor mb-6 flex items-center gap-2">
-                <MdPerson className="text-2xl" />
+            <div className="bg-headerBackground/90 border border-secondaryColor/30 rounded-lg p-4 sm:p-6 shadow-lg">
+              <h2 className="text-lg sm:text-xl font-bold text-secondaryColor mb-6 flex items-center gap-2">
+                <MdPerson className="text-xl sm:text-2xl" />
                 Thông tin đặt bàn
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="p-3 bg-bodyBackground/50 rounded-lg text-center">
                   <div className="flex items-center justify-center gap-2 mb-1">
-                    <MdPerson className="text-secondaryColor text-xl" />
-                    <span className="text-sm text-gray-400 font-medium">
+                    <MdPerson className="text-secondaryColor text-xl sm:text-2xl" />
+                    <span className="text-xs sm:text-sm text-gray-400 font-medium">
                       Tên khách hàng
                     </span>
                   </div>
-                  <div className="font-semibold text-white text-base">
+                  <div className="font-semibold text-white text-sm sm:text-base">
                     {formData.full_name}
                   </div>
                 </div>
 
                 <div className="p-3 bg-bodyBackground/50 rounded-lg text-center">
                   <div className="flex items-center justify-center gap-2 mb-1">
-                    <MdPhone className="text-secondaryColor text-xl" />
-                    <span className="text-sm text-gray-400 font-medium">
+                    <MdPhone className="text-secondaryColor text-xl sm:text-2xl" />
+                    <span className="text-xs sm:text-sm text-gray-400 font-medium">
                       Số điện thoại
                     </span>
                   </div>
-                  <div className="font-semibold text-white text-base">
+                  <div className="font-semibold text-white text-sm sm:text-base">
                     {formData.phone}
                   </div>
                 </div>
 
                 <div className="p-3 bg-bodyBackground/50 rounded-lg text-center">
                   <div className="flex items-center justify-center gap-2 mb-1">
-                    <MdEmail className="text-secondaryColor text-xl" />
-                    <span className="text-sm text-gray-400 font-medium">
+                    <MdEmail className="text-secondaryColor text-xl sm:text-2xl" />
+                    <span className="text-xs sm:text-sm text-gray-400 font-medium">
                       Email
                     </span>
                   </div>
-                  <div className="font-semibold text-white text-base">
+                  <div className="font-semibold text-white text-sm sm:text-base">
                     {formData.email}
                   </div>
                 </div>
@@ -135,36 +137,36 @@ const Step4Review: React.FC<Step4ReviewProps> = ({
                 {/* Gộp ngày và giờ đặt bàn */}
                 <div className="p-3 bg-bodyBackground/50 rounded-lg text-center">
                   <div className="flex items-center justify-center gap-2 mb-1">
-                    <MdCalendarToday className="text-secondaryColor text-xl" />
-                    <span className="text-sm text-gray-400 font-medium">
+                    <MdCalendarToday className="text-secondaryColor text-xl sm:text-2xl" />
+                    <span className="text-xs sm:text-sm text-gray-400 font-medium">
                       Ngày & Giờ đặt bàn
                     </span>
                   </div>
-                  <div className="font-semibold text-white text-base">
+                  <div className="font-semibold text-white text-sm sm:text-base">
                     {formData.date} - {formData.time}
                   </div>
                 </div>
 
                 <div className="p-3 bg-bodyBackground/50 rounded-lg text-center">
                   <div className="flex items-center justify-center gap-2 mb-1">
-                    <FaUsers className="text-secondaryColor text-xl" />
-                    <span className="text-sm text-gray-400 font-medium">
+                    <FaUsers className="text-secondaryColor text-xl sm:text-2xl" />
+                    <span className="text-xs sm:text-sm text-gray-400 font-medium">
                       Số người
                     </span>
                   </div>
-                  <div className="font-semibold text-white text-base">
+                  <div className="font-semibold text-white text-sm sm:text-base">
                     {formData.number_of_people} người
                   </div>
                 </div>
 
                 <div className="p-3 bg-bodyBackground/50 rounded-lg text-center">
                   <div className="flex items-center justify-center gap-2 mb-1">
-                    <MdChair className="text-secondaryColor text-xl" />
-                    <span className="text-sm text-gray-400 font-medium">
+                    <MdChair className="text-secondaryColor text-xl sm:text-2xl" />
+                    <span className="text-xs sm:text-sm text-gray-400 font-medium">
                       Loại bàn
                     </span>
                   </div>
-                  <div className="font-semibold text-white text-base">
+                  <div className="font-semibold text-white text-sm sm:text-base">
                     {getTableTypeDisplayName(formData.tableCategory)}
                   </div>
                 </div>
@@ -173,11 +175,11 @@ const Step4Review: React.FC<Step4ReviewProps> = ({
                   <div className="md:col-span-2 lg:col-span-3 p-3 bg-bodyBackground/50 rounded-lg text-center">
                     <div className="flex items-center justify-center gap-2 mb-1">
                       {/* You can use an icon for note if you want, e.g. MdNote */}
-                      <span className="text-sm text-gray-400 font-medium">
+                      <span className="text-xs sm:text-sm text-gray-400 font-medium">
                         Ghi chú
                       </span>
                     </div>
-                    <div className="font-semibold text-white text-base">
+                    <div className="font-semibold text-white text-sm sm:text-base">
                       {formData.note}
                     </div>
                   </div>
@@ -192,15 +194,15 @@ const Step4Review: React.FC<Step4ReviewProps> = ({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            <div className="bg-headerBackground/80 border border-secondaryColor/30 rounded-lg p-6">
-              <h3 className="text-xl font-bold text-secondaryColor mb-6 flex items-center gap-2">
-                <GiKnifeFork className="text-2xl" />
+            <div className="bg-headerBackground/80 border border-secondaryColor/30 rounded-lg p-4 sm:p-6">
+              <h3 className="text-lg sm:text-xl font-bold text-secondaryColor mb-6 flex items-center gap-2">
+                <GiKnifeFork className="text-xl sm:text-2xl" />
                 Món ăn đã chọn ({formData.selectedItems.length} món)
               </h3>
 
               {formData.selectedItems.length > 0 ? (
                 <>
-                  <div className="space-y-3 max-h-64 overflow-y-auto">
+                  <div className="space-y-3 max-h-48 sm:max-h-64 overflow-y-auto">
                     {formData.selectedItems.map((item, index) => (
                       <motion.div
                         key={index}
@@ -216,19 +218,19 @@ const Step4Review: React.FC<Step4ReviewProps> = ({
                             className="w-12 h-12 rounded-lg object-cover"
                           />
                           <div>
-                            <p className="font-semibold text-white">
+                            <p className="font-semibold text-white text-sm sm:text-base">
                               {item.name}
                             </p>
-                            <p className="text-sm text-gray-400">
+                            <p className="text-xs sm:text-sm text-gray-400">
                               {item.category}
                             </p>
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-secondaryColor font-semibold">
+                          <p className="text-secondaryColor font-semibold text-sm sm:text-base">
                             {fCurrency(item.price * item.quantity)}
                           </p>
-                          <p className="text-sm text-gray-400">
+                          <p className="text-xs sm:text-sm text-gray-400">
                             {fCurrency(item.price)} x {item.quantity}
                           </p>
                         </div>
@@ -236,10 +238,10 @@ const Step4Review: React.FC<Step4ReviewProps> = ({
                     ))}
                   </div>
                   <div className="mt-6 pt-6 border-t border-secondaryColor/20 flex justify-between items-center">
-                    <span className="text-gray-300 text-lg">
+                    <span className="text-gray-300 text-base sm:text-lg">
                       Tổng giá trị món ăn:
                     </span>
-                    <span className="text-2xl font-bold text-secondaryColor">
+                    <span className="text-xl sm:text-2xl font-bold text-secondaryColor">
                       {fCurrency(selectedFoodTotal)}
                     </span>
                   </div>
@@ -247,8 +249,10 @@ const Step4Review: React.FC<Step4ReviewProps> = ({
               ) : (
                 <div className="text-center py-8">
                   <GiKnifeFork className="text-6xl text-gray-500 mx-auto mb-4" />
-                  <p className="text-gray-400 text-lg">Chưa chọn món ăn nào</p>
-                  <p className="text-gray-500 text-sm">
+                  <p className="text-gray-400 text-base sm:text-lg">
+                    Chưa chọn món ăn nào
+                  </p>
+                  <p className="text-gray-500 text-xs sm:text-sm">
                     Bạn có thể chọn món ăn sau khi đặt bàn
                   </p>
                 </div>
@@ -262,18 +266,18 @@ const Step4Review: React.FC<Step4ReviewProps> = ({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6 }}
           >
-            <div className="bg-gradient-to-br from-headerBackground/90 to-headerBackground/70 border-2 border-secondaryColor shadow-2xl rounded-xl p-8 text-center relative overflow-hidden">
+            <div className="bg-gradient-to-br from-headerBackground/90 to-headerBackground/70 border-2 border-secondaryColor shadow-2xl rounded-xl p-4 sm:p-8 text-center relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-secondaryColor/10 rounded-full -translate-y-16 translate-x-16"></div>
               <div className="absolute bottom-0 left-0 w-24 h-24 bg-secondaryColor/5 rounded-full translate-y-12 -translate-x-12"></div>
 
               <div className="relative z-10">
-                <p className="text-lg text-gray-300 mb-3 font-medium tracking-wide">
+                <p className="text-base sm:text-lg text-gray-300 mb-3 font-medium tracking-wide">
                   Xác nhận thông tin đặt bàn
                 </p>
-                <div className="text-2xl font-bold text-secondaryColor mb-3 drop-shadow-lg">
+                <div className="text-xl sm:text-2xl font-bold text-secondaryColor mb-3 drop-shadow-lg">
                   Mọi thông tin đã chính xác?
                 </div>
-                <p className="text-sm text-gray-400 text-center max-w-md mx-auto">
+                <p className="text-xs sm:text-sm text-gray-400 text-center max-w-md mx-auto">
                   Sau khi xác nhận, bạn sẽ được chuyển đến bước thanh toán đặt
                   cọc để hoàn tất việc đặt bàn.
                 </p>
@@ -293,7 +297,7 @@ const Step4Review: React.FC<Step4ReviewProps> = ({
                 variant="outline"
                 size="small"
                 onClick={onBack}
-                className="px-8 py-3 text-base border-2 border-secondaryColor font-semibold hover:bg-secondaryColor/10 hover:text-secondaryColor transition-all duration-200 min-w-[160px]"
+                className="px-4 sm:px-8 py-2 sm:py-3 text-sm sm:text-base border-2 border-secondaryColor font-semibold hover:bg-secondaryColor/10 hover:text-secondaryColor transition-all duration-200 min-w-[160px]"
                 disabled={isSubmitting}
               >
                 Quay lại
@@ -306,7 +310,7 @@ const Step4Review: React.FC<Step4ReviewProps> = ({
                 size="small"
                 onClick={handleConfirmReservation}
                 disabled={isSubmitting}
-                className="px-8 py-3 text-base font-bold shadow-lg hover:shadow-xl transition-all duration-200 min-w-[180px] flex items-center justify-center gap-2 bg-gradient-to-r from-secondaryColor to-secondaryColor/90"
+                className="px-4 sm:px-8 py-2 sm:py-3 text-sm sm:text-base font-bold shadow-lg hover:shadow-xl transition-all duration-200 min-w-[180px] flex items-center justify-center gap-2 bg-gradient-to-r from-secondaryColor to-secondaryColor/90"
               >
                 {isSubmitting && (
                   <svg

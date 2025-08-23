@@ -1,17 +1,16 @@
+
 import React, { useEffect, useState } from 'react';
 import ProductInfoSection from '@components/pages/checkout/ProductInfoSection';
 import ShippingAddressSection from '@components/pages/checkout/ShippingAddressSection';
-import { Address } from '@components/pages/checkout/ModalSelectAddress';
+import { Address } from '@/types/Address.type';
 import { DeliveryTime } from '@components/pages/checkout/ModalSelectDeliveryTime';
 import { useGetCart } from '@hooks/useCart';
 import { useNavigate } from 'react-router-dom';
 import { useUserAddresses } from '@/hooks/useAddress';
 import { toast } from 'react-toastify';
-import BreadCrumbComponents from '../components/common/BreadCrumbComponents';
 import { useUserVouchers } from '@/hooks/useVouchers';
 import { UserVoucherDisplay } from '@/types/Voucher.type';
-import { getAccountInfo } from '@/api/LoyaltyApi';
-
+import { getLoyaltyAccountInfo } from '@/api/LoyaltyApi';
 
 interface Product {
   image: string;
@@ -85,11 +84,19 @@ const CheckoutPage = () => {
   const { data: cart } = useGetCart();
   const navigate = useNavigate();
   const { data: fetchedAddresses = [], refetch } = useUserAddresses();
-  const { data: userVouchers = [] } = useUserVouchers();
-  const [selectedVoucher, setSelectedVoucher] = useState<UserVoucherDisplay | null>(null);
+  const { data: userVouchers = [] } = useUserVouchers() as {
+    data: UserVoucherDisplay[];
+  };
+  const [selectedVoucher, setSelectedVoucher] =
+    useState<UserVoucherDisplay | null>(null);
   const [discountAmount, setDiscountAmount] = useState<number>(0);
-  const [loyaltyDiscountPercent, setLoyaltyDiscountPercent] = useState<number>(0);
-
+  const [loyaltyDiscountPercent, setLoyaltyDiscountPercent] =
+    useState<number>(0);
+const getProvinceName = (code?: string) => {
+  if (!code) return '';
+  if (code === '79') return 'TP. Hồ Chí Minh';
+  return code;
+}
   useEffect(() => {
     const selectedItemsStr = localStorage.getItem('selectedCartItems');
 
@@ -129,23 +136,25 @@ const CheckoutPage = () => {
   useEffect(() => {
     setAddresses(fetchedAddresses);
     setSelectedId(
-      fetchedAddresses.find((addr) => addr.is_default)?._id ||
-        fetchedAddresses[0]?._id ||
+      fetchedAddresses.find((addr) => addr.is_default)?.id ||
+        fetchedAddresses[0]?.id ||
         null,
     );
   }, [fetchedAddresses]);
 
   useEffect(() => {
     // Lấy loyalty discount percent
-    getAccountInfo().then((info) => {
-      setLoyaltyDiscountPercent(info?.current_tier?.discount || 0);
-    }).catch(() => setLoyaltyDiscountPercent(0));
+    getLoyaltyAccountInfo()
+      .then((info) => {
+        setLoyaltyDiscountPercent(info?.current_tier?.discount || 0);
+      })
+      .catch(() => setLoyaltyDiscountPercent(0));
   }, []);
 
-  const handleAddAddress = async (newAddr: Omit<Address, '_id'>) => {
+  const handleAddAddress = async (newAddr: Omit<Address, 'id'>) => {
     const newAddress: Address = {
       ...newAddr,
-      _id: crypto.randomUUID(), // generate a temporary string ID
+      id: crypto.randomUUID(), // generate a temporary string ID
     };
 
     setAddresses((prevAddresses) => {
@@ -158,7 +167,7 @@ const CheckoutPage = () => {
       return [...prevAddresses, newAddress];
     });
 
-    setSelectedId(newAddress._id);
+    setSelectedId(newAddress.id);
   };
 
   const handleDeliveryTimeChange = (time: DeliveryTime) => {
@@ -186,14 +195,17 @@ const CheckoutPage = () => {
     };
     setProducts(updatedProducts);
   };
-  const selectedAddress = addresses.find((addr) => addr._id === selectedId || addr.id === selectedId);
+  const selectedAddress = addresses.find((addr) => addr.id === selectedId);
 
   const handleVoucherChange = (voucher: UserVoucherDisplay | null) => {
     setSelectedVoucher(voucher);
     if (voucher && voucher.user_voucher_id) {
       // Tính discountAmount giống logic ở ProductInfoSection
       let discount = 0;
-      const items_price = products.reduce((sum, item) => sum + item.discountedPrice * item.quantity, 0);
+      const items_price = products.reduce(
+        (sum, item) => sum + item.discountedPrice * item.quantity,
+        0,
+      );
       if (voucher.discount_type === 'fixed') {
         discount = voucher.discount_value;
       } else if (voucher.discount_type === 'percent') {
@@ -242,7 +254,7 @@ const CheckoutPage = () => {
     const total_quantity = products.reduce(
       (sum, item) => sum + item.quantity,
       0,
-    );   
+    );
 
     const orderData: OrderData = {
       payment_method: paymentMethod as 'CASH' | 'BANKING' | 'VNPAY' | 'MOMO',
@@ -266,16 +278,17 @@ const CheckoutPage = () => {
       total_quantity,
       voucher_id: selectedVoucher?._id || null,
       discount_amount: discountAmount,
-    };    if (deliveryMethod === 'delivery') {
+    };
+    if (deliveryMethod === 'delivery') {
       if (selectedAddress) {
-        orderData.address_id = selectedAddress._id || selectedAddress.id,
+        orderData.address_id = selectedAddress.id;
         orderData.address = {
           full_name: selectedAddress.full_name,
           phone: selectedAddress.phone,
           street_address: selectedAddress.street_address || '',
           ward: selectedAddress.ward || '',
           district: selectedAddress.district || '',
-          province: selectedAddress.province || '',
+          province: getProvinceName(selectedAddress.province) || '',
         };
       }
     }
@@ -296,42 +309,44 @@ const CheckoutPage = () => {
 
   return (
     <>
-      <BreadCrumbComponents />
-      <div className="flex py-10 bg-bodyBackground min-h-screen text-white">
-        <div className="w-11/12 md:w-container95 lg:w-container90 xl:w-container85 2xl:w-mainContainer mx-auto space-y-6">
-          <h1 className="text-2xl font-bold">Thanh toán</h1>
+      <div className=" py-4 sm:py-8 px-4 bg-bodyBackground min-h-screen text-white">
+        <div className="max-w-6xl mx-auto space-y-6">
+          <h1 className="text-2xl sm:text-2xl mb-0 sm:mb-4 text-secondaryColor uppercase tracking-widest font-restora text-center drop-shadow-lg">
+            Thanh toán
+          </h1>
+          <div className="space-y-6">
+            <ShippingAddressSection
+              addresses={addresses}
+              refetch={refetch}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+              onAdd={handleAddAddress}
+              onDeliveryTimeChange={handleDeliveryTimeChange}
+              initialDeliveryTime={deliveryTime}
+              deliveryMethod={deliveryMethod}
+              onDeliveryMethodChange={setDeliveryMethod}
+              receiver={receiver}
+              receiverPhone={receiverPhone}
+              onReceiverChange={(name, phone) => {
+                setReceiver(name);
+                setReceiverPhone(phone);
+              }}
+            />
 
-          <ShippingAddressSection
-            addresses={addresses}
-            refetch={refetch}
-            selectedId={selectedId}
-            onSelect={setSelectedId}
-            onAdd={handleAddAddress}
-            onDeliveryTimeChange={handleDeliveryTimeChange}
-            initialDeliveryTime={deliveryTime}
-            deliveryMethod={deliveryMethod}
-            onDeliveryMethodChange={setDeliveryMethod}
-            receiver={receiver}
-            receiverPhone={receiverPhone}
-            onReceiverChange={(name, phone) => {
-              setReceiver(name);
-              setReceiverPhone(phone);
-            }}
-          />
-
-          <ProductInfoSection
-            products={products}
-            note={orderNote}
-            shippingFee={shippingFee}
-            paymentMethod={paymentMethod}
-            onPaymentMethodChange={(method) => setPaymentMethod(method || '')}
-            vouchers={userVouchers as UserVoucherDisplay[]}
-            onProceedToPayment={handleProceedToPayment}
-            onNoteChange={handleOrderNoteChange}
-            onProductNoteChange={handleProductNotes}
-            onVoucherChange={handleVoucherChange}
-            loyaltyDiscountPercent={loyaltyDiscountPercent}
-          />
+            <ProductInfoSection
+              products={products}
+              note={orderNote}
+              shippingFee={shippingFee}
+              paymentMethod={paymentMethod}
+              onPaymentMethodChange={(method) => setPaymentMethod(method || '')}
+              vouchers={userVouchers as UserVoucherDisplay[]}
+              onProceedToPayment={handleProceedToPayment}
+              onNoteChange={handleOrderNoteChange}
+              onProductNoteChange={handleProductNotes}
+              onVoucherChange={handleVoucherChange}
+              loyaltyDiscountPercent={loyaltyDiscountPercent}
+            />
+          </div>
         </div>
       </div>
     </>

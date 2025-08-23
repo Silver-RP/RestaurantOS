@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import InputComponent from '../components/pages/login/InputComponents';
-import ButtonComponent from '../components/pages/login/ButtonComponents';
+import InputComponent from '../components/pages/Login/InputComponents';
+import ButtonComponent from '../components/pages/Login/ButtonComponents';
 
 import CheckboxComponent from '../components/common/CheckboxComponents';
 import { Link, useNavigate } from 'react-router-dom';
@@ -25,6 +25,8 @@ const Login = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { error, success } = useAppSelector((state) => state.auth);
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+
 
   useEffect(() => {
     emailRef.current?.focus();
@@ -40,8 +42,19 @@ const Login = () => {
   }, []);
 
   useEffect(() => {
+    if (error) {
+      if (error.includes('Email của bạn chưa được xác minh')) {
+        setTimeout(() => {
+          navigate('/verify-otp-email', { state: { email: formData.email } });
+        }, 5000);
+      }
+  
+      dispatch(clearStatus({}));
+    }
+  }, [error, navigate, dispatch, formData.email]);
+  
+  useEffect(() => {
     if (success) {
-      toast.success('Đăng nhập thành công!');
       navigate('/');
     }
     if (error) {
@@ -73,29 +86,30 @@ const Login = () => {
     return passwordRegex.test(password);
   };
 
-  const isFormValid = (): boolean => {
-    return isEmailValid(formData.email) && isPasswordValid(formData.password);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
-
+  
     const { email, password } = formData;
-
+    let newErrors: { email?: string; password?: string } = {};
+  
     if (!isEmailValid(email)) {
-      setFormError('Email không hợp lệ');
-      return;
+      newErrors.email = 'Email không hợp lệ';
     }
-
+  
     if (!isPasswordValid(password)) {
-      setFormError(
-        'Mật khẩu cần ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt',
-      );
+      newErrors.password =
+        'Mật khẩu cần ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số';
+    }
+  
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
-
+  
+    setErrors({});
     setIsSubmitting(true);
+  
     try {
       await dispatch(LoginUser({ email, password, rememberMe }))
         .unwrap()
@@ -105,12 +119,9 @@ const Login = () => {
           } else {
             localStorage.removeItem('email');
           }
-
-          // ✅ Lấy userId từ kết quả trả về và fetch lại profile
+  
           const userId = result.user._id;
-          dispatch(fetchCurrentUser({ userId })); // ← THÊM DÒNG NÀY
-
-          toast.success('Đăng nhập thành công!');
+          dispatch(fetchCurrentUser({ userId }));
           navigate('/');
         });
     } catch (error) {
@@ -144,8 +155,8 @@ const Login = () => {
 
       Cookies.set('userInfo', JSON.stringify(result.user), { expires: 1 });
 
-      // ✅ Gọi fetchCurrentUser
-      dispatch(fetchCurrentUser({ userId: result.user._id })); // ← THÊM DÒNG NÀY
+    
+      dispatch(fetchCurrentUser({ userId: result.user._id }));
 
       toast.success('Đăng nhập Google thành công!');
       navigate('/');
@@ -164,7 +175,7 @@ const Login = () => {
         <h1 className="text-white font-bold text-3xl mb-6">Đăng nhập</h1>
         <form onSubmit={handleSubmit}>
           <InputComponent
-            type="email"
+            type="text"
             value={formData.email}
             placeholder="Email"
             name="email"
@@ -172,6 +183,9 @@ const Login = () => {
             ref={emailRef}
             onKeyDown={(e) => handleKeyDown(e, passwordRef)}
           />
+          {errors.email && (
+            <div className="text-red-500 text-sm text-left mt-1">{errors.email}</div>
+          )}
           <InputComponent
             type="password"
             value={formData.password}
@@ -181,11 +195,8 @@ const Login = () => {
             ref={passwordRef}
             onKeyDown={(e) => handleKeyDown(e, null)}
           />
-
-          {formError && (
-            <div className="text-red-500 text-sm text-left mt-2">
-              {formError}
-            </div>
+          {errors.password && (
+            <div className="text-red-500 text-sm text-left mt-1">{errors.password}</div>
           )}
 
           <div className="flex justify-between items-center mt-4 mb-3">
@@ -206,7 +217,7 @@ const Login = () => {
           <ButtonComponent
             htmlType="submit"
             text="Đăng nhập"
-            disabled={isSubmitting || !isFormValid()}
+            disabled={isSubmitting }
           />
         </form>
 

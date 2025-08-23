@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import AuthService from '../services/AuthService';
-import { IUser } from '../models/UserModel';
+import { IUser } from '../types/user.type';
 import { Types } from 'mongoose';
 
 class AuthController {
@@ -26,7 +26,7 @@ class AuthController {
     try {
       const { email, password, rememberMe } = req.body;
 
-      const { token, refresh_token, user, refreshTokenExpiresIn } = await AuthService.login(
+      const { token, refresh_token, user, isBirthday, refreshTokenExpiresIn } = await AuthService.login(
         { email, password, rememberMe },
         req,
       );
@@ -43,6 +43,7 @@ class AuthController {
       res.status(200).json({
         message: 'User logged in successfully',
         user,
+        isBirthday,
         accessToken: token,
         refreshToken: refresh_token, // for testing
       });
@@ -54,7 +55,7 @@ class AuthController {
   async refreshAccessToken(req: Request, res: Response): Promise<any> {
     try {
       const { refreshToken } = req.cookies;
-      const { newAccessToken, newRefreshToken } = await AuthService.refreshAccessToken(
+      const { newAccessToken, newRefreshToken, rememberMe } = await AuthService.refreshAccessToken(
         refreshToken,
         req,
       );
@@ -66,11 +67,15 @@ class AuthController {
         maxAge: 60 * 60 * 1000,
       });
 
+      const maxAge = rememberMe
+        ? 21 * 24 * 60 * 60 * 1000
+        : 2 * 24 * 60 * 60 * 1000;
+
       res.cookie('refreshToken', newRefreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-        maxAge: 21 * 24 * 60 * 60 * 1000,
+        maxAge
       });
 
       res.status(200).json({ accessToken: newAccessToken });
@@ -98,7 +103,7 @@ class AuthController {
           username: name,
           avatar,
           rememberMe,
-        });
+        }, req);
 
       res.cookie('refreshToken', refreshToken, {
         httpOnly: true,

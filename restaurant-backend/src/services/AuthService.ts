@@ -12,6 +12,7 @@ import RefreshToken from '../models/RefreshToken';
 import { GoogleUser } from '../types/auth.types';
 import Role from '../models/RoleModel';
 import { ObjectId } from 'mongoose';
+import { UserDefinedMessageInstance } from 'twilio/lib/rest/api/v2010/account/call/userDefinedMessage';
 
 dotenv.config();
 
@@ -69,7 +70,7 @@ class AuthService {
     const { username, email, password } = userData;
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      throw new Error('Email đã tồn tại trong hệ thống');
+      throw new Error('Email này đã được đăng ký, vui lòng sử dụng email khác');
     }
     const hashedPassword = await bcrypt.hash(password, 10);
     const defaultRole = await Roles.findOne({ name: 'user' });
@@ -100,15 +101,29 @@ class AuthService {
 
     const user = await User.findOne({ email }).populate('roles', 'name');
     if (!user) {
-      throw new Error('Email not registered');
+      throw new Error('Email chưa đăng ký');
     }
     if (user.status === 'block') {
       throw new Error('Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.');
+    }
+    if (!user.isEmailVerified) {
+      await this.resendVerificationEmail(email);
+      throw new Error(
+        'Email của bạn chưa được xác minh. Vui lòng kiểm tra email để nhận mã xác minh.',
+      );
     }
 
     const isMatch = await bcrypt.compare(password, user.password || '');
     if (!isMatch) {
       throw new Error('Mật khẩu không đúng');
+    }
+
+    let isBirthday = false;
+    if (user.birthday) {
+      const today = new Date();
+      const birthday = new Date(user.birthday);
+      isBirthday =
+        today.getDate() === birthday.getDate() && today.getMonth() === birthday.getMonth();
     }
 
     const accessTokenExpiresIn = rememberMe ? 60 * 60 * 2 : 60 * 60;
@@ -132,9 +147,10 @@ class AuthService {
       expiresAt: new Date(Date.now() + refreshTokenExpiresIn * 1000),
       userAgent: req.get('User-Agent'),
       ipAddress: req.ip,
+      rememberMe,
     });
 
-    return { token, refresh_token, user, refreshTokenExpiresIn };
+    return { token, refresh_token, user, isBirthday, refreshTokenExpiresIn };
   }
 
   async refreshAccessToken(refreshTokenFromClient: string, req: any) {
@@ -159,7 +175,10 @@ class AuthService {
       const remainingSeconds = Math.floor(remainingMs / 1000);
 
       // Nếu thời gian còn lại quá ít (< 1h), cấp lại full thời hạn (có thể tùy chỉnh logic)
-      const newRefreshTokenExpiresIn = remainingSeconds > 3600 ? remainingSeconds : 48 * 60 * 60;
+      const newRefreshTokenExpiresIn = remainingSeconds > 3600 ?
+        remainingSeconds : oldToken.rememberMe
+          ? 21 * 24 * 60 * 60
+          : 2 * 24 * 60 * 60;
 
       const newAccessToken = accessToken(
         { id: user._id, roles: user.roles },
@@ -182,9 +201,10 @@ class AuthService {
         ipAddress: req.ip,
         userAgent: req.get('User-Agent'),
         expiresAt: new Date(Date.now() + newRefreshTokenExpiresIn * 1000),
+        rememberMe: oldToken.rememberMe,
       });
 
-      return { newAccessToken, newRefreshToken };
+      return { newAccessToken, newRefreshToken, rememberMe: oldToken.rememberMe };
     } catch (error: any) {
       throw new Error(error.message);
     }
@@ -193,38 +213,51 @@ class AuthService {
   async googleLogin(googleUser: GoogleUser & { rememberMe: boolean }, req: any) {
     try {
       const { email, googleId, username, avatar, rememberMe } = googleUser;
-  
+
       let user = await User.findOne({ email });
-  
+
       const userRole = await Role.findOne({ name: 'user' });
       if (!userRole) {
         throw new Error('Role "user" không tồn tại trong hệ thống.');
       }
-  
+
       if (!user) {
         user = new User({
           email,
           username: username || '',
           avatar: avatar || '',
           googleId,
-          roles: [userRole._id], 
+          roles: [userRole._id],
         });
         await user.save();
       } else if (!user.roles || user.roles.length === 0) {
-        user.roles = [userRole._id as ObjectId]; 
+        user.roles = [userRole._id as ObjectId];
         await user.save();
       }
-  
+
+      // populate roles to get names
+      const populatedUser = await User.findById(user._id).populate('roles', 'name');
+      console.log("Populated User:", populatedUser);
+
+      const roleNames: string[] = Array.isArray(populatedUser?.roles)
+        ? (populatedUser!.roles as any[]).map(r => r.name).filter(Boolean)
+        : [];
+
       const accessTokenExpiresIn = rememberMe ? 60 * 60 * 2 : 60 * 60;
       const refreshTokenExpiresIn = rememberMe ? 21 * 24 * 60 * 60 : 2 * 24 * 60 * 60;
-  
-      const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN || '', {
-        expiresIn: accessTokenExpiresIn,
-      });
-  
-      const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN || '', {
-        expiresIn: refreshTokenExpiresIn,
-      });
+
+      // include roles (names) in token payload
+      const accessToken = jwt.sign(
+        { id: user._id, roles: roleNames },
+        process.env.ACCESS_TOKEN || '',
+        { expiresIn: accessTokenExpiresIn },
+      );
+
+      const refreshToken = jwt.sign(
+        { id: user._id, roles: roleNames },
+        process.env.REFRESH_TOKEN || '',
+        { expiresIn: refreshTokenExpiresIn },
+      );
 
       await RefreshToken.create({
         token: refreshToken,
@@ -232,10 +265,15 @@ class AuthService {
         expiresAt: new Date(Date.now() + refreshTokenExpiresIn * 1000),
         userAgent: req?.get?.('User-Agent') || 'unknown',
         ipAddress: req?.ip || 'unknown',
+        rememberMe,
       });
-  
+
+      // return user object with role names in a separate property
+      const userObj = populatedUser ? populatedUser.toObject() : user.toObject();
+      userObj.roleNames = roleNames;
+
       return {
-        user,
+        user: userObj,
         accessToken,
         refreshToken,
         refreshTokenExpiresIn,
@@ -307,7 +345,7 @@ class AuthService {
     try {
       let user;
       const otp = crypto.randomInt(100000, 999999).toString();
-      const expireAt = new Date(Date.now() + 1 * 60 * 1000); // 1 phút
+      const expireAt = new Date(Date.now() + 3 * 60 * 1000); // 3 phút
 
       const phoneRegex = /^(\+84|0)(3|5|7|8|9)\d{8}$/;
       const emailRegex =
@@ -357,7 +395,7 @@ class AuthService {
           from: process.env.MAIL_FROM_ADDRESS,
           to: identifier,
           subject: 'Xác minh OTP',
-          text: `Mã OTP của bạn là ${otp}. Sẽ hết hạn trong 1 phút.`,
+          text: `Mã OTP của bạn là ${otp}. Sẽ hết hạn trong 3 phút.`,
         };
 
         await transporter.sendMail(mailOptions);
@@ -380,12 +418,12 @@ class AuthService {
     }
 
     const otp = crypto.randomInt(100000, 999999).toString();
-    const otpExpiry = new Date(Date.now() + 1 * 60 * 1000); // 1 phút
+    const otpExpiry = new Date(Date.now() + 3 * 60 * 1000); // 3 phút
 
     const now = new Date();
     const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
     if (user.otpSentCount >= 5 && user.lastOtpSentAt > oneHourAgo) {
-      throw new Error('You have exceeded the OTP request limit. Please try again later.');
+      throw new Error('Bạn đã vượt quá số lần yêu cầu OTP. Vui lòng thử lại sau.');
     }
 
     user.emailVerificationOtp = otp;
@@ -418,8 +456,8 @@ class AuthService {
     const mailOptions = {
       from: process.env.MAIL_FROM_ADDRESS,
       to: email,
-      subject: 'Verify Your Email Address',
-      text: `Your verification OTP is ${otp}. It will expire in 1 minute.`,
+      subject: 'Xác thực địa chỉ email của bạn',
+      text: `Mã xác thực OTP của bạn là ${otp}. Mã này sẽ hết hạn trong 3 phút.`,
     };
 
     await transporter.sendMail(mailOptions);

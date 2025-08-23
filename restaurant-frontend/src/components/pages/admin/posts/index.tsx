@@ -14,8 +14,7 @@ const PostsPage = () => {
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [sortField, setSortField] = useState(searchParams.get('sortBy') || '');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>(searchParams.get('sortOrder') as 'asc' | 'desc' || 'asc');
-  const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || '');
-  
+
   const { mutate: deletePost, isPending: isDeleting } = useMutation({
     mutationFn: PostsApi.deletePost,
     onSuccess: (data) => {
@@ -42,31 +41,30 @@ const PostsPage = () => {
     setSearchTerm(value);
   };
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      const newParams = new URLSearchParams(searchParams.toString());
+useEffect(() => {
+  const timer = setTimeout(() => {
+    const newParams = new URLSearchParams(searchParams.toString());
+
+    const prevSearch = searchParams.get('search') || '';
+    if (searchTerm !== prevSearch) {
       if (searchTerm) {
         newParams.set('search', searchTerm);
       } else {
         newParams.delete('search');
       }
-      if (statusFilter) {
-        newParams.set('status', statusFilter);
-      } else {
-        newParams.delete('status');
-      }
-      newParams.set('page', '1');
+      newParams.set('page', '1'); 
       setSearchParams(newParams);
-    }, 500);
+    }
+  }, 500);
 
-    return () => clearTimeout(timer);
-  }, [searchTerm, statusFilter, searchParams, setSearchParams]);
+  return () => clearTimeout(timer);
+}, [searchTerm, searchParams, setSearchParams]);
 
   const handleSort = (field: string) => {
     const newOrder = sortField === field && sortOrder === 'asc' ? 'desc' : 'asc';
     setSortField(field);
     setSortOrder(newOrder);
-    
+
     const newParams = new URLSearchParams(searchParams.toString());
     newParams.set('sortBy', field);
     newParams.set('sortOrder', newOrder);
@@ -80,10 +78,9 @@ const PostsPage = () => {
 
   if (isLoading || isDeleting) {
     return (
-      <div className="p-6 bg-gray-50 min-h-screen flex items-center justify-center">
-        <div className="text-xl text-gray-600">
-          {isDeleting ? 'Đang xóa bài viết...' : 'Đang tải dữ liệu...'}
-        </div>
+      <div className="flex justify-center items-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span className="ml-2"> {isDeleting ? 'Đang xóa bài viết...' : 'Đang tải dữ liệu...'}</span>
       </div>
     );
   }
@@ -106,19 +103,13 @@ const PostsPage = () => {
     setSearchParams(newParams, { replace: true });
   };
 
-  const handleLimitChange = (newLimit: number) => {
-    const newParams = new URLSearchParams(searchParams.toString());
-    newParams.set('limit', String(newLimit));
-    newParams.set('page', '1');
-    setSearchParams(newParams, { replace: true });
-  };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto">
+    <main className="!p-0 bg-white rounded-lg ">
+      <div>
         <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <h2 className="text-2xl font-bold text-gray-900">Tổng quan</h2>
-          <div className="flex items-center gap-2">
+          <h2 className="text-2xl font-bold text-gray-900">Quản lý Bài viết</h2>
+          <div className="flex gap-4">
             <Link
               to="/admin/posts/create"
               className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
@@ -128,10 +119,10 @@ const PostsPage = () => {
             </Link>
             <Link
               to="/admin/posts/report"
-              className="inline-flex items-center px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-400 transition-colors"
-              style={{ marginLeft: 8 }}
+              className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
             >
-              Báo cáo bài viết
+              <span className="mr-2">🚩</span>
+              Bài viết bị báo cáo
             </Link>
           </div>
         </div>
@@ -157,15 +148,6 @@ const PostsPage = () => {
                     <FiSearch size={18} />
                   </button>
                 </div>
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="px-4 py-2 border rounded-md"
-                >
-                  <option value="">Tất cả trạng thái</option>
-                  <option value="published">Đã đăng</option>
-                  <option value="draft">Nháp</option>
-                </select>
               </div>
             </div>
           </div>
@@ -218,15 +200,21 @@ const PostsPage = () => {
                     <td className="px-4 py-2">{index + 1}</td>
                     <td className="px-4 py-2">
                       <img
-                        src={post.images?.[0] || '/assets/images/default-post.jpg'}
+                        src={
+                          post.images?.[0] || '/assets/images/default-post.jpg'
+                        }
                         alt={post.title}
                         className="w-12 h-12 object-cover rounded"
                       />
                     </td>
                     <td className="px-4 py-2">
                       <div>
-                        <div className="text-sm font-medium text-gray-900">{post.title}</div>
-                        <div className="text-sm text-gray-500 truncate max-w-xs">{post.desc}</div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {post.title}
+                        </div>
+                        <div className="text-sm text-gray-500 truncate max-w-xs">
+                          {post.desc}
+                        </div>
                       </div>
                     </td>
                     <td className="px-4 py-2">
@@ -238,12 +226,20 @@ const PostsPage = () => {
                       {new Date(post.createdAt).toLocaleDateString('vi-VN')}
                     </td>
                     <td className="px-4 py-2">
-                      <span className={`px-2 py-1 text-xs rounded-full ${
-                        post.status === 'published' 
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {post.status === 'published' ? 'Đã đăng' : 'Nháp'}
+                      <span
+                        className={`px-2 py-1 text-xs rounded-full ${
+                          post.status === 'published'
+                            ? 'bg-green-100 text-green-800'
+                            : post.status === 'pending'
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-yellow-100 text-yellow-800'
+                        }`}
+                      >
+                        {post.status === 'published'
+                          ? 'Đã đăng'
+                          : post.status === 'pending'
+                            ? 'Lên lịch đăng'
+                            : 'Nháp'}
                       </span>
                     </td>
                     <td className="px-4 py-2 space-x-2">
@@ -266,20 +262,27 @@ const PostsPage = () => {
               </tbody>
             </table>
           </div>
-          
+
           {/* Pagination */}
           {postsData && (
             <AdminPagination
               currentPage={currentPage}
               totalPages={totalPages}
               onPageChange={handlePageChange}
-              limit={Number(searchParams.get('limit') || 10)}
-              onLimitChange={handleLimitChange}
+              limit={Number(searchParams.get('limit') || 12)}
+              onLimitChange={(newLimit) => {
+                setSearchParams((prev) => {
+                  const newParams = new URLSearchParams(prev);
+                  newParams.set('limit', newLimit.toString());
+                  newParams.delete('page');
+                  return newParams;
+                });
+              }}
             />
           )}
         </div>
       </div>
-    </div>
+    </main>
   );
 };
 

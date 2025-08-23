@@ -103,6 +103,9 @@ const Step3Menu: React.FC<Step3MenuProps> = ({
       setTimeout(() => setShowFilterSidebar(false), 300);
     }
   }, [isFilterOpen]);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const handleCloseFilter = () => {
     setIsFilterOpen(false);
@@ -139,7 +142,7 @@ const Step3Menu: React.FC<Step3MenuProps> = ({
                     filterSidebarVisible ? 'translate-x-0' : '-translate-x-full'
                   }`}
                 >
-                  <div className="p-6 overflow-y-auto h-full">
+                  <div className="p-6 overflow-y-auto hide-scrollbar h-full">
                     <FilterSidebar onClose={handleCloseFilter} />
                   </div>
                 </div>
@@ -150,61 +153,64 @@ const Step3Menu: React.FC<Step3MenuProps> = ({
           {/* Main content */}
           <main className="flex-1 space-y-8">
             {/* Header actions */}
-            <div className="flex justify-between items-center flex-wrap gap-4">
-              <div className="flex items-center gap-4 flex-wrap">
-                <button
-                  onClick={toggleFilter}
-                  className="flex items-center gap-2 text-white hover:text-secondaryColor transition"
-                >
-                  <FiFilter className="h-5 w-5" />
-                  <span className="text-sm">Lọc</span>
-                </button>
-
-                {/* Ô dropdown sắp xếp */}
-                <div className="relative">
-                  <select
-                    onChange={handleSortChange}
-                    className="appearance-none bg-bodyBackground border border-gray-500 text-white rounded px-3 py-2 text-sm pr-10 focus:outline-none focus:ring-2 focus:ring-secondaryColor"
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-2 sm:gap-4 flex-wrap">
+                {/* Nút Lọc */}
+                <div className="w-full sm:w-auto flex items-center gap-2">
+                  <button
+                    onClick={toggleFilter}
+                    className="flex items-center gap-2 text-white hover:text-secondaryColor transition w-full sm:w-auto"
                   >
-                    <option value="relevance">Mặc định</option>
-                    <option value="priceLow">Giá thấp đến cao</option>
-                    <option value="priceHigh">Giá cao đến thấp</option>
-                    <option value="newest">Mới nhất</option>
-                    <option value="highestRated">Đánh giá cao nhất</option>
-                    <option value="mostViewed">Lượt xem nhiều nhất</option>
-                    <option value="mostOrdered">Đặt hàng nhiều nhất</option>
-                    <option value="mostFavorite">Được yêu thích nhất</option>
-                  </select>
-
-                  {/* Icon: đổi FiSearch → BsChevronDown */}
-                  <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-secondaryColor">
-                    <BsChevronDown className="w-4 h-4" />
+                    <FiFilter className="h-5 w-5" />
+                    <span className="text-sm">Lọc</span>
+                  </button>
+                </div>
+                <div className="flex gap-2">
+                  {/* Dropdown sắp xếp */}
+                  <div className="w-1/2 sm:w-auto relative">
+                    <select
+                      onChange={handleSortChange}
+                      className="appearance-none bg-bodyBackground border border-gray-500 text-white rounded px-3 py-2 text-sm pr-10 focus:outline-none focus:ring-2 focus:ring-secondaryColor w-full sm:w-auto"
+                    >
+                      <option value="relevance">Mặc định</option>
+                      <option value="priceLow">Giá thấp đến cao</option>
+                      <option value="priceHigh">Giá cao đến thấp</option>
+                      <option value="newest">Mới nhất</option>
+                      <option value="highestRated">Đánh giá cao nhất</option>
+                      <option value="mostViewed">Lượt xem nhiều nhất</option>
+                      <option value="mostOrdered">Đặt hàng nhiều nhất</option>
+                      <option value="mostFavorite">Được yêu thích nhất</option>
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-secondaryColor">
+                      <BsChevronDown className="w-4 h-4" />
+                    </div>
+                  </div>
+                  {/* Ô tìm kiếm */}
+                  <div className="w-1/2 sm:w-auto relative">
+                    <input
+                      type="text"
+                      placeholder="Tìm món ăn..."
+                      className="bg-bodyBackground border border-gray-500 text-white placeholder:text-gray-400 rounded px-3 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-secondaryColor"
+                      value={searchInput}
+                      onChange={(e) => setSearchInput(e.target.value)}
+                    />
+                    <FiSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-secondaryColor w-4 h-4" />
                   </div>
                 </div>
-
-                {/* Ô tìm kiếm */}
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Tìm món ăn..."
-                    className="bg-bodyBackground border border-gray-500 text-white placeholder:text-gray-400 rounded px-3 py-2 text-sm w-[180px] focus:outline-none focus:ring-2 focus:ring-secondaryColor"
-                    value={searchInput}
-                    onChange={(e) => setSearchInput(e.target.value)}
-                  />
-                  <FiSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-secondaryColor w-4 h-4" />
+                {/* Nút xem món đã chọn */}
+                <div className="w-full sm:w-auto">
+                  <ButtonComponents
+                    variant="filled"
+                    size="small"
+                    onClick={() => setIsSidebarOpen(true)}
+                    className="w-full sm:w-auto"
+                  >
+                    Xem món đã chọn
+                  </ButtonComponents>
                 </div>
-                <ButtonComponents
-                  variant="filled"
-                  size="small"
-                  onClick={() => setIsSidebarOpen(true)}
-                  className="ml-2"
-                >
-                  Xem món đã chọn
-                </ButtonComponents>
               </div>
-
               {/* Display count */}
-              <div className="text-sm text-white">
+              <div className="text-sm text-white pt-2 sm:pt-0">
                 Hiển thị{' '}
                 <span className="font-semibold text-secondaryColor">
                   {(pagination.currentPage - 1) * pagination.limit + 1} -{' '}
@@ -217,7 +223,7 @@ const Step3Menu: React.FC<Step3MenuProps> = ({
                 <span className="font-semibold text-secondaryColor">
                   {foods?.totalDocs || 0}
                 </span>{' '}
-                sản phẩm
+                món ăn
               </div>
             </div>
 
@@ -229,7 +235,7 @@ const Step3Menu: React.FC<Step3MenuProps> = ({
             ) : error ? (
               <div className="text-center text-red-500 py-20">{error}</div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[300px] sm:max-h-none overflow-y-auto hide-scrollbar  ">
                 {foods?.docs?.map((item) => (
                   <div
                     key={item._id}
@@ -243,7 +249,7 @@ const Step3Menu: React.FC<Step3MenuProps> = ({
                       image={item.images?.[0]}
                       name={item.name}
                       category={item.categories?.[0]?.Cate_name || 'Khác'}
-                      price={`${item.discount_price || item.price} VND`}
+                      price={`${(item.discount_price || item.price).toLocaleString('vi-VN')} VND`}
                       onAdd={() => {
                         setSelectedFood(item);
                         setModalOpen(true);
@@ -261,7 +267,12 @@ const Step3Menu: React.FC<Step3MenuProps> = ({
                         justifyContent: 'center',
                       }} // giống nút "+"
                       onClick={() =>
-                        dispatch(openQuickView(toFoodDetail(item)))
+                        dispatch(
+                          openQuickView({
+                            product: toFoodDetail(item),
+                            hideAddToCart: true,
+                          }),
+                        )
                       }
                       aria-label="Xem nhanh"
                     >

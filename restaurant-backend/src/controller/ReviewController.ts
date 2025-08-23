@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { ReviewService } from '../services/ReviewService';
-import { IUser } from '../models/UserModel';
+import { IUser } from '../types/user.type';
 import { Types } from 'mongoose';
 export const ReviewController = {
   create: async (req: Request, res: Response): Promise<void> => {
@@ -22,7 +22,10 @@ export const ReviewController = {
 
       res.status(201).json({ success: true, data: review });
     } catch (error: any) {
-      if (error.message === 'Bạn đã đánh giá sản phẩm này rồi.') {
+      if (
+        error.message === 'Bạn đã đánh giá sản phẩm này rồi.' ||
+        error.message === 'Bạn chỉ có thể đánh giá món ăn đã mua và đã được giao thành công.'
+      ) {
         res.status(409).json({ message: error.message });
       } else {
         console.error('Create review error:', error);
@@ -95,6 +98,23 @@ export const ReviewController = {
       res.json({ success: true, message: 'Review deleted successfully' });
     } catch (error: any) {
       res.status(500).json({ message: error.message || 'Server error' });
+    }
+  },
+
+  getUserReviews: async (req: Request, res: Response): Promise<void> => {
+    try {
+      const userId = (req.user as IUser).id as Types.ObjectId;
+      const { page = 1, limit = 10 } = req.query;
+
+      const reviews = await ReviewService.getUserReviews(
+        userId,
+        Number(page),
+        Number(limit)
+      );
+      res.json({ success: true, data: reviews });
+    } catch (error: any) {
+      console.error('Get user reviews error:', error);
+      res.status(500).json({ message: 'Server error' });
     }
   },
 };

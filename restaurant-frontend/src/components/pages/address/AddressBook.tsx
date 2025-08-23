@@ -1,7 +1,9 @@
+
+
 import React, { useEffect, useState } from 'react';
 import { AddressInput } from './AddressInput';
 import { AddAddressModal } from './AddAddressModal';
-import { useUserAddresses } from '@hooks/useAddress';
+import { useDistricts, useUserAddresses } from '@hooks/useAddress';
 import { deleteAddress } from '@api/AddressApi';
 import { UpdateAddressModal } from './UpdateAddressModal';
 import { toast } from 'react-toastify';
@@ -9,22 +11,38 @@ import { toast } from 'react-toastify';
 const LIMIT_TOAST_ID = 'limit-toast';
 
 interface Address {
+  id: string;
   name: string;
   phone: string;
   street_address: string;
-  id?: string; // để lưu id xoá nếu cần
+  ward?: string;
+  district?: string;
+  province?: string;
+  is_default?: boolean;
+  full_name?: string;
 }
-
+const getProvinceName = (code?: string) => {
+  if (!code) return '';
+  if (code === '79') return 'TP. Hồ Chí Minh';
+  return code;
+};
 const AddressBook: React.FC = () => {
+  const [selectedProvinceCode] = useState('79');
   const { data, error, refetch } = useUserAddresses();
-
+  const { districts } = useDistricts(selectedProvinceCode);
   const [defaultForm, setDefaultForm] = useState<Address>({
+    id: '',
     name: '',
     phone: '',
     street_address: '',
+    ward: '',
+    district: '',
+    province: selectedProvinceCode,
   });
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-  const [selectedAddress, setSelectedAddress] = useState<any | null>(null);
+  const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
+  console.log('Selected address:', selectedAddress);
+
   const [otherForms, setOtherForms] = useState<Address[]>([]);
   const [isEditingDefault] = useState(false);
   const [editingOtherIndex] = useState<number | null>(null);
@@ -39,18 +57,26 @@ const AddressBook: React.FC = () => {
 
     if (defaultAddr) {
       setDefaultForm({
+        id: defaultAddr.id,
         name: defaultAddr.full_name,
         phone: defaultAddr.phone,
-        street_address: `${defaultAddr.street_address}, ${defaultAddr.ward}, ${defaultAddr.district}, ${defaultAddr.province}`,
-        id: defaultAddr.id,
+        street_address: defaultAddr.street_address,
+        ward: defaultAddr.ward || '',
+        district: defaultAddr.district || '',
+        province: selectedProvinceCode || '',
+        is_default: true,
       });
     }
 
     const formattedOthers = others.map((addr) => ({
+      id: addr.id,
       name: addr.full_name,
       phone: addr.phone,
-      street_address: `${addr.street_address}, ${addr.ward}, ${addr.district}, ${addr.province}`,
-      id: addr.id,
+      street_address: addr.street_address,
+      ward: addr.ward || '',
+      district: addr.district || '',
+      province: addr.province || '',
+      is_default: false,
     }));
 
     setOtherForms(formattedOthers);
@@ -126,11 +152,23 @@ const AddressBook: React.FC = () => {
         await deleteAddress(id);
         toast.success('Đã xoá địa chỉ!');
         if (data.length === 1) {
-          setDefaultForm({ name: '', phone: '', street_address: '' });
+          setDefaultForm({
+            id: '',
+            name: '',
+            phone: '',
+            street_address: '',
+            ward: '',
+            district: '',
+            province: selectedProvinceCode,
+          });
         }
         refetch();
-      } catch {
-        toast.error('Xoá địa chỉ thất bại!');
+      } catch (err: unknown) {
+        if (err && typeof err === 'object' && 'response' in err && err.response && typeof err.response === 'object' && 'data' in err.response && err.response.data && typeof err.response.data === 'object' && 'error' in err.response.data && typeof err.response.data.error === 'string' && err.response.data.error.includes('quá nhiều yêu cầu')) {
+          toast.error('Bạn đang gửi quá nhiều yêu cầu. Vui lòng thử lại sau vài phút.');
+        } else {
+          toast.error('Xoá địa chỉ thất bại!');
+        }
       }
     });
   };
@@ -234,44 +272,51 @@ const AddressBook: React.FC = () => {
           <p className="text-gray-400">Địa chỉ</p>
           {isEditingDefault ? (
             <AddressInput
-              value={defaultForm.street_address}
-              onChange={(e) =>
+              value={`$${defaultForm.street_address}${defaultForm.ward ? ", " + defaultForm.ward : ""}${defaultForm.district ? ", " + defaultForm.district : ""}${defaultForm.province ? ", " + defaultForm.province : ""}`}
+              onChange={(e) => {
+                const parts = e.target.value.split(',').map((s) => s.trim());
                 setDefaultForm({
                   ...defaultForm,
-                  street_address: e.target.value,
-                })
-              }
-              onSelectLocation={(lat, lon, street_address) =>
-                setDefaultForm({ ...defaultForm, street_address })
-              }
-              district={defaultForm.street_address.split(',')[2]?.trim() || ''}
-              ward={defaultForm.street_address.split(',')[1]?.trim() || ''}
-              province={
-                defaultForm.street_address.split(',')[3]?.trim() ||
-                'TP. Hồ Chí Minh'
-              }
+                  street_address: parts[0] || '',
+                  ward: parts[1] || '',
+                  district: parts[2] || '',
+                  province: selectedProvinceCode,
+                });
+              }}
+
             />
           ) : (
-            <p className="font-medium">{defaultForm.street_address}</p>
+            <p className="font-medium">
+              {defaultForm.street_address}
+              {defaultForm.ward ? `, ${defaultForm.ward}` : ''}
+              {defaultForm.district ? `, ${defaultForm.district}` : ''}
+              {defaultForm.province ? `, ${getProvinceName(defaultForm.province)}` : ''}
+            </p>
           )}
         </div>
 
         <div className="flex gap-4">
           <button
             onClick={() => {
-              const [street, ward, district, province] =
-                defaultForm.street_address.split(',').map((s) => s.trim());
+              const addr = data.find((a) => a.id === defaultForm.id);
+              console.log("Địa chỉ mặc định:", addr);
+              
+              if (addr) {
+                const selected = {
+                  id: addr.id,
+                  name: addr.full_name,
+                  phone: addr.phone,
+                  street_address: addr.street_address,
+                  ward: addr.ward || '',
+                  district: addr.district || '',
+                  province: addr.province || 'TP. Hồ Chí Minh',
+                  is_default: true,
+                };
+                console.log('Địa chỉ được chọn:', selected);
 
-              setSelectedAddress({
-                ...defaultForm,
-                street_address: street,
-                ward,
-                district,
-                province,
-                is_default: true,
-              });
-
-              setIsUpdateModalOpen(true);
+                setSelectedAddress(selected);
+                setIsUpdateModalOpen(true);
+              }
             }}
             className="px-6 py-2 md:px-10 border border-secondaryColor hover:text-secondaryColor bg-secondaryColor hover:bg-bodyBackground text-headerBackground transition uppercase text-sm md:text-base"
           >
@@ -337,41 +382,32 @@ const AddressBook: React.FC = () => {
                     };
                     setOtherForms(newAddresses);
                   }}
-                  onSelectLocation={(lat, lon, street_address) => {
-                    const newAddresses = [...otherForms];
-                    newAddresses[index] = {
-                      ...newAddresses[index],
-                      street_address,
-                    };
-                    setOtherForms(newAddresses);
-                  }}
-                  district={
-                    defaultForm.street_address.split(',')[2]?.trim() || ''
-                  }
-                  ward={defaultForm.street_address.split(',')[1]?.trim() || ''}
-                  province={
-                    defaultForm.street_address.split(',')[3]?.trim() ||
-                    'TP. Hồ Chí Minh'
-                  }
                 />
               ) : (
-                <p className="font-medium">{addr.street_address}</p>
+                <p className="font-medium">
+                  {addr.street_address}
+                  {addr.ward ? `, ${addr.ward}` : ''}
+                  {addr.district ? `, ${addr.district}` : ''}
+                  {addr.province ? `, ${getProvinceName(addr.province)}` : ''}
+                </p>
               )}
             </div>
 
             <div className="flex gap-4">
               <button
                 onClick={() => {
-                  const [street, ward, district, province] = addr.street_address
-                    .split(',')
-                    .map((s) => s.trim());
-                  setSelectedAddress({
-                    ...addr,
-                    street_address: street,
-                    ward,
-                    district,
-                    province,
-                  });
+                  const selected = {
+                    id: addr.id,
+                    name: addr.full_name || '',
+                    phone: addr.phone,
+                    street_address: addr.street_address,
+                    ward: addr.ward || '',
+                    district: addr.district || '',
+                    province: addr.province || 'TP. Hồ Chí Minh',
+                    is_default: false,
+                  };
+                  console.log('Truyền sang UpdateAddressModal:', selected);
+                  setSelectedAddress(selected);
                   setIsUpdateModalOpen(true);
                 }}
                 className="px-6 py-2 md:px-10 border border-secondaryColor hover:text-secondaryColor bg-secondaryColor hover:bg-bodyBackground text-headerBackground transition uppercase text-sm md:text-base"
@@ -414,7 +450,7 @@ const AddressBook: React.FC = () => {
           address={selectedAddress}
           onSave={() => {
             toast.success('Cập nhật địa chỉ thành công!');
-            refetch(); // Làm mới danh sách
+            refetch();
             setIsUpdateModalOpen(false);
             setSelectedAddress(null);
           }}

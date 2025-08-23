@@ -1,11 +1,8 @@
-import React from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import {
   FaHome,
   FaUtensils,
   FaFileAlt,
-  FaInfoCircle,
-  FaEnvelope,
   FaSignOutAlt,
   FaAngleLeft,
   FaAngleRight,
@@ -13,7 +10,8 @@ import {
   FaCartPlus,
   FaImage,
   FaTicketAlt,
-  FaBell,
+  FaCrown,
+  FaEnvelope,
 } from 'react-icons/fa';
 import { GiHotMeal, GiWheat } from 'react-icons/gi';
 import { FaCalendarAlt } from 'react-icons/fa';
@@ -24,6 +22,8 @@ import { LogoutUser } from '../redux/feature/auth/authActions';
 import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@/redux/hook';
+import { BsChatDots } from 'react-icons/bs';
+import React from 'react';
 
 const AdminLayout: React.FC = () => {
   const { isSidebarOpen, toggleSidebarExtend } = useAdminSidebar();
@@ -44,19 +44,19 @@ const AdminLayout: React.FC = () => {
     const userInfo = JSON.parse(Cookies.get('userInfo') || '{}');
 
     if (userInfo) {
-        (window as any).google?.accounts.id.disableAutoSelect?.();
-        Cookies.remove('userInfo');
-        localStorage.removeItem('token');
-        clearAuthData();
-        setTimeout(() => {
-          navigate('/admin/login'); 
-        }, 1000);
+      (window as any).google?.accounts.id.disableAutoSelect?.();
+      Cookies.remove('userInfo');
+      localStorage.removeItem('token');
+      clearAuthData();
+      setTimeout(() => {
+        navigate('/admin/login');
+      }, 1000);
       return;
     }
-    
+
 
     try {
-      await dispatch(LogoutUser()).unwrap(); 
+      await dispatch(LogoutUser()).unwrap();
       console.log('LogoutUser called');
     } catch (err) {
       console.error('Logout failed:', err);
@@ -67,12 +67,14 @@ const AdminLayout: React.FC = () => {
     }
   };
 
+
+
   return (
     <div className="flex min-h-screen bg-adminbg text-admintext">
       {/* Sidebar */}
       <aside
         className={classNames(
-          'bg-admincard flex flex-col justify-between transition-all duration-300 fixed top-0 left-0 z-50 h-full overflow-y-auto', // 👈 thêm overflow-y-auto
+          'bg-admincard flex flex-col justify-between transition-all duration-300 fixed top-0 left-0 z-50 h-full overflow-y-auto',
           isSidebarOpen ? 'w-[200px] px-4' : 'w-16 items-center',
         )}
       >
@@ -92,6 +94,7 @@ const AdminLayout: React.FC = () => {
           </button>
 
           <nav className="flex flex-col gap-6 w-full max-w-[200px items-center">
+            {/* ...existing NavItems... */}
             <NavItem
               href="/admin"
               icon={<FaHome />}
@@ -141,7 +144,6 @@ const AdminLayout: React.FC = () => {
               expanded={isSidebarOpen}
               currentPath={location.pathname}
             />
-
             <NavItem
               href="/admin/ingredients"
               icon={<GiWheat />}
@@ -149,7 +151,6 @@ const AdminLayout: React.FC = () => {
               expanded={isSidebarOpen}
               currentPath={location.pathname}
             />
-
             <NavItem
               href="/admin/banners"
               icon={<FaImage />}
@@ -157,7 +158,6 @@ const AdminLayout: React.FC = () => {
               expanded={isSidebarOpen}
               currentPath={location.pathname}
             />
-
             <NavItem
               href="/admin/vouchers"
               icon={<FaTicketAlt />}
@@ -165,6 +165,36 @@ const AdminLayout: React.FC = () => {
               expanded={isSidebarOpen}
               currentPath={location.pathname}
             />
+            <NavItem
+              href="/admin/chatbox"
+              icon={<BsChatDots />}
+              label="Chatbox"
+              expanded={isSidebarOpen}
+              currentPath={location.pathname}
+            />
+            <NavItem
+              href="/admin/loyalty"
+              icon={<FaCrown />}
+              label="Loyalty"
+              expanded={isSidebarOpen}
+              currentPath={location.pathname}
+            />
+            <NavItem
+              href="/admin/register-cashier"
+              icon={<FaUser />}
+              label="Đăng ký nhân viên"
+              expanded={isSidebarOpen}
+              currentPath={location.pathname}
+            />
+
+            <NavItem
+              href="/admin/contact"
+              icon={<FaEnvelope />}
+              label="Liên hệ"
+              expanded={isSidebarOpen}
+              currentPath={location.pathname}
+            />
+
 
           </nav>
         </div>
@@ -176,11 +206,10 @@ const AdminLayout: React.FC = () => {
             label="Đăng xuất"
             expanded={isSidebarOpen}
             className="text-red-400"
-            currentPath={location.pathname} href={''}          />
+            currentPath={location.pathname} href={''} />
         </div>
       </aside>
-
-      {/* Main Content Area */}
+      {/* Main Content */}
       <div
         className={classNames(
           'flex-1 flex flex-col transition-all duration-300 bg-white',
@@ -189,7 +218,6 @@ const AdminLayout: React.FC = () => {
       >
         {/* Header */}
         <AdminHeader />
-
         {/* Page content */}
         <main className="flex-1 w-full bg-white p-6 transition-all duration-300">
           <div className="w-full h-full overflow-auto">
@@ -225,9 +253,7 @@ const NavItem: React.FC<NavItemProps> = ({
   const classes = classNames(
     'flex items-center px-4 py-2 rounded-lg transition-colors w-full',
     expanded ? 'justify-start gap-3' : 'justify-center',
-    isActive
-      ? 'bg-bodyBackground text-white '
-      : 'hover:bg-adminhover',
+    isActive ? '!bg-[#012B40] !text-[#ffffff] ' : 'hover:bg-adminhover',
     className,
   );
 

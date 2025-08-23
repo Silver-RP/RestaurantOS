@@ -2,20 +2,20 @@ import multer, { FileFilterCallback } from 'multer';
 import { Request } from 'express';
 import path from 'path';
 
-const imageFilter = (req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
-  const allowedTypes = /jpeg|jpg|png|webp/;
+const fileFilter = (req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
+  const allowedTypes = /jpeg|jpg|png|webp|mp3|wav|m4a|ogg/;
   const isValidExt = allowedTypes.test(path.extname(file.originalname).toLowerCase());
   const isValidMime = allowedTypes.test(file.mimetype);
-  if (isValidExt && isValidMime) cb(null, true);
-  else cb(new Error('Only image files are allowed!'));
+  if (isValidExt || isValidMime) cb(null, true);
+  else cb(new Error('Only image or audio files are allowed!'));
 };
 
 const storage = multer.memoryStorage();
 
 const upload = multer({
   storage,
-  fileFilter: imageFilter,
-  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter,
+  limits: { fileSize: 10 * 1024 * 1024 }, // tăng giới hạn lên 10MB cho audio
 });
 
 export default upload;

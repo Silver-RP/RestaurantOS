@@ -7,6 +7,54 @@ import { toast } from 'react-toastify';
 import { useDispatch } from 'react-redux';
 import { openOrderModal } from '@/redux/feature/modal/orderDetailModalSlice';
 
+interface ReviewChoiceModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  items: OrderItem[];
+  onSelectItem: (slug: string) => void;
+  title: string;
+}
+
+const ReviewChoiceModal: React.FC<ReviewChoiceModalProps> = ({
+  isOpen,
+  onClose,
+  items,
+  onSelectItem,
+  title,
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-[120]">
+      <div className="bg-bodyBackground rounded-xl shadow-2xl p-6 w-full max-w-md border border-white/10">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold text-secondaryColor">{title}</h2>
+          <button onClick={onClose} className="text-white/70 hover:text-white text-2xl">
+            &times;
+          </button>
+        </div>
+        <ul className="space-y-3 max-h-96 overflow-y-auto">
+          {items.map((item) => (
+            <li
+              key={item._id}
+              onClick={() => onSelectItem(item.dish_slug || '')}
+              className="flex items-center gap-4 p-3 rounded-lg hover:bg-white/10 cursor-pointer transition-colors"
+            >
+              <img
+                src={item.dish_images?.[0] || '/placeholder-image.jpg'}
+                alt={item.dish_name}
+                className="w-16 h-16 object-cover rounded-md"
+              />
+              <span className="font-semibold">{item.dish_name}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+};
+
+
 const statusColorMap: Record<Status, string> = {
   ORDER_PLACED: 'text-yellow-400 bg-yellow-400/10',
   ORDER_CONFIRMED: 'text-blue-400 bg-blue-400/10',
@@ -93,6 +141,7 @@ const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
   const [showMore, setShowMore] = useState(false);
   const [showReasonModal, setShowReasonModal] = useState(false);
   const [modalType, setModalType] = useState<'cancel' | 'return'>('cancel');
+  const [showReviewChoiceModal, setShowReviewChoiceModal] = useState(false);
 
   const { mutate: cancelOrder } = useCancelOrder();
   const { mutate: requestReturn } = useRequestReturn();
@@ -134,8 +183,8 @@ const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
     }
   };
 
-  const handleNavigateToDetail = (slug: string) => {
-    navigate(`/foods/${slug}`);
+  const handleNavigateToDetail = (slug: string, review = false) => {
+    navigate(`/foods/${slug}${review ? '?review=true' : ''}`);
   };
   const handleReorder = () => {
     if (!order.order_items?.length) {
@@ -323,12 +372,14 @@ const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
           </button>
         )}
 
-        {order.status === 'DELIVERED' && order.delivered_at && (
+        {order.status === 'DELIVERED' &&
+          order.delivered_at &&
           (() => {
             const deliveryTime = new Date(order.delivered_at);
             const now = new Date();
-            const timeDiffInMinutes = (now.getTime() - deliveryTime.getTime()) / (1000 * 60);
-            
+            const timeDiffInMinutes =
+              (now.getTime() - deliveryTime.getTime()) / (1000 * 60);
+
             return timeDiffInMinutes <= 30 ? (
               <button
                 className="px-4 py-1.5 text-xs bg-transparent border border-secondaryColor text-white font-normal font-sans hover:bg-secondaryColor hover:text-headerBackground focus:ring-bodyBackground active:bg-secondaryColor/90 active:text-headerBackground"
@@ -337,16 +388,30 @@ const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
                 Yêu cầu hoàn trả
               </button>
             ) : null;
-          })()
-        )}
+          })()}
 
         {order.status === 'RETURN_REQUESTED' && (
           <span className="px-4 py-1.5 text-xs bg-transparent border border-secondaryColor text-secondaryColor font-normal font-sans">
             ĐÃ YÊU CẦU HOÀN TRẢ
           </span>
         )}
-        {(order.status === 'DELIVERED' ||
-          order.status === 'RETURN_REJECTED') && (
+
+        {order.status === 'DELIVERED' && (
+          <button
+            className="px-4 py-1.5 text-xs bg-transparent border border-secondaryColor text-white font-normal font-sans hover:bg-secondaryColor hover:text-headerBackground focus:ring-bodyBackground active:bg-secondaryColor/90 active:text-headerBackground"
+            onClick={() => {
+              if (items.length === 1) {
+                handleNavigateToDetail(items[0].dish_slug || '', true);
+              } else {
+                setShowReviewChoiceModal(true);
+              }
+            }}
+          >
+            Đánh giá
+          </button>
+        )}
+        
+        {(order.status === 'DELIVERED' || order.status === 'RETURN_REJECTED') && (
           <button
             onClick={handleReorder}
             className="px-4 py-1.5 text-xs bg-transparent border border-secondaryColor text-white font-normal font-sans hover:bg-secondaryColor hover:text-headerBackground focus:ring-bodyBackground active:bg-secondaryColor/90 active:text-headerBackground"
@@ -373,6 +438,16 @@ const OrderItemComponent: React.FC<OrderItemProps> = ({ order }) => {
             ? 'Lý do hủy đơn hàng'
             : 'Lý do yêu cầu hoàn trả'
         }
+      />
+      <ReviewChoiceModal
+        isOpen={showReviewChoiceModal}
+        onClose={() => setShowReviewChoiceModal(false)}
+        items={items}
+        onSelectItem={(slug) => {
+          setShowReviewChoiceModal(false);
+          handleNavigateToDetail(slug, true);
+        }}
+        title="Chọn món ăn để đánh giá"
       />
     </div>
   );

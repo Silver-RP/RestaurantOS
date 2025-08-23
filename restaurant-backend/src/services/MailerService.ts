@@ -1,11 +1,13 @@
+/* eslint-disable no-useless-escape */
 import transporter from '../config/mailer';
-import { IOrder } from '../models/OrderModel';
-import { IUser } from '../models/UserModel';
-import { IAddress } from '../models/AddressModel';
+import { IOrder, IOrderPopulated } from '../models/OrderModel';
+import { IUser } from '../types/user.type';
+import { IAddress } from '../types/address.type';
 import { IOrderDetail } from '../models/OrderDetailModel';
 import { IPayment } from '../models/PaymentModel';
 import { IVoucher } from '../models/VoucherModel';
 import { IReservation } from '../types/reservation.types';
+import mongoose from 'mongoose';
 
 type MailTemplateParams = {
   to: string;
@@ -108,7 +110,7 @@ const MailerService = {
 
     await this.sendTemplateEmail({
       to: userEmail,
-      subject: `Bạn đã nhận được một voucher mới từ BeefBeef Restaurant!`,
+      subject: 'Bạn đã nhận được một voucher mới từ BeefBeef Restaurant!',
       template: 'new-voucher-notification',
       context: {
         voucherCode: voucher.code,
@@ -117,8 +119,10 @@ const MailerService = {
           voucher.discount_type === 'percent'
             ? `${voucher.discount_value}%`
             : `${voucher.discount_value.toLocaleString('vi-VN')}₫`,
-        expiryDate: voucher.end_date ? new Date(voucher.end_date).toLocaleDateString('vi-VN') : 'Không xác định',
-        voucherWalletUrl: `${process.env.CLIENT_BASE_URL || '#'}/profile/vouchers`,
+        expiryDate: voucher.end_date
+          ? new Date(voucher.end_date).toLocaleDateString('vi-VN')
+          : 'Không xác định',
+        voucherWalletUrl: `${process.env.CLIENT_BASE_URL || '#'}/profile/user-vouchers`,
       },
     });
   },
@@ -180,7 +184,7 @@ const MailerService = {
           quantity: item.quantity,
           price: item.price.toLocaleString('vi-VN') + '₫',
         })) || [],
-      reservationDetailUrl: `${process.env.CLIENT_BASE_URL || '#'}/profile/reservations?reservationId=${_id}`,
+      reservationDetailUrl: `${process.env.CLIENT_BASE_URL || '#'}/reservation/lookup-reservation`,
     };
 
     await this.sendTemplateEmail({
@@ -191,15 +195,22 @@ const MailerService = {
     });
   },
 
-  async sendReservationPaymentSuccess(params: { payment: IPayment; reservation: IReservation; userEmail: string }) {
+  async sendReservationPaymentSuccess(params: {
+    payment: IPayment;
+    reservation: IReservation;
+    userEmail: string;
+  }) {
     const { payment, reservation, userEmail } = params;
 
     await this.sendTemplateEmail({
       to: userEmail,
-      subject: `Thanh toán thành công khoản cọc cho đơn đặt bàn tại nhà hàng BeefBeef`,
+      subject: 'Thanh toán thành công khoản cọc cho đơn đặt bàn tại nhà hàng BeefBeef',
       template: 'reservationPayment-success',
       context: {
-        reservationId: (reservation as { _id: string })._id.toString().slice(-6).toUpperCase(),
+        reservationId: (reservation._id as mongoose.Types.ObjectId)
+          .toString()
+          .slice(-6)
+          .toUpperCase(),
         transactionCode: payment.transaction_code?.toString().toUpperCase(),
         paymentMethod: this.getPaymentMethodName(payment.payment_method).toString().toUpperCase(),
         amount: payment.amount.toLocaleString('vi-VN') + '₫',
@@ -211,6 +222,43 @@ const MailerService = {
           minute: '2-digit',
         }),
         reservationUrl: `${process.env.CLIENT_BASE_URL || '#'}/reservation/lookup-reservation`,
+      },
+    });
+  },
+
+  async sendReservationCancellation(params: {
+    reservation: IReservation;
+    userEmail: string;
+    reason: string;
+  }) {
+    const { reservation, userEmail, reason } = params;
+
+    // Sử dụng ObjectId để lấy 6 ký tự cuối và viết hoa
+    const reservationIdShort = (reservation._id as mongoose.Types.ObjectId)
+      .toString()
+      .slice(-6)
+      .toUpperCase();
+
+    await this.sendTemplateEmail({
+      to: userEmail,
+      subject: `Đơn đặt bàn #${reservationIdShort} đã bị hủy`,
+      template: 'reservation-cancellation',
+      context: {
+        reservationId: reservationIdShort,
+        reason,
+        name: reservation.full_name,
+        phone: reservation.phone,
+        email: reservation.email,
+        date: new Date(reservation.date).toLocaleDateString('vi-VN', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'numeric',
+          year: 'numeric',
+        }),
+        time: reservation.time,
+        numberOfPeople: reservation.number_of_people,
+        tableType: reservation.table_type || 'Không xác định',
+        reservationDetailUrl: `${process.env.CLIENT_BASE_URL || '#'}\/profile\/reservations?reservationId=${reservation._id}`,
       },
     });
   },
@@ -293,6 +341,113 @@ const MailerService = {
     }
 
     return 'Chưa xác định thời gian giao hàng';
+  },
+
+  async sendInvoiceEmail(order: any, email: string) {
+    try {
+      const restaurantInfo = {
+        name: 'CÔNG TY TNHH BEEFBEEF',
+        address: '161 Quốc Hương, P. Thảo Điền, Quận 2, Tp. HCM',
+        phone: '0239991255',
+        email: 'beefbeefrestaurant.hcm@gmail.com',
+        logo: 'https://res.cloudinary.com/dw8c7oz6q/image/upload/v1748798728/logo_tmawjo.png',
+      };
+
+      await this.sendTemplateEmail({
+        to: email,
+        subject: `Hóa đơn cho đơn hàng #${order._id.toString().slice(-6).toUpperCase()}`,
+        template: 'invoice-email',
+        context: {
+          restaurant: restaurantInfo,
+          order: {
+            id: order._id.toString().slice(-6).toUpperCase(),
+            items: order.order_items,
+            subtotal: order.items_price,
+            shipping: order.shipping_fee,
+            vat: order.vat_amount,
+            discount: order.discount_amount,
+            total: order.total_price,
+            createdAt: order.createdAt,
+          },
+          customer: {
+            name: order.user_id?.username || order.receiver || 'Khách vãng lai',
+            address: order.address_id
+              ? `${order.address_id.street_address}, ${order.address_id.ward}, ${order.address_id.district}, ${order.address_id.province}`
+              : '',
+            phone: order.address_id?.phone || order.receiver_phone || '',
+          },
+        },
+      });
+    } catch (error) {
+      console.error('Error sending invoice email:', error);
+    }
+  },
+
+  async sendOrderCancellation(params: {
+    order: IOrderPopulated;
+    userEmail: string;
+    reason: string;
+  }) {
+    const { order, userEmail, reason } = params;
+
+    // Lấy thông tin khách hàng từ address_id (đã populate) hoặc fallback
+    const name =
+      order.address_id && typeof order.address_id === 'object' && 'full_name' in order.address_id
+        ? (order.address_id as IAddress).full_name
+        : order.receiver || 'Khách vãng lai';
+    const phone =
+      order.address_id && typeof order.address_id === 'object' && 'phone' in order.address_id
+        ? (order.address_id as IAddress).phone
+        : order.receiver_phone || '';
+    const address =
+      order.address_id &&
+      typeof order.address_id === 'object' &&
+      'street_address' in order.address_id
+        ? `${(order.address_id as IAddress).street_address}, ${(order.address_id as IAddress).ward}, ${(order.address_id as IAddress).district}, ${(order.address_id as IAddress).province}`
+        : '';
+
+    await this.sendTemplateEmail({
+      to: userEmail,
+      subject: `Đơn hàng #${order._id.toString().slice(-6).toUpperCase()} đã bị hủy`,
+      template: 'order-cancellation',
+      context: {
+        orderId: order._id.toString().slice(-6).toUpperCase(),
+        reason,
+        name,
+        phone,
+        address,
+        items:
+          'order_items' in order
+            ? (order as IOrderPopulated).order_items.map((item) => ({
+                name: item.dish_name,
+                quantity: item.quantity,
+                unit_price: item.unit_price.toLocaleString('vi-VN') + '₫',
+                total_amount: item.total_amount.toLocaleString('vi-VN') + '₫',
+              }))
+            : [],
+        note: order.note || 'Không có',
+        subtotal: order.items_price.toLocaleString('vi-VN') + '₫',
+        vat: order.vat_amount.toLocaleString('vi-VN') + '₫',
+        shippingFee: order.shipping_fee.toLocaleString('vi-VN') + '₫',
+        discount: order.discount_amount
+          ? order.discount_amount.toLocaleString('vi-VN') + '₫'
+          : '0₫',
+        total:
+          (
+            order.total_price ?? order.items_price + order.vat_amount + order.shipping_fee
+          ).toLocaleString('vi-VN') + '₫',
+        createdAt: order.createdAt
+          ? new Date(order.createdAt).toLocaleString('vi-VN', {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+            })
+          : '',
+        orderDetailUrl: `${process.env.CLIENT_BASE_URL || '#'}\/profile\/orders?orderId=${order._id}`,
+      },
+    });
   },
 };
 

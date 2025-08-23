@@ -15,7 +15,7 @@ const reservationSchema = new mongoose.Schema<IReservation>(
     is_choose_later: { type: Boolean, required: true },
     status: {
       type: String,
-      enum: ['PENDING', 'CONFIRMED', 'CANCELLED', 'DONE'],
+      enum: ['PENDING', 'BOOKED', 'CANCELLED', 'DONE'],
       default: 'PENDING',
     },
     deposit_amount: { type: Number, default: 0 },
@@ -23,10 +23,16 @@ const reservationSchema = new mongoose.Schema<IReservation>(
     payment_method: {
       type: String,
       enum: ['MOMO', 'MOMO_ATM', 'VNPAY', 'BANKING', 'CREDIT_CARD'],
-      required: false, 
+      required: false,
     },
-    payment_status: { type: String, enum: ['UNPAID', 'PAID', 'FAILED', 'REFUNDED'], default: 'UNPAID' },
+    payment_status: {
+      type: String,
+      enum: ['UNPAID', 'PAID', 'FAILED', 'REFUNDED'],
+      default: 'UNPAID',
+    },
     paid_at: { type: Date, default: null },
+    cancelled_reason: { type: String, default: '' },
+    cancelled_at: { type: Date, default: null },
   },
   { timestamps: true },
 );

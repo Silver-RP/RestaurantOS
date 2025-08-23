@@ -12,7 +12,7 @@ const tableReservationStatusSchema = new mongoose.Schema<ITableReservationStatus
       required: true,
     },
     heldBy: {
-      type: mongoose.Schema.Types.Mixed, // Cho phép cả ObjectId và string
+      type: mongoose.Schema.Types.Mixed,
       ref: 'User',
       default: null,
     },

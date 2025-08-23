@@ -1,10 +1,13 @@
-// controller/TableController.ts
 import { Request, Response } from 'express';
 import TableService from '../services/TableService';
 
-export const getAllTables = async (_req: Request, res: Response): Promise<void> => {
+export const getAllTables = async (req: Request, res: Response): Promise<void> => {
   try {
-    const tables = await TableService.getAllTables();
+    const onlyAllowBooking = req.query.onlyAllowBooking === 'true';
+    let tables = await TableService.getAllTables();
+    if (onlyAllowBooking) {
+      tables = tables.filter((t: any) => t.allowBooking);
+    }
     res.json({ success: true, data: tables });
   } catch (error) {
     console.error('Get all tables error:', error);
@@ -14,7 +17,7 @@ export const getAllTables = async (_req: Request, res: Response): Promise<void> 
 
 export const getTablesByDateTime = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { date, time } = req.query;
+    const { date, time, onlyAllowBooking } = req.query;
 
     if (!date || !time) {
       res.status(400).json({
@@ -23,7 +26,10 @@ export const getTablesByDateTime = async (req: Request, res: Response): Promise<
       return;
     }
 
-    const tables = await TableService.getTablesByDateTime(date as string, time as string);
+    let tables = await TableService.getTablesByDateTime(date as string, time as string);
+    if (onlyAllowBooking === 'true') {
+      tables = tables.filter((t: any) => t.allowBooking);
+    }
     res.json({ success: true, data: tables });
   } catch (error) {
     console.error('Get tables by date time error:', error);

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import api from './axiosInstance';
 import { FoodDetail, FoodResponse } from 'types/Dish.types';
 
@@ -87,17 +88,18 @@ export const countFoodView = async (foodId: string): Promise<void> => {
   }
 };
 
-export const fetchFoodBySearch = async ({ search, page, limit }: FetchFoodsParams): Promise<FoodResponse> => {
-  const res = await api.get<{ data: FoodResponse }>(
-    `/food/getFoodBySearch`,
-    {
-      params: {
-        keyword: search,
-        page,
-        limit
-      },
-    }
-  );
+export const fetchFoodBySearch = async ({
+  search,
+  page,
+  limit,
+}: FetchFoodsParams): Promise<FoodResponse> => {
+  const res = await api.get<{ data: FoodResponse }>(`/food/getFoodBySearch`, {
+    params: {
+      keyword: search,
+      page,
+      limit,
+    },
+  });
   console.log('res', res);
   return res.data.data;
 };
@@ -114,9 +116,12 @@ export const createFoodApi = async (formData: FormData): Promise<void> => {
     console.error('Error creating food:', error);
     throw error;
   }
-}
+};
 
-export const updateFoodApi = async (formData: FormData, foodId:string): Promise<void> => {
+export const updateFoodApi = async (
+  formData: FormData,
+  foodId: string,
+): Promise<void> => {
   try {
     const res = await api.put(`/food/updatefood/${foodId}`, formData, {
       headers: {
@@ -128,7 +133,7 @@ export const updateFoodApi = async (formData: FormData, foodId:string): Promise<
     console.error('Error updating food:', error);
     throw error;
   }
-}
+};
 
 export const softDeleteFood = async (foodId: string): Promise<void> => {
   try {
@@ -138,7 +143,7 @@ export const softDeleteFood = async (foodId: string): Promise<void> => {
     console.error('Error deleting food:', error);
     throw error;
   }
-}
+};
 
 export const getSoftDeleteFood = async (
   params: FetchFoodsParams,
@@ -169,9 +174,11 @@ export const restoreFoodAPI = async (foodId: string): Promise<void> => {
     console.error('Error restoring food:', error);
     throw error;
   }
-}
+};
 
-export const permanentlyDeleteFoodAPI = async (foodId: string): Promise<void> => {
+export const permanentlyDeleteFoodAPI = async (
+  foodId: string,
+): Promise<void> => {
   try {
     const res = await api.delete(`/food/deleteFood/${foodId}`);
     return res.data;
@@ -179,7 +186,7 @@ export const permanentlyDeleteFoodAPI = async (foodId: string): Promise<void> =>
     console.error('Error permanently deleting food:', error);
     throw error;
   }
-}
+};
 
 export const fetchDishIngredientsApi = async (dishId: string): Promise<any> => {
   try {
@@ -191,7 +198,10 @@ export const fetchDishIngredientsApi = async (dishId: string): Promise<any> => {
   }
 };
 
-export const addDishIngredientApi = async (ingredientData: any, dishId: string): Promise<any> => {
+export const addDishIngredientApi = async (
+  ingredientData: any,
+  dishId: string,
+): Promise<any> => {
   try {
     const res = await api.post(`/food/${dishId}/ingredients`, ingredientData);
     return res.data;
@@ -199,26 +209,35 @@ export const addDishIngredientApi = async (ingredientData: any, dishId: string):
     console.error('Error adding dish ingredient:', error);
     throw error;
   }
-}
+};
 
-export const updateDishIngredientApi = async (dishIngredientData: any, dishId: string): Promise<any> => {
+export const updateDishIngredientApi = async (
+  dishIngredientData: any,
+  dishId: string,
+): Promise<any> => {
   try {
-    const res = await api.put(`/food/${dishId}/ingredients`, dishIngredientData);
+    const res = await api.put(
+      `/food/${dishId}/ingredients`,
+      dishIngredientData,
+    );
     return res.data;
   } catch (error) {
     console.error('Error updating dish ingredient:', error);
     throw error;
   }
-}
+};
 
-export const deleteDishIngredientApi = async (_ids: string[], dishId: string): Promise<any> => {
+export const deleteDishIngredientApi = async (
+  _ids: string[],
+  dishId: string,
+): Promise<any> => {
   try {
     const res = await api.delete(`/food/${dishId}/ingredients`, {
       data: { ids: _ids },
-      });
+    });
     return res.data;
   } catch (error) {
     console.error('Error deleting dish ingredient:', error);
     throw error;
   }
-}
+};

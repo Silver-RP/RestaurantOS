@@ -83,7 +83,6 @@ export const useDeleteCartItem = () => {
   const mutation = useMutation({
     mutationFn: (dishId: string) => deleteCartItem(dishId),
     onSuccess: () => {
-      toast.success('Đã xóa sản phẩm khỏi giỏ hàng!');
       queryClient.invalidateQueries({ queryKey: ['cart'] });
     },
     onError: (error: unknown) => {

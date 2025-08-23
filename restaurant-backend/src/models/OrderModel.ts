@@ -1,27 +1,39 @@
 import { Schema, model, Document, Types, PaginateModel } from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
+import { IAddress } from '../types/address.type';
+import { IOrderDetail } from './OrderDetailModel';
+
+export interface IOrderPopulated extends Omit<IOrder, 'address_id'> {
+  address_id: IAddress | null | undefined;
+  order_items: IOrderDetail[];
+}
 
 export interface IOrder extends Document {
   _id: Types.ObjectId;
-  user_id: Types.ObjectId;
+  user_id: {
+    _id: Types.ObjectId;
+    email: string;
+    name?: string;
+  };
   cashier_order_id?: Types.ObjectId | null;
-  address_id: Types.ObjectId | null | undefined;
+  address_id: Types.ObjectId | IAddress | null | undefined;
   payment_method: 'CASH' | 'BANKING' | 'VNPAY' | 'MOMO' | 'MOMO_ATM' | 'CREDIT_CARD';
   delivery_type: 'DELIVERY' | 'PICKUP';
+  addressSnapshot: IAddress;
 
   status:
-    | 'ORDER_PLACED'
-    | 'ORDER_CONFIRMED'
-    | 'PENDING_PICKUP'
-    | 'PICKED_UP'
-    | 'IN_TRANSIT'
-    | 'DELIVERED'
-    | 'DELIVERY_FAILED'
-    | 'RETURN_REQUESTED'
-    | 'RETURN_APPROVED'
-    | 'RETURN_REJECTED'
-    | 'RETURNED'
-    | 'CANCELLED';
+  | 'ORDER_PLACED'
+  | 'ORDER_CONFIRMED'
+  | 'PENDING_PICKUP'
+  | 'PICKED_UP'
+  | 'IN_TRANSIT'
+  | 'DELIVERED'
+  | 'DELIVERY_FAILED'
+  | 'RETURN_REQUESTED'
+  | 'RETURN_APPROVED'
+  | 'RETURN_REJECTED'
+  | 'RETURNED'
+  | 'CANCELLED';
   shipping_fee: number;
   vat_amount: number;
   items_price: number;
@@ -63,6 +75,15 @@ const OrderSchema = new Schema<IOrder>(
       type: String,
       enum: ['DELIVERY', 'PICKUP'],
       required: true,
+    },
+    addressSnapshot: {
+      full_name: { type: String, required: true },
+      phone: { type: String, required: true },
+      province: { type: String, required: true },
+      district: { type: String, required: true },
+      ward: { type: String, required: true },
+      street_address: { type: String, required: true },
+      address_type: { type: String, enum: ['HOME', 'WORK', 'OTHER'], default: 'HOME' },
     },
     status: {
       type: String,

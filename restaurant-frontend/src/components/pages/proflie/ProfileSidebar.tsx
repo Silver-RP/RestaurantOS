@@ -5,7 +5,8 @@ import { LogoutUser } from '../../../redux/feature/auth/authActions';
 import { useAppDispatch } from '../../../redux/hook';
 import Cookies from 'js-cookie';
 import React from 'react';
-const sidebarItems = [
+import { socket } from '../../../utils/socket'; 
+export const sidebarItems = [
   { title: 'Thông tin tài khoản', icon: <FaUser />, path: '/profile' },
   { title: 'Lịch sử đơn hàng', icon: <FaClipboardList />, path: '/profile/orders' },
   { title: 'Lịch sử đặt bàn', icon: <FaRegClock />, path: '/profile/my-reservation' },
@@ -16,7 +17,7 @@ const sidebarItems = [
 ];
 
 
-const ProfileSidebar = () => {
+const ProfileSidebar: React.FC<{ onItemClick: () => void }> = ({ onItemClick }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -30,9 +31,13 @@ const ProfileSidebar = () => {
   };
 
   const handleLogout = async () => {
-
     const userInfo = JSON.parse(Cookies.get('userInfo') || '{}');
     const isGoogleLogin = userInfo?.isGoogleLogin;
+    const userId = userInfo?._id; // 👈 Đảm bảo bạn có userId
+    if (userId) {
+      socket.emit('manualDisconnect', { userId });
+      socket.disconnect();
+    }
 
     if (isGoogleLogin) {
       const email = userInfo?.email;
@@ -50,25 +55,25 @@ const ProfileSidebar = () => {
         localStorage.removeItem('token');
         clearAuthData();
         setTimeout(() => {
-          navigate('/'); 
+          navigate('/');
         }, 100);
       }
       return;
     }
-    
 
     try {
-      await dispatch(LogoutUser()).unwrap(); 
+      await dispatch(LogoutUser()).unwrap();
       console.log('LogoutUser called');
     } catch (err) {
       console.error('Logout failed:', err);
     } finally {
       setTimeout(() => {
-        navigate('/login');
+        window.location.href = '/login'; 
       }, 100);
     }
   };
-  
+
+
 
   return (
     <div className="flex flex-col gap-4 font-sans">
@@ -84,6 +89,7 @@ const ProfileSidebar = () => {
                 : 'bg-transparent text-white hover:bg-[#FFE0A0]/20 hover:text-headerBackground'}
               border-[#FFE0A0]
             `}
+            onClick={onItemClick}
           >
             <span className="text-lg">{item.icon}</span>
             <span>{item.title}</span>

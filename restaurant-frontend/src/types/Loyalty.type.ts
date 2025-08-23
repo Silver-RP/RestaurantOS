@@ -1,12 +1,26 @@
+import { Voucher } from './Voucher.type';
+
 // Loyalty Tier
 export interface LoyaltyTier {
   _id: string;
-  tier_name: 'bronze' | 'silver' | 'gold' | 'diamond';
+  tier_name: 'new' | 'bronze' | 'silver' | 'gold' | 'diamond';
   min_spent: number;
   discount: number;
   benefits?: string;
-  sort_order: number;
-  [key: string]: any;
+  is_active?: boolean;
+}
+
+// Milestone Definition
+export interface MilestoneDefinition {
+  _id: string;
+  milestone_amount: number;
+  milestone_name: string;
+  description: string;
+  voucher_id: string;
+  voucher?: Voucher;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 // Account Info
@@ -15,7 +29,6 @@ export interface LoyaltyAccountInfo {
   total_spent: number;
   current_tier: LoyaltyTier | null;
   yearly_spending: { [year: string]: number };
-  [key: string]: any; // Cho phép nhận mọi trường khác từ BE
 }
 
 // Transaction
@@ -28,5 +41,4 @@ export interface LoyaltyTransaction {
   type: 'earn' | 'spend';
   note?: string;
   created_at?: string;
-  [key: string]: any;
 } 

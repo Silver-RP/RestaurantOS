@@ -1,6 +1,6 @@
 import ProfileService from '../services/ProfileService';
 import { Request, Response } from 'express';
-import { IUser } from '../models/UserModel';
+import { IUser } from '../types/user.type';
 import { Types } from 'mongoose';
 
 class ProfileController {

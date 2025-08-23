@@ -15,8 +15,31 @@ const CategoriesPage: React.FC = () => {
 
   const { categories, loading, error, refetch, setCategories } =
     useCategories();
+  
+  console.log('CategoriesPage render - loading:', loading, 'error:', error, 'categories:', categories);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  // Load categories when component mounts
+  useEffect(() => {
+    console.log('CategoriesPage mounted, calling refetch');
+    refetch();
+  }, [refetch]);
+
+  // Đóng dropdown khi click ra ngoài
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('.sort-dropdown-container')) {
+        setShowSortDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const [search, setSearch] = useState(searchParams.get('keyword') || '');
   const [sortType, setSortType] = useState<'asc' | 'desc' | ''>('');
@@ -42,8 +65,28 @@ const CategoriesPage: React.FC = () => {
 
     if (sortField) {
       data = [...data].sort((a, b) => {
-        const aField = a[sortField]?.toString().toLowerCase() ?? '';
-        const bField = b[sortField]?.toString().toLowerCase() ?? '';
+        let aField = '';
+        let bField = '';
+        switch (sortField) {
+          case 'Cate_name':
+            aField = a.Cate_name.toLowerCase();
+            bField = b.Cate_name.toLowerCase();
+            break;
+          case 'Cate_slug':
+            aField = a.Cate_slug.toLowerCase();
+            bField = b.Cate_slug.toLowerCase();
+            break;
+          case 'Cate_type':
+            aField = a.Cate_type.toLowerCase();
+            bField = b.Cate_type.toLowerCase();
+            break;
+          case 'foodCount':
+            aField = a.foodCount?.toString() || '';
+            bField = b.foodCount?.toString() || '';
+            break;
+          default:
+            break;
+        }
         return order === 'asc'
           ? aField.localeCompare(bField)
           : bField.localeCompare(aField);
@@ -54,11 +97,38 @@ const CategoriesPage: React.FC = () => {
   }, [categories, search, sortField, order]);
   const handleSort = (field: string) => {
     if (sortField === field) {
-      setOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+      const newOrder = order === 'asc' ? 'desc' : 'asc';
+      setOrder(newOrder);
+      // Cập nhật sortType nếu đang sắp xếp theo tên
+      if (field === 'Cate_name') {
+        setSortType(newOrder);
+      }
     } else {
       setSortField(field);
       setOrder('asc');
+      // Reset sortType nếu chuyển sang sắp xếp theo trường khác
+      if (field !== 'Cate_name') {
+        setSortType('');
+      } else {
+        setSortType('asc');
+      }
     }
+  };
+
+  // Xử lý sắp xếp từ dropdown
+  const handleSortByType = (type: 'asc' | 'desc') => {
+    setSortType(type);
+    setSortField('Cate_name'); // Luôn sắp xếp theo tên khi dùng dropdown
+    setOrder(type);
+    setShowSortDropdown(false);
+  };
+
+  // Reset sắp xếp
+  const handleResetSort = () => {
+    setSortType('');
+    setSortField('');
+    setOrder('asc');
+    setShowSortDropdown(false);
   };
   const getSortIcon = (field: string) => {
     if (sortField !== field) return <FaSort />;
@@ -138,37 +208,43 @@ const CategoriesPage: React.FC = () => {
             className="px-4 py-2 border rounded-md w-full sm:w-96"
           />
 
-          <div className="relative">
+          <div className="relative sort-dropdown-container">
             <button
               onClick={() => setShowSortDropdown(!showSortDropdown)}
               className="flex items-center px-4 py-2 border rounded-md shadow-sm bg-white gap-2"
             >
-              {sortType === 'asc'
-                ? 'Tên A-Z'
-                : sortType === 'desc'
-                  ? 'Tên Z-A'
-                  : 'Sắp xếp theo tên'}
+                             {sortField === 'Cate_name' && sortType === 'asc'
+                 ? 'Tên A-Z'
+                 : sortField === 'Cate_name' && sortType === 'desc'
+                   ? 'Tên Z-A'
+                   : 'Sắp xếp theo tên'}
               <FaChevronDown className="text-sm" />
             </button>
             {showSortDropdown && (
               <div className="absolute mt-2 bg-white border rounded-md shadow-md z-10 w-40">
                 <div
-                  className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                  onClick={() => {
-                    setSortType('asc');
-                    setShowSortDropdown(false);
-                  }}
+                  className={`px-4 py-2 hover:bg-gray-100 cursor-pointer ${
+                    sortField === 'Cate_name' && sortType === 'asc' ? 'bg-blue-50 text-blue-600' : ''
+                  }`}
+                  onClick={() => handleSortByType('asc')}
                 >
                   Tên A-Z
                 </div>
                 <div
-                  className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                  onClick={() => {
-                    setSortType('desc');
-                    setShowSortDropdown(false);
-                  }}
+                  className={`px-4 py-2 hover:bg-gray-100 cursor-pointer ${
+                    sortField === 'Cate_name' && sortType === 'desc' ? 'bg-blue-50 text-blue-600' : ''
+                  }`}
+                  onClick={() => handleSortByType('desc')}
                 >
                   Tên Z-A
+                </div>
+                <div className="border-t border-gray-200">
+                  <div
+                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-gray-500"
+                    onClick={handleResetSort}
+                  >
+                    Bỏ sắp xếp
+                  </div>
                 </div>
               </div>
             )}
@@ -191,9 +267,17 @@ const CategoriesPage: React.FC = () => {
       </div>
 
       {loading ? (
-        <p>Đang tải danh mục...</p>
+        <div className="flex items-center justify-center py-8">
+          <p className="text-lg">Đang tải danh mục...</p>
+        </div>
       ) : error ? (
-        <p className="text-red-500">{error}</p>
+        <div className="flex items-center justify-center py-8">
+          <p className="text-red-500 text-lg">{error}</p>
+        </div>
+      ) : !categories?.data || categories.data.length === 0 ? (
+        <div className="flex items-center justify-center py-8">
+          <p className="text-lg text-gray-500">Không có danh mục nào.</p>
+        </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white text-sm text-gray-700">
@@ -255,7 +339,13 @@ const CategoriesPage: React.FC = () => {
                   <td className="p-3 font-medium">{cate.Cate_name}</td>
                   <td className="p-3">{cate.Cate_slug}</td>
                   <td className="p-3">
-                    {cate.Cate_type === 'dish' ? 'Món ăn' : 'Đồ uống'}
+                    {cate.Cate_type === 'dish'
+                      ? 'Món ăn'
+                      : cate.Cate_type === 'drink'
+                        ? 'Đồ uống'
+                        : cate.Cate_type === 'new'
+                          ? 'Tin tức'
+                          : cate.Cate_type}
                   </td>
                   <td className="p-3">{cate.foodCount || 0}</td>
                   <td className="p-3 space-x-2">
@@ -289,9 +379,9 @@ const CategoriesPage: React.FC = () => {
               params.set('page', String(newPage));
               setSearchParams(params);
             }}
-            limit={0}
-            onLimitChange={function (newLimit: number): void {
-              throw new Error('Function not implemented.');
+            limit={perPage}
+            onLimitChange={() => {
+              // Handle limit change if needed
             }}
           />
           <ToastConfigAdmin />

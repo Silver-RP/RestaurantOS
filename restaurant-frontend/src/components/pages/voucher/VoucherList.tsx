@@ -9,7 +9,7 @@ const VoucherList: React.FC = () => {
   const { data, isLoading } = usePublicActiveVouchers({ page, limit });
   const saveVoucherMutation = useSaveVoucher();
   const { data: userVouchersData } = useUserVouchers();
-  const userVouchers: UserVoucherDisplay[] = Array.isArray(userVouchersData) ? userVouchersData as UserVoucherDisplay[] : [];
+  const userVouchers: UserVoucherDisplay[] = Array.isArray(userVouchersData) ? userVouchersData as unknown as UserVoucherDisplay[] : [];
   const savedVoucherIds = new Set(userVouchers.map(v => v._id));
   const vouchers: Voucher[] = data?.docs || [];
 
@@ -92,23 +92,19 @@ const VoucherList: React.FC = () => {
                   );
                 })
               ) : (
-                <div className="col-span-full flex justify-center items-center ">
-                  <p className="text-center text-xl font-light text-secondaryColor">
-                    Hiện chưa có voucher nào.
-                  </p>
-                </div>
+                <p className="text-center text-xl font-light text-secondaryColor">
+                  Hiện chưa có voucher nào.
+                </p>
               )}
             </div>
-            {vouchers.length > 0 && (
-              <Pagination
-                currentPage={page}
-                totalPages={totalPages}
-                onPageChange={setPage}
-                limit={limit}
-                onLimitChange={handleLimitChange}
-                showLimit={true}
-              />
-            )}
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              onPageChange={setPage}
+              limit={limit}
+              onLimitChange={handleLimitChange}
+              showLimit={true}
+            />
           </>
         )}
       </div>

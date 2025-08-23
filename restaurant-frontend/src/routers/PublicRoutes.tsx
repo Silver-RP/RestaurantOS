@@ -31,6 +31,8 @@ import PostsByTagPage from '../pages/PostsByTagPage';
 import VoucherPage from '../pages/VoucherPage';
 import UserVoucherList from '@/components/pages/voucher/UserVoucherList';
 import TrackingReservationPage from '@/pages/TrackingReservation';
+import UserReviews from '@/components/pages/proflie/UserReviews';
+import ProfileLayout from '../layouts/ProfileLayout';
 
 
 const PublicRoutes = [
@@ -47,16 +49,11 @@ const PublicRoutes = [
       { path: 'forgot-password', element: <ForgotPassword /> },
       { path: 'verify-otp', element: <EnterOTP /> },
       { path: 'verify-otp-email', element: <EnterOTPEmail /> },
-      { path: 'profile', element: <ProfilePage /> },
-      { path: 'profile/address', element: <AddressPage /> },
-      { path: 'profile/vouchers', element: <UserVoucherList /> },
       { path: 'menu', element: <MenuPage /> },
       { path: 'foods/:slug', element: <ProductDetail /> },
       { path: 'contact', element: <ContactUsPage /> },
-      { path: 'profile/faqs', element: <FAQsCompoent /> },
       { path: 'posts', element: <PostPage /> },
       { path: 'posts/tag/:tag', element: <PostsByTagPage /> },
-      { path: 'profile/orders', element: <OrderPage /> },
       { path: 'cart', element: <CartPage /> },
       { path: 'checkout', element: <CheckoutPage /> },
       { path: 'reservation', element: <ReservationPage /> },
@@ -64,12 +61,31 @@ const PublicRoutes = [
       { path: 'post-details/:id', element: <PostDetailsPage /> },
       { path: '*', element: <Navigate to="/" /> },
       { path: '/confirm', element: <ConfirmOrder /> },
-      { path: '/profile/my-reservation', element: <MyReservationsPage /> },
       { path: '/payment-success', element: <PaymentSuccess /> },
       { path: '/payment-failed', element: <PaymentFailed /> },
       { path: 'vouchers', element: <VoucherPage /> },
-      { path: '/profile/user-vouchers', element: <UserVoucherList /> },
       { path: '/reservation/lookup-reservation', element: <TrackingReservationPage /> },
+      // { path: 'profile', element: <ProfilePage /> },
+      // { path: 'profile/orders', element: <OrderPage /> },
+      // { path: 'profile/faqs', element: <FAQsCompoent /> },
+      // { path: 'profile/address', element: <AddressPage /> },
+      // { path: '/profile/reviews', element: <UserReviews /> },
+      // { path: 'profile/vouchers', element: <UserVoucherList /> },
+      // { path: '/profile/user-vouchers', element: <UserVoucherList /> },
+      // { path: '/profile/my-reservation', element: <MyReservationsPage /> },
+      {
+        path: 'profile',
+        element: <ProfileLayout />, 
+        children: [
+          { index: true, element: <ProfilePage /> },
+          { path: 'address', element: <AddressPage /> },
+          { path: 'user-vouchers', element: <UserVoucherList /> },
+          { path: 'faqs', element: <FAQsCompoent /> },
+          { path: 'orders', element: <OrderPage /> },
+          { path: 'my-reservation', element: <MyReservationsPage /> },
+          { path: 'reviews', element: <UserReviews /> },
+        ],
+      },
 
     ],
   },

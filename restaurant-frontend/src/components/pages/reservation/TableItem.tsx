@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type TableStatus = 'available' | 'reserved' | 'selected';
+export type TableStatus = 'available' | 'reserved' | 'selected' | 'booked';
 export type TableType =
   | 'standard'
   | 'group'
@@ -23,13 +23,15 @@ interface TableItemProps {
 
 const getBorderColor = (status: TableStatus) => {
   if (status === 'selected') return 'border-yellow-400';
-  if (status === 'reserved') return 'border-red-500';
+  if (status === 'booked') return 'border-red-500';
+  if (status === 'reserved') return 'border-gray-500';
   return 'border-green-500';
 };
 
 const getChairColor = (status: TableStatus) => {
   if (status === 'selected') return 'bg-yellow-400';
-  if (status === 'reserved') return 'bg-red-400';
+  if (status === 'booked') return 'bg-red-400';
+  if (status === 'reserved') return 'bg-gray-400';
   return 'bg-green-400';
 };
 
@@ -72,10 +74,10 @@ const TableItem: React.FC<TableItemProps> = ({
   const chairColor = getChairColor(status);
   const sizeClass =
     type === 'group' || capacity > 6
-      ? 'w-32 h-14'
+      ? 'w-full h-8 md:w-32 md:h-14 justify-start'
       : type === 'vip'
-        ? 'w-28 h-14'
-        : 'w-20 h-10';
+        ? 'w-18 h-8 md:w-28 md:h-14'
+        : 'w-12 h-6 md:w-20 md:h-10';
 
   // Không render ghế cho bàn VIP
   let chairs: React.ReactNode[] = [];
@@ -86,7 +88,7 @@ const TableItem: React.FC<TableItemProps> = ({
     chairs.push(
       <div
         key="left"
-        className={`absolute w-5 h-5 rounded-full ${chairColor} opacity-40 z-0 border border-white`}
+        className={`hidden md:block absolute w-[10px] h-[10px] md:w-5 md:h-5 rounded-full ${chairColor} opacity-40 z-0 border border-white`}
         style={{
           left: '-9px',
           top: '50%',
@@ -97,7 +99,7 @@ const TableItem: React.FC<TableItemProps> = ({
     chairs.push(
       <div
         key="right"
-        className={`absolute w-5 h-5 rounded-full ${chairColor} opacity-40 z-0 border border-white`}
+        className={`hidden md:block absolute w-[10px] h-[10px] md:w-5 md:h-5 rounded-full ${chairColor} opacity-40 z-0 border border-white`}
         style={{
           right: '-9px',
           top: '50%',
@@ -112,7 +114,7 @@ const TableItem: React.FC<TableItemProps> = ({
       chairs.push(
         <div
           key={`top-${i}`}
-          className={`absolute w-5 h-5 rounded-full ${chairColor} opacity-40 z-0 border border-white`}
+          className={`hidden md:block absolute w-[10px] h-[10px] md:w-5 md:h-5 rounded-full ${chairColor} opacity-40 z-0 border border-white`}
           style={{
             left: `${6 + i * 32}px`,
             top: '-10px',
@@ -123,7 +125,7 @@ const TableItem: React.FC<TableItemProps> = ({
       chairs.push(
         <div
           key={`bottom-${i}`}
-          className={`absolute w-5 h-5 rounded-full ${chairColor} opacity-40 z-0 border border-white`}
+          className={`hidden md:block absolute w-[10px] h-[10px] md:w-5 md:h-5 rounded-full ${chairColor} opacity-40 z-0 border border-white`}
           style={{
             left: `${6 + i * 32}px`,
             bottom: '-10px',
@@ -142,7 +144,7 @@ const TableItem: React.FC<TableItemProps> = ({
     chairs = chairPos.map((pos, idx) => (
       <div
         key={idx}
-        className={`absolute w-5 h-5 rounded-full ${chairColor} opacity-40 z-0`}
+        className={`hidden md:block absolute w-[10px] h-[10px] md:w-5 md:h-5 rounded-full ${chairColor} opacity-40 z-0`}
         style={{ ...pos }}
       />
     ));
@@ -154,7 +156,7 @@ const TableItem: React.FC<TableItemProps> = ({
       chairs.push(
         <div
           key={`left-${i}`}
-          className={`absolute left-[-16px] top-[${8 + (i * 32) / perSide}rem] w-4 h-4 rounded-full ${chairColor} opacity-80 border border-white`}
+          className={`hidden md:block absolute left-[-16px] w-[10px] h-[10px] md:w-5 md:h-5 rounded-full ${chairColor} opacity-80 border border-white`}
           style={{ top: `${16 + (i * 40) / perSide}%` }}
         />,
       );
@@ -163,7 +165,7 @@ const TableItem: React.FC<TableItemProps> = ({
         chairs.push(
           <div
             key={`right-${i}`}
-            className={`absolute right-[-16px] top-[${8 + (i * 32) / perSide}rem] w-4 h-4 rounded-full ${chairColor} opacity-80 border border-white`}
+            className={`hidden md:block absolute right-[-16px] w-[10px] h-[10px] md:w-5 md:h-5 rounded-full ${chairColor} opacity-80 border border-white`}
             style={{ top: `${16 + (i * 40) / perSide}%` }}
           />,
         );
@@ -179,7 +181,7 @@ const TableItem: React.FC<TableItemProps> = ({
       chairs.push(
         <div
           key={i}
-          className={`absolute w-4 h-4 rounded-full ${chairColor} opacity-80 border border-white`}
+          className={`hidden md:block absolute w-[10px] h-[10px] md:w-5 md:h-5 rounded-full ${chairColor} opacity-80 border border-white`}
           style={{
             left: `calc(50% + ${xPos}px - 8px)`,
             top: `calc(50% + ${yPos}px - 8px)`,
@@ -191,7 +193,7 @@ const TableItem: React.FC<TableItemProps> = ({
 
   return (
     <div
-      className={`relative flex items-center justify-center m-2 ${sizeClass} ${disabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
+      className={`relative flex items-center justify-start md:justify-center m-[2px] md:m-2 ${sizeClass} ${disabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
       style={{
         minWidth: 60,
         position: x !== undefined && y !== undefined ? 'absolute' : undefined,

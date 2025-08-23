@@ -10,20 +10,20 @@ import Typography from '@mui/material/Typography';
 import { SparkLineChart } from '@mui/x-charts/SparkLineChart';
 import { areaElementClasses } from '@mui/x-charts/LineChart';
 
-function getDaysInMonth(month, year) {
-  const date = new Date(year, month, 0);
-  const monthName = date.toLocaleDateString('en-US', {
-    month: 'short',
-  });
-  const daysInMonth = date.getDate();
-  const days = [];
-  let i = 1;
-  while (days.length < daysInMonth) {
-    days.push(`${monthName} ${i}`);
-    i += 1;
-  }
-  return days;
-}
+// function getDaysInMonth(month, year) {
+//   const date = new Date(year, month, 0);
+//   const monthName = date.toLocaleDateString('en-US', {
+//     month: 'short',
+//   });
+//   const daysInMonth = date.getDate();
+//   const days = [];
+//   let i = 1;
+//   while (days.length < daysInMonth) {
+//     days.push(`${monthName} ${i}`);
+//     i += 1;
+//   }
+//   return days;
+// }
 
 function AreaGradient({ color, id }) {
   return (
@@ -106,7 +106,7 @@ function StatCard({ title, value, interval, trend, data, xAxis, percent }) {
               {interval}
             </Typography>
           </Stack>
-          <Box sx={{ width: '100%', height: 50 }}>  
+          <Box sx={{ width: '100%', height: 50 }}>
             <SparkLineChart
               color={chartColor}
               data={normalizedData}

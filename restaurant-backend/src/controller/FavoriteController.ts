@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { FavoriteService } from '../services/FavoriteService';
-import { IUser } from '../models/UserModel';
+import { IUser } from '../types/user.type';
 
 export const FavoriteController = {
   add: async (req: Request, res: Response): Promise<void> => {

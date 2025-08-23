@@ -64,7 +64,6 @@ export const canManageUserByRole = async (req: Request, res: Response, next: Nex
       const newRoles = await Roles.find({ _id: { $in: targetRoleIds } });
       const newRoleNames = newRoles.map((r) => r.name);
 
-      // ❌ Không được chỉnh sửa người có role là 'user' (dù là vai trò hiện tại hay gán mới)
       if (targetCurrentRoles.includes('user') || newRoleNames.includes('user')) {
         return res
           .status(403)

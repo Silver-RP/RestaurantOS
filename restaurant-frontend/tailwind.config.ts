@@ -15,6 +15,7 @@ export default {
         '15': 'repeat(15, minmax(0, 1fr))',
       },
       colors: {
+        mode: 'legacy',
         facebook: '#1877F2',
         headerBackground: '#021D2A',
         bodyBackground: '#012B40',
@@ -38,10 +39,10 @@ export default {
       },
       fontFamily: {
         sans: ['Manrope', ...defaultTheme.fontFamily.sans],
-        restora: ['Restora', ...defaultTheme.fontFamily.serif],
+        restora: ['"Playfair Display"', ...defaultTheme.fontFamily.serif],
         roboto: ['Roboto', ...defaultTheme.fontFamily.sans],
         poppins: ['Poppins', ...defaultTheme.fontFamily.sans],
-        heading: ['Restora', ...defaultTheme.fontFamily.serif],
+        heading: ['"Playfair Display"', ...defaultTheme.fontFamily.serif],
         button: ['Poppins', ...defaultTheme.fontFamily.sans],
         body: ['Roboto', ...defaultTheme.fontFamily.sans],
         cormorant: ["'Cormorant Garamond'", 'serif'],
@@ -51,6 +52,7 @@ export default {
         'bounce-slow': 'bounce 2.5s infinite',
         'fade-down': 'fadeDown 1s ease-out',
         fadeIn: 'fadeIn 0.3s ease-out forwards',
+        shake: 'shake 0.6s ease-in-out infinite',
       },
       keyframes: {
         wiggle: {
@@ -64,6 +66,13 @@ export default {
         fadeIn: {
           '0%': { opacity: 0, transform: 'scale(0.95)' },
           '100%': { opacity: 1, transform: 'scale(1)' },
+        },
+        shake: {
+          '0%, 100%': { transform: 'translateX(0)' },
+          '20%': { transform: 'translateX(-4px)' },
+          '40%': { transform: 'translateX(4px)' },
+          '60%': { transform: 'translateX(-4px)' },
+          '80%': { transform: 'translateX(4px)' },
         },
       },
     },

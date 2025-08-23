@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { IUser } from '../models/UserModel';
+import { IUser } from '../types/user.type';
 import Roles from '../models/RoleModel';
 import RefreshToken from '../models/RefreshToken';
 
@@ -23,6 +23,29 @@ class AuthMiddleWare {
       return;
     }
   }
+
+  async optionalVerifyToken(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const authHeader = req.headers['authorization'];
+      const token = authHeader && typeof authHeader === 'string' ? authHeader.split(' ')[1] : null;
+
+      if (!token) {
+        req.user = undefined;
+        return next();
+      }
+
+      const user = jwt.verify(token, process.env.ACCESS_TOKEN as string) as IUser;
+      req.user = user;
+      next();
+    } catch (err: any) {
+      console.error('Optional token verification failed:', err.message);
+      req.user = undefined;
+      next();
+    }
+  }
+
+
+
 
   async verifyRefreshToken(req: Request, res: Response, next: NextFunction): Promise<any> {
     try {

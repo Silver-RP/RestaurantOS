@@ -1,10 +1,11 @@
+
 import React from 'react';
 import { Dialog } from '@headlessui/react';
 import { IoClose } from 'react-icons/io5';
 
 export interface Address {
-  _id: string;
-  user_id: string;
+  id: string;
+  user_id?: string;
   full_name: string;
   phone: string;
   province: string;
@@ -13,10 +14,8 @@ export interface Address {
   street_address: string;
   address_type: 'HOME' | 'WORK' | 'OTHER'; 
   is_default: boolean;
-  createdAt?: string;
-  updatedAt?: string;
-  lat?: number;
-  lon?: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface ModalSelectAddressProps {
@@ -36,12 +35,18 @@ const ModalSelectAddress = ({
   onSelect,
   onAddAddress,
 }: ModalSelectAddressProps) => {
+  // Map mã tỉnh sang tên
+const getProvinceName = (code?: string) => {
+  if (!code) return '';
+  if (code === '79') return 'TP. Hồ Chí Minh';
+  return code;
+};
   const getFormattedAddress = (address: Address) => {
     return [
       address.street_address,
       address.ward,
       address.district,
-      address.province,
+      address.province ? getProvinceName(address.province) : '',
     ].filter(Boolean).join(', ');
   };
 

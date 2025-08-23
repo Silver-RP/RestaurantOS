@@ -6,20 +6,22 @@ import {
   updateReviewApi,
   deleteReviewApi,
   toggleReviewVisibilityApi,
+  getUserReviewsApi,
   ReviewPayload,
   UpdateReviewPayload,
   FetchReviewsParams,
 } from '@/api/ReviewApi';
 import { IReview } from '@/types/Review.types';
 import { toast } from 'react-toastify';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/redux/store';
+import Cookie from 'js-cookie';
+
 export const useReview = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const currentUser = useSelector((state: RootState) => state.user.user); 
+ 
   const createReview = async (data: ReviewPayload): Promise<IReview | null> => {
-    if (!currentUser?._id) {
+    const userInfo = Cookie.get('userInfo');
+    if (!userInfo) {
       toast.error('Vui lòng đăng nhập để gửi đánh giá');
       return null;
     }
@@ -27,7 +29,6 @@ export const useReview = () => {
     try {
       setLoading(true);
       const review = await createReviewApi(data);
-      toast.success('Đánh giá đã được gửi thành công');
       return review;
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Lỗi khi tạo đánh giá';
@@ -109,6 +110,21 @@ export const useReview = () => {
     }
   };
 
+  const getUserReviews = async (params?: { page?: number; limit?: number }) => {
+    try {
+      setLoading(true);
+      const result = await getUserReviewsApi(params);
+      return result;
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Lỗi khi tải đánh giá';
+      toast.error(errorMessage);
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     loading,
     error,
@@ -118,5 +134,6 @@ export const useReview = () => {
     updateReview,
     deleteReview,
     toggleVisibility,
+    getUserReviews,
   };
 };

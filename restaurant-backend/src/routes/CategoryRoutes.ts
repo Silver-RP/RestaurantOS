@@ -9,5 +9,6 @@ router.get('/getcategorybyid/:id', CategoryController.GetCategoryById);
 router.put('/update/:id', upload.single('Cate_img'), CategoryController.UpdateCategory);
 router.delete('/delete/:id', CategoryController.DeleteCategory);
 router.get('/paginatecategory', CategoryController.PaginateCate);
+router.get('/getallcategorynew', CategoryController.GetAllNewCategory);
 
 export default router;
