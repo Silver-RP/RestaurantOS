@@ -5,35 +5,72 @@ import Cart from '../models/CartModel';
 class CartService {
   static async getCartItems(userId: string) {
     if (!mongoose.Types.ObjectId.isValid(userId)) {
-      throw new Error('Invalid userId');
+      throw new Error("Invalid userId");
     }
-    // tôi muốn lấy ra tên category của dish
+
     let cart = await Cart.findOne({ userId }).populate({
-      path: 'items.dishId',
+      path: "items.dishId",
+      select: "name price discount_price images categories countInStock status",
       populate: {
-        path: 'categories',
-        model: 'categories',
-        select: 'Cate_name Cate_slug',
+        path: "categories",
+        model: "categories",
+        select: "Cate_name Cate_slug",
       },
     });
 
     if (!cart) {
-      cart = await Cart.create({
-        userId,
-        items: [], 
-      });
-  
+      cart = await Cart.create({ userId, items: [] });
       cart = await cart.populate({
-        path: 'items.dishId',
+        path: "items.dishId",
+        select: "name price discount_price images categories countInStock status",
         populate: {
-          path: 'categories',
-          model: 'categories',
-          select: 'Cate_name Cate_slug',
+          path: "categories",
+          model: "categories",
+          select: "Cate_name Cate_slug",
         },
       });
     }
 
-    return cart;
+    // Gắn trạng thái tồn kho cho từng item
+    const itemsWithStockInfo = cart.items.map((item: any) => {
+      const dish: any = item.dishId;
+      let status = "ok";
+      let message = "";
+      let isDisabled = false;
+    
+      if (!dish || dish.countInStock === undefined) {
+        status = "unknown";
+        message = "Không xác định tồn kho";
+        isDisabled = true;
+      } else if (dish.status === 'hidden' || dish.status === 'soldout') {
+        status = "unavailable";
+        message = "Sản phẩm không có sẵn";
+        isDisabled = true;
+      } else if (dish.countInStock === 0) {
+        status = "out_of_stock";
+        message = "Sản phẩm đã hết hàng";
+        isDisabled = true;
+      } else if (dish.countInStock < item.quantity) {
+        status = "not_enough";
+        message = `Chỉ còn ${dish.countInStock} sản phẩm`;
+        isDisabled = true;
+      }
+    
+      return {
+        ...item.toObject(),
+        stockStatus: {
+          status,
+          message,
+          isDisabled,
+          availableStock: dish?.countInStock ?? 0,
+        },
+      };
+    });
+
+    return {
+      ...cart.toObject(),
+      items: itemsWithStockInfo,
+    };
   }
 
   static async AddItemToCart(userId: string, dishId: string, quantity: number) {
