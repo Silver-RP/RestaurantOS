@@ -7,8 +7,8 @@ import { toast } from 'react-toastify';
 import { RegisterUser } from '../redux/feature/auth/authActions';
 import { clearStatus } from '../redux/feature/auth/authSlice';
 import { useAppDispatch, useAppSelector } from '../redux/hook';
-import ButtonComponent from '../components/pages/Login/ButtonComponents';
-import InputComponent from '../components/pages/Login/InputComponents'; 
+import ButtonComponent from '../components/pages/login/ButtonComponents';
+import InputComponent from '../components/pages/login/InputComponents';
 const Register = () => {
   const usernameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
@@ -35,10 +35,11 @@ const Register = () => {
   useEffect(() => {
     usernameRef.current?.focus();
   }, []);
-  
+
   const isFormValid = (): boolean => {
     const { username, email, password, confirmPassword } = formData;
-    const emailRegex = /^[a-zA-Z0-9](\.?[a-zA-Z0-9_-])*[a-zA-Z0-9]@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
+    const emailRegex =
+      /^[a-zA-Z0-9](\.?[a-zA-Z0-9_-])*[a-zA-Z0-9]@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
     return (
       username.trim() !== '' &&
@@ -63,13 +64,14 @@ const Register = () => {
       }));
     }
     if (name === 'email') {
-      const emailRegex = /^[a-zA-Z0-9](\.?[a-zA-Z0-9_-])*[a-zA-Z0-9]@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
+      const emailRegex =
+        /^[a-zA-Z0-9](\.?[a-zA-Z0-9_-])*[a-zA-Z0-9]@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
       setErrors((prev) => ({
         ...prev,
         email: emailRegex.test(value) ? '' : 'Email không hợp lệ',
       }));
     }
-  
+
     if (name === 'password') {
       const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
       setErrors((prev) => ({
@@ -79,14 +81,12 @@ const Register = () => {
           : 'Mật khẩu cần ít nhất 8 ký tự, gồm chữ hoa, chữ thường và số',
       }));
     }
-  
+
     if (name === 'confirmPassword') {
       setErrors((prev) => ({
         ...prev,
         confirmPassword:
-          value === formData.password
-            ? ''
-            : 'Mật khẩu xác nhận không khớp',
+          value === formData.password ? '' : 'Mật khẩu xác nhận không khớp',
       }));
     }
   };
@@ -103,7 +103,7 @@ const Register = () => {
   }, [success, error, navigate, dispatch]);
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSubmitting) return; 
+    if (isSubmitting) return;
     const { username, email, password, confirmPassword } = formData;
 
     if (!username || !email || !password || !confirmPassword) {
@@ -121,7 +121,9 @@ const Register = () => {
     }
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
     if (!passwordRegex.test(password)) {
-      toast.error('Mật khẩu cần ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số');
+      toast.error(
+        'Mật khẩu cần ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số',
+      );
       return;
     }
     if (password !== confirmPassword) {
@@ -130,34 +132,37 @@ const Register = () => {
     }
     setIsSubmitting(true);
     dispatch(RegisterUser({ username, email, password, confirmPassword }))
-    .unwrap()
-    .then(() => {
-      setFormData({
-        username: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-      });
-    })
-    .catch((error) => {
-      const errorMessage =
-        typeof error === 'string'
-          ? error
-          : error?.message || error?.data?.message || 'Đăng ký thất bại';
+      .unwrap()
+      .then(() => {
+        setFormData({
+          username: '',
+          email: '',
+          password: '',
+          confirmPassword: '',
+        });
+      })
+      .catch((error) => {
+        const errorMessage =
+          typeof error === 'string'
+            ? error
+            : error?.message || error?.data?.message || 'Đăng ký thất bại';
 
-      if (!hasErrorToast) {
-        toast.error(errorMessage);
-        setHasErrorToast(true);
-        setTimeout(() => setHasErrorToast(false), 3000); // Reset sau 3s
-      }
-    })
-    .finally(() => {
-      setTimeout(() => {
-        setIsSubmitting(false);
-      }, 800);
-    });
+        if (!hasErrorToast) {
+          toast.error(errorMessage);
+          setHasErrorToast(true);
+          setTimeout(() => setHasErrorToast(false), 3000); // Reset sau 3s
+        }
+      })
+      .finally(() => {
+        setTimeout(() => {
+          setIsSubmitting(false);
+        }, 800);
+      });
   };
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, nextRef?: React.RefObject<HTMLInputElement>) => {
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    nextRef?: React.RefObject<HTMLInputElement>,
+  ) => {
     if (e.key === 'Enter' && nextRef?.current) {
       e.preventDefault();
       nextRef.current.focus();
@@ -179,9 +184,12 @@ const Register = () => {
             onChange={handleChange}
             ref={usernameRef}
             onKeyDown={(e) => handleKeyDown(e, usernameRef)}
-
           />
-          {errors.username && <p className="text-red-400 text-sm text-left mt-1">{errors.username}</p>}
+          {errors.username && (
+            <p className="text-red-400 text-sm text-left mt-1">
+              {errors.username}
+            </p>
+          )}
           <InputComponent
             type="email"
             value={formData.email}
@@ -191,7 +199,11 @@ const Register = () => {
             ref={emailRef}
             onKeyDown={(e) => handleKeyDown(e, emailRef)}
           />
-          {errors.email && <p className="text-red-400 text-sm text-left mt-1">{errors.email}</p>}
+          {errors.email && (
+            <p className="text-red-400 text-sm text-left mt-1">
+              {errors.email}
+            </p>
+          )}
           <InputComponent
             type="password"
             value={formData.password}
@@ -201,7 +213,11 @@ const Register = () => {
             ref={passwordRef}
             onKeyDown={(e) => handleKeyDown(e, passwordRef)}
           />
-          {errors.password && <p className="text-red-400 text-sm text-left mt-1">{errors.password}</p>}
+          {errors.password && (
+            <p className="text-red-400 text-sm text-left mt-1">
+              {errors.password}
+            </p>
+          )}
           <InputComponent
             type="password"
             value={formData.confirmPassword}
@@ -211,11 +227,18 @@ const Register = () => {
             ref={confirmPasswordRef}
             onKeyDown={(e) => handleKeyDown(e, confirmPasswordRef)}
           />
-          {errors.confirmPassword && <p className="text-red-400 text-sm text-left mt-1">{errors.confirmPassword}</p>}
-          <ButtonComponent disabled={isSubmitting || !isFormValid()} htmlType="submit" text="Đăng ký" />
+          {errors.confirmPassword && (
+            <p className="text-red-400 text-sm text-left mt-1">
+              {errors.confirmPassword}
+            </p>
+          )}
+          <ButtonComponent
+            disabled={isSubmitting || !isFormValid()}
+            htmlType="submit"
+            text="Đăng ký"
+          />
         </form>
-       
-       
+
         <div className="mt-6 text-sm text-white">
           <p>
             Bạn đã có tài khoản?{' '}
