@@ -50,7 +50,7 @@ const ProductCardGrid: React.FC<ProductCardProps> = ({ ...rest }) => {
     ingredients: '',
     views: rest.views ?? 0,
     ordered_count: rest.ordered_count ?? 0,
-    favorites_count: 0,
+    favorites_count: rest.favorites_count ?? 0,
     average_rating: rest.rating ?? 0,
     rating_count: rest.rating_count ?? 0,
     rating: rest.rating ?? 0,

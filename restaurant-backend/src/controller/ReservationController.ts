@@ -85,7 +85,7 @@ export const ReservationController = {
 
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 5;
-      const result = await ReservationService.getMyReservations(userId, status, page, limit);
+      const result = await ReservationService.getMyReservations(new Types.ObjectId(userId), status, page, limit);
 
       res.json({ success: true, ...result });
     } catch (error) {

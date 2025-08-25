@@ -155,7 +155,10 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
     }
   };
 
-  const filteredMethods = paymentMethods.filter((m) => m.value !== 'CASH');
+  // const filteredMethods = paymentMethods.filter((m) => m.value !== 'CASH');
+  const filteredMethods = paymentMethods.filter((m) =>
+    ['CREDIT_CARD', 'MOMO'].includes(m.value),
+  );
 
   const selectedFoodTotal = formData.selectedItems.reduce(
     (total, item) => total + item.price * item.quantity,

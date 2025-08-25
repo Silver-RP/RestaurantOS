@@ -2,6 +2,27 @@ import React from 'react';
 import { useDeleteCartItem, useUpdateCartItem } from '@hooks/useCart';
 import { Link } from 'react-router-dom';
 
+// interface CartItemProps {
+//   item: {
+//     id: number;
+//     name: string;
+//     slug: string;
+//     price: number;
+//     discountedPrice: number;
+//     quantity: number;
+//     imageUrl: string;
+//   };
+//   selected: boolean;
+//   onSelect: (id: number) => void;
+// }
+
+interface StockStatus {
+  status: 'ok' | 'unknown' | 'out_of_stock' | 'not_enough' | 'unavailable';
+  message: string;
+  isDisabled: boolean;
+  availableStock: number;
+}
+
 interface CartItemProps {
   item: {
     id: number;
@@ -11,6 +32,7 @@ interface CartItemProps {
     discountedPrice: number;
     quantity: number;
     imageUrl: string;
+    stockStatus: StockStatus; // thêm
   };
   selected: boolean;
   onSelect: (id: number) => void;
@@ -25,27 +47,35 @@ const CartItem: React.FC<CartItemProps> = ({ item, selected, onSelect }) => {
       <td className="text-center align-middle px-2">
         <input
           type="checkbox"
-          checked={selected}
+          checked={item.stockStatus.isDisabled ? false : selected}
           onChange={() => onSelect(item.id)}
-          className="form-checkbox h-4 w-4 text-secondaryColor"
+          disabled={item.stockStatus.isDisabled}
+          className="form-checkbox h-4 w-4 text-secondaryColor disabled:opacity-40"
         />
       </td>
 
       {/* Ảnh + Tên */}
-      <td className="flex items-center gap-2 sm:gap-4 py-2 sm:py-4 align-middle whitespace-normal max-w-[200px] sm:max-w-[300px]">
-        <Link
-          to={`/foods/${item.slug}`}
-          className="flex items-center gap-2 sm:gap-4 hover:underline"
-        >
+      <td className="py-2 sm:py-4 align-middle whitespace-normal max-w-[200px] sm:max-w-[300px]">
+        <div className="flex items-start gap-2 sm:gap-4">
           <img
             src={item.imageUrl}
             alt={item.name}
             className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded shrink-0"
           />
-          <span className="font-medium text-sm sm:text-base break-words">
-            {item.name}
-          </span>
-        </Link>
+          <div className="flex flex-col">
+            <Link
+              to={`/foods/${item.slug}`}
+              className="font-medium text-sm sm:text-base hover:underline text-white"
+            >
+              {item.name}
+            </Link>
+            {item.stockStatus.status !== 'ok' && (
+              <span className="text-xs text-red-400 mt-1">
+                {item.stockStatus.message}
+              </span>
+            )}
+          </div>
+        </div>
       </td>
 
       {/* Giá */}
@@ -68,19 +98,31 @@ const CartItem: React.FC<CartItemProps> = ({ item, selected, onSelect }) => {
       <td className="align-middle">
         <div className="flex items-center border border-gray-600 w-fit rounded overflow-hidden">
           <button
-            className="px-2 py-1 hover:bg-secondaryColor hover:text-black transition"
+            className="px-2 py-1 hover:bg-secondaryColor hover:text-black transition disabled:opacity-40"
+            disabled={
+              item.quantity <= 1 ||
+              item.stockStatus.status === 'out_of_stock' ||
+              item.stockStatus.status === 'unavailable'
+            }
             onClick={() =>
               updateCartItem({
                 dishId: item.id.toString(),
-                quantity: item.quantity - 1,
+                quantity: Math.min(item.quantity - 1, item.stockStatus.availableStock),
               })
             }
           >
             −
           </button>
+
           <span className="px-3">{item.quantity}</span>
+
           <button
-            className="px-2 py-1 hover:bg-secondaryColor hover:text-black transition"
+            className="px-2 py-1 hover:bg-secondaryColor hover:text-black transition disabled:opacity-40"
+            disabled={
+              item.stockStatus.status === 'out_of_stock' ||
+              item.stockStatus.status === 'unavailable' ||
+              item.quantity >= item.stockStatus.availableStock
+            }
             onClick={() =>
               updateCartItem({
                 dishId: item.id.toString(),

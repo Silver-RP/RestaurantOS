@@ -11,6 +11,13 @@ interface Cart {
   userId: string;
   items: CartItem[];
 }
+
+interface StockStatus {
+  status: 'ok' | 'unknown' | 'out_of_stock' | 'not_enough' | 'unavailable';
+  message: string;
+  isDisabled: boolean;
+  availableStock: number;
+}
 interface CartItem {
   dishId: {
     _id: number;
@@ -20,8 +27,10 @@ interface CartItem {
     discount_price?: number;
     images: string[];
     categories?: { Cate_name: string }[];
+    stock: number;
   };
   quantity: number;
+  stockStatus: StockStatus;
 }
 
 const CartPage = () => {
@@ -30,16 +39,33 @@ const CartPage = () => {
 
   const cartItemsRaw = (data as unknown as Cart)?.items || [];
 
-  const cartItems = cartItemsRaw.map((item) => ({
-    id: item.dishId._id,
-    name: item.dishId.name,
-    slug: item.dishId.slug,
-    price: item.dishId.price,
-    discountedPrice: item.dishId.discount_price || item.dishId.price,
-    quantity: item.quantity,
-    imageUrl: item.dishId.images[0],
-    category: item.dishId.categories?.[0]?.Cate_name || '',
-  }));
+  // const cartItems = cartItemsRaw.map((item) => ({
+  //   id: item.dishId._id,
+  //   name: item.dishId.name,
+  //   slug: item.dishId.slug,
+  //   price: item.dishId.price,
+  //   discountedPrice: item.dishId.discount_price || item.dishId.price,
+  //   quantity: item.quantity,
+  //   imageUrl: item.dishId.images[0],
+  //   category: item.dishId.categories?.[0]?.Cate_name || '',
+  // }));
+
+  const cartItems = cartItemsRaw.map((item) => {
+    return {
+      id: item.dishId._id,
+      name: item.dishId.name,
+      slug: item.dishId.slug,
+      price: item.dishId.price,
+      discountedPrice: item.dishId.discount_price || item.dishId.price,
+      quantity: item.quantity,
+      imageUrl: item.dishId.images[0],
+      category: item.dishId.categories?.[0]?.Cate_name || '',
+      stock: item.dishId.stock,
+      available: item.dishId.stock > 0,
+      enoughStock: item.quantity <= item.dishId.stock,
+      stockStatus: item.stockStatus,
+    };
+  });
 
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
@@ -52,19 +78,45 @@ const CartPage = () => {
     setSelectedIds(updated);
   };
 
+  // const filteredItems = cartItems.filter((item) =>
+  //   selectedIds.includes(item.id),
+  // );
+
+  // const isCartEmpty = cartItems.length === 0;
+  // const originalTotal = filteredItems.reduce(
+  //   (t, i) => t + i.price * i.quantity,
+  //   0,
+  // );
+  // const discountedTotal = filteredItems.reduce(
+  //   (t, i) => t + i.discountedPrice * i.quantity,
+  //   0,
+  // );
+
   const filteredItems = cartItems.filter((item) =>
     selectedIds.includes(item.id),
   );
 
+  // 🔹 Chỉ giữ các item hợp lệ để tính tổng
+  const validItems = filteredItems.filter(
+    (i) =>
+      i.stockStatus.status === 'ok' &&
+      i.quantity > 0 &&
+      i.quantity <= i.stockStatus.availableStock,
+  );
+
   const isCartEmpty = cartItems.length === 0;
-  const originalTotal = filteredItems.reduce(
+
+  const originalTotal = validItems.reduce(
     (t, i) => t + i.price * i.quantity,
     0,
   );
-  const discountedTotal = filteredItems.reduce(
+
+  const discountedTotal = validItems.reduce(
     (t, i) => t + i.discountedPrice * i.quantity,
     0,
   );
+
+  
 
   const handleClick = () => {
     window.location.href = '/menu?sort=categoryAZ';
@@ -104,7 +156,7 @@ const CartPage = () => {
                 <CartSummary
                   originalTotal={originalTotal}
                   discountedTotal={discountedTotal}
-                  selectedItems={filteredItems}
+                  selectedItems={validItems}
                 />
               </div>
             </div>
