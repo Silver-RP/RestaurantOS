@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { ReservationController } from '../controller/ReservationController';
+import AuthMiddleWare from '../middleware/AuthMiddleWare';
 
 const router = Router();
 
@@ -7,7 +8,7 @@ router.post('/create', ReservationController.create);
 
 router.get('/validate', ReservationController.getReservationByCodeAndPhoneNumber);
 
-router.get('/my-reservations', ReservationController.getMyReservations);
+router.get('/my-reservations', AuthMiddleWare.verifyToken, ReservationController.getMyReservations);
 
 router.get('/:id', ReservationController.getById);
 

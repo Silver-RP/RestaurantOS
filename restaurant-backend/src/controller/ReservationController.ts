@@ -45,6 +45,13 @@ export const ReservationController = {
 
       const reservation = await ReservationService.createReservation(data, userId);
 
+      if(payment_method == ''){
+        res.status(201).json({
+          message: 'Đặt bàn thành công',
+          data: reservation,
+        });
+        return;
+      }
       const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
       const postPayment = await ReservationService.handleReservationPostPaymentLogic(
         reservation,

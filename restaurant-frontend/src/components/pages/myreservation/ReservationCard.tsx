@@ -167,76 +167,80 @@ const ReservationCard: React.FC<Props> = ({ reservation, onCancel }) => {
       <div className="border-y border-white/20 py-4 grid grid-cols-1 md:grid-cols-2 md:gap-x-12 md:gap-y-3">
         <div className="space-y-2 md:space-y-3">
           <p className="text-sm flex items-center gap-2">
-            <span className="text-secondaryColor uppercase font-semibold">
-              Khách:
-            </span>
-            <span className="text-white/90">{reservation.full_name}</span>
+        <span className="text-secondaryColor uppercase font-semibold">
+          Khách:
+        </span>
+        <span className="text-white/90">{reservation.full_name}</span>
           </p>
           <p className="text-sm flex items-center gap-2">
-            <span className="text-secondaryColor uppercase font-semibold">
-              Ngày:
-            </span>
-            <span className="text-white/90">{reservation.date}</span>
+        <span className="text-secondaryColor uppercase font-semibold">
+          Ngày:
+        </span>
+        <span className="text-white/90">{reservation.date}</span>
           </p>
           <p className="text-sm flex items-center gap-2">
-            <span className="text-secondaryColor uppercase font-semibold">
-              Giờ:
-            </span>
-            <span className="text-white/90">{reservation.time}</span>
+        <span className="text-secondaryColor uppercase font-semibold">
+          Giờ:
+        </span>
+        <span className="text-white/90">{reservation.time}</span>
           </p>
           <p className="text-sm flex items-center gap-2">
-            <span className="text-secondaryColor uppercase font-semibold">
-              Số điện thoại:
-            </span>
-            <span className="text-white/90">{reservation.phone || '—'}</span>
+        <span className="text-secondaryColor uppercase font-semibold">
+          Số điện thoại:
+        </span>
+        <span className="text-white/90">{reservation.phone || '—'}</span>
           </p>
           <p className="text-sm flex items-center gap-2">
-            <span className="text-secondaryColor uppercase font-semibold">
-              Email:
-            </span>
-            <span className="text-white/90">{reservation.email || '—'}</span>
+        <span className="text-secondaryColor uppercase font-semibold">
+          Email:
+        </span>
+        <span className="text-white/90">{reservation.email || '—'}</span>
           </p>
         </div>
 
         <div className="space-y-2 md:space-y-3">
           <p className="text-sm flex items-center gap-2">
-            <span className="text-secondaryColor uppercase font-semibold">
-              Bàn:
-            </span>
-            <span className="text-white/90">{tableTypeName}</span>
+        <span className="text-secondaryColor uppercase font-semibold">
+          Bàn:
+        </span>
+        <span className="text-white/90">{tableTypeName}</span>
           </p>
           <p className="text-sm flex items-center gap-2">
-            <span className="text-secondaryColor uppercase font-semibold">
-              Số lượng người:
-            </span>
-            <span className="text-white/90">
-              {reservation.number_of_people}
-            </span>
+        <span className="text-secondaryColor uppercase font-semibold">
+          Số lượng người:
+        </span>
+        <span className="text-white/90">
+          {reservation.number_of_people}
+        </span>
           </p>
           <p className="text-sm flex items-center gap-2">
-            <span className="text-secondaryColor uppercase font-semibold">
-              Ghi chú:
-            </span>
-            <span className="text-white/80 italic">
-              {reservation.note?.trim() || '—'}
-            </span>
+        <span className="text-secondaryColor uppercase font-semibold">
+          Ghi chú:
+        </span>
+        <span className="text-white/80 italic">
+          {reservation.note?.trim() || '—'}
+        </span>
           </p>
+          {reservation.deposit_amount !== undefined && reservation.deposit_amount > 0 ? (
+        <>
           <p className="text-sm flex items-center gap-2">
             <span className="text-secondaryColor uppercase font-semibold">
-              Phương thức thanh toán:
+          Phương thức thanh toán:
             </span>
             <span className="text-md text-white/90">
-              {paymentMethodLabels[reservation.payment_method] || '-'}
+          {paymentMethodLabels[reservation.payment_method] || '-'}
             </span>
           </p>
           <p className="text-sm flex items-center gap-2">
             <span className="text-secondaryColor uppercase font-semibold">
-              Trạng thái thanh toán:
+          Trạng thái thanh toán:
             </span>
             <span className="text-white/90">
-              {paymentStatusLabel[reservation.payment_status] || '-'}
+          {paymentStatusLabel[reservation.payment_status] || '-'}
             </span>
           </p>
+        </>
+          ) : null}
           <p className="text-sm flex items-center gap-2">
             <span className="text-secondaryColor uppercase font-semibold">
               Số tiền cọc:
@@ -247,69 +251,70 @@ const ReservationCard: React.FC<Props> = ({ reservation, onCancel }) => {
                 : '—'}
             </span>
           </p>
-          {reservation.payment_status !== 'PAID' && reservation.status !== 'CANCELLED' && (
-  <>
-    {reservation.payment_method !== 'CASH' && (
-      <div className="bg-yellow-100 text-yellow-800 text-xs rounded-md px-3 py-2 mb-3 max-w-md text-justify leading-relaxed">
-        {reservation.cancelled_reason ||
-          'Đặt bàn của bạn sẽ bị hủy sau 60 phút nếu thanh toán không được hoàn tất. Hãy thanh toán sớm để giữ chỗ.'}
-      </div>
-    )}
+          {reservation.deposit_amount !== undefined && reservation.deposit_amount > 0 && reservation.payment_status !== 'PAID' && reservation.status !== 'CANCELLED' && (
+        <>
+          {reservation.payment_method !== 'CASH' && (
+            <div className="bg-yellow-100 text-yellow-800 text-xs rounded-md px-3 py-2 mb-3 max-w-md text-justify leading-relaxed">
+          {reservation.cancelled_reason ||
+            'Đặt bàn của bạn sẽ bị hủy sau 60 phút nếu thanh toán không được hoàn tất. Hãy thanh toán sớm để giữ chỗ.'}
+            </div>
+          )}
 
-    {!showSelector ? (
-      <div className="flex gap-2">
-        {reservation.payment_method !== 'CASH' && (
+          {!showSelector ? (
+            <div className="flex gap-2">
+          {reservation.payment_method !== 'CASH' && (
+            <button
+              disabled={retrying}
+              className="px-4 py-1.5 text-xs bg-secondaryColor border border-secondaryColor text-black font-normal font-sans hover:bg-bodyBackground hover:text-white disabled:opacity-50"
+              onClick={handleRetryPayment}
+            >
+              {retrying ? 'Đang xử lý...' : 'Thanh toán lại'}
+            </button>
+          )}
           <button
-            disabled={retrying}
+            disabled={changingMethod}
             className="px-4 py-1.5 text-xs bg-secondaryColor border border-secondaryColor text-black font-normal font-sans hover:bg-bodyBackground hover:text-white disabled:opacity-50"
-            onClick={handleRetryPayment}
+            onClick={handleChangePaymentMethod}
           >
-            {retrying ? 'Đang xử lý...' : 'Thanh toán lại'}
+            {changingMethod
+              ? 'Đang cập nhật...'
+              : 'Thay đổi phương thức'}
           </button>
-        )}
-        <button
-          disabled={changingMethod}
-          className="px-4 py-1.5 text-xs bg-secondaryColor border border-secondaryColor text-black font-normal font-sans hover:bg-bodyBackground hover:text-white disabled:opacity-50"
-          onClick={handleChangePaymentMethod}
-        >
-          {changingMethod ? 'Đang cập nhật...' : 'Thay đổi phương thức'}
-        </button>
-      </div>
-    ) : (
-      <>
-        <PaymentMethodSelector
-          selectedMethod={selectedMethod}
-          onChange={setSelectedMethod}
-          size="sm"
-          methods={paymentMethods}
-        />
-        <div className="flex gap-2 mt-2">
-          <button
-            onClick={handleConfirmChangePaymentMethod}
-            disabled={
-              changingMethod ||
-              !selectedMethod ||
-              selectedMethod === reservation.payment_method
-            }
-            className="px-4 py-1.5 text-xs bg-secondaryColor border border-secondaryColor text-black font-normal font-sans hover:bg-bodyBackground hover:text-white disabled:opacity-50"
-          >
-            Xác nhận
-          </button>
-          <button
-            onClick={() => {
-              setShowSelector(false);
-              setSelectedMethod(reservation.payment_method);
-            }}
-            className="px-4 py-1.5 text-xs bg-bodyBackground border border-secondaryColor text-white font-normal font-sans hover:bg-secondaryColor hover:text-black disabled:opacity-50"
-          >
-            Hủy
-          </button>
-        </div>
-      </>
-    )}
-  </>
-)}
-
+            </div>
+          ) : (
+            <>
+          <PaymentMethodSelector
+            selectedMethod={selectedMethod}
+            onChange={setSelectedMethod}
+            size="sm"
+            methods={paymentMethods}
+          />
+          <div className="flex gap-2 mt-2">
+            <button
+              onClick={handleConfirmChangePaymentMethod}
+              disabled={
+            changingMethod ||
+            !selectedMethod ||
+            selectedMethod === reservation.payment_method
+              }
+              className="px-4 py-1.5 text-xs bg-secondaryColor border border-secondaryColor text-black font-normal font-sans hover:bg-bodyBackground hover:text-white disabled:opacity-50"
+            >
+              Xác nhận
+            </button>
+            <button
+              onClick={() => {
+            setShowSelector(false);
+            setSelectedMethod(reservation.payment_method);
+              }}
+              className="px-4 py-1.5 text-xs bg-bodyBackground border border-secondaryColor text-white font-normal font-sans hover:bg-secondaryColor hover:text-black disabled:opacity-50"
+            >
+              Hủy
+            </button>
+          </div>
+            </>
+          )}
+        </>
+          )}
         </div>
       </div>
 
