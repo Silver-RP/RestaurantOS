@@ -71,7 +71,7 @@ const PostContent: React.FC<PostContentProps> = ({ post }) => {
       toast.success('Báo cáo của bạn đã được gửi. Cảm ơn phản hồi của bạn!');
       setShowReportModal(false);
     } catch {
-      toast.error('Gửi báo cáo thất bại!');
+      toast.error('Vui lòng đăng nhập để gửi báo cáo');
     }
   };
 

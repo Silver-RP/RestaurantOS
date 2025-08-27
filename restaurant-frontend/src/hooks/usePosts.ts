@@ -90,7 +90,7 @@ export const usePostById = (id: string) => {
   const { data: likeStatus, isLoading: isCheckingLike } = useQuery({
     queryKey: ['post-like', id],
     queryFn: () => PostsApi.checkUserLiked(id),
-    enabled: !!id,
+    enabled: false,
     retry: 1,
     staleTime: 60 * 1000, // 1 minute
   });
@@ -121,8 +121,13 @@ export const usePostById = (id: string) => {
         });
       }
     },
-    onError: (error) => {
-      console.error('Lỗi khi thích/bỏ thích bài viết:', error);
+    onError: (error: any) => {
+      if (error.message === "NOT_LOGGED_IN") {
+        toast.info("Vui lòng đăng nhập để like bài viết");
+      } else {
+        console.error("Lỗi khi thích/bỏ thích bài viết:", error);
+        toast.error("Vui lòng đăng nhập để like bài viết");
+      } 
     }
   });
 
