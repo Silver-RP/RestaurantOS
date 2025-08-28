@@ -7,7 +7,6 @@ import { FaCreditCard } from 'react-icons/fa';
 import { GiKnifeFork } from 'react-icons/gi';
 import { BiSolidDiscount } from 'react-icons/bi';
 import { useReservations } from '@/hooks/useReservations';
-import { holdTableApi } from '@/api/TableReservationApi';
 import { toast } from 'react-toastify';
 import PaymentMethodSelector, {
   paymentMethods,
@@ -73,7 +72,6 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
   );
 
   const handlePayment = async () => {
-
     if (selectedFoodTotal > 0 && !paymentMethod) {
       toast.error('Vui lòng chọn phương thức thanh toán');
       return;
@@ -131,143 +129,147 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
     ['CREDIT_CARD', 'MOMO'].includes(m.value),
   );
 
-return (
-  <div className="bg-bodyBackground text-white py-0 px-4 flex items-center justify-center">
-    <div className="max-w-4xl w-full mx-auto">
-      {/* Header với animation */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="text-center mb-8"
-      >
-        <h1 className="text-2xl sm:text-3xl mb-2 sm:mb-4 text-secondaryColor uppercase tracking-widest drop-shadow-lg">
-          Thanh toán đặt cọc
-        </h1>
-        <p className="text-base sm:text-md text-gray-300 w-full mx-auto">
-          Hoàn tất việc đặt bàn bằng cách thanh toán khoản đặt cọc. Số tiền
-          này sẽ được trừ vào hóa đơn cuối cùng.
-        </p>
-      </motion.div>
-
-      <div className="flex flex-col gap-8">
-        {/* Chỉ hiển thị phần đặt cọc với số tiền nổi bật */}
+  return (
+    <div className="bg-bodyBackground text-white py-0 px-4 flex items-center justify-center">
+      <div className="max-w-4xl w-full mx-auto">
+        {/* Header với animation */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-8"
         >
-          <div className="bg-headerBackground/80 border border-secondaryColor/30 rounded-lg p-4 sm:p-6 flex flex-col items-center justify-center shadow-lg">
-            <h3 className="text-xl sm:text-xl font-bold text-secondaryColor mb-4 flex items-center gap-2">
-              <BiSolidDiscount className="text-3xl" />
-              Tổng tiền đặt cọc
-            </h3>
-            <span className="text-3xl sm:text-4xl font-semibold text-secondaryColor drop-shadow-lg mb-2">
-              {fCurrency(depositAmount)}
-            </span>
-            <div className="grid grid-cols-1 gap-4 mt-8 w-full">
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                className="bg-bodyBackground/50 border border-secondaryColor/20 rounded-lg p-4 text-center hover:border-secondaryColor/40 transition-all duration-200"
-              >
-                <GiKnifeFork className="text-secondaryColor w-10 h-10 mb-3 mx-auto" />
-                <p className="font-semibold text-white mb-2 text-base sm:text-lg">
-                  Cọc theo món ăn
-                </p>
-                <p className="text-sm sm:text-base text-gray-400 mb-2">
-                  {formData.selectedItems.length > 0
-                    ? `${formData.selectedItems.length} món (${fCurrency(selectedFoodTotal)})`
-                    : 'Chưa chọn món'}
-                </p>
-                <span className="text-xl sm:text-2xl font-bold text-secondaryColor">
-                  {fCurrency(foodDeposit)}
-                </span>
-              </motion.div>
-            </div>
-          </div>
+          <h1 className="text-2xl sm:text-3xl mb-2 sm:mb-4 text-secondaryColor uppercase tracking-widest drop-shadow-lg">
+            Thanh toán đặt cọc
+          </h1>
+          <p className="text-base sm:text-md text-gray-300 w-full mx-auto">
+            Hoàn tất việc đặt bàn bằng cách thanh toán khoản đặt cọc. Số tiền
+            này sẽ được trừ vào hóa đơn cuối cùng.
+          </p>
         </motion.div>
 
-        {/* Phương thức thanh toán chỉ hiển thị khi selectedFoodTotal > 0 */}
-        {selectedFoodTotal > 0 && (
+        <div className="flex flex-col gap-8">
+          {/* Chỉ hiển thị phần đặt cọc với số tiền nổi bật */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.7 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <div className="bg-headerBackground/80 border border-secondaryColor/30 rounded-lg p-4 sm:p-6 mb-0">
-              <h3 className="text-xl sm:text-2xl font-bold text-secondaryColor mb-6 flex items-center gap-2">
-                <FaCreditCard className="text-2xl" />
-                Phương thức thanh toán
+            <div className="bg-headerBackground/80 border border-secondaryColor/30 rounded-lg p-4 sm:p-6 flex flex-col items-center justify-center shadow-lg">
+              <h3 className="text-xl sm:text-xl font-bold text-secondaryColor mb-4 flex items-center gap-2">
+                <BiSolidDiscount className="text-3xl" />
+                Tổng tiền đặt cọc
               </h3>
-              <PaymentMethodSelector
-                selectedMethod={paymentMethod}
-                showTitle={false}
-                onChange={(method) => {
-                  setPaymentMethod(method || '');
-                  onPaymentMethodChange(method);
-                }}
-                methods={filteredMethods}
-              />
+              <span className="text-3xl sm:text-4xl font-semibold text-secondaryColor drop-shadow-lg mb-2">
+                {fCurrency(depositAmount)}
+              </span>
+              <div className="grid grid-cols-1 gap-4 mt-8 w-full">
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-bodyBackground/50 border border-secondaryColor/20 rounded-lg p-4 text-center hover:border-secondaryColor/40 transition-all duration-200"
+                >
+                  <GiKnifeFork className="text-secondaryColor w-10 h-10 mb-3 mx-auto" />
+                  <p className="font-semibold text-white mb-2 text-base sm:text-lg">
+                    Cọc theo món ăn
+                  </p>
+                  <p className="text-sm sm:text-base text-gray-400 mb-2">
+                    {formData.selectedItems.length > 0
+                      ? `${formData.selectedItems.length} món (${fCurrency(selectedFoodTotal)})`
+                      : 'Chưa chọn món'}
+                  </p>
+                  <span className="text-xl sm:text-2xl font-bold text-secondaryColor">
+                    {fCurrency(foodDeposit)}
+                  </span>
+                </motion.div>
+              </div>
             </div>
           </motion.div>
-        )}
 
-        {/* Tổng kết và nút thanh toán */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.8 }}
-          className="flex flex-col sm:flex-row justify-center items-center gap-4"
-        >
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <ButtonComponents
-              variant="outline"
-              size="small"
-              onClick={onBack}
-              className="px-8 py-3 text-base border-2 border-secondaryColor font-semibold hover:bg-secondaryColor/10 hover:text-secondaryColor transition-all duration-200 min-w-[160px]"
-              disabled={isPaying}
+          {/* Phương thức thanh toán chỉ hiển thị khi selectedFoodTotal > 0 */}
+          {selectedFoodTotal > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.7 }}
             >
-              Quay lại
-            </ButtonComponents>
+              <div className="bg-headerBackground/80 border border-secondaryColor/30 rounded-lg p-4 sm:p-6 mb-0">
+                <h3 className="text-xl sm:text-2xl font-bold text-secondaryColor mb-6 flex items-center gap-2">
+                  <FaCreditCard className="text-2xl" />
+                  Phương thức thanh toán
+                </h3>
+                <PaymentMethodSelector
+                  selectedMethod={paymentMethod}
+                  showTitle={false}
+                  onChange={(method) => {
+                    setPaymentMethod(method || '');
+                    onPaymentMethodChange(method);
+                  }}
+                  methods={filteredMethods}
+                />
+              </div>
+            </motion.div>
+          )}
+
+          {/* Tổng kết và nút thanh toán */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.8 }}
+            className="flex flex-col sm:flex-row justify-center items-center gap-4"
+          >
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <ButtonComponents
+                variant="outline"
+                size="small"
+                onClick={onBack}
+                className="px-8 py-3 text-base border-2 border-secondaryColor font-semibold hover:bg-secondaryColor/10 hover:text-secondaryColor transition-all duration-200 min-w-[160px]"
+                disabled={isPaying}
+              >
+                Quay lại
+              </ButtonComponents>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <ButtonComponents
+                variant="filled"
+                size="small"
+                onClick={handlePayment} // Gọi onSuccess nếu selectedFoodTotal == 0
+                disabled={isPaying}
+                className="px-8 py-3 text-base font-bold shadow-lg hover:shadow-xl transition-all duration-200 min-w-[180px] flex items-center justify-center gap-2 bg-gradient-to-r from-secondaryColor to-secondaryColor/90"
+              >
+                {isPaying && (
+                  <svg
+                    className="animate-spin h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                    ></path>
+                  </svg>
+                )}
+                {selectedFoodTotal > 0
+                  ? isPaying
+                    ? 'Đang xử lý...'
+                    : 'Thanh toán ngay'
+                  : 'Đặt bàn ngay'}
+              </ButtonComponents>
+            </motion.div>
           </motion.div>
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <ButtonComponents
-              variant="filled"
-              size="small"
-              onClick={ handlePayment } // Gọi onSuccess nếu selectedFoodTotal == 0
-              disabled={isPaying}
-              className="px-8 py-3 text-base font-bold shadow-lg hover:shadow-xl transition-all duration-200 min-w-[180px] flex items-center justify-center gap-2 bg-gradient-to-r from-secondaryColor to-secondaryColor/90"
-            >
-              {isPaying && (
-                <svg
-                  className="animate-spin h-5 w-5 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                  ></path>
-                </svg>
-              )}
-              {selectedFoodTotal > 0 ? (isPaying ? 'Đang xử lý...' : 'Thanh toán ngay') : 'Đặt bàn ngay'}
-            </ButtonComponents>
-          </motion.div>
-        </motion.div>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
 };
 
 export default Step5Deposit;
