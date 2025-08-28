@@ -4,22 +4,22 @@ import AuthMiddleWare from '../middleware/AuthMiddleWare';
 
 const router = Router();
 
-router.post('/create', ReservationController.create);
+router.post('/create', AuthMiddleWare.optionalVerifyToken, ReservationController.create);
 
-router.get('/validate', ReservationController.getReservationByCodeAndPhoneNumber);
+router.get('/validate', AuthMiddleWare.optionalVerifyToken, ReservationController.getReservationByCodeAndPhoneNumber);
 
 router.get('/my-reservations', AuthMiddleWare.verifyToken, ReservationController.getMyReservations);
 
-router.get('/:id', ReservationController.getById);
+router.get('/:id',AuthMiddleWare.optionalVerifyToken,  ReservationController.getById);
 
-router.get('/', ReservationController.getAll);
+router.get('/', AuthMiddleWare.optionalVerifyToken, ReservationController.getAll);
 
-router.patch('/:id/status', ReservationController.updateStatus);
+router.patch('/:id/status', AuthMiddleWare.optionalVerifyToken, ReservationController.updateStatus);
 
-router.patch('/:id/cancel', ReservationController.cancel);
+router.patch('/:id/cancel', AuthMiddleWare.optionalVerifyToken, ReservationController.cancel);
 
-router.patch('/:id/restore', ReservationController.restore);
+router.patch('/:id/restore', AuthMiddleWare.optionalVerifyToken, ReservationController.restore);
 
-router.patch('/:reservationId/confirm', ReservationController.confirmReservation);
+router.patch('/:reservationId/confirm', AuthMiddleWare.optionalVerifyToken, ReservationController.confirmReservation);
 
 export default router;
