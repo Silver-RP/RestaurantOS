@@ -9,6 +9,7 @@ import { useGetCart } from '@/hooks/useCart';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { openSearchModal } from '../../../redux/feature/modal/searchModalSlice';
+import { toast } from 'react-toastify';
 
 interface MobileSidebarProps {
   toggleSidebar: () => void;
@@ -20,18 +21,24 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
   isOpen,
 }) => {
   const navigate = useNavigate();
-  const handleNavigate = (path: string) => {
-    navigate(path);
-    toggleSidebar();
-  };
+  const dispatch = useDispatch();
+
   const { data: cart } = useGetCart();
   const countCart = cart?.items?.length || 0;
+
   const user = useSelector((state: RootState) => state.auth.userInfo);
   const favoriteCount = useSelector(
     (state: RootState) => state.favorite.items.length,
   );
 
-  const dispatch = useDispatch();
+  const handleNavigation = (path: string, message?: string) => {
+    if (user) {
+      navigate(path);
+      toggleSidebar();
+    } else if (message) {
+      toast.error(message);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex">
@@ -59,12 +66,13 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
           </div>
 
           <div className="flex-1 overflow-y-auto px-6">
-            <NavExtend onNavigate={handleNavigate} />
+            <NavExtend onNavigate={handleNavigation} />
 
             <div className="flex flex-col items-center space-y-6 mt-8">
               <div className="flex space-x-6 text-xl">
+                {/* User / Login */}
                 {user ? (
-                  <Link to="/profile" aria-label="Login">
+                  <Link to="/profile" onClick={toggleSidebar} aria-label="Profile">
                     <BsPersonCheck className="hover:text-secondaryColor" />
                   </Link>
                 ) : (
@@ -73,40 +81,48 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
                   </Link>
                 )}
 
-                <Link
-                  to="/favorites"
-                  onClick={toggleSidebar}
+                {/* Favorites */}
+                <button
+                  onClick={() =>
+                    handleNavigation('/favorites', 'Vui lòng đăng nhập để xem danh sách yêu thích')
+                  }
                   aria-label="Favorites"
                   className="relative"
                 >
                   <FiHeart className="hover:text-secondaryColor" />
                   <span className="absolute -top-1 -right-2 bg-secondaryColor text-black text-xs rounded-full px-1">
-                    { favoriteCount > 0 ? favoriteCount : 0 }
+                    {favoriteCount > 0 ? favoriteCount : 0}
                   </span>
-                </Link>
-                <Link
-                  to="/cart"
-                  onClick={toggleSidebar}
+                </button>
+
+                {/* Cart */}
+                <button
+                  onClick={() =>
+                    handleNavigation('/cart', 'Vui lòng đăng nhập để xem giỏ hàng')
+                  }
                   aria-label="Shopping Cart"
                   className="relative"
                 >
                   <FiShoppingCart className="hover:text-secondaryColor" />
                   <span className="absolute -top-1 -right-2 bg-secondaryColor text-black text-xs rounded-full px-1">
-                    { countCart > 0 ? countCart : 0 }
+                    {countCart > 0 ? countCart : 0}
                   </span>
-                </Link>
+                </button>
+
+                {/* Search */}
                 <FiSearch
-                onClick={() => dispatch(openSearchModal())}
-                className="hover:text-secondaryColor"
-                aria-label="Search"
-              />
+                  onClick={() => dispatch(openSearchModal())}
+                  className="hover:text-secondaryColor"
+                  aria-label="Search"
+                />
               </div>
 
+              {/* Reservation */}
               <ButtonComponents
                 variant="filled"
                 size="large"
                 className="w-full text-xs uppercase"
-                onClick={() => handleNavigate('/reservation')}
+                onClick={() => handleNavigation('/reservation')}
               >
                 Đặt Bàn
               </ButtonComponents>

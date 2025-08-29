@@ -21,7 +21,7 @@ import { BsPersonCheck } from 'react-icons/bs';
 import ButtonComponents from '../../common/ButtonComponents';
 import NavExtend from './NavExtend';
 import { openSearchModal } from '../../../redux/feature/modal/searchModalSlice';
-
+import { toast } from 'react-toastify';
 interface SidebarProps {
   isOpen: boolean;
   toggleSidebar: () => void;
@@ -107,18 +107,40 @@ const ExtendSidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
                 </Link>
               )}
               <div className="relative">
-                <Link to="/favorites" aria-label="Favorites">
+                <Link
+                  to="/favorites"
+                  onClick={(e) => {
+                    if (!user) {
+                      e.preventDefault(); // chặn link mặc định
+                      toast.error(
+                        'Vui lòng đăng nhập để xem danh sách yêu thích',
+                      );
+                    }
+                  }}
+                  aria-label="Favorites"
+                >
                   <FiHeart
                     className={`text-white hover:text-secondaryColor ${iconSize}`}
-                    aria-label="Favorites"
                   />
                 </Link>
+
                 <span className="absolute -top-1 -right-2 bg-secondaryColor text-black text-xs rounded-full px-1">
                   {favoriteCount > 0 ? favoriteCount : 0}
                 </span>
               </div>
               <div className="relative">
-                <Link to="/cart" aria-label="cart">
+                <Link
+                  to="/cart"
+                  onClick={(e) => {
+                    if (!user) {
+                      e.preventDefault(); // chặn link mặc định
+                      toast.error(
+                        'Vui lòng đăng nhập để xem giỏ hàng',
+                      );
+                    }
+                  }}
+                  aria-label="cart"
+                >
                   <FiShoppingCart
                     className={`text-white hover:text-secondaryColor ${iconSize}`}
                     aria-label="Shopping Cart"
