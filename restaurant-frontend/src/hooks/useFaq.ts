@@ -12,7 +12,6 @@ export const useFaq = () => {
     try {
       setLoading(true);
       const data = await getAllFaqs();
-      console.log(data);
       setFaqs(data);
     } catch (err: any) {
       setError(err.message || 'Lỗi khi tải FAQs');

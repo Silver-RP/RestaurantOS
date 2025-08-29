@@ -35,7 +35,7 @@ const Post: React.FC<PostProps> = ({ post }) => {
           <span className="text-sm">
             Đăng bởi:{' '}
             <span className="text-secondaryColor font-semibold">
-              {post.user_id.username}
+              {post.user_id?.username}
             </span>
           </span>
           <span className="text-sm">

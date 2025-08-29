@@ -42,8 +42,6 @@ const Chatbox: React.FC = () => {
     return roles.some((roleItem) => {
       // roleItem có thể là string hoặc object { name: string }
       const name = typeof roleItem === 'string' ? roleItem : roleItem?.name;
-      console.log('User role chatbox:', name);
-
       return typeof name === 'string' && name.toLowerCase() === 'admin'
         || typeof name === 'string' && ['cashier','manager','superadmin'].includes(name.toLowerCase());
     });
@@ -54,7 +52,6 @@ const Chatbox: React.FC = () => {
       const fetchUnread = async () => {
         try {
           const count = await getUnreadMessageCount();
-          console.log('Unread messages count:', count);
           setUnreadCount(count);
         } catch {
           setUnreadCount(0);
@@ -103,8 +100,6 @@ const Chatbox: React.FC = () => {
   };
 
   const handleFAQClick = (question: string) => {
-    console.log('đã click câu trả lời');
-    
     const matched = faqs.find(faq => faq.question.trim().toLowerCase() === question.trim().toLowerCase());
     setMessages((prev) => [
       ...prev,

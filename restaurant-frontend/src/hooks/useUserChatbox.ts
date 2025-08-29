@@ -17,16 +17,7 @@ export const useChatbox = () => {
   useEffect(() => {
     const init = async () => {
       try {
-        console.log('🔄 Đang khởi tạo chat session...');
-        console.log('🔍 API Base URL:', 'https://api-beefbeef-restaurant.onrender.com/api');
-
-        // Kiểm tra token trước khi gọi API
-        const token = document.cookie.split('; ').find(row => row.startsWith('accessToken='));
-        console.log('🔑 Token exists:', !!token);
-
         const chat = await getChatSession();
-        console.log('✅ Chat session created:', chat);
-
         setChatId(chat._id);
         setUserId(chat.user_id);
 
