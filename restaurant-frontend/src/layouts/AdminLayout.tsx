@@ -179,13 +179,13 @@ const AdminLayout: React.FC = () => {
               expanded={isSidebarOpen}
               currentPath={location.pathname}
             />
-            <NavItem
+            {/* <NavItem
               href="/admin/register-cashier"
               icon={<FaUser />}
               label="Đăng ký nhân viên"
               expanded={isSidebarOpen}
               currentPath={location.pathname}
-            />
+            /> */}
 
             <NavItem
               href="/admin/contact"
