@@ -77,13 +77,17 @@ const OrderSchema = new Schema<IOrder>(
       required: true,
     },
     addressSnapshot: {
-      full_name: { type: String, required: true },
-      phone: { type: String, required: true },
-      province: { type: String, required: true },
-      district: { type: String, required: true },
-      ward: { type: String, required: true },
-      street_address: { type: String, required: true },
-      address_type: { type: String, enum: ['HOME', 'WORK', 'OTHER'], default: 'HOME' },
+      type: Object,
+      required: false, // Make addressSnapshot optional
+      properties: {
+        full_name: { type: String, required: true },
+        phone: { type: String, required: true },
+        province: { type: String, required: true },
+        district: { type: String, required: true },
+        ward: { type: String, required: true },
+        street_address: { type: String, required: true },
+        address_type: { type: String, enum: ['HOME', 'WORK', 'OTHER'], default: 'HOME' },
+      },
     },
     status: {
       type: String,
