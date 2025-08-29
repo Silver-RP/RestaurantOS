@@ -6,16 +6,17 @@ import { PostType } from '../types/PostType';
 
 export const POSTS_QUERY_KEY = ['posts'];
 
-export const usePosts = () => {
+export const usePosts = (initialParams?: Partial<PostsQueryParams>) => {
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const page = Number(searchParams.get('page')) || 1;
-  const limit = Number(searchParams.get('limit')) || 12;
-  const search = searchParams.get('search') || '';
-  const sortBy = searchParams.get('sortBy') || 'createdAt';
-  const sortOrder = searchParams.get('sortOrder') || 'desc';
-  const categoryId = searchParams.get('categoryId') || undefined;
+  const page = Number(searchParams.get('page')) || initialParams?.page || 1;
+  const limit = Number(searchParams.get('limit')) || initialParams?.limit || 12;
+  const search = searchParams.get('search') || initialParams?.search || '';
+  const sortBy = searchParams.get('sortBy') || initialParams?.sortBy || 'createdAt';
+  const sortOrder = searchParams.get('sortOrder') || initialParams?.sortOrder || 'desc';
+  const categoryId = searchParams.get('categoryId') || initialParams?.categoryId || undefined;
+  const status = searchParams.get('status') || initialParams?.status || undefined;
 
   const queryParams: PostsQueryParams = {
     page,
@@ -23,7 +24,7 @@ export const usePosts = () => {
     search,
     sortBy,
     sortOrder: sortOrder as 'asc' | 'desc',
-    status: 'published', // Luôn lấy bài đã xuất bản
+    status: 'published',
     categoryId,
   };
 
@@ -68,6 +69,91 @@ export const usePosts = () => {
   return {
     data,
     isLoading: isLoadingPosts || isCreating || isUpdating,
+    status,
+    error,
+    createPost,
+    updatePost,
+    searchParams,
+    setSearchParams,
+  };
+};
+
+export const usePostsA = (initialParams?: Partial<PostsQueryParams>) => {
+  const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const page = Number(searchParams.get('page')) || initialParams?.page || 1;
+  const limit = Number(searchParams.get('limit')) || initialParams?.limit || 12;
+  const search = searchParams.get('search') || initialParams?.search || '';
+  const sortBy =
+    searchParams.get('sortBy') || initialParams?.sortBy || 'createdAt';
+  const sortOrder =
+    searchParams.get('sortOrder') || initialParams?.sortOrder || 'desc';
+  const categoryId =
+    searchParams.get('categoryId') || initialParams?.categoryId || undefined;
+  const status =
+    searchParams.get('status') || initialParams?.status || undefined;
+
+  const queryParams: PostsQueryParams = {
+    page,
+    limit,
+    search,
+    sortBy,
+    sortOrder: sortOrder as 'asc' | 'desc',
+    status,
+    categoryId,
+  };
+
+  const {
+    data,
+    isLoading: isLoadingPosts,
+    error,
+  } = useQuery({
+    queryKey: [...POSTS_QUERY_KEY, queryParams],
+    queryFn: async () => {
+      const response = await PostsApi.getAllPosts(queryParams);
+      return response;
+    },
+    placeholderData: (previousData) => previousData,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnWindowFocus: false,
+  });
+
+  const { mutate: createPost, isPending: isCreating } = useMutation({
+    mutationFn: PostsApi.createPost,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: POSTS_QUERY_KEY });
+      toast.success('Tạo bài viết thành công');
+      window.location.href = '/admin/posts';
+    },
+    onError: (error: any) => {
+      toast.error(
+        error?.response?.data?.message || 'Có lỗi xảy ra khi tạo bài viết',
+      );
+      console.error('Failed to create post:', error);
+    },
+  });
+
+  const { mutate: updatePost, isPending: isUpdating } = useMutation({
+    mutationFn: ({ id, formData }: { id: string; formData: FormData }) =>
+      PostsApi.updatePost(id, formData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: POSTS_QUERY_KEY });
+      toast.success('Cập nhật bài viết thành công');
+    },
+    onError: (error: any) => {
+      toast.error(
+        error?.response?.data?.message || 'Có lỗi xảy ra khi cập nhật bài viết',
+      );
+      console.error('Failed to update post:', error);
+    },
+  });
+
+  return {
+    data,
+    isLoading: isLoadingPosts || isCreating || isUpdating,
+    status,
     error,
     createPost,
     updatePost,
