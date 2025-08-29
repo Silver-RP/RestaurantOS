@@ -115,7 +115,7 @@ const PostContent: React.FC<PostContentProps> = ({ post, isLoading }) => {
         {/* Thông tin */}
         <div className="flex flex-wrap gap-4 text-sm text-gray-300 mb-6 mt-4">
           <span className="flex items-center gap-2">
-            <FaUser /> Đăng bởi: <strong>{post.user_id.username}</strong>
+            <FaUser /> Đăng bởi: <strong>{post.user_id?.username}</strong>
           </span>
 
           <span className="flex items-center gap-2">
