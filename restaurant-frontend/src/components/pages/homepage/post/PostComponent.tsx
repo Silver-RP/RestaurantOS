@@ -25,7 +25,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
       </div>
       <div className="p-4 flex-grow flex flex-col">
         <p className="text-sm mb-2">
-          Đăng bởi: <span className="text-secondaryColor">{article.user_id.username}</span> In: <span className="text-secondaryColor">{article.categories_id.Cate_name}</span>
+          Đăng bởi: <span className="text-secondaryColor">{article.user_id?.username}</span> In: <span className="text-secondaryColor">{article.categories_id.Cate_name}</span>
         </p>
         <h3 className="text-xl font-bold mb-2 break-words leading-tight">
           {article.title}

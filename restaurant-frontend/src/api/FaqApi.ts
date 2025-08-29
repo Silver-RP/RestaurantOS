@@ -3,7 +3,6 @@ import { IFaq } from '../types/Faq.type';
 
 export const getAllFaqs = async () => {
   const res = await axiosInstance.get(`/faq/getall`);
-  console.log('getAllFaqs response:', res.data);
   return res.data;
 };
 
