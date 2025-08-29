@@ -43,7 +43,7 @@
           <h2 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">Chi tiết đặt bàn</h2>
           <span><strong>Ngày đặt:</strong> {{date}}</span> <br>
           <span><strong>Giờ đặt:</strong> {{time}}</span> <br>
-          <span><strong>Loại bàn:</strong> {{seatingType}}</span> <br>
+          <span><strong>Loại bàn:</strong> {{#if seatingTypeLabel}}{{seatingTypeLabel}}{{else}}{{seatingType}}{{/if}}</span> <br>
           <span><strong>Số bàn:</strong> {{tableCount}} bàn</span> <br>
           <span><strong>Số lượng người:</strong> {{number_of_people}}</span> <br>
           <span><strong>Ghi chú:</strong> {{note}}</span>
