@@ -96,12 +96,12 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
 
   return (
     <div className="p-6 bg-white shadow-md rounded-md max-w-3xl mx-auto">
-      <h1 className="text-2xl font-semibold mb-4">Thêm người dùng mới</h1>
+      <h1 className="text-2xl font-semibold mb-4">Thêm nhân viên</h1>
       <form onSubmit={handleSubmit(onValid)} className="space-y-4">
         {/* Username */}
         <div>
           <label className="block text-sm mb-1">
-            Tên người dùng <span className="text-red-600">*</span>
+            Tên  <span className="text-red-600">*</span>
           </label>
           <input
             {...register('username')}

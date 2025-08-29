@@ -7,7 +7,12 @@ import { usePosts } from '../../../../hooks/usePosts';
 
 const Postcomponent = () => {
   const isMobileOrTablet = useMediaQuery({ maxWidth: 1024 });
-  const { data: postsData, isLoading, error } = usePosts({ limit: 3, sortBy: 'createdAt', sortOrder: 'desc', status: 'published' });
+  const { data: postsData, isLoading, error, status } = usePosts({
+    limit: 3,
+    sortBy: 'createdAt',
+    sortOrder: 'desc',
+    status: 'published'
+  });
 
   if (isLoading) {
     return <div className="text-white text-center">Đang tải bài viết...</div>;
@@ -16,6 +21,8 @@ const Postcomponent = () => {
   if (error) {
     return <div className="text-red-500 text-center">Lỗi khi tải bài viết: {error.message}</div>;
   }
+
+  
 
   const articlesToDisplay = (postsData?.docs || []).slice(0, 3);
 

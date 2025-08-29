@@ -25,6 +25,7 @@ const MyReservationsPage: React.FC = () => {
     const data = await getMyReservations({ status: statuses, page, limit });
     if (data) {
       setReservations(data.reservations || []);
+      console.log(data.reservations);
     }
     setLoading(false);
   };

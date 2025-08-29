@@ -148,6 +148,7 @@ const authSlice: Slice<AuthState> = createSlice({
         state.loading = false;
         state.error = null;
         state.success = 'Logged out successfully';
+        localStorage.removeItem('accessToken');
       })
       .addCase(LogoutUser.rejected, (state, action) => {
         // Still clear user data even if API call failed

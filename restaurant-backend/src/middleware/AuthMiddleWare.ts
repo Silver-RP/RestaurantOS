@@ -75,7 +75,7 @@ class AuthMiddleWare {
       req.user = {
         _id: decoded.id,
         roles: decoded.roles,
-      } as IUser;
+      } as unknown as IUser;
 
       (req as any).refreshToken = storedToken;
 

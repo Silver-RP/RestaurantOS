@@ -22,7 +22,7 @@ const reservationSchema = new mongoose.Schema<IReservation>(
     room_type: { type: String, default: '' },
     payment_method: {
       type: String,
-      enum: ['MOMO', 'MOMO_ATM', 'VNPAY', 'BANKING', 'CREDIT_CARD'],
+      enum: ['', 'MOMO', 'MOMO_ATM', 'VNPAY', 'BANKING', 'CREDIT_CARD'],
       required: false,
     },
     payment_status: {

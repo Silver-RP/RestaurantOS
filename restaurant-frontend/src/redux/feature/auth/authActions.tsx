@@ -124,7 +124,6 @@ export const LogoutUser = createAsyncThunk(
 export const forceLogout = createAsyncThunk(
   'auth/forceLogout',
   async (reason: string = 'Token expired', { dispatch }) => {
-    console.log(`🔒 Force logout triggered: ${reason}`);
     
     // Don't call logout API since tokens are already invalid
     dispatch(clearFavorites());

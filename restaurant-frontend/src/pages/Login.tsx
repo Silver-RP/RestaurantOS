@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import InputComponent from '../components/pages/Login/InputComponents';
-import ButtonComponent from '../components/pages/Login/ButtonComponents';
+import InputComponent from '../components/pages/login/InputComponents';
+import ButtonComponent from '../components/pages/login/ButtonComponents';
 
 import CheckboxComponent from '../components/common/CheckboxComponents';
 import { Link, useNavigate } from 'react-router-dom';
@@ -25,8 +25,9 @@ const Login = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { error, success } = useAppSelector((state) => state.auth);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
-
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>(
+    {},
+  );
 
   useEffect(() => {
     emailRef.current?.focus();
@@ -43,19 +44,16 @@ const Login = () => {
 
   useEffect(() => {
     if (error) {
-      console.error('Login error:', error);
-  
-      // Chỉ điều hướng khi lỗi liên quan đến chưa xác minh email
       if (error.includes('Email của bạn chưa được xác minh')) {
         setTimeout(() => {
           navigate('/verify-otp-email', { state: { email: formData.email } });
         }, 5000);
       }
-  
+
       dispatch(clearStatus({}));
     }
   }, [error, navigate, dispatch, formData.email]);
-  
+
   useEffect(() => {
     if (success) {
       navigate('/');
@@ -92,27 +90,27 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
-  
+
     const { email, password } = formData;
     let newErrors: { email?: string; password?: string } = {};
-  
+
     if (!isEmailValid(email)) {
       newErrors.email = 'Email không hợp lệ';
     }
-  
+
     if (!isPasswordValid(password)) {
       newErrors.password =
         'Mật khẩu cần ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số';
     }
-  
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-  
+
     setErrors({});
     setIsSubmitting(true);
-  
+
     try {
       await dispatch(LoginUser({ email, password, rememberMe }))
         .unwrap()
@@ -122,7 +120,7 @@ const Login = () => {
           } else {
             localStorage.removeItem('email');
           }
-  
+
           const userId = result.user._id;
           dispatch(fetchCurrentUser({ userId }));
           navigate('/');
@@ -158,7 +156,6 @@ const Login = () => {
 
       Cookies.set('userInfo', JSON.stringify(result.user), { expires: 1 });
 
-    
       dispatch(fetchCurrentUser({ userId: result.user._id }));
 
       toast.success('Đăng nhập Google thành công!');
@@ -187,7 +184,9 @@ const Login = () => {
             onKeyDown={(e) => handleKeyDown(e, passwordRef)}
           />
           {errors.email && (
-            <div className="text-red-500 text-sm text-left mt-1">{errors.email}</div>
+            <div className="text-red-500 text-sm text-left mt-1">
+              {errors.email}
+            </div>
           )}
           <InputComponent
             type="password"
@@ -199,7 +198,9 @@ const Login = () => {
             onKeyDown={(e) => handleKeyDown(e, null)}
           />
           {errors.password && (
-            <div className="text-red-500 text-sm text-left mt-1">{errors.password}</div>
+            <div className="text-red-500 text-sm text-left mt-1">
+              {errors.password}
+            </div>
           )}
 
           <div className="flex justify-between items-center mt-4 mb-3">
@@ -220,7 +221,7 @@ const Login = () => {
           <ButtonComponent
             htmlType="submit"
             text="Đăng nhập"
-            disabled={isSubmitting }
+            disabled={isSubmitting}
           />
         </form>
 

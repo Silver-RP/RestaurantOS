@@ -22,11 +22,9 @@ const PostDetailsPage = () => {
 
   if (isLoading) {
     return (
-      <OrderOnlineLayout className="px-4 sm:px-6">
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-secondaryColor"></div>
-        </div>
-      </OrderOnlineLayout>
+      <div className="w-full flex items-center justify-center py-16">
+        <div className="text-lg text-white">Đang tải dữ liệu bài viết...</div>
+      </div>
     );
   }
 
@@ -48,7 +46,7 @@ const PostDetailsPage = () => {
   return (
     <>
       <OrderOnlineLayout className="w-full sm:px-6">
-        <PostContent post={post} />
+        <PostContent post={post} isLoading={false} />
       </OrderOnlineLayout>
     </>
   );

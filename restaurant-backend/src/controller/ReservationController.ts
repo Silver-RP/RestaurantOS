@@ -7,6 +7,7 @@ export const ReservationController = {
   create: async (req: Request, res: Response): Promise<void> => {
     try {
       const user = req.user as IUser;
+      console.log("User in create reservation:", user);
       const userId = user?.id || null; // Cho phép null nếu không đăng nhập
 
       const {
@@ -45,6 +46,13 @@ export const ReservationController = {
 
       const reservation = await ReservationService.createReservation(data, userId);
 
+      if(payment_method == ''){
+        res.status(201).json({
+          message: 'Đặt bàn thành công',
+          data: reservation,
+        });
+        return;
+      }
       const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
       const postPayment = await ReservationService.handleReservationPostPaymentLogic(
         reservation,
@@ -85,7 +93,7 @@ export const ReservationController = {
 
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 5;
-      const result = await ReservationService.getMyReservations(userId, status, page, limit);
+      const result = await ReservationService.getMyReservations(new Types.ObjectId(userId), status, page, limit);
 
       res.json({ success: true, ...result });
     } catch (error) {

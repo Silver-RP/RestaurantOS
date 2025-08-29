@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import InputComponent from '@/components/pages/Login/InputComponents';
-import ButtonComponent from '@/components/pages/Login/ButtonComponents';
+import InputComponent from '@/components/pages/login/InputComponents';
+import ButtonComponent from '@/components/pages/login/ButtonComponents';
 
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../../../../redux/hook';
@@ -17,8 +17,9 @@ const AdminLoginPage = () => {
   const [formError, setFormError] = useState('');
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
-
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>(
+    {},
+  );
 
   useEffect(() => {
     emailRef.current?.focus();
@@ -52,16 +53,16 @@ const AdminLoginPage = () => {
     const rememberMe = false;
 
     let newErrors: { email?: string; password?: string } = {};
-  
+
     if (!isEmailValid(email)) {
       newErrors.email = 'Email không hợp lệ';
     }
-  
+
     if (!isPasswordValid(password)) {
       newErrors.password =
         'Mật khẩu cần ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số';
     }
-  
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
@@ -86,8 +87,7 @@ const AdminLoginPage = () => {
         message = (error as any).message;
       }
       toast.error(message);
-    }
-    finally {
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -119,7 +119,9 @@ const AdminLoginPage = () => {
             }
           />
           {errors.email && (
-            <div className="text-red-500 text-sm text-left mt-1">{errors.email}</div>
+            <div className="text-red-500 text-sm text-left mt-1">
+              {errors.email}
+            </div>
           )}
           <InputComponent
             type="password"
@@ -133,7 +135,9 @@ const AdminLoginPage = () => {
             }
           />
           {errors.password && (
-            <div className="text-red-500 text-sm text-left mt-1">{errors.password}</div>
+            <div className="text-red-500 text-sm text-left mt-1">
+              {errors.password}
+            </div>
           )}
 
           <div className="flex justify-between items-center mt-4 mb-3">
