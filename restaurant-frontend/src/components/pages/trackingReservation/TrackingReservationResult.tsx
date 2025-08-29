@@ -293,11 +293,13 @@ const ReservationCard: React.FC<Props> = ({ onCancel }) => {
       )}
 
       {/* Payment Info */}
-      {reservation.payment_status === 'PAID' && reservation.paid_at && (
+      {reservation.deposit_amount !== undefined && reservation.deposit_amount > 0 ? (
+        <>
+          {reservation.payment_status === 'PAID' && reservation.paid_at && (
         <div className="mt-4 text-sm text-white/80">
           <div className="flex justify-between items-center border-t border-white/20 pt-4">
             <span className="text-secondaryColor font-semibold">
-              Thanh toán
+          Thanh toán
             </span>
             <span className="text-green-400 font-medium">Đã thanh toán</span>
           </div>
@@ -308,96 +310,114 @@ const ReservationCard: React.FC<Props> = ({ onCancel }) => {
           <div className="text-xs mt-1 text-white/50">
             Tiền cọc đặt chỗ:{' '}
             <span className="text-white/90 font-medium">
-              {reservation.deposit_amount?.toLocaleString('vi-VN')}đ
+          {reservation.deposit_amount?.toLocaleString('vi-VN')}đ
             </span>
           </div>
         </div>
-      )}
+          )}
 
-      {reservation.payment_status !== 'PAID' && (
+          {reservation.payment_status !== 'PAID' && (
         <div className="pt-2">
           <div className="mt-4 mb-4 text-sm text-white/80">
             <div className="flex justify-between items-center border-t border-white/20 pt-4">
-              <span className="text-secondaryColor font-semibold">
-                Thanh toán
-              </span>
-              <span className="text-red-400 font-medium">Chưa thanh toán</span>
+          <span className="text-secondaryColor font-semibold">
+            Thanh toán
+          </span>
+          <span className="text-red-400 font-medium">Chưa thanh toán</span>
             </div>
             <div className="text-xs mt-1 text-white/50">
-              Phương thức: {reservation.payment_method.replace(/_/g, ' ')} ·{' '}
+          Phương thức: {reservation.payment_method.replace(/_/g, ' ')} ·{' '}
             </div>
             <div className="text-xs mt-1 text-white/50">
-              Tiền cọc đặt chỗ:{' '}
-              <span className="text-white/90 font-medium">
-                {reservation.deposit_amount?.toLocaleString('vi-VN')}đ
-              </span>
+          Tiền cọc đặt chỗ:{' '}
+          <span className="text-white/90 font-medium">
+            {reservation.deposit_amount?.toLocaleString('vi-VN')}đ
+          </span>
             </div>
           </div>
+
           {reservation?.status === 'CANCELLED' ? (
             <div className="bg-red-100 text-red-800 text-xs rounded-md px-3 py-2 mb-3 max-w-md text-justify leading-relaxed">
-              <span>Lý do: </span>
-              {reservation.cancelled_reason || 'Đơn đặt bàn đã bị hủy.'}
+          <span>Lý do: </span>
+          {reservation.cancelled_reason || 'Đơn đặt bàn đã bị hủy.'}
             </div>
           ) : (
             reservation?.payment_method !== 'CASH' && (
-              <div className="bg-yellow-100 text-yellow-800 text-xs rounded-md px-3 py-2 mb-3 max-w-md text-justify leading-relaxed">
-                {reservation.cancelled_reason ||
-                  'Đặt bàn của bạn sẽ bị hủy sau 60 phút nếu thanh toán không được hoàn tất. Hãy thanh toán sớm để giữ chỗ.'}
-              </div>
+          <div className="bg-yellow-100 text-yellow-800 text-xs rounded-md px-3 py-2 mb-3 max-w-md text-justify leading-relaxed">
+            {reservation.cancelled_reason ||
+              'Đặt bàn của bạn sẽ bị hủy sau 60 phút nếu thanh toán không được hoàn tất. Hãy thanh toán sớm để giữ chỗ.'}
+          </div>
             )
           )}
           {reservation.status !== 'CANCELLED' &&
             (!showSelector ? (
-              <div className="flex gap-2">
-                {reservation.payment_method !== 'CASH' && (
-                  <button
-                    disabled={retrying}
-                    className="px-4 py-1.5 text-xs bg-secondaryColor border border-secondaryColor text-black font-normal font-sans hover:bg-bodyBackground hover:text-white focus:ring-bodyBackground active:bg-bodyBackground/90 active:text-headerBackground disabled:opacity-50"
-                    onClick={handleRetryPayment}
-                  >
-                    {retrying ? 'Đang xử lý...' : 'Thanh toán lại'}
-                  </button>
-                )}
-                <button
-                  disabled={changingMethod}
-                  className="px-4 py-1.5 text-xs bg-secondaryColor border border-secondaryColor text-black font-normal font-sans hover:bg-bodyBackground hover:text-white focus:ring-bodyBackground active:bg-bodyBackground/90 active:text-headerBackground disabled:opacity-50"
-                  onClick={handleChangePaymentMethod}
-                >
-                  {changingMethod ? 'Đang cập nhật...' : 'Thay đổi phương thức'}
-                </button>
-              </div>
+          <div className="flex gap-2">
+            {reservation.payment_method !== 'CASH' && (
+              <button
+            disabled={retrying}
+            className="px-4 py-1.5 text-xs bg-secondaryColor border border-secondaryColor text-black font-normal font-sans hover:bg-bodyBackground hover:text-white focus:ring-bodyBackground active:bg-bodyBackground/90 active:text-headerBackground disabled:opacity-50"
+            onClick={handleRetryPayment}
+              >
+            {retrying ? 'Đang xử lý...' : 'Thanh toán lại'}
+              </button>
+            )}
+            <button
+              disabled={changingMethod}
+              className="px-4 py-1.5 text-xs bg-secondaryColor border border-secondaryColor text-black font-normal font-sans hover:bg-bodyBackground hover:text-white focus:ring-bodyBackground active:bg-bodyBackground/90 active:text-headerBackground disabled:opacity-50"
+              onClick={handleChangePaymentMethod}
+            >
+              {changingMethod ? 'Đang cập nhật...' : 'Thay đổi phương thức'}
+            </button>
+          </div>
             ) : (
-              <>
-                <PaymentMethodSelector
-                  selectedMethod={selectedMethod}
-                  onChange={setSelectedMethod}
-                  size="sm"
-                  methods={paymentMethods}
-                />
-                <div className="flex gap-2 mt-2">
-                  <button
-                    onClick={handleConfirmChangePaymentMethod}
-                    disabled={
-                      changingMethod ||
-                      !selectedMethod ||
-                      selectedMethod === reservation.payment_method
-                    }
-                    className="px-4 py-1.5 text-xs bg-secondaryColor border border-secondaryColor text-black font-normal font-sans hover:bg-bodyBackground hover:text-white focus:ring-bodyBackground active:bg-bodyBackground/90 active:text-headerBackground disabled:opacity-50"
-                  >
-                    Xác nhận
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowSelector(false);
-                      setSelectedMethod(reservation.payment_method);
-                    }}
-                    className="px-4 py-1.5 text-xs bg-bodyBackground border border-secondaryColor text-white font-normal font-sans hover:bg-secondaryColor hover:text-black focus:ring-bodyBackground active:bg-bodyBackground/90 active:text-headerBackground disabled:opacity-50"
-                  >
-                    Hủy
-                  </button>
-                </div>
-              </>
+          <>
+            <PaymentMethodSelector
+              selectedMethod={selectedMethod}
+              onChange={setSelectedMethod}
+              size="sm"
+              methods={paymentMethods}
+            />
+            <div className="flex gap-2 mt-2">
+              <button
+            onClick={handleConfirmChangePaymentMethod}
+            disabled={
+              changingMethod ||
+              !selectedMethod ||
+              selectedMethod === reservation.payment_method
+            }
+            className="px-4 py-1.5 text-xs bg-secondaryColor border border-secondaryColor text-black font-normal font-sans hover:bg-bodyBackground hover:text-white focus:ring-bodyBackground active:bg-bodyBackground/90 active:text-headerBackground disabled:opacity-50"
+              >
+            Xác nhận
+              </button>
+              <button
+            onClick={() => {
+              setShowSelector(false);
+              setSelectedMethod(reservation.payment_method);
+            }}
+            className="px-4 py-1.5 text-xs bg-bodyBackground border border-secondaryColor text-white font-normal font-sans hover:bg-secondaryColor hover:text-black focus:ring-bodyBackground active:bg-bodyBackground/90 active:text-headerBackground disabled:opacity-50"
+              >
+            Hủy
+              </button>
+            </div>
+          </>
             ))}
+        </div>
+          )}
+        </>
+      ) : (
+        <div className="mt-4 text-sm text-white/80">
+          <div className="flex justify-between items-center border-t border-white/20 pt-4">
+        <span className="text-secondaryColor font-semibold">
+          Thanh toán
+        </span>
+        <span className="text-white/90 font-medium">0đ</span>
+          </div>
+          <div className="text-xs mt-1 text-white/50">
+        Phương thức: {' '} ·{' '}
+          </div>
+          <div className="text-xs mt-1 text-white/50">
+        Tiền cọc đặt chỗ: <span className="text-white/90 font-medium">0đ</span>
+          </div>
         </div>
       )}
 

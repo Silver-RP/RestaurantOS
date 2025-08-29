@@ -5,7 +5,6 @@ import { Dish } from '../models/DishModel';
 import MailerService from './MailerService';
 import TableReservationService from './TableReservationService';
 import { IUser } from '../types/user.type';
-import { Table } from '../models/TableModel';
 import { IReservation } from '../types/reservation.types';
 import Payment from '../models/PaymentModel';
 import { createVNPayPaymentUrl } from '../services/payments/VnPayService';
@@ -24,7 +23,6 @@ class ReservationService {
         time,
         table_type,
         number_of_people,
-        table_code,
         note,
         is_choose_later,
         selectedItems = [],
@@ -111,30 +109,23 @@ class ReservationService {
             reservation_id: savedReservation._id,
           }).lean();
 
-          // Lấy tên loại bàn hiển thị
-          let seatingTypeDisplay = table_type;
-          if (table_code) {
-            const table = await Table.findOne({ code: table_code }).lean();
-            if (table) {
-              let typeName = '';
-              switch (table.type) {
-                case 'standard':
-                  typeName = 'Bàn thường';
-                  break;
-                case 'group':
-                  typeName = 'Bàn nhóm';
-                  break;
-                case 'quiet':
-                  typeName = 'Bàn yên tĩnh';
-                  break;
-                case 'vip':
-                  typeName = 'Bàn VIP';
-                  break;
-                default:
-                  typeName = table.type;
-              }
-              seatingTypeDisplay = `${table.code} (${typeName})`;
-            }
+          // Lấy tên loại bàn hiển thị theo table_type
+          let seatingTypeDisplay = '';
+          switch (table_type) {
+            case 'standard':
+              seatingTypeDisplay = 'Bàn thường';
+              break;
+            case 'group':
+              seatingTypeDisplay = 'Bàn nhóm';
+              break;
+            case 'quiet':
+              seatingTypeDisplay = 'Bàn yên tĩnh';
+              break;
+            case 'vip':
+              seatingTypeDisplay = 'Bàn VIP';
+              break;
+            default:
+              seatingTypeDisplay = table_type;
           }
 
           const emailData = {

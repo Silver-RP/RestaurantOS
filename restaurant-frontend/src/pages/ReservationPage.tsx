@@ -12,6 +12,8 @@ import { useNavigate } from 'react-router-dom';
 import { AiOutlineCheckCircle } from 'react-icons/ai';
 import { motion } from 'framer-motion';
 import { releaseTableApi } from '@/api/TableReservationApi';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/redux/store';
 
 const steps = [
   { label: 'Thông tin', step: 1 },
@@ -23,6 +25,7 @@ const steps = [
 
 const ReservationPage: React.FC = () => {
   const navigate = useNavigate();
+  const user = useSelector((state: RootState) => state.auth.userInfo);
   // const [paymentMethod, setPaymentMethod] = useState<string>('');
   const [, setPaymentMethod] = useState<string>('');
   const getInitialFormData = (): ReservationFormData => {
@@ -268,12 +271,22 @@ const ReservationPage: React.FC = () => {
                   Tiếp tục đặt món
                 </ButtonComponents>
 
+                {user ? (
                 <ButtonComponents
                   onClick={() => navigate('/profile/my-reservation')}
                   className="bg-white text-gray-800 border border-gray-300 hover:bg-gray-100 font-semibold px-6 py-2"
                 >
                   Lịch sử đặt bàn
                 </ButtonComponents>
+                ) : (
+                  <ButtonComponents
+                    onClick={() => navigate('/reservation/lookup-reservation')}
+                    className="bg-white text-gray-800 border border-gray-300 hover:bg-gray-100 font-semibold px-6 py-2"
+                  >
+                    Tra cứu đơn đặt bàn
+                  </ButtonComponents>
+                )
+                }
               </div>
             </div>
           )}

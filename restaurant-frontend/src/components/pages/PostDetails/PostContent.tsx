@@ -16,6 +16,7 @@ import Cookies from 'js-cookie';
 
 interface PostContentProps {
   post: PostType;
+  isLoading?: boolean;
 }
 
 const DEFAULT_TAGS = [
@@ -33,7 +34,7 @@ export const isAuthenticated = (): boolean => {
   return !!userInfo;
 };
 
-const PostContent: React.FC<PostContentProps> = ({ post }) => {
+const PostContent: React.FC<PostContentProps> = ({ post, isLoading }) => {
   // const { isAuthenticated } = useAuth();
   const { isLiked, likesCount, toggleLike } = usePostById(post._id);
   const navigate = useNavigate();
@@ -71,9 +72,17 @@ const PostContent: React.FC<PostContentProps> = ({ post }) => {
       toast.success('Báo cáo của bạn đã được gửi. Cảm ơn phản hồi của bạn!');
       setShowReportModal(false);
     } catch {
-      toast.error('Gửi báo cáo thất bại!');
+      toast.error('Vui lòng đăng nhập để gửi báo cáo');
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="w-full flex items-center justify-center py-16">
+        <div className="text-lg text-white">Đang tải dữ liệu bài viết...</div>
+      </div>
+    );
+  }
 
   return (
     <section className="bg-[#012B40] text-white lg:py-16 lg:px-6">

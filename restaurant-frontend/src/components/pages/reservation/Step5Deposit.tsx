@@ -3,12 +3,10 @@ import { ReservationFormData } from '@/types/Reservation.type';
 import ButtonComponents from '@/components/common/ButtonComponents';
 import { fCurrency } from '@/utils/format-number';
 import { toastService } from '@/utils/toastService';
-import { MdChair } from 'react-icons/md';
-import { FaUsers, FaCreditCard, FaShieldAlt } from 'react-icons/fa';
+import { FaCreditCard } from 'react-icons/fa';
 import { GiKnifeFork } from 'react-icons/gi';
 import { BiSolidDiscount } from 'react-icons/bi';
 import { useReservations } from '@/hooks/useReservations';
-import { holdTableApi } from '@/api/TableReservationApi';
 import { toast } from 'react-toastify';
 import PaymentMethodSelector, {
   paymentMethods,
@@ -33,10 +31,7 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
   }, []);
   const [depositAmount, setDepositAmount] = useState<number>(0);
   const [isPaying, setIsPaying] = useState(false);
-  const [tableDeposit, setTableDeposit] = useState(0);
-  const [guestDeposit, setGuestDeposit] = useState(0);
   const [foodDeposit, setFoodDeposit] = useState(0);
-  const baseDeposit = 300_000; // Phí giữ bàn cơ bản
   const [paymentMethod, setPaymentMethod] = useState<string>('');
 
   const { createReservation, confirmReservation } = useReservations();
@@ -60,50 +55,24 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
   };
 
   useEffect(() => {
-    const { number_of_people, selectedItems, tableCategory } = formData;
-
-    let tableFee = 0;
-    if (tableCategory) {
-      const depositByTable: Record<string, number> = {
-        vip: 500_000,
-        group: 200_000,
-        quiet: 150_000,
-        standard: 100_000,
-      };
-      tableFee = depositByTable[tableCategory] || 0;
-    }
-
-    const guestFee = number_of_people >= 6 ? 300_000 : 0;
-
-    const foodTotal = selectedItems.reduce((total, item) => {
-      return total + item.price * item.quantity;
-    }, 0);
+    const { selectedItems } = formData;
+    const foodTotal = selectedItems.reduce(
+      (total, item) => total + item.price * item.quantity,
+      0,
+    );
     const foodFee = calculateFoodDeposit(foodTotal);
 
-    setTableDeposit(tableFee);
-    setGuestDeposit(guestFee);
+    setDepositAmount(foodFee);
     setFoodDeposit(foodFee);
-
-    setDepositAmount(baseDeposit + tableFee + guestFee + foodFee);
   }, [formData]);
 
-  const getTableTypeDisplayName = (tableCategory?: string): string => {
-    switch (tableCategory) {
-      case 'vip':
-        return 'Bàn VIP';
-      case 'group':
-        return 'Bàn nhóm';
-      case 'quiet':
-        return 'Bàn yên tĩnh';
-      case 'standard':
-        return 'Bàn thường';
-      default:
-        return 'Không xác định';
-    }
-  };
+  const selectedFoodTotal = formData.selectedItems.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0,
+  );
 
   const handlePayment = async () => {
-    if (!paymentMethod) {
+    if (selectedFoodTotal > 0 && !paymentMethod) {
       toast.error('Vui lòng chọn phương thức thanh toán');
       return;
     }
@@ -111,12 +80,12 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
     setIsPaying(true);
 
     try {
-      await holdTableApi({
-        table_code: formData.seatingName,
-        heldBy: `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        date: formData.date,
-        time: formData.time,
-      });
+      // await holdTableApi({
+      //   table_code: formData.seatingName,
+      //   heldBy: `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      //   date: formData.date,
+      //   time: formData.time,
+      // });
 
       const reservationData = {
         full_name: formData.full_name,
@@ -124,7 +93,7 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
         email: formData.email,
         date: formData.date,
         time: formData.time,
-        table_type: formData.table_type,
+        table_type: formData.tableCategory,
         table_code: formData.seatingName,
         number_of_people: formData.number_of_people,
         note: formData.note,
@@ -155,11 +124,9 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
     }
   };
 
-  const filteredMethods = paymentMethods.filter((m) => m.value !== 'CASH');
-
-  const selectedFoodTotal = formData.selectedItems.reduce(
-    (total, item) => total + item.price * item.quantity,
-    0,
+  // const filteredMethods = paymentMethods.filter((m) => m.value !== 'CASH');
+  const filteredMethods = paymentMethods.filter((m) =>
+    ['CREDIT_CARD', 'MOMO'].includes(m.value),
   );
 
   return (
@@ -196,53 +163,7 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
               <span className="text-3xl sm:text-4xl font-semibold text-secondaryColor drop-shadow-lg mb-2">
                 {fCurrency(depositAmount)}
               </span>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8 w-full">
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  className="bg-bodyBackground/50 border border-secondaryColor/20 rounded-lg p-4 text-center hover:border-secondaryColor/40 transition-all duration-200"
-                >
-                  <FaShieldAlt className="text-secondaryColor w-10 h-10 mb-3 mx-auto" />
-                  <p className="font-semibold text-white mb-2 text-base sm:text-lg">
-                    Phí giữ bàn
-                  </p>
-                  <p className="text-sm sm:text-base text-gray-400 mb-2">
-                    Phí cơ bản
-                  </p>
-                  <span className="text-xl sm:text-2xl font-bold text-secondaryColor">
-                    {fCurrency(baseDeposit)}
-                  </span>
-                </motion.div>
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  className="bg-bodyBackground/50 border border-secondaryColor/20 rounded-lg p-4 text-center hover:border-secondaryColor/40 transition-all duration-200"
-                >
-                  <MdChair className="text-secondaryColor w-10 h-10 mb-3 mx-auto" />
-                  <p className="font-semibold text-white mb-2 text-base sm:text-lg">
-                    Cọc theo loại bàn
-                  </p>
-                  <p className="text-sm sm:text-base text-gray-400 mb-2">
-                    {getTableTypeDisplayName(formData.tableCategory)}
-                  </p>
-                  <span className="text-xl sm:text-2xl font-bold text-secondaryColor">
-                    {fCurrency(tableDeposit)}
-                  </span>
-                </motion.div>
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  className="bg-bodyBackground/50 border border-secondaryColor/20 rounded-lg p-4 text-center hover:border-secondaryColor/40 transition-all duration-200"
-                >
-                  <FaUsers className="text-secondaryColor w-10 h-10 mb-3 mx-auto" />
-                  <p className="font-semibold text-white mb-2 text-base sm:text-lg">
-                    Cọc theo số người
-                  </p>
-                  <p className="text-sm sm:text-base text-gray-400 mb-2">
-                    {formData.number_of_people} người
-                    {formData.number_of_people >= 6 && ' (≥6 người)'}
-                  </p>
-                  <span className="text-xl sm:text-2xl font-bold text-secondaryColor">
-                    {fCurrency(guestDeposit)}
-                  </span>
-                </motion.div>
+              <div className="grid grid-cols-1 gap-4 mt-8 w-full">
                 <motion.div
                   whileHover={{ scale: 1.02 }}
                   className="bg-bodyBackground/50 border border-secondaryColor/20 rounded-lg p-4 text-center hover:border-secondaryColor/40 transition-all duration-200"
@@ -264,28 +185,30 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
             </div>
           </motion.div>
 
-          {/* Phương thức thanh toán */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.7 }}
-          >
-            <div className="bg-headerBackground/80 border border-secondaryColor/30 rounded-lg p-4 sm:p-6 mb-0">
-              <h3 className="text-xl sm:text-2xl font-bold text-secondaryColor mb-6 flex items-center gap-2">
-                <FaCreditCard className="text-2xl" />
-                Phương thức thanh toán
-              </h3>
-              <PaymentMethodSelector
-                selectedMethod={paymentMethod}
-                showTitle={false}
-                onChange={(method) => {
-                  setPaymentMethod(method || '');
-                  onPaymentMethodChange(method);
-                }}
-                methods={filteredMethods}
-              />
-            </div>
-          </motion.div>
+          {/* Phương thức thanh toán chỉ hiển thị khi selectedFoodTotal > 0 */}
+          {selectedFoodTotal > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.7 }}
+            >
+              <div className="bg-headerBackground/80 border border-secondaryColor/30 rounded-lg p-4 sm:p-6 mb-0">
+                <h3 className="text-xl sm:text-2xl font-bold text-secondaryColor mb-6 flex items-center gap-2">
+                  <FaCreditCard className="text-2xl" />
+                  Phương thức thanh toán
+                </h3>
+                <PaymentMethodSelector
+                  selectedMethod={paymentMethod}
+                  showTitle={false}
+                  onChange={(method) => {
+                    setPaymentMethod(method || '');
+                    onPaymentMethodChange(method);
+                  }}
+                  methods={filteredMethods}
+                />
+              </div>
+            </motion.div>
+          )}
 
           {/* Tổng kết và nút thanh toán */}
           <motion.div
@@ -309,7 +232,7 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
               <ButtonComponents
                 variant="filled"
                 size="small"
-                onClick={handlePayment}
+                onClick={handlePayment} // Gọi onSuccess nếu selectedFoodTotal == 0
                 disabled={isPaying}
                 className="px-8 py-3 text-base font-bold shadow-lg hover:shadow-xl transition-all duration-200 min-w-[180px] flex items-center justify-center gap-2 bg-gradient-to-r from-secondaryColor to-secondaryColor/90"
               >
@@ -335,7 +258,11 @@ const Step5Deposit: React.FC<Step5DepositProps> = ({
                     ></path>
                   </svg>
                 )}
-                {isPaying ? 'Đang xử lý...' : 'Thanh toán ngay'}
+                {selectedFoodTotal > 0
+                  ? isPaying
+                    ? 'Đang xử lý...'
+                    : 'Thanh toán ngay'
+                  : 'Đặt bàn ngay'}
               </ButtonComponents>
             </motion.div>
           </motion.div>

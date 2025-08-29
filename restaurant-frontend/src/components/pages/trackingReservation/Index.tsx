@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import InputComponent from '../Login/InputComponents';
-import ButtonComponent from '../Login/ButtonComponents';
+import InputComponent from '../login/InputComponents';
+import ButtonComponent from '../login/ButtonComponents';
 import { getReservationReservationcodeAndPhoneNumber } from '@/api/ReservationApi';
 import axios from 'axios';
 import { toast } from 'react-toastify';

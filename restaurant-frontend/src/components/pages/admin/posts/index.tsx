@@ -3,18 +3,17 @@ import { Link } from 'react-router-dom';
 import { FiEdit2, FiTrash2, FiPlus, FiSearch } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { usePosts, POSTS_QUERY_KEY } from '../../../../hooks/usePosts';
+import { usePostsA, POSTS_QUERY_KEY } from '../../../../hooks/usePosts';
 import PostsApi from '../../../../api/PostsApi';
 import AdminPagination from '../AdminPagination';
 import { FaSort, FaArrowUp, FaArrowDown } from 'react-icons/fa';
 
 const PostsPage = () => {
-  const { data: postsData, isLoading, error, searchParams, setSearchParams } = usePosts();
+  const { data: postsData, isLoading, error, searchParams, setSearchParams } = usePostsA();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [sortField, setSortField] = useState(searchParams.get('sortBy') || '');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>(searchParams.get('sortOrder') as 'asc' | 'desc' || 'asc');
-
   const { mutate: deletePost, isPending: isDeleting } = useMutation({
     mutationFn: PostsApi.deletePost,
     onSuccess: (data) => {

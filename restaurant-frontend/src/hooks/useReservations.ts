@@ -22,7 +22,6 @@ export const useReservations = () => {
         window.location.href = res.postPayment.redirectUrl;
         return;
       }
-      toastService.success('Đặt bàn thành công');
       return res.data;
     } catch (error: any) {
       console.error(

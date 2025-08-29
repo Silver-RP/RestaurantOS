@@ -14,8 +14,9 @@ import { RootState } from '@/redux/store';
 import { useDispatch, useSelector } from 'react-redux';
 import { FiArrowRight } from 'react-icons/fi';
 import { MdInfo } from 'react-icons/md';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { openSearchModal } from '../../../redux/feature/modal/searchModalSlice';
+import { toast } from 'react-toastify';
 
 interface PrimarySidebarProps {
   toggleSidebar: () => void;
@@ -37,6 +38,18 @@ type MenuItem = MenuItemLink | MenuItemAction;
 
 const PrimarySidebar: React.FC<PrimarySidebarProps> = ({ toggleSidebar }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const user = useSelector((state: RootState) => state.auth.userInfo);
+  const dispatch = useDispatch();
+
+  const handleNavigation = (path: string, message?: string) => {
+    if (user) {
+      navigate(path);
+    } else if (message) {
+      toast.error(message);
+    }
+  };
 
   const menuItemsMain = [
     { icon: <FaHome />, label: 'Trang chủ', link: '/' },
@@ -44,13 +57,9 @@ const PrimarySidebar: React.FC<PrimarySidebarProps> = ({ toggleSidebar }) => {
     { icon: <FaRegListAlt />, label: 'Bài viết', link: '/posts' },
     { icon: <MdInfo />, label: 'Giới thiệu', link: '/aboutus' },
     { icon: <FaPhoneAlt />, label: 'Liên hệ', link: '/contact' },
-   
   ];
 
-  const user = useSelector((state: RootState) => state.auth.userInfo);
-  const dispatch = useDispatch();
-
-  const searchItem = {
+  const searchItem: MenuItemAction = {
     icon: <FaSearch />,
     label: 'Tìm kiếm',
     onClick: () => dispatch(openSearchModal()),
@@ -64,8 +73,18 @@ const PrimarySidebar: React.FC<PrimarySidebarProps> = ({ toggleSidebar }) => {
         searchItem,
       ]
     : [
-        { icon: <FaHeart />, label: 'Yêu thích', link: '/favorites' },
-        { icon: <FaShoppingBag />, label: 'Giỏ hàng', link: '/cart' },
+        {
+          icon: <FaHeart />,
+          label: 'Yêu thích',
+          onClick: () =>
+            handleNavigation('/favorites', 'Vui lòng đăng nhập để xem danh sách yêu thích'),
+        },
+        {
+          icon: <FaShoppingBag />,
+          label: 'Giỏ hàng',
+          onClick: () =>
+            handleNavigation('/cart', 'Vui lòng đăng nhập để xem giỏ hàng'),
+        },
         { icon: <FaUserAlt />, label: 'Tài khoản', link: '/login' },
         searchItem,
       ];
@@ -98,7 +117,7 @@ const PrimarySidebar: React.FC<PrimarySidebarProps> = ({ toggleSidebar }) => {
                   : 'text-white hover:text-secondaryColor'
               }`}
             >
-              <div className="text-xl ">{item.icon}</div>
+              <div className="text-xl">{item.icon}</div>
               <span
                 className={`absolute left-10 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 translate-x-2 transition-all duration-300 bg-headerBackground text-secondaryColor uppercase text-xs md:text-sm px-4 py-2 shadow-lg whitespace-nowrap`}
               >
