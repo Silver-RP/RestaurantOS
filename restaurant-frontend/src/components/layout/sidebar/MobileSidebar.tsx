@@ -40,6 +40,12 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
     }
   };
 
+  const handleNavigate = (path: string) => {
+    navigate(path);
+    toggleSidebar();
+  };
+
+
   return (
     <div className="fixed inset-0 z-50 flex">
       {/* Sidebar */}
@@ -66,7 +72,7 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
           </div>
 
           <div className="flex-1 overflow-y-auto px-6">
-            <NavExtend onNavigate={handleNavigation} />
+            <NavExtend onNavigate={handleNavigate} />
 
             <div className="flex flex-col items-center space-y-6 mt-8">
               <div className="flex space-x-6 text-xl">

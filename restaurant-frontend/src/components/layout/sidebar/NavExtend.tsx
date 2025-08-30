@@ -10,7 +10,7 @@ interface NavExtendProps {
 const navItems = [
   { path: '/', label: 'TRANG CHỦ', icon: <MdHome className="text-2xl" /> },
   {
-    path: 'menu?sort=categoryAZ',
+    path: '/menu?sort=categoryAZ',
     label: 'THỰC ĐƠN',
     icon: <MdMenuBook className="text-2xl" />,
   },
